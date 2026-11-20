@@ -62,7 +62,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Resting: blocked while an enemy is fighting you nearby; brings back enemies that aren't mid-fight
 - [x] Esc menu: Resume / Leave game
 - [x] Automated 3-player check (`tests/run_net_check.ps1`): 3 copies connect, hit, block, go down, revive and chat. All correct
-- [ ] Export a Windows build for friends (needs Godot's export templates: a big download, asking first)
+- [x] Export a Windows build for friends: `build/Kingdom-windows.zip` (39 MB: Kingdom.exe + HOW TO PLAY.txt). Not in git; re-export any time
 - [ ] 🧪 3 game windows on one PC, then a real test with friends over the internet
 - [ ] Later: show ping in the debug info; a "kick player" option for the host
 

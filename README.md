@@ -16,7 +16,8 @@ The game starts at the **main menu**. Type a name, then **Host game** (also how 
 - **Over the internet:** either
   - **easiest:** everyone installs the same free virtual-LAN app (Tailscale, ZeroTier or Radmin VPN) and joins the same network; friends use the host's address from that app; or
   - the host forwards **UDP port 31415** on their router to their PC, and friends use the host's public IP.
-- Friends need their own copy of the game (an exported build; see TODO.md).
+- Friends need their own copy of the game: send them `build/Kingdom-windows.zip` (they unzip it and run Kingdom.exe; no Godot needed). Everyone must have the **same build**.
+- To make a fresh build after changes: in the editor, **Project → Export... → Windows → Export Project** (save as `build/windows/Kingdom.exe`), then zip that folder. Or ask me.
 
 ## Test 3 players on one PC
 In the editor: **Debug → Customize Run Instances...** → tick **Enable Multiple Instances**, set it to **3**. Give instance 1 the arguments `-- --host` and instances 2 and 3 `-- --join=127.0.0.1` (optionally add `--name=Bob`). Press F5: three windows open and connect by themselves. (Or start them by hand from the menus, using address `127.0.0.1`.)
