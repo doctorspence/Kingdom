@@ -21,13 +21,16 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 
 @export_group("Weight and turning")
 ## How fast you reach your target speed (m/s per second).
-@export var acceleration := 16.0
+@export var acceleration := 30.0
 ## How fast you stop when you let go (m/s per second).
-@export var deceleration := 20.0
+@export var deceleration := 35.0
 ## How fast your body turns while walking/running (degrees per second).
-@export var turn_speed := 720.0
+@export var turn_speed := 1080.0
+## How fast your movement swings to a new direction while walking/running (degrees per second).
+## You keep your speed through the turn instead of slowing to a stop.
+@export var direction_change_speed := 1080.0
 ## How fast you turn while sprinting. Low = wide, heavy turns.
-@export var sprint_turn_speed := 240.0
+@export var sprint_turn_speed := 400.0
 ## How much you can steer in the air (0 = none, 1 = full).
 @export_range(0.0, 1.0) var air_control := 0.2
 @export var gravity := 22.0

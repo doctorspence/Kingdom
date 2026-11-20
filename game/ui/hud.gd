@@ -7,9 +7,9 @@ const HELP_TEXT := """CONTROLS (F1 to hide)
 Move: WASD / left stick (tilt gently to walk)
 Walk: hold Ctrl
 Look: mouse / right stick
+Roll: tap Shift / tap B
 Sprint: hold Shift / hold B
-Roll: Space / tap B
-Jump: F / A
+Jump: Space / A
 Lock on: Q / click right stick
 Switch target: mouse wheel / flick right stick
 Free the mouse: Esc (click to grab it again)

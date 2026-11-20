@@ -122,9 +122,7 @@ func _face_spawn_direction() -> void:
 # --- Input --------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("roll"):
-		_buffer(&"roll")
-	elif event.is_action_pressed("jump"):
+	if event.is_action_pressed("jump"):
 		_buffer(&"jump")
 	elif event.is_action_pressed("lock_on"):
 		if state != State.DEAD and not targeting.toggle():
@@ -149,7 +147,7 @@ func _consume(action: StringName) -> bool:
 	return false
 
 
-## Gamepad B: tap to roll (on release), hold to sprint.
+## Shift / gamepad B: tap to roll (on release), hold to sprint.
 func _read_dodge_button(delta: float) -> void:
 	if Input.is_action_just_pressed("dodge_sprint"):
 		_dodge_held = 0.0
@@ -173,7 +171,7 @@ func _input_direction() -> Vector3:
 
 
 func _wants_sprint() -> bool:
-	return Input.is_action_pressed("sprint") or _dodge_held >= tuning.dodge_hold_time
+	return _dodge_held >= tuning.dodge_hold_time
 
 
 # --- Main loop ----------------------------------------------------------------
@@ -255,8 +253,21 @@ func _state_move(delta: float) -> void:
 		elif amount > 0.0:
 			model.turn_toward(dir, deg_to_rad(tuning.turn_speed) * delta)
 
-	var rate := tuning.acceleration if target_velocity.length() >= horizontal.length() else tuning.deceleration
-	horizontal = horizontal.move_toward(target_velocity, rate * delta)
+	if amount > 0.0 and not is_sprinting and horizontal.length() > 0.1:
+		# Swing the current movement toward the new direction, keeping speed.
+		var cur_speed := horizontal.length()
+		var cur_dir := horizontal / cur_speed
+		var want_dir := target_velocity.normalized()
+		var max_turn := deg_to_rad(tuning.direction_change_speed) * delta
+		var angle := cur_dir.signed_angle_to(want_dir, Vector3.UP)
+		if absf(angle) > PI - 0.05:
+			angle = PI  # straight reversal: pick a side
+		cur_dir = cur_dir.rotated(Vector3.UP, clampf(angle, -max_turn, max_turn))
+		var rate := tuning.acceleration if cur_speed < speed else tuning.deceleration
+		horizontal = cur_dir * move_toward(cur_speed, speed, rate * delta)
+	else:
+		var rate := tuning.acceleration if target_velocity.length() >= horizontal.length() else tuning.deceleration
+		horizontal = horizontal.move_toward(target_velocity, rate * delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 	if not is_on_floor():
@@ -291,17 +302,19 @@ func _start_roll(dir: Vector3) -> void:
 
 func _state_roll(delta: float) -> void:
 	var u := _state_time / _roll_duration
+	# Fast at the start, easing down to running speed at the end (so you come out
+	# of the roll still moving). Covers exactly the roll distance.
+	var average := _roll_distance / _roll_duration
+	var end_speed := minf(tuning.run_speed, average)
+	var start_speed := end_speed + 1.5 * (average - end_speed)
 	if u >= 1.0:
-		# Come out of the roll at a jog, not a dead stop.
-		var exit_speed := minf(Vector3(velocity.x, 0.0, velocity.z).length(), tuning.run_speed * 0.5)
-		velocity.x = _roll_dir.x * exit_speed
-		velocity.z = _roll_dir.z * exit_speed
+		# Hand the momentum straight back to normal movement.
+		velocity.x = _roll_dir.x * end_speed
+		velocity.z = _roll_dir.z * end_speed
 		_set_state(State.MOVE)
 		_state_move(delta)
 		return
-	# Fast at the start, slowing toward the end; covers exactly the roll distance.
-	var peak := 1.5 * _roll_distance / _roll_duration
-	var speed := peak * (1.0 - u * u)
+	var speed := end_speed + (start_speed - end_speed) * (1.0 - u * u)
 	velocity.x = _roll_dir.x * speed
 	velocity.z = _roll_dir.z * speed
 	if is_on_floor():

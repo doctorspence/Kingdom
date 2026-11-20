@@ -72,9 +72,9 @@ You host your world; two friends join by IP. You rest at the Crossroads shrine a
 | Light attack | Left mouse | RB |
 | Heavy attack (hold to charge) | Middle mouse | RT |
 | Block (tap at the last moment = parry) | Right mouse (hold) | LB |
-| Dodge roll | Space | B (tap) |
-| Sprint | Left Shift (hold) | B (hold) |
-| Jump | F | A |
+| Dodge roll | Shift (tap) | B (tap) |
+| Sprint | Shift (hold) | B (hold) |
+| Jump | Space | A |
 | Lock-on / switch target | Q / mouse wheel | R3 / flick right stick |
 | Drink flask | R | X |
 | Interact (shrines, doors, loot, revive) | E | Y |

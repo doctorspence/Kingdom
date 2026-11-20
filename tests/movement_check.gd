@@ -30,23 +30,42 @@ func _run() -> void:
 	await _seconds(1.5)
 	_check("run speed", _speed(), t.run_speed, 0.15)
 	# Sprinting speed and stamina drain
-	Input.action_press("sprint")
+	Input.action_press("dodge_sprint")
 	await _seconds(1.5)
 	_check("sprint speed", _speed(), t.sprint_speed, 0.2)
 	_check_true("sprint drains stamina", player.stamina < t.max_stamina - 10.0)
-	Input.action_release("sprint")
+	Input.action_release("dodge_sprint")
 	Input.action_release("move_forward")
 	await _seconds(1.2)
 	_check("stops when you let go", _speed(), 0.0, 0.05)
 	await _seconds(2.5)
 	_check("stamina refills", player.stamina, t.max_stamina, 0.5)
 
+	# Quick direction changes: full reversal back to running speed
+	Input.action_press("move_forward")
+	await _seconds(1.0)
+	Input.action_release("move_forward")
+	Input.action_press("move_back")
+	var reverse_time := 0.0
+	while reverse_time < 2.0:
+		await physics_frame
+		reverse_time += 1.0 / Engine.physics_ticks_per_second
+		if player.velocity.z > t.run_speed * 0.9:
+			break
+	_check("seconds to reverse direction at full run", reverse_time, 0.15, 0.15)
+	# Roll while running: come out still running
+	await _tap("dodge_sprint")
+	await _seconds(t.roll_duration[0] + 0.05)
+	_check("speed right after a roll (holding a direction)", _speed(), t.run_speed, 0.3)
+	Input.action_release("move_back")
+	await _seconds(2.5)
+
 	# Rolls at each equip load
 	for case in [[0.2, 0], [0.5, 1], [0.9, 2]]:
 		player.equip_load = case[0]
 		await _seconds(0.8)
 		var start := player.global_position
-		await _tap("roll")
+		await _tap("dodge_sprint")
 		await _frames(2)
 		_check_true("invincible during roll (load %.1f)" % case[0], player.is_invulnerable())
 		await _seconds(t.roll_duration[case[1]] + 0.05)
@@ -56,7 +75,7 @@ func _run() -> void:
 		await _seconds(1.5)
 	player.equip_load = 1.2
 	var before := player.global_position
-	await _tap("roll")
+	await _tap("dodge_sprint")
 	await _seconds(0.6)
 	_check("no roll when overloaded", _flat(player.global_position - before).length(), 0.0, 0.05)
 	player.equip_load = 0.2

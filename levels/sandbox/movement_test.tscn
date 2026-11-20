@@ -187,7 +187,7 @@ material = ExtResource("7_accent")
 position = Vector3(-7.5, 2.2, 4)
 billboard = 1
 pixel_size = 0.005
-text = "Jump (F): 0.5 m / 0.9 m / 1.4 m (too tall)"
+text = "Jump (Space): 0.5 m / 0.9 m / 1.4 m (too tall)"
 font_size = 48
 outline_size = 12
 

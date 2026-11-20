@@ -20,11 +20,9 @@ func _ready() -> void:
 	_add("look_up", [_axis(JOY_AXIS_RIGHT_Y, -1.0)])
 	_add("look_down", [_axis(JOY_AXIS_RIGHT_Y, 1.0)])
 	_add("walk", [_key(KEY_CTRL)])  # gamepad: just tilt the stick gently
-	_add("sprint", [_key(KEY_SHIFT)])
-	_add("roll", [_key(KEY_SPACE)])
-	# Gamepad B: tap = roll, hold = sprint (handled in the player script)
-	_add("dodge_sprint", [_button(JOY_BUTTON_B)])
-	_add("jump", [_key(KEY_F), _button(JOY_BUTTON_A)])
+	# Shift / gamepad B: tap = roll, hold = sprint (handled in the player script)
+	_add("dodge_sprint", [_key(KEY_SHIFT), _button(JOY_BUTTON_B)])
+	_add("jump", [_key(KEY_SPACE), _button(JOY_BUTTON_A)])
 
 	# Targeting
 	_add("lock_on", [_key(KEY_Q), _button(JOY_BUTTON_RIGHT_STICK)])
