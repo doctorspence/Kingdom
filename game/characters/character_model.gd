@@ -153,9 +153,34 @@ func play(anim_name: StringName, blend := 0.15, speed := 1.0, restart := false) 
 	if _current == anim_name:
 		if restart:
 			_anim.seek(0.0, true)
+			play_count += 1
 		return
 	_current = anim_name
 	_anim.play(anim_name, blend)
+	play_count += 1
+
+
+## Counts every animation start, so other players' screens can copy them.
+var play_count := 0
+
+
+func get_speed() -> float:
+	return _anim.speed_scale if _anim else 1.0
+
+
+## Copy what another machine's character is doing (used for remote players/enemies).
+func mirror(anim_name: StringName, speed: float, count: int) -> void:
+	if count != _mirrored_count:
+		_mirrored_count = count
+		if _anim and _anim.has_animation(anim_name):
+			_current = anim_name
+			_anim.play(anim_name, 0.1)
+			_anim.seek(0.0, true)
+	if _anim:
+		_anim.speed_scale = speed
+
+
+var _mirrored_count := -1
 
 
 func set_speed(speed: float) -> void:

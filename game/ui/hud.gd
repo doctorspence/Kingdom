@@ -1,7 +1,8 @@
 class_name Hud
 extends CanvasLayer
-## On-screen display: health and stamina bars, lock-on marker, and test helpers.
-##   F1 = show controls   F2 = debug info   F3 = equip load   F4 = reset
+## On-screen display: your bars and flasks, party frames, chat, lock-on marker,
+## enemy health bars, prompts, the Esc menu and test helpers.
+##   F1 = controls   F2 = debug info   F3 = equip load   F4 = reset
 
 const HELP_TEXT := """CONTROLS (F1 to hide)
 Move: WASD / left stick (tilt gently to walk)
@@ -17,13 +18,17 @@ Heavy attack: middle mouse / RT  (hold to charge)
 Block: hold right mouse / LB  (raise it just as a hit lands = parry)
 Riposte: light attack on a reeling enemy after a parry
 Drink flask: R / X        Interact / rest: E / Y
-Free the mouse: Esc (click to grab it again)
+Revive a downed friend: hold E / Y next to them (costs a flask)
+Chat: Enter        Menu (leave game): Esc
 
 TEST KEYS
 F2: debug info (invincibility shows as a blue tint)
 F3: change equip load (light / medium / heavy / overloaded)
 F4: reset to start, full health
 H: enemy health bars on/off    N: damage numbers on/off"""
+
+const CHAT_LINES := 8
+const CHAT_FADE_TIME := 12.0
 
 var player: Player
 
@@ -36,26 +41,41 @@ var _debug_label: Label
 var _help_label: Label
 var _hint_label: Label
 var _death_label: Label
+var _down_label: Label
 var _death_fade := 0.0
+var _party_box: VBoxContainer
+var _chat_log: Label
+var _chat_edit: LineEdit
+var _chat_lines: Array[String] = []
+var _chat_timer := 0.0
+var _menu: PanelContainer
 
 
 func _ready() -> void:
 	_build()
-	await get_tree().process_frame
-	player = get_tree().get_first_node_in_group(&"player") as Player
-	if player:
-		player.health_changed.connect(_health_bar.set_values)
-		player.stamina_changed.connect(_stamina_bar.set_values)
-		player.flasks_changed.connect(_on_flasks_changed)
-		player.died.connect(_on_died)
-		player.respawned.connect(_on_respawned)
-		_health_bar.set_values(player.health, player.tuning.max_health)
-		_stamina_bar.set_values(player.stamina, player.tuning.max_stamina)
-		_on_flasks_changed(player.flasks, player.tuning.flask_count)
+	Net.chat_received.connect(_on_chat)
+	while player == null:
+		await get_tree().process_frame
+		player = get_tree().get_first_node_in_group(&"local_player") as Player
+	player.health_changed.connect(_health_bar.set_values)
+	player.stamina_changed.connect(_stamina_bar.set_values)
+	player.flasks_changed.connect(_on_flasks_changed)
+	player.died.connect(_on_died)
+	player.respawned.connect(_on_respawned)
+	_health_bar.set_values(player.health, player.tuning.max_health)
+	_stamina_bar.set_values(player.stamina, player.tuning.max_stamina)
+	_on_flasks_changed(player.flasks, player.tuning.flask_count)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("debug_help"):
+	if event.is_action_pressed("chat") and not Net.typing:
+		_open_chat()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("menu") and not Net.typing:
+		_menu.visible = not _menu.visible
+		if _menu.visible:
+			(_menu.find_child("Resume", true, false) as Button).grab_focus()
+	elif event.is_action_pressed("debug_help"):
 		_help_label.visible = not _help_label.visible
 		_hint_label.visible = false
 	elif event.is_action_pressed("debug_info"):
@@ -73,13 +93,76 @@ func _process(delta: float) -> void:
 	if _death_label.visible:
 		_death_fade = minf(1.0, _death_fade + delta * 0.8)
 		_death_label.modulate.a = _death_fade
-	if _debug_label.visible and player:
+	_chat_timer -= delta
+	_chat_log.modulate.a = 1.0 if Net.typing else clampf(_chat_timer / 2.0, 0.0, 1.0)
+	if player != null and (not is_instance_valid(player) or not player.is_inside_tree()):
+		player = null  # our character was removed (leaving the game)
+	if player == null:
+		return
+	if _debug_label.visible:
 		_debug_label.text = _debug_text()
-	if player:
-		var thing := player.nearest_interactable() if player.state == Player.State.MOVE else null
-		_prompt_label.visible = thing != null
-		if thing:
-			_prompt_label.text = "[E]  %s" % thing.call(&"get_interact_text")
+	_update_prompt()
+	_update_party()
+	_down_label.visible = player.is_downed()
+	if player.is_downed():
+		_down_label.text = "You're down! Bleeding out: %d\nA friend can hold Interact next to you to revive you." % ceili(player.bleed_time_left())
+
+
+func _update_prompt() -> void:
+	var text := ""
+	var reviving := player.revive_target()
+	if reviving:
+		text = "Reviving %s...  %d%%" % [reviving.player_name, roundi(player.revive_progress() * 100.0)]
+	elif player.state == Player.State.MOVE:
+		var downed := player._nearest_downed_friend()
+		if downed:
+			text = "[Hold E]  Revive %s  (costs a flask)" % downed.player_name if player.flasks > 0 \
+					else "No flasks left to revive %s" % downed.player_name
+		else:
+			var thing := player.nearest_interactable()
+			if thing:
+				text = "[E]  %s" % thing.call(&"get_interact_text")
+	_prompt_label.visible = text != ""
+	_prompt_label.text = text
+
+
+## Small frames for everyone else in the party: name, health, down/dead.
+func _update_party() -> void:
+	var others: Array[Player] = []
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p and p != player:
+			others.append(p)
+	while _party_box.get_child_count() < others.size():
+		_party_box.add_child(_make_party_frame())
+	for i in _party_box.get_child_count():
+		var frame := _party_box.get_child(i) as Control
+		frame.visible = i < others.size()
+		if not frame.visible:
+			continue
+		var p := others[i]
+		var label := frame.get_child(0) as Label
+		var bar := frame.get_child(1) as ResourceBar
+		var status := ""
+		if p.is_downed():
+			status = "  DOWN %ds" % ceili(p.bleed_time_left())
+		elif p.is_dead():
+			status = "  dead"
+		label.text = p.player_name + status
+		label.modulate = Color(1.0, 0.55, 0.45) if p.is_out_of_fight() else Color(1, 1, 1)
+		bar.set_values(p.health, p.tuning.max_health)
+
+
+func _make_party_frame() -> Control:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 2)
+	box.add_child(_make_label(16))
+	var bar := ResourceBar.new()
+	bar.pixels_per_point = 1.6
+	bar.custom_minimum_size = Vector2(160, 8)
+	bar.fill_color = Color(0.58, 0.07, 0.06)
+	box.add_child(bar)
+	return box
 
 
 func _on_flasks_changed(current: int, maximum: int) -> void:
@@ -99,6 +182,7 @@ func _debug_text() -> String:
 		"Invincible: %s    Blocking: %s%s" % ["YES" if p.is_invulnerable() else "no", "yes" if p.is_blocking else "no", "  (PARRY WINDOW)" if p.is_parrying() else ""],
 		"Last fall: %.1f m" % p.last_fall_height,
 		"Lock target: %s" % (p.targeting.target.name if p.targeting.has_target() else "none"),
+		"Network: %s, %d player(s), ping n/a" % [["offline", "hosting", "joined"][Net.mode], get_tree().get_nodes_in_group(&"player").size()],
 		"FPS: %d" % Engine.get_frames_per_second(),
 	])
 	return "\n".join(lines)
@@ -114,8 +198,47 @@ func _on_respawned() -> void:
 	_death_label.visible = false
 
 
+# --- Chat ---------------------------------------------------------------------
+
+func _open_chat() -> void:
+	Net.typing = true
+	_chat_edit.visible = true
+	_chat_edit.text = ""
+	_chat_edit.grab_focus()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func _close_chat() -> void:
+	Net.typing = false
+	_chat_edit.release_focus()
+	_chat_edit.visible = false
+	_chat_timer = CHAT_FADE_TIME
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _on_chat_submitted(text: String) -> void:
+	Net.send_chat(text)
+	_close_chat()
+
+
+func _on_chat_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		_close_chat()
+		_chat_edit.accept_event()
+
+
+func _on_chat(sender: String, text: String, is_system: bool) -> void:
+	_chat_lines.append(("* " + text) if is_system else "%s: %s" % [sender, text])
+	while _chat_lines.size() > CHAT_LINES:
+		_chat_lines.pop_front()
+	_chat_log.text = "\n".join(_chat_lines)
+	_chat_timer = CHAT_FADE_TIME
+
+
+# --- Marker and enemy bars ----------------------------------------------------
+
 func _draw_marker() -> void:
-	if player == null:
+	if player == null or not is_instance_valid(player) or not player.is_inside_tree():
 		return
 	var cam := player.camera_rig.camera
 	# Enemy health bars (once hurt or targeted).
@@ -179,21 +302,48 @@ func _build() -> void:
 	_flask_label = _make_label(18)
 	bars.add_child(_flask_label)
 
+	_party_box = VBoxContainer.new()
+	_party_box.position = Vector2(40, 150)
+	_party_box.add_theme_constant_override("separation", 8)
+	root.add_child(_party_box)
+
+	_chat_log = _make_label(17)
+	_place(_chat_log, Control.PRESET_BOTTOM_LEFT, Rect2(40, -330, 640, 220))
+	_chat_log.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	_chat_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	root.add_child(_chat_log)
+
+	_chat_edit = LineEdit.new()
+	_place(_chat_edit, Control.PRESET_BOTTOM_LEFT, Rect2(40, -100, 640, 36))
+	_chat_edit.placeholder_text = "Say something (Enter to send, Esc to cancel)"
+	_chat_edit.max_length = 200
+	_chat_edit.visible = false
+	_chat_edit.text_submitted.connect(_on_chat_submitted)
+	_chat_edit.gui_input.connect(_on_chat_input)
+	root.add_child(_chat_edit)
+
 	_prompt_label = _make_label(24)
-	_place(_prompt_label, Control.PRESET_CENTER_BOTTOM, Rect2(-300, -140, 600, 40))
+	_place(_prompt_label, Control.PRESET_CENTER_BOTTOM, Rect2(-400, -140, 800, 40))
 	_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_prompt_label.visible = false
 	root.add_child(_prompt_label)
 
+	_down_label = _make_label(30)
+	_down_label.add_theme_color_override("font_color", Color(0.9, 0.35, 0.3))
+	_place(_down_label, Control.PRESET_CENTER, Rect2(-500, 80, 1000, 100))
+	_down_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_down_label.visible = false
+	root.add_child(_down_label)
+
 	_debug_label = _make_label(18)
-	_place(_debug_label, Control.PRESET_BOTTOM_LEFT, Rect2(40, -260, 700, 220))
+	_place(_debug_label, Control.PRESET_BOTTOM_RIGHT, Rect2(-640, -280, 600, 240))
 	_debug_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	_debug_label.visible = false
 	root.add_child(_debug_label)
 
 	_help_label = _make_label(18)
 	_help_label.text = HELP_TEXT
-	_place(_help_label, Control.PRESET_TOP_RIGHT, Rect2(-720, 36, 680, 560))
+	_place(_help_label, Control.PRESET_TOP_RIGHT, Rect2(-720, 36, 680, 640))
 	_help_label.visible = false
 	root.add_child(_help_label)
 
@@ -211,6 +361,27 @@ func _build() -> void:
 	_death_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_death_label.visible = false
 	root.add_child(_death_label)
+
+	_menu = PanelContainer.new()
+	_place(_menu, Control.PRESET_CENTER, Rect2(-180, -90, 360, 180))
+	_menu.visible = false
+	var menu_box := VBoxContainer.new()
+	menu_box.add_theme_constant_override("separation", 12)
+	_menu.add_child(menu_box)
+	var resume := Button.new()
+	resume.name = "Resume"
+	resume.text = "Resume"
+	resume.custom_minimum_size = Vector2(0, 44)
+	resume.pressed.connect(func() -> void:
+		_menu.visible = false
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED)
+	menu_box.add_child(resume)
+	var leave := Button.new()
+	leave.text = "Leave game" if Net.mode != Net.Mode.HOST else "Close game (everyone leaves)"
+	leave.custom_minimum_size = Vector2(0, 44)
+	leave.pressed.connect(func() -> void: Net.leave())
+	menu_box.add_child(leave)
+	root.add_child(_menu)
 
 
 ## Pin a control to a screen corner (or the center), offset by `rect`.

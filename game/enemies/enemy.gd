@@ -11,18 +11,36 @@ extends CharacterBody3D
 ##   RIPOSTED knocked down by a riposte
 ##   RETURN   walking home after you ran too far away
 ##   DEAD     dead until someone rests at a shrine
+##
+## Multiplayer: the host runs every enemy and shares its state. Players report
+## their hits to the host; the host sends enemy blows to the player's own game,
+## which decides whether it really landed ("favor the dodger").
 
 signal died
 
 enum State { IDLE, CHASE, ATTACK, STAGGER, PARRIED, RIPOSTED, RETURN, DEAD }
 
 const HEALTH_BAR_SHOW_TIME := 6.0
+## Group scaling (DESIGN.md 8.4): extra health and poise per extra player.
+const HEALTH_PER_EXTRA_PLAYER := 0.6
+const POISE_PER_EXTRA_PLAYER := 0.25
 
 @export var data: EnemyData
 
 var state := State.IDLE
 var health := 100.0
+var max_health := 100.0
+var max_poise := 40.0
 var target: Player
+
+## Shared with everyone (see the Sync node in marauder.tscn).
+var net_pos := Vector3.ZERO
+var net_yaw := 0.0
+var net_anim := &""
+var net_anim_speed := 1.0
+var net_anim_count := 0
+var net_state := 0
+var net_overlay := ""
 
 var _state_time := 0.0
 var _attack := AttackRunner.new()
@@ -35,6 +53,7 @@ var _strafe_dir := 1.0
 var _telegraphed := false
 var _bar_timer := 0.0
 var _weapon: Node3D
+var _party_size := 1
 
 @onready var model: CharacterModel = $Visual
 
@@ -51,12 +70,19 @@ func _ready() -> void:
 	if data.weapon_scene:
 		_weapon = data.weapon_scene.instantiate()
 		model.attach_to_hand(_weapon, "r")
+	max_health = data.max_health
+	max_poise = data.poise
 	_reset()
+	net_pos = global_position
+
+
+func _is_host() -> bool:
+	return multiplayer.is_server()
 
 
 func _reset() -> void:
-	health = data.max_health
-	_poise = data.poise
+	health = max_health
+	_poise = max_poise
 	_cooldown = 0.5
 	target = null
 	collision_layer = 4
@@ -84,12 +110,12 @@ func can_be_riposted() -> bool:
 
 
 func health_ratio() -> float:
-	return health / data.max_health
+	return health / max_health
 
 
 ## Show the health bar above its head? (When hurt recently.)
 func wants_health_bar() -> bool:
-	return state != State.DEAD and _bar_timer > 0.0
+	return state != State.DEAD and (_bar_timer > 0.0 or health < max_health)
 
 
 func bar_point() -> Vector3:
@@ -100,15 +126,45 @@ func display_name() -> String:
 	return data.display_name
 
 
+## Is it fighting someone right now? (Resting is blocked near angry enemies.)
+func is_fighting() -> bool:
+	return target != null and state in [State.CHASE, State.ATTACK, State.STAGGER, State.PARRIED, State.RIPOSTED]
+
+
+## Tougher with more players (host only; health keeps the same percentage).
+func set_party_size(count: int) -> void:
+	_party_size = count
+	var ratio := health / max_health
+	max_health = data.max_health * (1.0 + HEALTH_PER_EXTRA_PLAYER * (count - 1))
+	max_poise = data.poise * (1.0 + POISE_PER_EXTRA_PLAYER * (count - 1))
+	health = max_health * ratio
+
+
 ## A player is starting a riposte on us: hold still for it.
 func begin_riposte(attacker: Node3D) -> void:
+	if _is_host():
+		_start_riposted(attacker.global_position)
+	else:
+		_net_begin_riposte.rpc_id(1, attacker.global_position)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_begin_riposte(attacker_pos: Vector3) -> void:
+	if _is_host():
+		_start_riposted(attacker_pos)
+
+
+func _start_riposted(attacker_pos: Vector3) -> void:
 	_set_state(State.RIPOSTED)
-	model.face_instantly(attacker.global_position - global_position)
+	model.set_overlay("")
+	model.face_instantly(attacker_pos - global_position)
 	model.play(CharacterModel.ANIM_STAGGER, 0.1, 0.5, true)
 
 
-## Someone rested at a shrine: come back to life at the starting spot.
+## Someone rested at a shrine: come back to life at the starting spot (host only).
 func reset_from_rest() -> void:
+	if not _is_host():
+		return
 	global_position = _spawn.origin
 	velocity = Vector3.ZERO
 	model.face_instantly(-_spawn.basis.z)
@@ -116,18 +172,60 @@ func reset_from_rest() -> void:
 	_reset()
 
 
+## A player's weapon reached us. On the host this is applied for real; on a
+## friend's machine we show the hit straight away and ask the host to apply it.
 func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	if state == State.DEAD:
 		return HitInfo.Result.IGNORED
+	if _is_host():
+		_show_hit(hit.damage, hit.is_crit, hit.origin)
+		_net_hit_fx.rpc(hit.damage, hit.is_crit, hit.origin, multiplayer.get_unique_id())
+		return _apply_hit(hit)
+	_show_hit(hit.damage, hit.is_crit, hit.origin)
+	_hitstop = maxf(_hitstop, hit.hit_stop)
+	_net_hit.rpc_id(1, hit.damage, hit.poise_damage, hit.is_crit, hit.is_riposte, hit.origin, hit.hit_stop)
+	return HitInfo.Result.KILLED if health - hit.damage <= 0.0 else HitInfo.Result.HIT
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_hit(damage: float, poise_damage: float, is_crit: bool, is_riposte: bool, origin: Vector3, hit_stop: float) -> void:
+	if not _is_host() or state == State.DEAD:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var hit := HitInfo.new()
+	hit.damage = damage
+	hit.poise_damage = poise_damage
+	hit.is_crit = is_crit
+	hit.is_riposte = is_riposte
+	hit.origin = origin
+	hit.hit_stop = hit_stop
+	hit.attacker = _player_of_peer(sender)
+	# Show it on the host's screen and everyone else's (the attacker already saw it).
+	_show_hit(damage, is_crit, origin)
+	_net_hit_fx.rpc(damage, is_crit, origin, sender)
+	_apply_hit(hit)
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_hit_fx(damage: float, is_crit: bool, origin: Vector3, skip_peer: int) -> void:
+	if multiplayer.get_unique_id() != skip_peer:
+		_show_hit(damage, is_crit, origin)
+
+
+func _show_hit(damage: float, is_crit: bool, origin: Vector3) -> void:
 	var chest := global_position + Vector3.UP * 1.3 * data.scale
-	var damage := hit.damage
-	health = maxf(0.0, health - damage)
-	_bar_timer = HEALTH_BAR_SHOW_TIME
-	var away := global_position - hit.origin
+	var away := global_position - origin
 	away.y = 0.0
-	CombatFx.blood(chest, away.normalized(), 1.6 if hit.is_crit else 1.0)
+	CombatFx.blood(chest, away.normalized(), 1.6 if is_crit else 1.0)
 	CombatFx.damage_number(chest + Vector3.UP * 0.6, damage,
-			CombatFx.NumberKind.CRIT if hit.is_crit else CombatFx.NumberKind.NORMAL)
+			CombatFx.NumberKind.CRIT if is_crit else CombatFx.NumberKind.NORMAL)
+	_bar_timer = HEALTH_BAR_SHOW_TIME
+
+
+## Host only: take the damage, poise and state changes.
+func _apply_hit(hit: HitInfo) -> HitInfo.Result:
+	health = maxf(0.0, health - hit.damage)
+	_bar_timer = HEALTH_BAR_SHOW_TIME
 	_hitstop = maxf(_hitstop, hit.hit_stop)
 	if target == null and hit.attacker is Player:
 		target = hit.attacker
@@ -139,7 +237,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	_poise -= hit.poise_damage
 	_poise_timer = data.poise_regen_delay
 	if _poise <= 0.0:
-		_poise = data.poise
+		_poise = max_poise
 		_set_state(State.STAGGER)
 		model.set_overlay("")
 		model.play_fitted(CharacterModel.ANIM_STAGGER, data.stagger_time, 0.05)
@@ -150,20 +248,67 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	return HitInfo.Result.HIT
 
 
+## Build the hit for one of our attacks (used by players' machines too).
+func make_hit(attack_index: int) -> HitInfo:
+	var a: AttackData = data.attacks[clampi(attack_index, 0, data.attacks.size() - 1)]
+	var hit := HitInfo.new()
+	hit.attacker = self
+	hit.attack = a
+	hit.origin = global_position
+	hit.damage = a.base_damage
+	hit.poise_damage = a.base_poise_damage
+	hit.parryable = a.parryable
+	hit.unblockable = a.unblockable
+	hit.hit_stop = a.hit_stop
+	return hit
+
+
+## Could this attack reach that player from where we are? (`margin` forgives lag.)
+func reaches(p: Node3D, attack_index: int, margin: float) -> bool:
+	var a: AttackData = data.attacks[clampi(attack_index, 0, data.attacks.size() - 1)]
+	var to := p.global_position - global_position
+	to.y = 0.0
+	return to.length() <= a.reach + hit_radius() + margin
+
+
+## A player's game tells the host what happened when we swung at them.
+@rpc("any_peer", "call_remote", "reliable")
+func report_hit_result(result: int) -> void:
+	if not _is_host():
+		return
+	_on_hit_result(result as HitInfo.Result)
+
+
+func _on_hit_result(result: HitInfo.Result) -> void:
+	match result:
+		HitInfo.Result.PARRIED:
+			if state == State.ATTACK:
+				_set_state(State.PARRIED)
+				model.set_overlay("")
+				model.play_fitted(CharacterModel.ANIM_GUARD_BREAK, data.riposte_window, 0.05)
+		HitInfo.Result.HIT, HitInfo.Result.BLOCKED, HitInfo.Result.KILLED:
+			if state == State.ATTACK:
+				_hitstop = maxf(_hitstop, _attack.attack.hit_stop)
+
+
 # --- Main loop ----------------------------------------------------------------
 
 func _physics_process(delta: float) -> void:
+	if not _is_host():
+		_mirror(delta)
+		return
+	_bar_timer -= delta
 	if _hitstop > 0.0:
 		_hitstop -= delta
 		model.hold(true)
+		_write_net_state()
 		return
 	model.hold(false)
 	_state_time += delta
 	_cooldown -= delta
-	_bar_timer -= delta
 	_poise_timer -= delta
 	if _poise_timer <= 0.0:
-		_poise = data.poise
+		_poise = max_poise
 
 	match state:
 		State.IDLE:
@@ -182,6 +327,32 @@ func _physics_process(delta: float) -> void:
 			_state_return(delta)
 		State.DEAD:
 			_move(Vector3.ZERO, delta)
+	_write_net_state()
+
+
+func _write_net_state() -> void:
+	net_pos = global_position
+	net_yaw = model.rotation.y
+	net_anim = model.current_anim()
+	net_anim_speed = model.get_speed()
+	net_anim_count = model.play_count
+	net_state = state
+	net_overlay = model.overlay_kind()
+
+
+## On a friend's machine: copy what the host says.
+func _mirror(delta: float) -> void:
+	_bar_timer -= delta
+	if global_position.distance_to(net_pos) > 4.0:
+		global_position = net_pos
+	else:
+		global_position = global_position.lerp(net_pos, 1.0 - exp(-18.0 * delta))
+	model.rotation.y = lerp_angle(model.rotation.y, net_yaw, 1.0 - exp(-18.0 * delta))
+	model.mirror(net_anim, net_anim_speed, net_anim_count)
+	state = net_state as State
+	collision_layer = 0 if state == State.DEAD else 4
+	if net_overlay != model.overlay_kind():
+		model.set_overlay(net_overlay, Color(1.0, 0.1, 0.05, 0.35))
 
 
 func _set_state(s: State) -> void:
@@ -199,10 +370,12 @@ func _state_idle(delta: float) -> void:
 
 
 func _state_chase(delta: float) -> void:
-	if target == null or target.is_dead():
-		target = null
-		_set_state(State.RETURN)
-		return
+	if target == null or not is_instance_valid(target) or target.is_out_of_fight():
+		# Switch to another player if one is close, otherwise go home.
+		target = _find_player()
+		if target == null:
+			_set_state(State.RETURN)
+			return
 	if global_position.distance_to(_spawn.origin) > data.leash_range:
 		target = null
 		_set_state(State.RETURN)
@@ -244,9 +417,14 @@ func _start_attack(dist: float) -> void:
 		if roll <= 0.0:
 			pick = a
 			break
+	start_attack(data.attacks.find(pick))
+
+
+## Begin attack number `index` (also used by tests).
+func start_attack(index: int) -> void:
 	_telegraphed = false
 	_set_state(State.ATTACK)
-	_attack.start(pick, model)
+	_attack.start(data.attacks[index], model)
 
 
 func _state_attack(delta: float) -> void:
@@ -262,14 +440,20 @@ func _state_attack(delta: float) -> void:
 		if a.unblockable:
 			model.set_overlay("danger", Color(1.0, 0.1, 0.05, 0.35))
 		elif a.parryable:
-			CombatFx.glint(Vector3.ZERO, Color(1.0, 0.97, 0.85), _weapon_tip())
+			_glint()
+			_net_glint.rpc()
 	if model.overlay_kind() == "danger" and _attack.past(a.hit_end):
 		model.set_overlay("")
 	var lunge := _attack.lunge_speed()
 	_move(model.forward() * lunge, delta, true)
 	if _attack.in_hit_window():
-		for p in _attack.find_new_targets(self, model.forward(), &"player"):
-			_hit_player(p as Player)
+		var index := data.attacks.find(a)
+		for n in _attack.find_new_targets(self, model.forward(), &"player"):
+			var p := n as Player
+			if p.is_multiplayer_authority():
+				_on_hit_result(p.receive_hit(make_hit(index)))
+			else:
+				p._net_enemy_hit.rpc_id(p.get_multiplayer_authority(), get_path(), index, global_position)
 			if state != State.ATTACK:
 				return
 	if _attack.done():
@@ -277,25 +461,13 @@ func _state_attack(delta: float) -> void:
 		_set_state(State.CHASE)
 
 
-func _hit_player(p: Player) -> void:
-	var a := _attack.attack
-	var hit := HitInfo.new()
-	hit.attacker = self
-	hit.attack = a
-	hit.origin = global_position
-	hit.damage = a.base_damage
-	hit.poise_damage = a.base_poise_damage
-	hit.parryable = a.parryable
-	hit.unblockable = a.unblockable
-	hit.hit_stop = a.hit_stop
-	var result := p.receive_hit(hit)
-	match result:
-		HitInfo.Result.PARRIED:
-			_set_state(State.PARRIED)
-			model.set_overlay("")
-			model.play_fitted(CharacterModel.ANIM_GUARD_BREAK, data.riposte_window, 0.05)
-		HitInfo.Result.HIT, HitInfo.Result.BLOCKED, HitInfo.Result.KILLED:
-			_hitstop = maxf(_hitstop, a.hit_stop)
+@rpc("authority", "call_remote", "unreliable")
+func _net_glint() -> void:
+	_glint()
+
+
+func _glint() -> void:
+	CombatFx.glint(Vector3.ZERO, Color(1.0, 0.97, 0.85), _weapon_tip())
 
 
 func _state_wait(delta: float, duration: float) -> void:
@@ -316,7 +488,7 @@ func _state_return(delta: float) -> void:
 	_move(to.normalized() * data.walk_speed * 1.6, delta)
 	model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
 	# Heal up on the way home; jump back in if a player comes close again.
-	health = minf(data.max_health, health + data.max_health * 0.2 * delta)
+	health = minf(max_health, health + max_health * 0.2 * delta)
 	var p := _find_player()
 	if p and global_position.distance_to(_spawn.origin) < data.leash_range * 0.6:
 		target = p
@@ -351,13 +523,21 @@ func _find_player() -> Player:
 	var best_d := data.aggro_range
 	for n in get_tree().get_nodes_in_group(&"player"):
 		var p := n as Player
-		if p == null or p.is_dead():
+		if p == null or p.is_out_of_fight():
 			continue
 		var d := p.global_position.distance_to(global_position)
 		if d < best_d and _can_see(p):
 			best_d = d
 			best = p
 	return best
+
+
+func _player_of_peer(peer: int) -> Player:
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p and p.get_multiplayer_authority() == peer:
+			return p
+	return null
 
 
 func _can_see(p: Node3D) -> bool:

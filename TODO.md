@@ -33,7 +33,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Run around, roll, jump, sprint until out of stamina, lock onto dummies, jump off the ledges
 - [ ] 🧪 Try a gamepad if you have one (not tested yet; I have no controller here)
 
-## Phase 3: Combat core ✅ (waiting for your test)
+## Phase 3: Combat core ✅
 - [x] Data files: `data/weapons/weapon_rusty_sword.tres`, `data/shields/shield_round_wood.tres`, `data/enemies/enemy_marauder.tres` (every attack's timing, damage and reach is editable)
 - [x] Sword moveset: 3-hit light combo, chargeable heavy, running attack, rolling attack
 - [x] Hit detection (reach + swing arc), damage, crits, hit-stop, camera shake
@@ -50,17 +50,21 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] Later: limit enemies to 2 attackers per player (matters once there are packs, Phase 8)
 - [ ] Later: hit-stop is per character already; check it feels right with lag in Phase 4
 
-## Phase 4: Multiplayer
-- [ ] Main menu: Host / Join by IP / Quit
-- [ ] Host-and-play server (ENet, UDP port 31415)
-- [ ] Players spawn and sync (movement, animations, attacks)
-- [ ] Enemies run on the host and sync to everyone
-- [ ] Combat sync: hits on enemies (attacker reports, host applies); hits on players (the victim's game decides)
-- [ ] Downed state and revive (costs the reviver a flask)
-- [ ] Party frames and text chat
-- [ ] Enemy health and poise scale with player count
-- [ ] Export a Windows build for friends
+## Phase 4: Multiplayer ✅ (waiting for your test)
+- [x] Main menu: name, Host (or play alone) / Join by address / Quit; shows your LAN address; remembers name and last address
+- [x] Host-and-play server (ENet, UDP port 31415, up to 10 players)
+- [x] Players spawn at spawn points and sync (position, facing, animations, health, state); name tags over friends
+- [x] Enemies run on the host and sync to everyone (position, animation, health, red glow, white glint)
+- [x] Combat sync: your hits on enemies show instantly and the host applies them; enemy blows go to the victim's own game, which decides (rolled through, blocked, parried) and reports back
+- [x] Downed state (20 → 12 → 6 s bleed-out, crawl) and revive (hold Interact 3 s, costs the reviver a flask, back up at 30%); solo = instant death
+- [x] Party frames (name, health, DOWN timer) and text chat (Enter)
+- [x] Enemy health ×(1 + 0.6 per extra player), poise ×(1 + 0.25 per extra player)
+- [x] Resting: blocked while an enemy is fighting you nearby; brings back enemies that aren't mid-fight
+- [x] Esc menu: Resume / Leave game
+- [x] Automated 3-player check (`tests/run_net_check.ps1`): 3 copies connect, hit, block, go down, revive and chat. All correct
+- [ ] Export a Windows build for friends (needs Godot's export templates: a big download, asking first)
 - [ ] 🧪 3 game windows on one PC, then a real test with friends over the internet
+- [ ] Later: show ping in the debug info; a "kick player" option for the host
 
 ## Phase 5: Classes
 - [ ] Character creator with presets (class, look, name)

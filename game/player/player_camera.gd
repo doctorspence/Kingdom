@@ -37,10 +37,12 @@ func _ready() -> void:
 	top_level = true
 	# The camera moves every rendered frame, not on the physics clock.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+
+
+## Make this the camera you see through (your own character only).
+func activate() -> void:
+	camera.current = true
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	if follow:
-		global_position = follow.global_position + Vector3.UP * pivot_height
-		yaw = follow.global_rotation.y
 
 
 func _unhandled_input(event: InputEvent) -> void:

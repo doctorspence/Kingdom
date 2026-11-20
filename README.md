@@ -9,7 +9,17 @@ A dark fantasy co-op action RPG for PC, built with **Godot 4.7.2**.
 ## Play
 Press **F5** (or the ▶ button at the top right of the editor). Close the game window, or press **F8** in the editor, to stop.
 
-The game starts in the **combat test map**. In the game, press **F1** to see the controls.
+The game starts at the **main menu**. Type a name, then **Host game** (also how you play alone). It loads the combat test map. In the game, press **F1** to see the controls, **Esc** for the menu.
+
+## Play with friends
+- **Same house (same Wi-Fi/router):** you click **Host game**. The menu shows your address (like `192.168.1.20`). Friends type it under *Host's address* and click **Join game**.
+- **Over the internet:** either
+  - **easiest:** everyone installs the same free virtual-LAN app (Tailscale, ZeroTier or Radmin VPN) and joins the same network; friends use the host's address from that app; or
+  - the host forwards **UDP port 31415** on their router to their PC, and friends use the host's public IP.
+- Friends need their own copy of the game (an exported build; see TODO.md).
+
+## Test 3 players on one PC
+In the editor: **Debug → Customize Run Instances...** → tick **Enable Multiple Instances**, set it to **3**. Give instance 1 the arguments `-- --host` and instances 2 and 3 `-- --join=127.0.0.1` (optionally add `--name=Bob`). Press F5: three windows open and connect by themselves. (Or start them by hand from the menus, using address `127.0.0.1`.)
 - Other test maps: in the editor's **FileSystem** panel (bottom left), open one and press **F6** ("run this scene"):
   - `levels/sandbox/movement_test.tscn`: slopes, stairs, fall heights
   - `levels/sandbox/look_test.tscn`: the Phase 1 mood map
@@ -20,6 +30,11 @@ I run these before handing you a build. You can too (PowerShell, in this folder)
 & "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/run.gd -- combat_check
 ```
 (Swap `combat_check` for `movement_check` to run the other one.) It ends with PASS or FAIL.
+
+The 3-player network check starts three copies of the game and prints what each one saw:
+```
+powershell -ExecutionPolicy Bypass -File tests\run_net_check.ps1
+```
 
 ## Change the numbers
 Weapons, shields and enemies are in `data/weapons/`, `data/shields/` and `data/enemies/` (open an attack inside them to change its damage, speed or reach). All the movement and stamina numbers are in `data/balance/player_tuning.tres`. Double-click it in the FileSystem panel; the numbers show up in the **Inspector** on the right, each with a short description. Change one, press F5, feel the difference. (git remembers the old values.)

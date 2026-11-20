@@ -14,7 +14,12 @@ extends CharacterBody3D
 ##   DRINK       drinking a flask
 ##   STAGGER     knocked off balance by a hit
 ##   GUARD_BREAK shield knocked aside after running out of stamina
+##   DOWNED      at 0 health in co-op: crawling, bleeding out, waiting for a revive
 ##   DEAD        waiting to respawn
+##
+## Multiplayer: each player's own game runs their character ("authority") and
+## shares its position, animation and health. Everyone else's copy of that
+## character is a "proxy" that just mirrors what it's told.
 
 signal health_changed(current: float, maximum: float)
 signal stamina_changed(current: float, maximum: float)
@@ -22,7 +27,7 @@ signal flasks_changed(current: int, maximum: int)
 signal died
 signal respawned
 
-enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, STAGGER, GUARD_BREAK, DEAD }
+enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, STAGGER, GUARD_BREAK, DOWNED, DEAD }
 
 const RESPAWN_DELAY := 3.0
 ## Below this height you've fallen out of the world.
@@ -78,15 +83,43 @@ var _block_released := -99.0
 var _clock := 0.0
 var _drink_healed := false
 var _stun_time := 0.0
+# Co-op
+var _downs := 0
+var _bleed := 0.0
+var _revive_target: Player
+var _revive_progress := 0.0
+
+## Shared with everyone (see the Sync node in player.tscn).
+var net_pos := Vector3.ZERO
+var net_yaw := 0.0
+var net_anim := &""
+var net_anim_speed := 1.0
+var net_anim_count := 0
+var net_state := 0
+var net_health := 100.0
+var net_bleed := 0.0
+var spawn_yaw := 0.0
+var player_name := ""
+
+var _name_label: Label3D
 
 @onready var model: CharacterModel = $Visual
 @onready var camera_rig: PlayerCamera = $CameraRig
 @onready var targeting: Targeting = $Targeting
 
 
+func _enter_tree() -> void:
+	# Characters are named after their owner's network id ("1" = host).
+	if name.is_valid_int():
+		set_multiplayer_authority(name.to_int())
+
+
 func _ready() -> void:
 	add_to_group(&"player")
 	# The body itself never rotates; only the visible model turns.
+	if net_pos != Vector3.ZERO:
+		global_position = net_pos
+		global_rotation.y = spawn_yaw
 	_spawn = global_transform
 	global_basis = Basis.IDENTITY
 	health = tuning.max_health
@@ -100,7 +133,64 @@ func _ready() -> void:
 		model.attach_to_hand(weapon.visual_scene.instantiate(), "r")
 	if shield and shield.visual_scene:
 		model.attach_to_hand(shield.visual_scene.instantiate(), "l")
+	player_name = Net.name_of(get_multiplayer_authority())
+	Net.names_changed.connect(func() -> void: player_name = Net.name_of(get_multiplayer_authority()))
+	_spawn_pos = net_pos
+	if is_multiplayer_authority():
+		add_to_group(&"local_player")
+		camera_rig.activate()
+		_face_spawn_direction()
+		if not multiplayer.is_server():
+			# Joined a friend's game: wait for the host to say where we start.
+			_placed = false
+			visible = false
+			_request_placement.rpc_id(1)
+		else:
+			_write_net_state()
+	else:
+		_become_proxy()
+
+
+var _placed := true
+var _spawn_pos := Vector3.ZERO
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _request_placement() -> void:
+	if multiplayer.is_server() and multiplayer.get_remote_sender_id() == get_multiplayer_authority():
+		_net_place.rpc_id(get_multiplayer_authority(), _spawn_pos, spawn_yaw)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_place(where: Vector3, yaw: float) -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	global_position = where
+	_spawn = Transform3D(Basis(Vector3.UP, yaw), where)
 	_face_spawn_direction()
+	_placed = true
+	visible = true
+	_write_net_state()
+
+
+## Someone else's character on this machine: no camera, no input, just mirroring.
+func _become_proxy() -> void:
+	camera_rig.camera.current = false
+	camera_rig.set_process(false)
+	camera_rig.set_process_unhandled_input(false)
+	targeting.set_physics_process(false)
+	targeting.set_process_unhandled_input(false)
+	set_process_unhandled_input(false)
+	collision_mask = 0
+	_name_label = Label3D.new()
+	_name_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_name_label.pixel_size = 0.004
+	_name_label.font_size = 48
+	_name_label.outline_size = 10
+	_name_label.position = Vector3(0, 2.25, 0)
+	_name_label.modulate = Color(0.85, 0.9, 1.0)
+	add_child(_name_label)
+	global_position = net_pos
 
 
 # --- Public -------------------------------------------------------------------
@@ -111,6 +201,28 @@ func is_invulnerable() -> bool:
 
 func is_dead() -> bool:
 	return state == State.DEAD
+
+
+## Down (co-op) or dead: enemies leave you alone.
+func is_out_of_fight() -> bool:
+	return state == State.DEAD or state == State.DOWNED
+
+
+func is_downed() -> bool:
+	return state == State.DOWNED
+
+
+func bleed_time_left() -> float:
+	return _bleed if is_multiplayer_authority() else net_bleed
+
+
+## Revive progress 0..1 (for the HUD), and who you're reviving.
+func revive_progress() -> float:
+	return _revive_progress / tuning.revive_time if _revive_target else 0.0
+
+
+func revive_target() -> Player:
+	return _revive_target
 
 
 func load_tier() -> PlayerTuning.LoadTier:
@@ -133,7 +245,7 @@ func is_parrying() -> bool:
 ## An enemy blow arrives. The player's own game decides what happened
 ## ("favor the dodger").
 func receive_hit(hit: HitInfo) -> HitInfo.Result:
-	if state == State.DEAD:
+	if state == State.DEAD or state == State.DOWNED:
 		return HitInfo.Result.IGNORED
 	var chest := global_position + Vector3.UP * 1.3
 	if is_invulnerable():
@@ -144,6 +256,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	if is_blocking and in_front and not hit.unblockable:
 		if hit.parryable and is_parrying():
 			CombatFx.sparks(chest + model.forward() * 0.4, to_attacker, true)
+			_share_fx(2, chest + model.forward() * 0.4, to_attacker)
 			CombatFx.word(chest + Vector3.UP * 0.5, "Parry!")
 			freeze(0.12)
 			camera_rig.add_shake(0.25)
@@ -152,6 +265,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 		var stamina_cost := hit.damage * (shield.stamina_per_damage if shield else 1.0)
 		_spend_stamina(stamina_cost)
 		CombatFx.sparks(chest + model.forward() * 0.4, to_attacker)
+		_share_fx(1, chest + model.forward() * 0.4, to_attacker)
 		freeze(hit.hit_stop)
 		camera_rig.add_shake(0.2)
 		var chip := hit.damage * (1.0 - reduction)
@@ -167,6 +281,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 
 	# Clean hit.
 	CombatFx.blood(chest, -to_attacker.normalized())
+	_share_fx(0, chest, -to_attacker.normalized())
 	camera_rig.add_shake(0.45 if hit.damage >= 30.0 else 0.3)
 	freeze(hit.hit_stop)
 	_apply_damage(hit.damage)
@@ -197,6 +312,7 @@ func freeze(duration: float) -> void:
 ## Rest at a shrine: full health and flasks, and it becomes your respawn point.
 func rest_at(spawn_point: Transform3D) -> void:
 	_spawn = spawn_point
+	_downs = 0
 	health = tuning.max_health
 	stamina = tuning.max_stamina
 	flasks = tuning.flask_count
@@ -252,6 +368,8 @@ func _face_spawn_direction() -> void:
 # --- Input --------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Net.typing:
+		return
 	if event.is_action_pressed("jump"):
 		_buffer(&"jump")
 	elif event.is_action_pressed("light_attack"):
@@ -303,6 +421,8 @@ func _read_dodge_button(delta: float) -> void:
 
 
 func _move_input() -> Vector2:
+	if Net.typing:
+		return Vector2.ZERO
 	return Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 
 
@@ -319,6 +439,42 @@ func _wants_sprint() -> bool:
 # --- Main loop ----------------------------------------------------------------
 
 func _physics_process(delta: float) -> void:
+	if not is_multiplayer_authority():
+		_proxy_update(delta)
+		return
+	if not _placed:
+		return
+	_authority_update(delta)
+	_write_net_state()
+
+
+## Share what this character is doing with everyone else.
+func _write_net_state() -> void:
+	net_pos = global_position
+	net_yaw = model.rotation.y
+	net_anim = model.current_anim()
+	net_anim_speed = model.get_speed()
+	net_anim_count = model.play_count
+	net_state = state
+	net_health = health
+	net_bleed = _bleed
+
+
+## Copy what the owner's machine says this character is doing.
+func _proxy_update(delta: float) -> void:
+	if global_position.distance_to(net_pos) > 4.0:
+		global_position = net_pos
+	else:
+		global_position = global_position.lerp(net_pos, 1.0 - exp(-18.0 * delta))
+	model.rotation.y = lerp_angle(model.rotation.y, net_yaw, 1.0 - exp(-18.0 * delta))
+	model.mirror(net_anim, net_anim_speed, net_anim_count)
+	state = net_state as State
+	health = net_health
+	if _name_label:
+		_name_label.text = player_name + ("  (DOWN)" if state == State.DOWNED else "")
+
+
+func _authority_update(delta: float) -> void:
 	_clock += delta
 	_buffer_timer = maxf(0.0, _buffer_timer - delta)
 	_read_dodge_button(delta)
@@ -352,13 +508,16 @@ func _physics_process(delta: float) -> void:
 			_state_drink(delta)
 		State.STAGGER, State.GUARD_BREAK:
 			_state_stunned(delta, _stun_time)
+		State.DOWNED:
+			_state_downed(delta)
 		State.DEAD:
 			_state_dead(delta)
 
 	if state != State.MOVE and is_blocking:
 		_stop_blocking()
 	if global_position.y < KILL_HEIGHT and state != State.DEAD:
-		take_damage(health, true)
+		health = 0.0
+		_die()
 	_update_stamina(delta)
 	if show_debug and is_invulnerable():
 		model.set_overlay("iframes", Color(0.4, 0.8, 1.0, 0.35))
@@ -401,10 +560,13 @@ func _state_move(delta: float) -> void:
 		_charging = true
 		_charge = 0.0
 		return
+	if _update_revive(delta):
+		move_and_slide()
+		return
 	if _consume(&"flask"):
 		_start_drink()
 		return
-	if _consume(&"interact"):
+	if _consume(&"interact") and _nearest_downed_friend() == null:
 		var thing := nearest_interactable()
 		if thing:
 			thing.call(&"interact", self)
@@ -681,7 +843,10 @@ func _apply_damage(amount: float) -> void:
 	health = maxf(0.0, health - amount)
 	health_changed.emit(health, tuning.max_health)
 	if health <= 0.0:
-		_die()
+		if _someone_else_standing():
+			_go_down()
+		else:
+			_die()
 
 
 func _stagger(duration: float) -> void:
@@ -820,6 +985,144 @@ func _land() -> void:
 		_set_state(State.MOVE)
 		if last_fall_height > 0.8:
 			model.play_land(false)
+
+
+# --- Downed and revive (co-op) ------------------------------------------------
+
+func _someone_else_standing() -> bool:
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p and p != self and not p.is_out_of_fight():
+			return true
+	return false
+
+
+func _go_down() -> void:
+	var times := tuning.downed_bleed_times
+	_bleed = times[mini(_downs, times.size() - 1)]
+	_downs += 1
+	is_sprinting = false
+	is_blocking = false
+	targeting.clear()
+	_set_state(State.DOWNED)
+	model.play(&"Crouch_Idle", 0.2)
+	CombatFx.word(global_position + Vector3.UP * 1.8, "Down!")
+
+
+func _state_downed(delta: float) -> void:
+	_bleed -= delta
+	if _bleed <= 0.0 or not _someone_else_standing():
+		_die()
+		return
+	var dir := _input_direction()
+	var h := Vector3(velocity.x, 0.0, velocity.z).move_toward(
+			dir.normalized() * tuning.downed_crawl_speed if dir.length() > 0.1 else Vector3.ZERO, 8.0 * delta)
+	velocity.x = h.x
+	velocity.z = h.z
+	if not is_on_floor():
+		velocity.y -= tuning.gravity * delta
+	move_and_slide()
+	if h.length() > 0.1:
+		model.turn_toward(h, deg_to_rad(180.0) * delta)
+		model.play(&"Crouch_Fwd", 0.2, 0.5)
+	else:
+		model.play(&"Crouch_Idle", 0.2)
+
+
+## Holding Interact next to a downed friend revives them (costs one flask).
+## Returns true while reviving (you stand still).
+func _update_revive(delta: float) -> bool:
+	var target := _nearest_downed_friend() if Input.is_action_pressed("interact") and flasks > 0 else null
+	if target == null or target != _revive_target:
+		_revive_target = target
+		_revive_progress = 0.0
+		if target == null:
+			return false
+	_revive_progress += delta
+	velocity.x = 0.0
+	velocity.z = 0.0
+	model.turn_toward(target.global_position - global_position, deg_to_rad(360.0) * delta)
+	model.play(&"Interact", 0.15)
+	if _revive_progress >= tuning.revive_time:
+		flasks -= 1
+		flasks_changed.emit(flasks, tuning.flask_count)
+		target.revive_by(self)
+		_revive_target = null
+		_revive_progress = 0.0
+	return true
+
+
+func _nearest_downed_friend() -> Player:
+	var best: Player
+	var best_d := tuning.revive_range
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p == null or p == self or not p.is_downed():
+			continue
+		var d := p.global_position.distance_to(global_position)
+		if d < best_d:
+			best_d = d
+			best = p
+	return best
+
+
+## Get this (downed) player back on their feet. Works across the network.
+func revive_by(reviver: Player) -> void:
+	if is_multiplayer_authority():
+		_on_revived(reviver.player_name)
+	else:
+		_net_revive.rpc_id(get_multiplayer_authority(), reviver.player_name)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_revive(reviver_name: String) -> void:
+	_on_revived(reviver_name)
+
+
+func _on_revived(reviver_name: String) -> void:
+	if state != State.DOWNED:
+		return
+	health = tuning.max_health * tuning.revive_health
+	health_changed.emit(health, tuning.max_health)
+	_set_state(State.MOVE)
+	CombatFx.word(global_position + Vector3.UP * 2.0, "Revived by %s" % reviver_name)
+
+
+# --- Network messages -----------------------------------------------------------
+
+## The host says an enemy's blow reached this player. This player's own game
+## decides what really happened (rolled through it? blocked? parried?).
+@rpc("any_peer", "call_remote", "reliable")
+func _net_enemy_hit(enemy_path: NodePath, attack_index: int, origin: Vector3) -> void:
+	if multiplayer.get_remote_sender_id() != 1 or not is_multiplayer_authority():
+		return
+	var enemy := get_node_or_null(enemy_path) as Enemy
+	if enemy == null:
+		return
+	var hit := enemy.make_hit(attack_index)
+	hit.origin = origin
+	# Favor the dodger: if on our screen we're already out of reach, it missed.
+	var result := HitInfo.Result.DODGED
+	if enemy.reaches(self, attack_index, 0.8):
+		result = receive_hit(hit)
+	enemy.report_hit_result.rpc_id(1, result)
+
+
+## Let everyone else see this player's blood / sparks.
+func _share_fx(kind: int, where: Vector3, dir: Vector3) -> void:
+	if Net.is_online():
+		_net_fx.rpc(kind, where, dir)
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_fx(kind: int, where: Vector3, dir: Vector3) -> void:
+	match kind:
+		0:
+			CombatFx.blood(where, dir)
+		1:
+			CombatFx.sparks(where, dir)
+		2:
+			CombatFx.sparks(where, dir, true)
 
 
 # --- Death --------------------------------------------------------------------

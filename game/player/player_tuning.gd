@@ -102,6 +102,16 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var drink_heal_at := 0.75
 @export var drink_move_speed := 1.5
 
+@export_group("Downed and revive (co-op)")
+## Bleed-out time for your 1st, 2nd, 3rd+ time going down (resets when you rest).
+@export var downed_bleed_times := PackedFloat32Array([20.0, 12.0, 6.0])
+@export var downed_crawl_speed := 0.6
+## How long a friend holds Interact to revive you (seconds). Costs them one flask.
+@export var revive_time := 3.0
+## Share of max health you get back when revived.
+@export_range(0.05, 1.0) var revive_health := 0.3
+@export var revive_range := 2.0
+
 @export_group("Input feel")
 ## A button pressed slightly early (during a roll) still counts (seconds).
 @export var input_buffer_time := 0.2
