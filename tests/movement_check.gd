@@ -1,24 +1,24 @@
-extends SceneTree
+extends Node
 ## Automated movement check. Loads the movement test map, presses buttons for
 ## the character, and measures speeds, roll distances, jump height, fall damage
 ## and lock-on against the numbers in DESIGN.md.
 ##
 ## Run (from the project folder):
-##   Godot_console.exe --headless --path . --script res://tests/movement_check.gd
+##   Godot_console.exe --headless --path . --script res://tests/run.gd -- movement_check
 
 var player: Player
 var failures := 0
 
 
-func _initialize() -> void:
+func _ready() -> void:
 	_run.call_deferred()
 
 
 func _run() -> void:
 	var scene: Node = load("res://levels/sandbox/movement_test.tscn").instantiate()
-	root.add_child(scene)
+	get_tree().root.add_child(scene)
 	await _frames(20)
-	player = get_first_node_in_group(&"player") as Player
+	player = get_tree().get_first_node_in_group(&"player") as Player
 	var t := player.tuning
 	# Open ground, away from dummies and walls.
 	player.global_position = Vector3(30, 0.05, 30)
@@ -48,7 +48,7 @@ func _run() -> void:
 	Input.action_press("move_back")
 	var reverse_time := 0.0
 	while reverse_time < 2.0:
-		await physics_frame
+		await get_tree().physics_frame
 		reverse_time += 1.0 / Engine.physics_ticks_per_second
 		if player.velocity.z > t.run_speed * 0.9:
 			break
@@ -86,7 +86,7 @@ func _run() -> void:
 	var peak := ground_y
 	await _tap("jump")
 	for i in 60:
-		await physics_frame
+		await get_tree().physics_frame
 		peak = maxf(peak, player.global_position.y)
 	_check("jump height", peak - ground_y, t.jump_height, 0.12)
 	await _seconds(1.0)
@@ -116,7 +116,7 @@ func _run() -> void:
 	_check_true("lock-on toggles off", not player.targeting.has_target())
 
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
-	quit(1 if failures > 0 else 0)
+	get_tree().quit(1 if failures > 0 else 0)
 
 
 func _speed() -> float:
@@ -132,7 +132,7 @@ func _tap(action: StringName) -> void:
 	e.action = action
 	e.pressed = true
 	Input.parse_input_event(e)
-	await physics_frame
+	await get_tree().physics_frame
 	var r := InputEventAction.new()
 	r.action = action
 	r.pressed = false
@@ -141,7 +141,7 @@ func _tap(action: StringName) -> void:
 
 func _frames(n: int) -> void:
 	for i in n:
-		await physics_frame
+		await get_tree().physics_frame
 
 
 func _seconds(s: float) -> void:

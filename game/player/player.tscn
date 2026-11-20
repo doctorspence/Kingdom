@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
-[ext_resource type="Script" path="res://game/player/player_model.gd" id="2_model"]
+[ext_resource type="Script" path="res://game/characters/character_model.gd" id="2_model"]
 [ext_resource type="PackedScene" path="res://assets/characters/mannequin/UAL1_Standard.glb" id="3_mannequin"]
 [ext_resource type="Script" path="res://game/player/targeting.gd" id="4_targeting"]
 [ext_resource type="Script" path="res://game/player/player_camera.gd" id="5_camera"]
@@ -25,6 +25,8 @@ shape = SubResource("Shape_body")
 
 [node name="Visual" type="Node3D" parent="."]
 script = ExtResource("2_model")
+body_tint = Color(0.42, 0.4, 0.37, 1)
+idle_anim = &"Sword_Idle"
 
 [node name="Model" parent="Visual" instance=ExtResource("3_mannequin")]
 

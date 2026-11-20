@@ -16,7 +16,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Git repository and first commit
 - [x] 🧪 Open the project, press F5, and check the mood of the test map
 
-## Phase 2: Player controller ✅ (waiting for your test)
+## Phase 2: Player controller ✅
 - [x] Stand-in player model on the standard humanoid skeleton (Quaternius mannequin, CC0), with idle/walk/run/sprint/jump/roll/death animations, instead of a capsule
 - [x] Input map (mouse & keyboard + gamepad), defined in `game/core/input_setup.gd`
 - [x] Graybox test level (`levels/sandbox/movement_test.tscn`): slopes, stairs, crates, doorway, low tunnel, a fall-test ramp with 4/6/10/16 m ledges
@@ -33,18 +33,22 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Run around, roll, jump, sprint until out of stamina, lock onto dummies, jump off the ledges
 - [ ] 🧪 Try a gamepad if you have one (not tested yet; I have no controller here)
 
-## Phase 3: Combat core
-- [ ] Data files for weapons and enemies in `data/`
-- [ ] Sword moveset: light combo, heavy (charge), running/rolling attacks
-- [ ] Hitboxes, damage, hit-stop, camera shake
-- [ ] Block, parry (timed block), riposte
-- [ ] Poise and stagger
-- [ ] Blood spurts and splatter decals
-- [ ] Floating damage numbers; enemy health bars (toggle)
-- [ ] Flasks (4), refilled at a test shrine
-- [ ] Enemy: Dark Ages Marauder with telegraphed attacks (idle → chase → attack → recover), death
-- [ ] Simple player death → respawn at the test shrine (the full death system is Phase 7)
+## Phase 3: Combat core ✅ (waiting for your test)
+- [x] Data files: `data/weapons/weapon_rusty_sword.tres`, `data/shields/shield_round_wood.tres`, `data/enemies/enemy_marauder.tres` (every attack's timing, damage and reach is editable)
+- [x] Sword moveset: 3-hit light combo, chargeable heavy, running attack, rolling attack
+- [x] Hit detection (reach + swing arc), damage, crits, hit-stop, camera shake
+- [x] Shield block (stamina drain, guard break), parry (timed block, no mashing), riposte (3× crit, invincible)
+- [x] Poise and stagger (players and enemies)
+- [x] Blood spurts and fading splatter decals (gore setting ready)
+- [x] Floating damage numbers (H/N toggles); enemy health bars when hurt or targeted
+- [x] Flasks (4, heal 40%, can be hit mid-drink), refilled at the test shrine
+- [x] Enemy: Dark Ages Marauder (stand-in mannequin, rust-red) with sweep (parryable), delayed overhead (parryable), crushing blow (unblockable, red glow); circles you between attacks; gives up and walks home past 30 m
+- [x] Resting at the shrine: heal, refill flasks, set respawn point, revive enemies
+- [x] Death → respawn at the last shrine
+- [x] Automated check `tests/combat_check.gd`: all 18 pass (combo, charge, block, parry→riposte, roll through, unblockable, guard break, stagger, flask, shrine)
 - [ ] 🧪 Fight the Marauder: dodge, block, parry, riposte, drink flasks, die and respawn
+- [ ] Later: limit enemies to 2 attackers per player (matters once there are packs, Phase 8)
+- [ ] Later: hit-stop is per character already; check it feels right with lag in Phase 4
 
 ## Phase 4: Multiplayer
 - [ ] Main menu: Host / Join by IP / Quit

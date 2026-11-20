@@ -74,6 +74,34 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var hard_landing_height := 3.0
 @export var hard_landing_time := 0.35
 
+@export_group("Combat")
+## Hits you can take before you stagger (refills after a pause).
+@export var poise := 30.0
+@export var poise_regen_delay := 3.0
+@export var stagger_time := 0.45
+## Stunned after your stamina runs out while blocking (seconds).
+@export var guard_break_time := 1.2
+@export var block_move_speed := 2.0
+## Stamina refills at this fraction of normal speed while blocking.
+@export_range(0.0, 1.0) var block_regen_mult := 0.5
+## You only get a parry window if you weren't blocking this recently (seconds).
+@export var parry_lockout := 0.5
+## Blocks work against blows from this wide in front of you (degrees).
+@export var block_arc := 120.0
+## A light attack this soon after a roll becomes a rolling attack (seconds).
+@export var rolling_attack_window := 0.35
+## How close you must be to a stunned enemy to riposte (meters).
+@export var riposte_range := 2.4
+
+@export_group("Flasks")
+@export var flask_count := 4
+## Share of max health one flask heals.
+@export_range(0.0, 1.0) var flask_heal := 0.4
+@export var drink_time := 1.2
+## The heal lands this many seconds into drinking.
+@export var drink_heal_at := 0.75
+@export var drink_move_speed := 1.5
+
 @export_group("Input feel")
 ## A button pressed slightly early (during a roll) still counts (seconds).
 @export var input_buffer_time := 0.2

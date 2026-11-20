@@ -1,0 +1,87 @@
+[gd_scene format=3]
+
+[ext_resource type="Environment" path="res://levels/common/overcast_env.tres" id="1_env"]
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://game/combat/training_dummy.tscn" id="3_dummy"]
+[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="4_hud"]
+[ext_resource type="Material" path="res://levels/common/graybox_floor.tres" id="5_floor"]
+[ext_resource type="Material" path="res://levels/common/graybox_wall.tres" id="6_wall"]
+[ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="7_shrine"]
+[ext_resource type="PackedScene" path="res://game/enemies/marauder.tscn" id="8_marauder"]
+
+[node name="CombatTest" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-50, 35, 0)
+light_color = Color(0.84, 0.86, 0.9, 1)
+light_energy = 0.9
+shadow_enabled = true
+shadow_blur = 2.0
+directional_shadow_max_distance = 120.0
+sky_mode = 1
+
+[node name="Ground" type="CSGBox3D" parent="."]
+position = Vector3(0, -0.5, 0)
+use_collision = true
+size = Vector3(160, 1, 160)
+material = ExtResource("5_floor")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.05, 14)
+
+[node name="Hud" parent="." instance=ExtResource("4_hud")]
+
+[node name="Shrine" parent="." instance=ExtResource("7_shrine")]
+position = Vector3(-3, 0, 17)
+shrine_name = "Test Shrine"
+
+[node name="Practice" type="Node3D" parent="."]
+
+[node name="Dummy1" parent="Practice" instance=ExtResource("3_dummy")]
+position = Vector3(-8, 0, 10)
+
+[node name="Dummy2" parent="Practice" instance=ExtResource("3_dummy")]
+position = Vector3(-11, 0, 8)
+
+[node name="SignPractice" type="Label3D" parent="Practice"]
+position = Vector3(-9.5, 2.6, 9)
+billboard = 1
+pixel_size = 0.005
+text = "Practice dummies"
+font_size = 48
+outline_size = 12
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Marauder" parent="Enemies" instance=ExtResource("8_marauder")]
+position = Vector3(0, 0, -6)
+rotation_degrees = Vector3(0, 180, 0)
+
+[node name="Marauder2" parent="Enemies" instance=ExtResource("8_marauder")]
+position = Vector3(14, 0, -24)
+rotation_degrees = Vector3(0, 200, 0)
+
+[node name="Arena" type="Node3D" parent="."]
+
+[node name="WallNorth" type="CSGBox3D" parent="Arena"]
+position = Vector3(-4, 1.5, -14)
+rotation_degrees = Vector3(0, 8, 0)
+use_collision = true
+size = Vector3(10, 3, 0.8)
+material = ExtResource("6_wall")
+
+[node name="PillarA" type="CSGBox3D" parent="Arena"]
+position = Vector3(-9, 2, -3)
+use_collision = true
+size = Vector3(1.2, 4, 1.2)
+material = ExtResource("6_wall")
+
+[node name="PillarB" type="CSGBox3D" parent="Arena"]
+position = Vector3(8, 1.2, 2)
+rotation_degrees = Vector3(0, 0, 12)
+use_collision = true
+size = Vector3(1.2, 2.4, 1.2)
+material = ExtResource("6_wall")

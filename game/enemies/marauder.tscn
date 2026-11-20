@@ -1,0 +1,28 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy.gd" id="1_enemy"]
+[ext_resource type="Resource" path="res://data/enemies/enemy_marauder.tres" id="2_data"]
+[ext_resource type="Script" path="res://game/characters/character_model.gd" id="3_model"]
+[ext_resource type="PackedScene" path="res://assets/characters/mannequin/UAL1_Standard.glb" id="4_mannequin"]
+
+[sub_resource type="CapsuleShape3D" id="Shape_body"]
+radius = 0.42
+height = 2.0
+
+[node name="Marauder" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 3
+floor_snap_length = 0.5
+script = ExtResource("1_enemy")
+data = ExtResource("2_data")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 1, 0)
+shape = SubResource("Shape_body")
+
+[node name="Visual" type="Node3D" parent="."]
+script = ExtResource("3_model")
+body_tint = Color(0.22, 0.08, 0.06, 1)
+idle_anim = &"Sword_Idle"
+
+[node name="Model" parent="Visual" instance=ExtResource("4_mannequin")]

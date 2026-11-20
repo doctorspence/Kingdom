@@ -12,17 +12,25 @@ Sprint: hold Shift / hold B
 Jump: Space / A
 Lock on: Q / click right stick
 Switch target: mouse wheel / flick right stick
+Light attack: left mouse / RB  (press again to combo)
+Heavy attack: middle mouse / RT  (hold to charge)
+Block: hold right mouse / LB  (raise it just as a hit lands = parry)
+Riposte: light attack on a reeling enemy after a parry
+Drink flask: R / X        Interact / rest: E / Y
 Free the mouse: Esc (click to grab it again)
 
 TEST KEYS
 F2: debug info (invincibility shows as a blue tint)
 F3: change equip load (light / medium / heavy / overloaded)
-F4: reset to start, full health"""
+F4: reset to start, full health
+H: enemy health bars on/off    N: damage numbers on/off"""
 
 var player: Player
 
 var _health_bar: ResourceBar
 var _stamina_bar: ResourceBar
+var _flask_label: Label
+var _prompt_label: Label
 var _marker: Control
 var _debug_label: Label
 var _help_label: Label
@@ -38,10 +46,12 @@ func _ready() -> void:
 	if player:
 		player.health_changed.connect(_health_bar.set_values)
 		player.stamina_changed.connect(_stamina_bar.set_values)
+		player.flasks_changed.connect(_on_flasks_changed)
 		player.died.connect(_on_died)
 		player.respawned.connect(_on_respawned)
 		_health_bar.set_values(player.health, player.tuning.max_health)
 		_stamina_bar.set_values(player.stamina, player.tuning.max_stamina)
+		_on_flasks_changed(player.flasks, player.tuning.flask_count)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -52,6 +62,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_debug_label.visible = not _debug_label.visible
 		if player:
 			player.show_debug = _debug_label.visible
+	elif event.is_action_pressed("toggle_health_bars"):
+		CombatFx.show_enemy_health_bars = not CombatFx.show_enemy_health_bars
+	elif event.is_action_pressed("toggle_damage_numbers"):
+		CombatFx.show_damage_numbers = not CombatFx.show_damage_numbers
 
 
 func _process(delta: float) -> void:
@@ -61,6 +75,16 @@ func _process(delta: float) -> void:
 		_death_label.modulate.a = _death_fade
 	if _debug_label.visible and player:
 		_debug_label.text = _debug_text()
+	if player:
+		var thing := player.nearest_interactable() if player.state == Player.State.MOVE else null
+		_prompt_label.visible = thing != null
+		if thing:
+			_prompt_label.text = "[E]  %s" % thing.call(&"get_interact_text")
+
+
+func _on_flasks_changed(current: int, maximum: int) -> void:
+	_flask_label.text = "Flasks  %d / %d" % [current, maximum]
+	_flask_label.modulate = Color(1, 1, 1) if current > 0 else Color(0.6, 0.4, 0.4)
 
 
 func _debug_text() -> String:
@@ -72,7 +96,7 @@ func _debug_text() -> String:
 		"Speed: %.1f m/s" % speed,
 		"Health: %d / %d    Stamina: %d / %d" % [p.health, p.tuning.max_health, p.stamina, p.tuning.max_stamina],
 		"Equip load: %d%% (%s)   [F3 to change]" % [roundi(p.equip_load * 100.0), tier_names[p.load_tier()]],
-		"Invincible: %s" % ("YES" if p.is_invulnerable() else "no"),
+		"Invincible: %s    Blocking: %s%s" % ["YES" if p.is_invulnerable() else "no", "yes" if p.is_blocking else "no", "  (PARRY WINDOW)" if p.is_parrying() else ""],
 		"Last fall: %.1f m" % p.last_fall_height,
 		"Lock target: %s" % (p.targeting.target.name if p.targeting.has_target() else "none"),
 		"FPS: %d" % Engine.get_frames_per_second(),
@@ -91,9 +115,29 @@ func _on_respawned() -> void:
 
 
 func _draw_marker() -> void:
-	if player == null or not player.targeting.has_target():
+	if player == null:
 		return
 	var cam := player.camera_rig.camera
+	# Enemy health bars (once hurt or targeted).
+	if CombatFx.show_enemy_health_bars:
+		for n in get_tree().get_nodes_in_group(&"enemies"):
+			var e := n as Node3D
+			if e == null:
+				continue
+			var targeted := player.targeting.target == e
+			if not (e.call(&"wants_health_bar") or (targeted and e.call(&"can_be_locked"))):
+				continue
+			var at: Vector3 = e.call(&"bar_point")
+			if cam.is_position_behind(at) or cam.global_position.distance_to(at) > 30.0:
+				continue
+			var p := cam.unproject_position(at)
+			var w := 90.0
+			var ratio: float = e.call(&"health_ratio")
+			var r := Rect2(p - Vector2(w * 0.5, 0), Vector2(w, 7))
+			_marker.draw_rect(r.grow(1.0), Color(0, 0, 0, 0.8))
+			_marker.draw_rect(Rect2(r.position, Vector2(w * ratio, 7)), Color(0.62, 0.08, 0.06))
+	if not player.targeting.has_target():
+		return
 	var point := player.targeting.target_point()
 	if cam.is_position_behind(point):
 		return
@@ -132,6 +176,15 @@ func _build() -> void:
 	_stamina_bar.chip_color = Color(0.75, 0.7, 0.35)
 	bars.add_child(_stamina_bar)
 
+	_flask_label = _make_label(18)
+	bars.add_child(_flask_label)
+
+	_prompt_label = _make_label(24)
+	_place(_prompt_label, Control.PRESET_CENTER_BOTTOM, Rect2(-300, -140, 600, 40))
+	_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_prompt_label.visible = false
+	root.add_child(_prompt_label)
+
 	_debug_label = _make_label(18)
 	_place(_debug_label, Control.PRESET_BOTTOM_LEFT, Rect2(40, -260, 700, 220))
 	_debug_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
@@ -140,7 +193,7 @@ func _build() -> void:
 
 	_help_label = _make_label(18)
 	_help_label.text = HELP_TEXT
-	_place(_help_label, Control.PRESET_TOP_RIGHT, Rect2(-600, 36, 560, 420))
+	_place(_help_label, Control.PRESET_TOP_RIGHT, Rect2(-720, 36, 680, 560))
 	_help_label.visible = false
 	root.add_child(_help_label)
 

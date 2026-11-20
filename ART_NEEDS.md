@@ -34,13 +34,13 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 |---|---|---|---|---|
 | Player body (male + female) | Rigged humanoid on the standard skeleton, ~1.85 m, swappable gear pieces. Phase 2 uses a free stand-in; detailed version later | Stand-in: Quaternius mannequin (male in use, female ready). Final: AI art + cleanup | ⭐ final | 🟨 mannequin |
 | Player animations | Idle, walk, run, sprint, **strafe ×4 (missing: you "moonwalk" sideways when locked on)**, jump/fall/land, roll (3 speeds), 1H sword light combo ×3, heavy + charge, block idle/hit, parry, riposte, hit react light/heavy, stagger, guard break, death, drink flask, interact | Have: UAL1 + UAL2 Standard (idle, walk, jog, sprint, jump, roll, death, hit, sword combos, block). Missing: strafes, backstep, parry, riposte, guard break | | 🟨 partly |
-| Sword, shield | First weapon set | KayKit / Quaternius weapon packs | | 🟨 box |
+| Sword, shield, Marauder axe | First weapon set | AI art / modeled; stand-ins built from simple shapes in `assets/placeholder/weapons/` | ⭐ | 🟨 shapes |
 | Training dummy | Wooden post with straw | Primitive is fine | | ⬜ |
-| Dark Ages Marauder | Big brute, black iron and rust, two-handed axe | Humanoid + outfit pieces | ⭐ textures | 🟨 capsule |
-| Marauder animations | Idle, walk, run, 3 telegraphed axe attacks (one delayed), hit react, stagger, death | Animation libraries | | ⬜ |
-| Blood | 6–8 splatter decals, spurt particle sprites | Kenney Particle Pack + custom | ⭐ decals | ⬜ |
-| Hit sparks | Metal-on-metal sparks for blocks and parries | Kenney Particle Pack | | ⬜ |
-| Shrine (test) | Stone pillar or altar with amber flame | Primitive, then kit piece | ⭐ concept | 🟨 cylinder |
+| Dark Ages Marauder | Big brute, black iron and rust, two-handed axe | Humanoid + outfit pieces | ⭐ textures | 🟨 rust-tinted mannequin |
+| Marauder animations | Idle, walk, run, 3 telegraphed axe attacks (one delayed), hit react, stagger, death | Using UAL sword animations slowed down; real two-handed axe swings wanted | | 🟨 borrowed |
+| Blood | 6–8 splatter decals, spurt particle sprites | Now: one splat drawn by code + droplet particles | ⭐ decals | 🟨 generated |
+| Hit sparks | Metal-on-metal sparks for blocks and parries | Now: glowing particles + flash of light | | 🟨 generated |
+| Shrine (test) | Stone pillar or altar with amber flame | Primitive, then kit piece (`game/world/shrine.tscn`) | ⭐ concept | 🟨 shapes |
 | **Sounds** | Sword swings ×3, flesh hits ×3, armor hits ×2, block thud, parry clang, footsteps (dirt, stone), roll, grunts (pain ×3, effort ×3, death ×2), drink flask, heavy axe whoosh | Freesound (CC0), Kenney Impact Sounds / RPG Audio | | ⬜ |
 
 ## Phase 4: Multiplayer

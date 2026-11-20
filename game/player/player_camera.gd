@@ -26,6 +26,8 @@ var follow: Node3D
 var targeting: Targeting
 
 var _recenter_yaw := NAN
+var _shake := 0.0
+var _shake_time := 0.0
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
@@ -100,6 +102,20 @@ func _process(delta: float) -> void:
 	p.z = lerpf(p.z, pivot.z, flat_t)
 	p.y = lerpf(p.y, pivot.y, up_t)
 	global_position = p
+	_apply_shake(delta)
+
+
+## Shake the camera (0.1 = light tap, 0.5 = big hit). Fades out quickly.
+func add_shake(amount: float) -> void:
+	_shake = minf(1.0, _shake + amount)
+
+
+func _apply_shake(delta: float) -> void:
+	_shake = maxf(0.0, _shake - delta * 2.5)
+	var s := _shake * _shake
+	_shake_time += delta * 40.0
+	camera.h_offset = sin(_shake_time * 1.3) * 0.12 * s
+	camera.v_offset = cos(_shake_time * 1.7) * 0.12 * s
 
 
 func _is_locked() -> bool:

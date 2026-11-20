@@ -1,0 +1,88 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
+[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/axe_placeholder.tscn" id="3_axe"]
+
+[sub_resource type="Resource" id="Attack_sweep"]
+script = ExtResource("2_attack")
+display_name = "Sweep (parryable)"
+anim = &"ual2/Sword_Regular_B"
+recovery_anim = &"ual2/Sword_Regular_B_Rec"
+anim_speed = 0.45
+windup_until = 0.15
+windup_speed_mult = 0.5
+hit_start = 0.17
+hit_end = 0.31
+end_time = 1.13
+track_until = 0.14
+telegraph_time = 0.03
+base_damage = 24.0
+base_poise_damage = 18.0
+hit_stop = 0.07
+reach = 2.7
+arc_degrees = 160.0
+lunge_distance = 0.6
+lunge_start = 0.1
+lunge_end = 0.3
+weight = 2.0
+max_use_distance = 3.0
+
+[sub_resource type="Resource" id="Attack_overhead"]
+script = ExtResource("2_attack")
+display_name = "Delayed overhead (parryable)"
+anim = &"Sword_Attack"
+anim_speed = 0.8
+windup_until = 0.33
+windup_speed_mult = 0.3
+hit_start = 0.36
+hit_end = 0.48
+end_time = 1.2
+track_until = 0.32
+telegraph_time = 0.2
+base_damage = 32.0
+base_poise_damage = 30.0
+hit_stop = 0.09
+reach = 3.0
+arc_degrees = 60.0
+lunge_distance = 0.8
+lunge_start = 0.3
+lunge_end = 0.45
+weight = 1.5
+max_use_distance = 3.2
+
+[sub_resource type="Resource" id="Attack_crush"]
+script = ExtResource("2_attack")
+display_name = "Crushing blow (unblockable)"
+anim = &"ual2/Sword_Heavy_Combo"
+anim_speed = 0.75
+windup_until = 0.3
+windup_speed_mult = 0.6
+hit_start = 0.36
+hit_end = 0.56
+end_time = 1.15
+track_until = 0.3
+telegraph_time = 0.0
+base_damage = 42.0
+base_poise_damage = 50.0
+hit_stop = 0.12
+reach = 3.0
+arc_degrees = 90.0
+lunge_distance = 1.0
+lunge_start = 0.3
+lunge_end = 0.5
+parryable = false
+unblockable = true
+max_use_distance = 3.0
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"enemy_dark_ages_marauder"
+display_name = "Dark Ages Marauder"
+max_health = 200.0
+poise = 45.0
+attack_cooldown_min = 0.8
+attack_cooldown_max = 1.8
+attacks = Array[ExtResource("2_attack")]([SubResource("Attack_sweep"), SubResource("Attack_overhead"), SubResource("Attack_crush")])
+body_tint = Color(0.22, 0.08, 0.06, 1)
+weapon_scene = ExtResource("3_axe")
