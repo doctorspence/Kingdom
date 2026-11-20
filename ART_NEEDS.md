@@ -9,18 +9,21 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 - **Status**: ⬜ needed · 🟨 placeholder in the game · ✅ final
 
 ## Where to look (all free)
-| Source | Best for | License |
-|---|---|---|
-| **Quaternius** (quaternius.com) | Rigged humanoids, modular outfits, a big animation library, medieval village and nature kits, animals | CC0 |
-| **KayKit** (kaylousberg.itch.io) | Chunky stylized characters (adventurers, skeletons), animations, dungeon kit, weapons | CC0 (free versions) |
-| **Kenney** (kenney.nl) | UI packs, particle textures, sound effects, castle and town kits | CC0 |
-| **Poly Haven** (polyhaven.com) | Overcast sky images (HDRIs), ground and rock textures, rock and tree models | CC0 |
-| **ambientCG** (ambientcg.com) | Tileable textures: mud, grass, cobblestone, rock, wood | CC0 |
+**Target look: detailed, not low-poly** (see DESIGN.md §12.1). The "Quality" column says whether a source can be final art or is a stand-in until better art exists.
+
+| Source | Best for | Quality | License |
+|---|---|---|---|
+| **Poly Haven** (polyhaven.com) | Overcast sky images (HDRIs), ground and rock textures, scanned rocks and plants | **Final** (scanned models are very heavy and must be simplified first) | CC0 |
+| **ambientCG** (ambientcg.com) | Tileable textures: mud, grass, cobblestone, rock, wood, metal, cloth | **Final** | CC0 |
+| **Your AI art** | Textures, icons, concept art; image-to-3D for armor pieces and props | **Final** after cleanup (check each tool's license) | Yours |
+| **Quaternius** (quaternius.com) | Rigged humanoids, a big animation library, village and nature kits, animals | Stand-in (low-poly); **animations can be final** | CC0 |
+| **KayKit** (kaylousberg.itch.io) | Chunky stylized characters, animations, dungeon kit, weapons | Stand-in (low-poly) | CC0 (free versions) |
+| **Kenney** (kenney.nl) | UI packs, particle textures, sound effects, castle and town kits | UI, particles and sounds can be final; models are stand-ins | CC0 |
 | **Freesound** (freesound.org) | Sound effects (use the "Creative Commons 0" license filter) | CC0 when filtered |
 | **OpenGameArt** (opengameart.org) | Music and effects (filter by CC0) | Mixed, so CC0 only |
 | **Google Fonts** (fonts.google.com) | Medieval-style fonts for UI and item text | OFL |
 
-> **Style note.** Quaternius and KayKit are cleaner and more cartoony than Warhammer Online or Champions of Norrath. With our fog, dark grading and your AI-made textures and icons, they'll do fine as a base. We can repaint textures to push them grimmer.
+> **Style note.** Quaternius and KayKit are low-poly and cartoony, so they're placeholders, not the final look. Anything human-shaped must use the **standard humanoid skeleton** so the detailed models replacing them reuse the same animations. Environment detail comes from real textures, simplified scanned rocks and plants, and modular building kits, painted onto sculpted terrain.
 
 ---
 
@@ -29,7 +32,7 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|
-| Player body (male + female) | Rigged humanoid, simple proportions, swappable outfits | Quaternius modular characters / KayKit Adventurers | | 🟨 capsule |
+| Player body (male + female) | Rigged humanoid on the standard skeleton, ~1.85 m, swappable gear pieces. Phase 2 uses a free stand-in; detailed version later | Stand-in: Quaternius modular characters. Final: AI art + cleanup | ⭐ final | 🟨 capsule |
 | Player animations | Idle, walk, run, sprint, strafe ×4, jump/fall/land, roll (3 speeds), 1H sword light combo ×3, heavy + charge, block idle/hit, parry, riposte, hit react light/heavy, stagger, guard break, death, drink flask, interact | Quaternius Universal Animation Library / KayKit Character Animations | | ⬜ |
 | Sword, shield | First weapon set | KayKit / Quaternius weapon packs | | 🟨 box |
 | Training dummy | Wooden post with straw | Primitive is fine | | ⬜ |
@@ -83,7 +86,7 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|
 | Village and farm kit | Cottages, barns, fences, carts, a mill, burned versions | Quaternius Medieval Village kit, Kenney | ⭐ textures | ⬜ |
-| Nature | Dead and living trees, bushes, grass, rocks, mud, reeds | Quaternius nature kits, Poly Haven | | ⬜ |
+| Nature | Dead and living trees (with wind sway and distance versions), bushes, grass, rocks, reeds | Poly Haven scans (simplified), Blender's free tree generator, AI art; Quaternius only as stand-in | ⭐ bark/leaf textures | 🟨 cylinders |
 | Terrain textures | Mud, wet grass, cobblestone road, rock | ambientCG, Poly Haven | ⭐ | ⬜ |
 | Castle backdrop | Highcrown's walls and towers (seen through fog) | Kenney Castle Kit, kitbash | ⭐ concept | 🟨 boxes |
 | Ruins and watchtower | Broken walls, tower, gate, **ladder** | Kits | | ⬜ |

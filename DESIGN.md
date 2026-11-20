@@ -373,11 +373,23 @@ An upgradeable camp that enemies raid at night (after the first milestone), ques
 ## 12. Look, sound & interface
 
 ### 12.1 Art direction
-- **Warhammer Online meets Champions of Norrath**: chunky readable silhouettes, slightly exaggerated proportions, painterly textures.
+- **Detail target: detailed, not low-poly.** We aim for the level of detail of Warhammer Online and Champions of Norrath: chunky readable silhouettes, slightly exaggerated proportions (big shoulders, big hands, big weapons), rich textures. **The designs are all our own**, never their armor, symbols or factions.
+- **Gray shapes first, art later.** Gameplay gets built with placeholder shapes and the art is swapped in afterward. These rules keep the swap painless:
+  1. **One standard humanoid skeleton** (Godot's humanoid profile) for every human-shaped character. Any model or animation that fits it can be dropped in.
+  2. **Fixed character size:** about 1.85 m tall, chunky build. Camera distance, doorways (at least 1.6 m wide, 2.6 m tall), weapon reach and level spacing are built around it.
+  3. **Gear you can see:** every gear slot (head, shoulders, chest, hands, legs, feet, cloak, weapons) is its own swappable piece on the shared skeleton.
+  4. **Real materials and lighting:** standard PBR materials (color, roughness, normal maps) under the shared fog and lighting setup, so detailed and placeholder art sit in the same world.
+- **Detail goes where eyes go:** your character and gear, enemies, and anything within a few meters of the camera get the most detail. Distant things stay simpler; fog hides the rest.
+- **Environments are built for detail too:**
+  - Zones sit on **sculpted terrain with painted texture layers** (mud, grass, road, rock), not flat planes.
+  - Every ground, stone, wood and bark surface uses **real tiling textures** (ambientCG, Poly Haven). It's the cheapest big visual upgrade.
+  - **Trees, grass and rocks are painted on in bulk** (instanced, so thousands cost little), with **wind sway** and **simpler versions at a distance** (LODs).
+  - **Buildings and ruins come from modular kits** (wall, corner, arch, floor pieces) so a few detailed pieces build a whole village.
+  - **Budget:** scanned models are often millions of triangles and must be simplified before use. Rough limits: hero tree 20–50k triangles, rock 2–10k, player character with gear 30–60k.
 - **Armor gets louder with level**: levels 1–10 are grounded (gambesons, leather, rusty mail, kettle helms). Levels 11–20 add real plate and bigger pauldrons. Levels 21–30 go big: spikes, skulls, chains, tattered banners.
 - **Palette**: washed-out earth tones (mud brown, moss green, slate gray). White Knights are off-white and tarnished gold; the Dark Ages are rust red and black iron. **Shrines are the only warm, safe light** (amber). Loot rarity colors pop against the gray.
 - **Lighting from day one**: overcast sky, volumetric fog, filmic tone mapping, desaturation and ambient occlusion, so even gray boxes look moody. Nights are cold, blue and genuinely dark.
-- **Sources**: free CC0 packs (Quaternius, KayKit, Kenney, Poly Haven, ambientCG) plus your AI-generated art. See `ART_NEEDS.md`. Every asset gets logged in `assets/CREDITS.md`.
+- **Sources**: free CC0 assets plus your AI-generated art. Poly Haven and ambientCG (detailed textures, rocks, scanned plants) are final-quality. Quaternius, KayKit and Kenney are low-poly, so they're **stand-ins only**, except for things like UI and sound. Detailed characters, armor and props come mostly from your AI art (textures, and image-to-3D for armor and props), cleaned up and fitted to the shared skeleton. See `ART_NEEDS.md`. Every asset gets logged in `assets/CREDITS.md`.
 
 ### 12.2 Audio
 - **Music**: ambient zone loops (a forest-zone mood); boss tracks.

@@ -17,6 +17,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Open the project, press F5, and check the mood of the test map
 
 ## Phase 2: Player controller
+- [ ] Stand-in player model on the standard humanoid skeleton (free download, asked first), with idle/walk/run/sprint/jump/roll animations, instead of a capsule
 - [ ] Input map (mouse & keyboard + gamepad)
 - [ ] Graybox test level with collisions: slopes, stairs, ledges, drops for fall damage
 - [ ] Over-the-shoulder camera (mouse and stick) that doesn't clip through walls
