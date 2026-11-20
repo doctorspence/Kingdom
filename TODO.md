@@ -8,27 +8,30 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 
 ---
 
-## Phase 1: Setup ✅ (waiting for your test)
+## Phase 1: Setup ✅
 - [x] Install Git 2.56.1 and Godot 4.7.2 (winget); desktop shortcuts
 - [x] Project structure and `project.godot` (Forward+ renderer, Jolt physics)
 - [x] `DESIGN.md`, `TODO.md`, `ART_NEEDS.md`, `README.md`, `assets/CREDITS.md`
 - [x] Dark look test map: overcast sky, volumetric fog, filmic tone mapping, desaturation, ambient occlusion, a warm shrine light
 - [x] Git repository and first commit
-- [ ] 🧪 Open the project, press F5, and check the mood of the test map
+- [x] 🧪 Open the project, press F5, and check the mood of the test map
 
-## Phase 2: Player controller
-- [ ] Stand-in player model on the standard humanoid skeleton (free download, asked first), with idle/walk/run/sprint/jump/roll animations, instead of a capsule
-- [ ] Input map (mouse & keyboard + gamepad)
-- [ ] Graybox test level with collisions: slopes, stairs, ledges, drops for fall damage
-- [ ] Over-the-shoulder camera (mouse and stick) that doesn't clip through walls
-- [ ] Weighty movement: walk, run, sprint, acceleration and turning
-- [ ] Jump with short i-frames; fall damage
-- [ ] Dodge roll with i-frames; roll speed from equip load (test with a "heavy armor" toggle)
-- [ ] Stamina: costs, regen delay, empty-stamina rules
-- [ ] Soft target and lock-on toggle, target switching
-- [ ] Training dummies to target
-- [ ] Minimal HUD: health and stamina bars
-- [ ] 🧪 Run around, roll, jump, sprint until out of stamina, lock onto dummies
+## Phase 2: Player controller ✅ (waiting for your test)
+- [x] Stand-in player model on the standard humanoid skeleton (Quaternius mannequin, CC0), with idle/walk/run/sprint/jump/roll/death animations, instead of a capsule
+- [x] Input map (mouse & keyboard + gamepad), defined in `game/core/input_setup.gd`
+- [x] Graybox test level (`levels/sandbox/movement_test.tscn`): slopes, stairs, crates, doorway, low tunnel, a fall-test ramp with 4/6/10/16 m ledges
+- [x] Over-the-shoulder camera (mouse and stick) that doesn't clip through walls
+- [x] Weighty movement: walk, run, sprint, acceleration and turning (wide turns while sprinting)
+- [x] Jump with short i-frames; fall damage; hard landings stumble
+- [x] Dodge roll with i-frames; roll speed from equip load (F3 cycles light / medium / heavy / overloaded)
+- [x] Stamina: costs, regen delay, sprint lockout after running dry
+- [x] Lock-on toggle, target switching (mouse wheel / stick flick), breaks at 25 m or 2 s out of sight; soft-target finder ready for attacks
+- [x] Training dummies (static, walking, far away, behind a wall)
+- [x] Minimal HUD: health and stamina bars, lock-on marker, F1 controls, F2 debug info
+- [x] Placeholder death: falls can kill you, respawn after 3 s
+- [x] Automated check `tests/movement_check.gd` (speeds, roll distances, jump height, fall damage, lock-on): all pass
+- [ ] 🧪 Run around, roll, jump, sprint until out of stamina, lock onto dummies, jump off the ledges
+- [ ] 🧪 Try a gamepad if you have one (not tested yet; I have no controller here)
 
 ## Phase 3: Combat core
 - [ ] Data files for weapons and enemies in `data/`

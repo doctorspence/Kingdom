@@ -12,9 +12,13 @@ config_version=5
 
 config/name="Kingdom"
 config/description="Dark fantasy co-op action RPG (working title)."
-run/main_scene="res://levels/sandbox/look_test.tscn"
+run/main_scene="res://levels/sandbox/movement_test.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+InputSetup="*res://game/core/input_setup.gd"
 
 [display]
 
@@ -25,9 +29,16 @@ window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[layer_names]
+
+3d_physics/layer_1="world"
+3d_physics/layer_2="players"
+3d_physics/layer_3="enemies"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
+common/physics_interpolation=true
 
 [rendering]
 

@@ -32,8 +32,8 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|
-| Player body (male + female) | Rigged humanoid on the standard skeleton, ~1.85 m, swappable gear pieces. Phase 2 uses a free stand-in; detailed version later | Stand-in: Quaternius modular characters. Final: AI art + cleanup | ⭐ final | 🟨 capsule |
-| Player animations | Idle, walk, run, sprint, strafe ×4, jump/fall/land, roll (3 speeds), 1H sword light combo ×3, heavy + charge, block idle/hit, parry, riposte, hit react light/heavy, stagger, guard break, death, drink flask, interact | Quaternius Universal Animation Library / KayKit Character Animations | | ⬜ |
+| Player body (male + female) | Rigged humanoid on the standard skeleton, ~1.85 m, swappable gear pieces. Phase 2 uses a free stand-in; detailed version later | Stand-in: Quaternius mannequin (male in use, female ready). Final: AI art + cleanup | ⭐ final | 🟨 mannequin |
+| Player animations | Idle, walk, run, sprint, **strafe ×4 (missing: you "moonwalk" sideways when locked on)**, jump/fall/land, roll (3 speeds), 1H sword light combo ×3, heavy + charge, block idle/hit, parry, riposte, hit react light/heavy, stagger, guard break, death, drink flask, interact | Have: UAL1 + UAL2 Standard (idle, walk, jog, sprint, jump, roll, death, hit, sword combos, block). Missing: strafes, backstep, parry, riposte, guard break | | 🟨 partly |
 | Sword, shield | First weapon set | KayKit / Quaternius weapon packs | | 🟨 box |
 | Training dummy | Wooden post with straw | Primitive is fine | | ⬜ |
 | Dark Ages Marauder | Big brute, black iron and rust, two-handed axe | Humanoid + outfit pieces | ⭐ textures | 🟨 capsule |

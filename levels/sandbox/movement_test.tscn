@@ -1,0 +1,315 @@
+[gd_scene format=3]
+
+[ext_resource type="Environment" path="res://levels/common/overcast_env.tres" id="1_env"]
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://game/combat/training_dummy.tscn" id="3_dummy"]
+[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="4_hud"]
+[ext_resource type="Material" path="res://levels/common/graybox_floor.tres" id="5_floor"]
+[ext_resource type="Material" path="res://levels/common/graybox_wall.tres" id="6_wall"]
+[ext_resource type="Material" path="res://levels/common/graybox_accent.tres" id="7_accent"]
+[ext_resource type="Script" path="res://game/world/graybox_ramp.gd" id="8_ramp"]
+[ext_resource type="Script" path="res://game/world/graybox_stairs.gd" id="9_stairs"]
+
+[node name="MovementTest" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-50, 35, 0)
+light_color = Color(0.84, 0.86, 0.9, 1)
+light_energy = 0.9
+shadow_enabled = true
+shadow_blur = 2.0
+directional_shadow_max_distance = 120.0
+sky_mode = 1
+
+[node name="Ground" type="CSGBox3D" parent="."]
+position = Vector3(0, -0.5, 0)
+use_collision = true
+size = Vector3(200, 1, 200)
+material = ExtResource("5_floor")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.05, 6)
+
+[node name="Hud" parent="." instance=ExtResource("4_hud")]
+
+[node name="Dummies" type="Node3D" parent="."]
+
+[node name="DummyLeft" parent="Dummies" instance=ExtResource("3_dummy")]
+position = Vector3(-3, 0, -6)
+
+[node name="DummyMiddle" parent="Dummies" instance=ExtResource("3_dummy")]
+position = Vector3(0, 0, -6)
+
+[node name="DummyRight" parent="Dummies" instance=ExtResource("3_dummy")]
+position = Vector3(3, 0, -6)
+
+[node name="DummyWalking" parent="Dummies" instance=ExtResource("3_dummy")]
+position = Vector3(0, 0, -13)
+patrol_distance = 5.0
+
+[node name="DummyFar" parent="Dummies" instance=ExtResource("3_dummy")]
+position = Vector3(0, 0, -40)
+
+[node name="DummyHidden" parent="Dummies" instance=ExtResource("3_dummy")]
+position = Vector3(14, 0, -12)
+
+[node name="HidingWall" type="CSGBox3D" parent="Dummies"]
+position = Vector3(14, 1.5, -9)
+use_collision = true
+size = Vector3(6, 3, 0.6)
+material = ExtResource("6_wall")
+
+[node name="PillarLeft" type="CSGBox3D" parent="Dummies"]
+position = Vector3(-6, 2, -9)
+use_collision = true
+size = Vector3(1.2, 4, 1.2)
+material = ExtResource("6_wall")
+
+[node name="PillarRight" type="CSGBox3D" parent="Dummies"]
+position = Vector3(6, 2, -9)
+use_collision = true
+size = Vector3(1.2, 4, 1.2)
+material = ExtResource("6_wall")
+
+[node name="SignDummies" type="Label3D" parent="Dummies"]
+position = Vector3(0, 2.6, -6)
+billboard = 1
+pixel_size = 0.005
+text = "Training dummies (Q to lock on)"
+font_size = 48
+outline_size = 12
+
+[node name="Slopes" type="Node3D" parent="."]
+
+[node name="Ramp20" type="Node3D" parent="Slopes"]
+position = Vector3(10, 0, 4)
+script = ExtResource("8_ramp")
+angle_deg = 20.0
+material = ExtResource("7_accent")
+
+[node name="Top20" type="CSGBox3D" parent="Slopes"]
+position = Vector3(20.24, 1.5, 4)
+use_collision = true
+size = Vector3(4, 3, 4)
+material = ExtResource("6_wall")
+
+[node name="Ramp35" type="Node3D" parent="Slopes"]
+position = Vector3(10, 0, 10)
+script = ExtResource("8_ramp")
+angle_deg = 35.0
+material = ExtResource("7_accent")
+
+[node name="Top35" type="CSGBox3D" parent="Slopes"]
+position = Vector3(16.28, 1.5, 10)
+use_collision = true
+size = Vector3(4, 3, 4)
+material = ExtResource("6_wall")
+
+[node name="Ramp50" type="Node3D" parent="Slopes"]
+position = Vector3(10, 0, 16)
+script = ExtResource("8_ramp")
+angle_deg = 50.0
+material = ExtResource("7_accent")
+
+[node name="Top50" type="CSGBox3D" parent="Slopes"]
+position = Vector3(14.52, 1.5, 16)
+use_collision = true
+size = Vector3(4, 3, 4)
+material = ExtResource("6_wall")
+
+[node name="Sign20" type="Label3D" parent="Slopes"]
+position = Vector3(8.5, 1.6, 4)
+billboard = 1
+pixel_size = 0.005
+text = "20° slope"
+font_size = 48
+outline_size = 12
+
+[node name="Sign35" type="Label3D" parent="Slopes"]
+position = Vector3(8.5, 1.6, 10)
+billboard = 1
+pixel_size = 0.005
+text = "35° slope"
+font_size = 48
+outline_size = 12
+
+[node name="Sign50" type="Label3D" parent="Slopes"]
+position = Vector3(8.5, 1.6, 16)
+billboard = 1
+pixel_size = 0.005
+text = "50° slope (too steep, you slide)"
+font_size = 48
+outline_size = 12
+
+[node name="Stairs" type="Node3D" parent="."]
+position = Vector3(-6, 0, 16)
+script = ExtResource("9_stairs")
+material = ExtResource("7_accent")
+
+[node name="StairsTop" type="CSGBox3D" parent="."]
+position = Vector3(0.5, 1.5, 16)
+use_collision = true
+size = Vector3(4, 3, 3)
+material = ExtResource("6_wall")
+
+[node name="SignStairs" type="Label3D" parent="."]
+position = Vector3(-7.2, 1.6, 16)
+billboard = 1
+pixel_size = 0.005
+text = "Stairs"
+font_size = 48
+outline_size = 12
+
+[node name="Crates" type="Node3D" parent="."]
+
+[node name="CrateLow" type="CSGBox3D" parent="Crates"]
+position = Vector3(-5, 0.25, 4)
+use_collision = true
+size = Vector3(1.2, 0.5, 1.2)
+material = ExtResource("7_accent")
+
+[node name="CrateMid" type="CSGBox3D" parent="Crates"]
+position = Vector3(-7.5, 0.45, 4)
+use_collision = true
+size = Vector3(1.2, 0.9, 1.2)
+material = ExtResource("7_accent")
+
+[node name="CrateTall" type="CSGBox3D" parent="Crates"]
+position = Vector3(-10, 0.7, 4)
+use_collision = true
+size = Vector3(1.2, 1.4, 1.2)
+material = ExtResource("7_accent")
+
+[node name="SignCrates" type="Label3D" parent="Crates"]
+position = Vector3(-7.5, 2.2, 4)
+billboard = 1
+pixel_size = 0.005
+text = "Jump (F): 0.5 m / 0.9 m / 1.4 m (too tall)"
+font_size = 48
+outline_size = 12
+
+[node name="DoorWall" type="CSGBox3D" parent="."]
+position = Vector3(-13, 1.75, -4)
+use_collision = true
+size = Vector3(0.6, 3.5, 12)
+material = ExtResource("6_wall")
+
+[node name="Doorway" type="CSGBox3D" parent="DoorWall"]
+position = Vector3(0, -0.45, 0)
+operation = 2
+size = Vector3(1.2, 2.6, 1.6)
+material = ExtResource("6_wall")
+
+[node name="SignDoor" type="Label3D" parent="DoorWall"]
+position = Vector3(0.6, 2.4, 0)
+billboard = 1
+pixel_size = 0.005
+text = "Doorway: 1.6 m wide, 2.6 m tall"
+font_size = 48
+outline_size = 12
+
+[node name="Tunnel" type="Node3D" parent="."]
+position = Vector3(-19, 0, -4)
+
+[node name="WallA" type="CSGBox3D" parent="Tunnel"]
+position = Vector3(-2, 1.2, 0)
+use_collision = true
+size = Vector3(0.4, 2.4, 8)
+material = ExtResource("6_wall")
+
+[node name="WallB" type="CSGBox3D" parent="Tunnel"]
+position = Vector3(2, 1.2, 0)
+use_collision = true
+size = Vector3(0.4, 2.4, 8)
+material = ExtResource("6_wall")
+
+[node name="Roof" type="CSGBox3D" parent="Tunnel"]
+position = Vector3(0, 2.65, 0)
+use_collision = true
+size = Vector3(4.4, 0.5, 8)
+material = ExtResource("6_wall")
+
+[node name="SignTunnel" type="Label3D" parent="Tunnel"]
+position = Vector3(0, 3.4, 4.5)
+billboard = 1
+pixel_size = 0.005
+text = "Low tunnel (camera test)"
+font_size = 48
+outline_size = 12
+
+[node name="DropRamp" type="Node3D" parent="."]
+
+[node name="Ramp" type="Node3D" parent="DropRamp"]
+position = Vector3(-24, 0, 20)
+rotation_degrees = Vector3(0, 180, 0)
+script = ExtResource("8_ramp")
+height = 16.0
+angle_deg = 25.0
+material = ExtResource("6_wall")
+
+[node name="Ledge4" type="CSGBox3D" parent="DropRamp"]
+position = Vector3(-31.578, 3.75, 24)
+use_collision = true
+size = Vector3(2, 0.5, 4)
+material = ExtResource("7_accent")
+
+[node name="Ledge6" type="CSGBox3D" parent="DropRamp"]
+position = Vector3(-35.867, 5.75, 24)
+use_collision = true
+size = Vector3(2, 0.5, 4)
+material = ExtResource("7_accent")
+
+[node name="Ledge10" type="CSGBox3D" parent="DropRamp"]
+position = Vector3(-44.445, 9.75, 24)
+use_collision = true
+size = Vector3(2, 0.5, 4)
+material = ExtResource("7_accent")
+
+[node name="Top" type="CSGBox3D" parent="DropRamp"]
+position = Vector3(-61.31, 15.75, 20)
+use_collision = true
+size = Vector3(6, 0.5, 8)
+material = ExtResource("7_accent")
+
+[node name="SignStart" type="Label3D" parent="DropRamp"]
+position = Vector3(-22.5, 2.2, 20)
+billboard = 1
+pixel_size = 0.005
+text = "Fall test: walk up, step off the orange ledges"
+font_size = 48
+outline_size = 12
+
+[node name="Sign4" type="Label3D" parent="DropRamp"]
+position = Vector3(-31.578, 5.6, 24)
+billboard = 1
+pixel_size = 0.005
+text = "4 m: safe"
+font_size = 48
+outline_size = 12
+
+[node name="Sign6" type="Label3D" parent="DropRamp"]
+position = Vector3(-35.867, 7.6, 24)
+billboard = 1
+pixel_size = 0.005
+text = "6 m: hurts"
+font_size = 48
+outline_size = 12
+
+[node name="Sign10" type="Label3D" parent="DropRamp"]
+position = Vector3(-44.445, 11.6, 24)
+billboard = 1
+pixel_size = 0.005
+text = "10 m: hurts a lot"
+font_size = 48
+outline_size = 12
+
+[node name="Sign16" type="Label3D" parent="DropRamp"]
+position = Vector3(-61.31, 17.6, 20)
+billboard = 1
+pixel_size = 0.005
+text = "16 m: deadly"
+font_size = 48
+outline_size = 12

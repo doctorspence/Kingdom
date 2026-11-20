@@ -68,6 +68,7 @@ You host your world; two friends join by IP. You rest at the Crossroads shrine a
 | Action | Mouse & keyboard | Gamepad (Xbox names) |
 |---|---|---|
 | Move / camera | WASD / mouse | Left stick / right stick |
+| Walk | Ctrl (hold) | Tilt the stick gently |
 | Light attack | Left mouse | RB |
 | Heavy attack (hold to charge) | Middle mouse | RT |
 | Block (tap at the last moment = parry) | Right mouse (hold) | LB |
@@ -97,7 +98,7 @@ Dark Souls pace: every swing commits you, every hit hurts, and stamina is the cl
 
 ### 5.2 Movement
 - **Weighty**: acceleration and turning take time; no instant 180s while sprinting.
-- Speeds *(start)*: walk/strafe 2.0 m/s, run 4.5 m/s, sprint 6.5 m/s.
+- Speeds *(start)*: walk 2.0 m/s, run 4.5 m/s, sprint 6.5 m/s, moving while locked on 3.2 m/s.
 - **Jump**: ~1.1 m high, short i-frames at take-off (~0.12 s).
 - **Dodge roll** with i-frames. Speed depends on **equip load** (gear weight ÷ capacity; capacity = 60 + 0.5 × Strength *(start)*):
 
@@ -375,7 +376,7 @@ An upgradeable camp that enemies raid at night (after the first milestone), ques
 ### 12.1 Art direction
 - **Detail target: detailed, not low-poly.** We aim for the level of detail of Warhammer Online and Champions of Norrath: chunky readable silhouettes, slightly exaggerated proportions (big shoulders, big hands, big weapons), rich textures. **The designs are all our own**, never their armor, symbols or factions.
 - **Gray shapes first, art later.** Gameplay gets built with placeholder shapes and the art is swapped in afterward. These rules keep the swap painless:
-  1. **One standard humanoid skeleton** (Godot's humanoid profile) for every human-shaped character. Any model or animation that fits it can be dropped in.
+  1. **One standard humanoid skeleton** for every human-shaped character: the 65-bone Unreal-style skeleton used by Quaternius's free animation libraries (bones named `pelvis`, `spine_01`, `upperarm_l` ...). Any model or animation built on it drops straight in. Others can be converted with Godot's retargeting.
   2. **Fixed character size:** about 1.85 m tall, chunky build. Camera distance, doorways (at least 1.6 m wide, 2.6 m tall), weapon reach and level spacing are built around it.
   3. **Gear you can see:** every gear slot (head, shoulders, chest, hands, legs, feet, cloak, weapons) is its own swappable piece on the shared skeleton.
   4. **Real materials and lighting:** standard PBR materials (color, roughness, normal maps) under the shared fog and lighting setup, so detailed and placeholder art sit in the same world.
