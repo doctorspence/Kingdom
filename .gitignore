@@ -1,0 +1,13 @@
+# Godot cache (rebuilt automatically, never commit)
+.godot/
+/android/
+
+# Exported game builds
+/build/
+/export/
+
+# Editor and OS junk
+*.tmp
+Thumbs.db
+desktop.ini
+.DS_Store

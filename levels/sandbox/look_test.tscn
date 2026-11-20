@@ -1,0 +1,403 @@
+[gd_scene format=3]
+
+[ext_resource type="Environment" path="res://levels/common/overcast_env.tres" id="1_env"]
+[ext_resource type="PackedScene" path="res://levels/sandbox/props/placeholder_dead_tree.tscn" id="2_tree"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_ground"]
+albedo_color = Color(0.21, 0.2, 0.155, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_mud"]
+albedo_color = Color(0.19, 0.17, 0.14, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_stone"]
+albedo_color = Color(0.36, 0.355, 0.34, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Mat_wood"]
+albedo_color = Color(0.17, 0.13, 0.1, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_player"]
+albedo_color = Color(0.33, 0.31, 0.28, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_steel"]
+albedo_color = Color(0.55, 0.56, 0.58, 1)
+metallic = 0.9
+roughness = 0.35
+
+[sub_resource type="StandardMaterial3D" id="Mat_dark_ages"]
+albedo_color = Color(0.2, 0.07, 0.06, 1)
+metallic = 0.3
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_white_knight"]
+albedo_color = Color(0.76, 0.73, 0.66, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_flame"]
+albedo_color = Color(1, 0.6, 0.3, 1)
+emission_enabled = true
+emission = Color(1, 0.55, 0.22, 1)
+emission_energy_multiplier = 4.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_castle"]
+albedo_color = Color(0.3, 0.3, 0.31, 1)
+roughness = 1.0
+
+[sub_resource type="PlaneMesh" id="Mesh_ground"]
+size = Vector2(400, 400)
+
+[sub_resource type="PlaneMesh" id="Mesh_road"]
+size = Vector2(6, 40)
+
+[sub_resource type="CapsuleMesh" id="Mesh_body"]
+radius = 0.35
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="Mesh_body_big"]
+radius = 0.48
+height = 2.1
+
+[sub_resource type="BoxMesh" id="Mesh_blade"]
+size = Vector3(0.07, 0.95, 0.025)
+
+[sub_resource type="BoxMesh" id="Mesh_axe_haft"]
+size = Vector3(0.06, 1.5, 0.06)
+
+[sub_resource type="BoxMesh" id="Mesh_axe_head"]
+size = Vector3(0.45, 0.35, 0.05)
+
+[sub_resource type="BoxMesh" id="Mesh_shield"]
+size = Vector3(0.65, 0.85, 0.07)
+
+[sub_resource type="BoxMesh" id="Mesh_box"]
+size = Vector3(1, 1, 1)
+
+[sub_resource type="CylinderMesh" id="Mesh_pillar"]
+top_radius = 0.28
+bottom_radius = 0.4
+height = 2.2
+radial_segments = 8
+
+[sub_resource type="SphereMesh" id="Mesh_flame"]
+radius = 0.14
+height = 0.3
+
+[sub_resource type="SphereMesh" id="Mesh_rock"]
+radius = 1.0
+height = 1.4
+radial_segments = 7
+rings = 3
+
+[sub_resource type="CylinderMesh" id="Mesh_tower"]
+top_radius = 5.0
+bottom_radius = 5.5
+height = 38.0
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="Mesh_roof"]
+top_radius = 0.0
+bottom_radius = 6.5
+height = 12.0
+radial_segments = 12
+
+[node name="LookTest" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-50, 35, 0)
+light_color = Color(0.84, 0.86, 0.9, 1)
+light_energy = 0.9
+shadow_enabled = true
+shadow_blur = 2.0
+directional_shadow_max_distance = 120.0
+sky_mode = 1
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(1.1, 1.8, 3.8)
+rotation_degrees = Vector3(-6, 0, 0)
+fov = 70.0
+far = 600.0
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_ground")
+material_override = SubResource("Mat_ground")
+
+[node name="MudRoad" type="MeshInstance3D" parent="."]
+position = Vector3(0.5, 0.01, -14)
+rotation_degrees = Vector3(0, 8, 0)
+mesh = SubResource("Mesh_road")
+material_override = SubResource("Mat_mud")
+
+[node name="PlayerPlaceholder" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="PlayerPlaceholder"]
+position = Vector3(0, 0.9, 0)
+mesh = SubResource("Mesh_body")
+material_override = SubResource("Mat_player")
+
+[node name="Sword" type="MeshInstance3D" parent="PlayerPlaceholder"]
+position = Vector3(0.42, 0.85, -0.3)
+rotation_degrees = Vector3(-65, 0, 0)
+mesh = SubResource("Mesh_blade")
+material_override = SubResource("Mat_steel")
+
+[node name="MarauderPlaceholder" type="Node3D" parent="."]
+position = Vector3(-5.5, 0, -7)
+rotation_degrees = Vector3(0, 140, 0)
+
+[node name="Body" type="MeshInstance3D" parent="MarauderPlaceholder"]
+position = Vector3(0, 1.05, 0)
+mesh = SubResource("Mesh_body_big")
+material_override = SubResource("Mat_dark_ages")
+
+[node name="AxeHaft" type="MeshInstance3D" parent="MarauderPlaceholder"]
+position = Vector3(0.55, 1.35, -0.1)
+rotation_degrees = Vector3(0, 0, -25)
+mesh = SubResource("Mesh_axe_haft")
+material_override = SubResource("Mat_wood")
+
+[node name="AxeHead" type="MeshInstance3D" parent="MarauderPlaceholder/AxeHaft"]
+position = Vector3(0.2, 0.62, 0)
+mesh = SubResource("Mesh_axe_head")
+material_override = SubResource("Mat_steel")
+
+[node name="KnightPlaceholder" type="Node3D" parent="."]
+position = Vector3(3.4, 0, -12)
+rotation_degrees = Vector3(0, 200, 0)
+
+[node name="Body" type="MeshInstance3D" parent="KnightPlaceholder"]
+position = Vector3(0, 0.9, 0)
+mesh = SubResource("Mesh_body")
+material_override = SubResource("Mat_white_knight")
+
+[node name="Shield" type="MeshInstance3D" parent="KnightPlaceholder"]
+position = Vector3(-0.42, 1, -0.32)
+rotation_degrees = Vector3(0, 20, 0)
+mesh = SubResource("Mesh_shield")
+material_override = SubResource("Mat_white_knight")
+
+[node name="Sword" type="MeshInstance3D" parent="KnightPlaceholder"]
+position = Vector3(0.45, 0.9, -0.2)
+rotation_degrees = Vector3(-20, 0, 0)
+mesh = SubResource("Mesh_blade")
+material_override = SubResource("Mat_steel")
+
+[node name="Shrine" type="Node3D" parent="."]
+position = Vector3(-6.5, 0, -15)
+
+[node name="Pillar" type="MeshInstance3D" parent="Shrine"]
+position = Vector3(0, 1.1, 0)
+mesh = SubResource("Mesh_pillar")
+material_override = SubResource("Mat_stone")
+
+[node name="Flame" type="MeshInstance3D" parent="Shrine"]
+position = Vector3(0, 2.35, 0)
+cast_shadow = 0
+mesh = SubResource("Mesh_flame")
+material_override = SubResource("Mat_flame")
+
+[node name="Light" type="OmniLight3D" parent="Shrine"]
+position = Vector3(0, 2.5, 0)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 3.5
+light_volumetric_fog_energy = 3.0
+omni_range = 12.0
+
+[node name="Gallows" type="Node3D" parent="."]
+position = Vector3(4.5, 0, -6.5)
+rotation_degrees = Vector3(0, -15, 0)
+
+[node name="PostLeft" type="MeshInstance3D" parent="Gallows"]
+position = Vector3(-1, 1.6, 0)
+scale = Vector3(0.2, 3.2, 0.2)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_wood")
+
+[node name="PostRight" type="MeshInstance3D" parent="Gallows"]
+position = Vector3(1, 1.6, 0)
+scale = Vector3(0.2, 3.2, 0.2)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_wood")
+
+[node name="Beam" type="MeshInstance3D" parent="Gallows"]
+position = Vector3(0, 3.2, 0)
+scale = Vector3(2.4, 0.2, 0.2)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_wood")
+
+[node name="Rope" type="MeshInstance3D" parent="Gallows"]
+position = Vector3(0.2, 2.65, 0)
+scale = Vector3(0.03, 0.9, 0.03)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_wood")
+
+[node name="RuinedWall" type="Node3D" parent="."]
+position = Vector3(7, 0, -22)
+rotation_degrees = Vector3(0, -25, 0)
+
+[node name="Main" type="MeshInstance3D" parent="RuinedWall"]
+position = Vector3(0, 1.6, 0)
+scale = Vector3(6, 3.2, 0.8)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_stone")
+
+[node name="Low" type="MeshInstance3D" parent="RuinedWall"]
+position = Vector3(4.5, 0.9, 0)
+scale = Vector3(3, 1.8, 0.8)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_stone")
+
+[node name="Column" type="MeshInstance3D" parent="RuinedWall"]
+position = Vector3(-4, 2.6, 0)
+scale = Vector3(2, 5.2, 0.9)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_stone")
+
+[node name="Rubble" type="MeshInstance3D" parent="RuinedWall"]
+position = Vector3(2, 0.3, 1.2)
+rotation_degrees = Vector3(12, 30, 8)
+scale = Vector3(1.2, 0.6, 0.9)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_stone")
+
+[node name="Rocks" type="Node3D" parent="."]
+
+[node name="Rock1" type="MeshInstance3D" parent="Rocks"]
+position = Vector3(-3, 0.15, -5)
+scale = Vector3(0.6, 0.4, 0.5)
+mesh = SubResource("Mesh_rock")
+material_override = SubResource("Mat_stone")
+
+[node name="Rock2" type="MeshInstance3D" parent="Rocks"]
+position = Vector3(5.5, 0.2, -3.5)
+rotation_degrees = Vector3(0, 40, 0)
+scale = Vector3(0.9, 0.6, 0.8)
+mesh = SubResource("Mesh_rock")
+material_override = SubResource("Mat_stone")
+
+[node name="Rock3" type="MeshInstance3D" parent="Rocks"]
+position = Vector3(-12, 0.35, -30)
+rotation_degrees = Vector3(0, 75, 0)
+scale = Vector3(1.6, 1.1, 1.3)
+mesh = SubResource("Mesh_rock")
+material_override = SubResource("Mat_stone")
+
+[node name="Rock4" type="MeshInstance3D" parent="Rocks"]
+position = Vector3(9, 0.15, -28)
+scale = Vector3(0.8, 0.5, 0.7)
+mesh = SubResource("Mesh_rock")
+material_override = SubResource("Mat_stone")
+
+[node name="Rock5" type="MeshInstance3D" parent="Rocks"]
+position = Vector3(2.5, 0.1, -18)
+rotation_degrees = Vector3(0, 120, 0)
+scale = Vector3(0.5, 0.3, 0.4)
+mesh = SubResource("Mesh_rock")
+material_override = SubResource("Mat_stone")
+
+[node name="Trees" type="Node3D" parent="."]
+
+[node name="Tree1" parent="Trees" instance=ExtResource("2_tree")]
+position = Vector3(-9, 0, -24)
+
+[node name="Tree2" parent="Trees" instance=ExtResource("2_tree")]
+position = Vector3(11, 0, -9)
+rotation_degrees = Vector3(0, 70, 0)
+scale = Vector3(0.8, 0.8, 0.8)
+
+[node name="Tree3" parent="Trees" instance=ExtResource("2_tree")]
+position = Vector3(-4, 0, -42)
+rotation_degrees = Vector3(0, 140, 0)
+scale = Vector3(1.2, 1.2, 1.2)
+
+[node name="Tree4" parent="Trees" instance=ExtResource("2_tree")]
+position = Vector3(15, 0, -38)
+rotation_degrees = Vector3(0, 210, 0)
+scale = Vector3(1.1, 1.1, 1.1)
+
+[node name="Tree5" parent="Trees" instance=ExtResource("2_tree")]
+position = Vector3(-17, 0, -11)
+rotation_degrees = Vector3(0, 300, 0)
+scale = Vector3(0.9, 0.9, 0.9)
+
+[node name="Tree6" parent="Trees" instance=ExtResource("2_tree")]
+position = Vector3(-25, 0, -50)
+rotation_degrees = Vector3(0, 30, 0)
+scale = Vector3(1.3, 1.3, 1.3)
+
+[node name="Tree7" parent="Trees" instance=ExtResource("2_tree")]
+position = Vector3(24, 0, -60)
+rotation_degrees = Vector3(0, 100, 0)
+
+[node name="HighcrownBackdrop" type="Node3D" parent="."]
+position = Vector3(10, 0, -175)
+
+[node name="Wall" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(0, 9, 0)
+scale = Vector3(140, 18, 6)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_castle")
+
+[node name="Tower1" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(-60, 19, 0)
+mesh = SubResource("Mesh_tower")
+material_override = SubResource("Mat_castle")
+
+[node name="Roof1" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(-60, 44, 0)
+mesh = SubResource("Mesh_roof")
+material_override = SubResource("Mat_castle")
+
+[node name="Tower2" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(-20, 19, 2)
+mesh = SubResource("Mesh_tower")
+material_override = SubResource("Mat_castle")
+
+[node name="Roof2" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(-20, 44, 2)
+mesh = SubResource("Mesh_roof")
+material_override = SubResource("Mat_castle")
+
+[node name="Tower3" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(25, 19, 0)
+mesh = SubResource("Mesh_tower")
+material_override = SubResource("Mat_castle")
+
+[node name="Roof3" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(25, 44, 0)
+mesh = SubResource("Mesh_roof")
+material_override = SubResource("Mat_castle")
+
+[node name="Tower4" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(65, 19, 1)
+mesh = SubResource("Mesh_tower")
+material_override = SubResource("Mat_castle")
+
+[node name="Roof4" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(65, 44, 1)
+mesh = SubResource("Mesh_roof")
+material_override = SubResource("Mat_castle")
+
+[node name="Keep" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(0, 26, -25)
+scale = Vector3(30, 52, 22)
+mesh = SubResource("Mesh_box")
+material_override = SubResource("Mat_castle")
+
+[node name="Spire" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(6, 34.2, -28)
+scale = Vector3(0.7, 1.8, 0.7)
+mesh = SubResource("Mesh_tower")
+material_override = SubResource("Mat_castle")
+
+[node name="SpireRoof" type="MeshInstance3D" parent="HighcrownBackdrop"]
+position = Vector3(6, 75.6, -28)
+scale = Vector3(0.7, 1.2, 0.7)
+mesh = SubResource("Mesh_roof")
+material_override = SubResource("Mat_castle")

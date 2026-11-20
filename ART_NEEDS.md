@@ -1,0 +1,114 @@
+# ART & AUDIO NEEDS
+
+The art and sound shopping list, grouped by the phase that needs it. We use **gray-box placeholders** (capsules, boxes) until real assets arrive, so nothing here blocks the build.
+
+**Rules**
+- **CC0 only** for downloaded assets (free for anything, no credit required). Fonts may be **OFL** (free, credit required). Always check the license on the download page.
+- Log every asset in [`assets/CREDITS.md`](assets/CREDITS.md): what it is, where it came from, its license.
+- **AI** column: ⭐ = great candidate for your AI-generated art.
+- **Status**: ⬜ needed · 🟨 placeholder in the game · ✅ final
+
+## Where to look (all free)
+| Source | Best for | License |
+|---|---|---|
+| **Quaternius** (quaternius.com) | Rigged humanoids, modular outfits, a big animation library, medieval village and nature kits, animals | CC0 |
+| **KayKit** (kaylousberg.itch.io) | Chunky stylized characters (adventurers, skeletons), animations, dungeon kit, weapons | CC0 (free versions) |
+| **Kenney** (kenney.nl) | UI packs, particle textures, sound effects, castle and town kits | CC0 |
+| **Poly Haven** (polyhaven.com) | Overcast sky images (HDRIs), ground and rock textures, rock and tree models | CC0 |
+| **ambientCG** (ambientcg.com) | Tileable textures: mud, grass, cobblestone, rock, wood | CC0 |
+| **Freesound** (freesound.org) | Sound effects (use the "Creative Commons 0" license filter) | CC0 when filtered |
+| **OpenGameArt** (opengameart.org) | Music and effects (filter by CC0) | Mixed, so CC0 only |
+| **Google Fonts** (fonts.google.com) | Medieval-style fonts for UI and item text | OFL |
+
+> **Style note.** Quaternius and KayKit are cleaner and more cartoony than Warhammer Online or Champions of Norrath. With our fog, dark grading and your AI-made textures and icons, they'll do fine as a base. We can repaint textures to push them grimmer.
+
+---
+
+## Phase 1–3: Player, combat, first enemy
+*Nothing required now; primitives work. These are the first upgrades worth making.*
+
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| Player body (male + female) | Rigged humanoid, simple proportions, swappable outfits | Quaternius modular characters / KayKit Adventurers | | 🟨 capsule |
+| Player animations | Idle, walk, run, sprint, strafe ×4, jump/fall/land, roll (3 speeds), 1H sword light combo ×3, heavy + charge, block idle/hit, parry, riposte, hit react light/heavy, stagger, guard break, death, drink flask, interact | Quaternius Universal Animation Library / KayKit Character Animations | | ⬜ |
+| Sword, shield | First weapon set | KayKit / Quaternius weapon packs | | 🟨 box |
+| Training dummy | Wooden post with straw | Primitive is fine | | ⬜ |
+| Dark Ages Marauder | Big brute, black iron and rust, two-handed axe | Humanoid + outfit pieces | ⭐ textures | 🟨 capsule |
+| Marauder animations | Idle, walk, run, 3 telegraphed axe attacks (one delayed), hit react, stagger, death | Animation libraries | | ⬜ |
+| Blood | 6–8 splatter decals, spurt particle sprites | Kenney Particle Pack + custom | ⭐ decals | ⬜ |
+| Hit sparks | Metal-on-metal sparks for blocks and parries | Kenney Particle Pack | | ⬜ |
+| Shrine (test) | Stone pillar or altar with amber flame | Primitive, then kit piece | ⭐ concept | 🟨 cylinder |
+| **Sounds** | Sword swings ×3, flesh hits ×3, armor hits ×2, block thud, parry clang, footsteps (dirt, stone), roll, grunts (pain ×3, effort ×3, death ×2), drink flask, heavy axe whoosh | Freesound (CC0), Kenney Impact Sounds / RPG Audio | | ⬜ |
+
+## Phase 4: Multiplayer
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| UI font(s) | A readable serif for menus and item text; a heavier display font for titles | Google Fonts (OFL) | | ⬜ |
+| Party frame and chat art | Simple dark frames | Kenney UI pack, recolored | ⭐ | ⬜ |
+| Main menu background | Moody key art: the Tithelands in fog, Highcrown on the horizon | n/a | ⭐ | ⬜ |
+| Downed and revive animations | Collapse, crawl, help up | Animation libraries | | ⬜ |
+
+## Phase 5: Classes
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| Class icons and portraits | Bulwark, Lamplighter, Headsman | n/a | ⭐ | ⬜ |
+| Ability icons (18) | 6 per class, readable at small size | n/a | ⭐ | ⬜ |
+| Resource bar styles | Resolve (steel), Oil (amber), Tally (notches) | n/a | ⭐ | ⬜ |
+| Creator presets | Faces, hair, beards, skin tones | Modular character packs | | ⬜ |
+| Starting gear looks | Chain + shield (Bulwark), robe + lantern-staff (Lamplighter), leather + executioner's greatsword (Headsman) | Packs + kitbash | ⭐ textures | ⬜ |
+| Ability effects | Shout ripple, ember projectile, lantern circle, smoke cloud, flash, light column, pyre; bleed and frost visuals | Particles + shaders | ⭐ textures | ⬜ |
+| **Sounds** | War shout, shield bash, ember whoosh and burst, lantern hum, smoke hiss, flash, executioner chop; status sounds | Freesound, Kenney | | ⬜ |
+
+## Phase 6: Loot
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| **Item icons** (lots) | Every weapon, armor piece, ring, amulet, consumable; same lighting and angle | n/a | ⭐⭐ | ⬜ |
+| Rarity frames | White, green, blue, purple, orange borders and glows | n/a | ⭐ | ⬜ |
+| Inventory and paperdoll | Grid background, slot silhouettes, character panel | Kenney UI, recolored | ⭐ | ⬜ |
+| Gold and soul icons | Coin, soul wisp | n/a | ⭐ | ⬜ |
+| Vendors | Old Wenna (gold), the Soul Broker (hooded, no face) | Humanoid + outfits | ⭐ concept | ⬜ |
+| Weapon models | Axe, mace, greatsword, spear, bow, staff (several variants each by tier) | KayKit / Quaternius weapons | ⭐ textures | ⬜ |
+| Weapon animations | A moveset per weapon type | Animation libraries | | ⬜ |
+| Dropped loot visuals | Item on the ground, rarity light beam | Particles | | ⬜ |
+| **Sounds** | Pickup, coin, souls absorb, equip (cloth, mail, plate), **drop sounds per rarity** (Legendary must be special) | Freesound, Kenney | | ⬜ |
+
+## Phase 7: Death
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| Glowing loot pile | Heap of gear with a pale soul-glow | Particles + props | | ⬜ |
+| Death screen | Short cryptic text over darkness | n/a | ⭐ | ⬜ |
+| **Sounds** | Death sting, pile hum, recovery sound | Freesound | | ⬜ |
+
+## Phase 8: The Tithelands (zone 1)
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| Village and farm kit | Cottages, barns, fences, carts, a mill, burned versions | Quaternius Medieval Village kit, Kenney | ⭐ textures | ⬜ |
+| Nature | Dead and living trees, bushes, grass, rocks, mud, reeds | Quaternius nature kits, Poly Haven | | ⬜ |
+| Terrain textures | Mud, wet grass, cobblestone road, rock | ambientCG, Poly Haven | ⭐ | ⬜ |
+| Castle backdrop | Highcrown's walls and towers (seen through fog) | Kenney Castle Kit, kitbash | ⭐ concept | 🟨 boxes |
+| Ruins and watchtower | Broken walls, tower, gate, **ladder** | Kits | | ⬜ |
+| Shrines (3–4) | Old stone shrine with amber flame | Kit pieces + custom | ⭐ concept | 🟨 cylinder |
+| Overcast sky | Gray cloudy sky image | Poly Haven HDRI | | 🟨 gradient |
+| Rain | Rain particles, splashes, wet-surface look | Particles + shader | | ⬜ |
+| White Knight Zealot | Off-white tabard, tarnished gold, sword and shield, horn | Humanoid + outfits | ⭐ textures | ⬜ |
+| Gaunt Hound | Starved wolf-like dog | Quaternius animals | ⭐ textures | ⬜ |
+| Hobb the Unhanged | Bandit chief with a noose around his neck | Humanoid + outfits | ⭐ | ⬜ |
+| Map | Parchment map art, icons (shrine, party, you) | n/a | ⭐⭐ | ⬜ |
+| **Music** | 2–3 ambient zone loops (day, night), a combat sting | OpenGameArt (CC0) or commissioned | | ⬜ |
+| **Ambience** | Wind, rain loop, crows, distant bells, river, campfire crackle | Freesound | | ⬜ |
+| **Sounds** | Horn call, hound howl/bark/bite, knight shouts, marauder roars | Freesound | | ⬜ |
+
+## Phase 9: The Gullet (cave dungeon)
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| Cave kit | Rock walls, tunnels, stalagmites, bones, puddles | KayKit Dungeon, Poly Haven rocks | ⭐ textures | ⬜ |
+| Candles | Lots: clusters, wax drips, candle-chapel | Simple models | | ⬜ |
+| Fog gate | Swirling barrier shader | Shader | | ⬜ |
+| Brother Tallow (boss) | Huge monk crusted with burning candles, censer-flail | Humanoid scaled up + custom | ⭐⭐ concept | ⬜ |
+| Boss animations | Flail sweeps, overhead slam, wax spit, grab, phase change, stance break, death | Animation libraries + custom | | ⬜ |
+| Candle Acolytes | Robed fanatics | Humanoid + outfits | | ⬜ |
+| **Music** | Boss track (2 phases) | OpenGameArt (CC0) | | ⬜ |
+| **Sounds** | Cave drips, echoes, flail chains, fire whoosh, monk chanting | Freesound | | ⬜ |
+
+## Later
+Camp structures and raid enemies · dwarves and elves · high-tier armor (spikes, skulls, chains, banners) · dismemberment pieces · world bosses.
