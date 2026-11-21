@@ -394,8 +394,13 @@ func armor() -> float:
 
 ## Is the parry window open right now?
 func is_parrying() -> bool:
-	var window := (shield.parry_window if shield else 0.12) + (stats.mod_add("parry_window_add") if stats else 0.0)
+	var window := (shield.parry_window if _shield_in_hand() else 0.12) + (stats.mod_add("parry_window_add") if stats else 0.0)
 	return is_blocking and _clock - _block_started <= window
+
+
+## Is your shield on your arm? (Not while Shield Throw has it in the air.)
+func _shield_in_hand() -> bool:
+	return shield != null and not effects.any("shield_away")
 
 
 ## Weapon damage after stat bonuses (before the attack's own multiplier).
@@ -425,8 +430,9 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 			camera_rig.add_shake(0.25)
 			caster.on_blocked()
 			return HitInfo.Result.PARRIED
-		var reduction := shield.block_reduction if shield else weapon.block_reduction
-		var stamina_cost := damage * (shield.stamina_per_damage if shield else 1.0) * stats.mod_mult("block_stamina_mult")
+		var held := _shield_in_hand()
+		var reduction := shield.block_reduction if held else weapon.block_reduction
+		var stamina_cost := damage * (shield.stamina_per_damage if held else 1.0) * stats.mod_mult("block_stamina_mult")
 		_spend_stamina(stamina_cost)
 		CombatFx.sparks(chest + model.forward() * 0.4, to_attacker)
 		_share_fx(1, chest + model.forward() * 0.4, to_attacker)
@@ -457,7 +463,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	if hit.slow > 0.0:
 		effects.add_mod(&"slow", hit.slow_time, {"move": 1.0 - hit.slow})
 		CombatFx.word(chest + Vector3.UP * 0.5, "Slowed")
-	_poise -= hit.poise_damage
+	_poise -= hit.poise_damage * effects.product("poise_taken")  # Iron Resolve
 	_poise_timer = tuning.poise_regen_delay
 	if _poise <= 0.0:
 		_poise = max_poise()
@@ -646,6 +652,9 @@ func _on_leveled_up(new_level: int) -> void:
 	health_changed.emit(health, max_health())
 	stamina_changed.emit(stamina, max_stamina())
 	CombatFx.burst_visual(&"beacon_column", global_position, 0.8, 1.0)
+	for a in stats.class_data.abilities:
+		if a.unlock_level == new_level:
+			CombatFx.word(global_position + Vector3.UP * 2.8, "New ability: %s" % a.display_name)
 	leveled_up.emit(new_level)
 
 
@@ -925,6 +934,14 @@ func start_cast(a: AbilityData) -> void:
 		_cast_dir = model.forward().cross(Vector3.UP) * (-1.0 if side < 0.0 else 1.0)
 	if a.kind == AbilityData.Kind.LUNGE:
 		_iframe_timer = maxf(_iframe_timer, 0.25)
+		# Lock-on: lunge straight at the targeted enemy.
+		var victim := forward_target(a.ability_range * stats.mod_mult("lunge_distance_mult") + 1.0)
+		if victim:
+			var to := victim.global_position - global_position
+			to.y = 0.0
+			if to.length() > 0.1:
+				model.face_instantly(to)
+				_cast_dir = model.forward()
 	_set_state(State.CAST)
 	if a.cast_anim != &"":
 		model.play(a.cast_anim, 0.08, 1.0, true)
@@ -1487,14 +1504,18 @@ func _state_attack(delta: float) -> void:
 			_charging = false
 	if _plunging and _attack.t >= a.hit_start - 0.05:
 		mult = 0.0  # hold the raised blade until we land
-	_attack.step(delta, mult * tuning.attack_speed)
+	_attack.step(delta, mult * tuning.attack_speed * effects.product("attack_speed"))
+	# Whirlwind: spin on the spot through the hit window.
+	if _ability_strike and _ability_strike.kind == AbilityData.Kind.WHIRLWIND \
+			and _attack.t >= a.hit_start - 0.1 and _attack.t <= a.hit_end + 0.1:
+		model.face_instantly(model.forward().rotated(Vector3.UP, TAU / 0.5 * delta * tuning.attack_speed))
 
 	# Stay locked toward the target during the wind-up.
 	if targeting.has_target() and not _attack.past(a.hit_start):
 		model.turn_toward(targeting.target_point() - global_position, deg_to_rad(360.0) * delta)
 
 	# Lunge forward (but don't shove through whoever you're hitting).
-	var lunge := _attack.lunge_speed() * tuning.attack_speed
+	var lunge := _attack.lunge_speed() * tuning.attack_speed * effects.product("attack_speed")
 	if lunge > 0.0 and _something_close_in_front(1.1):
 		lunge = 0.0
 	if _air_attack:

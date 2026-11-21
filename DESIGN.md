@@ -206,7 +206,15 @@ Meters drain on their own if you stop taking that kind of hit. Enemies suffer th
 ## 6. Classes
 Three fixed classes at launch. **Names and kits are my suggestions; rename freely.** Each class has a hotbar of 6 abilities on cooldowns, unlocked at levels 1, 3, 6, 10, 15 and 20, plus one class resource. Costs and cooldowns are *(start)*.
 
-> **Planned overhaul (not built yet; see `CLASS_PLAN.md`).** These three become the primary classes **Martial** (Headsman), **Vanguard** (Bulwark) and **Mystic** (Lamplighter), each with three subclasses chosen at level 10 (nine in all). Levels 1-9 have no subclass abilities. Until that work starts, the three classes below are the live ones.
+> **Built (2026-11-21): the three primary classes.** The classes are now **Martial** (was Headsman), **Vanguard** (was Bulwark) and **Mystic** (was Lamplighter). The names are for now and may change. The internal IDs (`class_headsman`, `class_bulwark`, `class_lamplighter`) stay so saves keep working. Each class has **three abilities, unlocked automatically at levels 2, 4 and 6**, with cooldowns only (Mystic spells also cost Oil). You keep them for good. Subclasses (chosen at level 10, re-pickable in future) are **not built yet** (see `CLASS_PLAN.md`); they will add more abilities on top.
+>
+> | Class | Level 2 | Level 4 | Level 6 |
+> |---|---|---|---|
+> | Martial | **Lunge**: dash at your target and strike | **Whirlwind**: spin, hit everything around you | **Battle Fury**: 10 s, +25% damage, +25% attack speed (45 s cooldown) |
+> | Vanguard | **Shield Bash**: damage and stagger (needs shield) | **Shield Throw**: shield flies through a line of enemies and returns (needs shield) | **Iron Resolve**: 8 s, -40% damage taken, much harder to stagger (40 s cooldown) |
+> | Mystic | **Arcane Bolt**: homing bolt at your target | **Mend**: heal the friend you face, else yourself | **Hex**: 12 s, enemy deals -25%, takes +20% (25 s cooldown) |
+>
+> The old per-class tables below (levels 1/3/6/10/15/20) describe the previous kits. Their abilities (Challenge, Rallying Bellow, Hold the Line, Unbroken, Kindle, Vigil Lantern, Snuff, Flare, Beacon, Pyre, Hamstring, Behead, Cleave, Feint, Red Mist, Shoulder Charge) still exist in the code and are the first candidates for subclass abilities. Talents were rewritten to fit the new abilities.
 
 ### 6.1 Bulwark: the tank
 *A deserter from three different shield walls who outlived every one of them.* Starts with a sword, a medium shield and chain armor. Wants Strength, Vitality and Armor.

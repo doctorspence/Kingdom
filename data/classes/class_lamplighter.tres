@@ -1,223 +1,188 @@
-[gd_resource type="Resource" script_class="ClassData" format=3]
+[gd_resource type="Resource" script_class="ClassData" format=3 uid="uid://cttyoxgxpbre7"]
 
-[ext_resource type="Script" path="res://game/classes/class_data.gd" id="1_class"]
-[ext_resource type="Script" path="res://game/items/item_data.gd" id="9_item"]
-[ext_resource type="Script" path="res://game/classes/ability_data.gd" id="2_ability"]
-[ext_resource type="Script" path="res://game/classes/talent_data.gd" id="3_talent"]
-[ext_resource type="Resource" path="res://data/weapons/weapon_lantern_staff.tres" id="5_weapon"]
-
+[ext_resource type="Script" uid="uid://bqj5ulsi37vwu" path="res://game/classes/class_data.gd" id="1_class"]
+[ext_resource type="Script" uid="uid://dheyovpsv8en8" path="res://game/classes/ability_data.gd" id="2_ability"]
+[ext_resource type="Script" uid="uid://c6x8twovvp2nu" path="res://game/classes/talent_data.gd" id="3_talent"]
+[ext_resource type="Resource" uid="uid://dos103uccak5l" path="res://data/weapons/weapon_lantern_staff.tres" id="5_weapon"]
+[ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="9_item"]
 [ext_resource type="Resource" path="res://data/items/weapons/item_lantern_staff.tres" id="50_start"]
 [ext_resource type="Resource" path="res://data/items/armor/item_padded_robe.tres" id="51_start"]
 [ext_resource type="Resource" path="res://data/items/armor/item_padded_cowl.tres" id="52_start"]
 
-[sub_resource type="Resource" id="A_kindle"]
+[sub_resource type="Resource" id="A_bolt"]
 script = ExtResource("2_ability")
-id = &"ability_kindle"
-display_name = "Kindle"
-description = "Lob an ember in an arc to where you aim (up to 20 m). It bursts on landing, healing friends within 2.5 m and singeing enemies. It can miss."
-kind = 6
-unlock_level = 1
-cooldown = 3.0
-cost = 15.0
-icon_color = Color(1, 0.6, 0.25, 1)
-cast_anim = &"ual2/OverhandThrow"
-cast_time = 0.35
-lock_time = 0.6
-power = 22.0
-radius = 2.5
-ability_range = 20.0
-value = 8.0
+id = &"ability_arcane_bolt"
+display_name = "Arcane Bolt"
+description = "Loose a small bolt of cold light. It homes on the enemy you are locked on to, or flies straight and hits the first enemy in its way."
+kind = 22
+unlock_level = 2
+cooldown = 2.5
+cost = 10.0
+icon_color = Color(0.55, 0.7, 1, 1)
+cast_anim = &"Spell_Simple_Shoot"
+cast_time = 0.25
+lock_time = 0.45
+power = 16.0
+ability_range = 28.0
 
-[sub_resource type="Resource" id="A_vigil"]
+[sub_resource type="Resource" id="A_mend"]
 script = ExtResource("2_ability")
-id = &"ability_vigil_lantern"
-display_name = "Vigil Lantern"
-description = "Throw a lantern: a 4 m circle that heals friends inside it for 8 s."
-kind = 7
-unlock_level = 3
-cooldown = 20.0
-cost = 30.0
-icon_color = Color(1, 0.8, 0.4, 1)
-cast_anim = &"ual2/OverhandThrow"
-cast_time = 0.35
+id = &"ability_mend"
+display_name = "Mend"
+description = "Heal the friend you are facing (within 12 m), or yourself if no friend is in front of you."
+kind = 23
+unlock_level = 4
+cooldown = 8.0
+cost = 25.0
+icon_color = Color(0.5, 0.85, 0.5, 1)
+cast_anim = &"Spell_Simple_Enter"
+cast_time = 0.3
 lock_time = 0.6
-power = 6.0
-radius = 4.0
-ability_range = 15.0
-duration = 8.0
+power = 40.0
+ability_range = 12.0
 
-[sub_resource type="Resource" id="A_snuff"]
+[sub_resource type="Resource" id="A_hex"]
 script = ExtResource("2_ability")
-id = &"ability_snuff"
-display_name = "Snuff"
-description = "Throw a smoke vial: friends in the cloud are cured of bleed, poison and frost."
-kind = 8
+id = &"ability_hex"
+display_name = "Hex"
+description = "Curse the enemy you are facing for 12 s: it deals 25% less damage and takes 20% more."
+kind = 24
 unlock_level = 6
-cooldown = 15.0
-cost = 20.0
-icon_color = Color(0.6, 0.62, 0.66, 1)
-cast_anim = &"ual2/OverhandThrow"
-cast_time = 0.35
-lock_time = 0.6
-radius = 3.5
-ability_range = 15.0
-duration = 4.0
-
-[sub_resource type="Resource" id="A_flare"]
-script = ExtResource("2_ability")
-id = &"ability_flare"
-display_name = "Flare"
-description = "A blinding flash in front of you (6 m): staggers weak enemies and halves your threat."
-kind = 9
-unlock_level = 10
 cooldown = 25.0
 cost = 20.0
-icon_color = Color(1, 1, 0.85, 1)
-cast_anim = &"Spell_Simple_Shoot"
-cast_time = 0.2
-lock_time = 0.5
-radius = 6.0
-value = 40.0
-
-[sub_resource type="Resource" id="A_beacon"]
-script = ExtResource("2_ability")
-id = &"ability_beacon"
-display_name = "Beacon"
-description = "Mark a spot. 1.5 s later a column of light heals everyone within 3 m for a lot. Predict where your friends will be."
-kind = 10
-unlock_level = 15
-cooldown = 30.0
-cost = 40.0
-icon_color = Color(1, 0.95, 0.7, 1)
+icon_color = Color(0.55, 0.3, 0.65, 1)
 cast_anim = &"Spell_Simple_Shoot"
 cast_time = 0.25
 lock_time = 0.5
-power = 60.0
-radius = 3.0
-ability_range = 20.0
-duration = 1.5
-
-[sub_resource type="Resource" id="A_pyre"]
-script = ExtResource("2_ability")
-id = &"ability_pyre"
-display_name = "Pyre"
-description = "Plant your staff: a 6 m sanctuary for 10 s. Friends inside regenerate and take 20% less damage; enemies inside burn."
-kind = 11
-unlock_level = 20
-cooldown = 120.0
-cost = 60.0
-icon_color = Color(1, 0.4, 0.15, 1)
-cast_anim = &"Spell_Simple_Enter"
-cast_time = 0.4
-lock_time = 0.8
-power = 5.0
-radius = 6.0
-duration = 10.0
+power = 0.25
+ability_range = 22.0
+duration = 12.0
 value = 0.2
-
-[sub_resource type="Resource" id="T_wick"]
-script = ExtResource("3_talent")
-id = &"talent_long_wick"
-display_name = "Long Wick"
-description = "Kindle reaches 50% farther."
-row = 1
-mods = {"kindle_range_mult": 1.5}
-
-[sub_resource type="Resource" id="T_bright"]
-script = ExtResource("3_talent")
-id = &"talent_bright_ember"
-display_name = "Bright Ember"
-description = "Kindle heals 25% more."
-row = 1
-mods = {"kindle_heal_mult": 1.25}
 
 [sub_resource type="Resource" id="T_reservoir"]
 script = ExtResource("3_talent")
 id = &"talent_deep_reservoir"
 display_name = "Deep Reservoir"
 description = "+25 maximum Oil."
-row = 1
-mods = {"oil_max_add": 25.0}
+mods = {
+"oil_max_add": 25.0
+}
 
-[sub_resource type="Resource" id="T_steady"]
+[sub_resource type="Resource" id="T_keen"]
 script = ExtResource("3_talent")
-id = &"talent_steady_hand"
-display_name = "Steady Hand"
-description = "Kindle's burst is 30% wider (easier to land)."
-row = 1
-mods = {"kindle_radius_mult": 1.3}
+id = &"talent_keen_mind"
+display_name = "Keen Mind"
+description = "Arcane Bolt deals 25% more damage."
+mods = {
+"arcane_bolt_damage_mult": 1.25
+}
 
-[sub_resource type="Resource" id="T_tallow"]
+[sub_resource type="Resource" id="T_fingers"]
 script = ExtResource("3_talent")
-id = &"talent_tallow_burn"
-display_name = "Tallow Burn"
-description = "Kindle burns enemies much harder (2.5× damage)."
+id = &"talent_quick_fingers"
+display_name = "Quick Fingers"
+description = "Arcane Bolt's cooldown is 25% shorter."
+mods = {
+"arcane_bolt_cooldown_mult": 0.75
+}
+
+[sub_resource type="Resource" id="T_herbalist"]
+script = ExtResource("3_talent")
+id = &"talent_herbalist"
+display_name = "Herbalist"
+description = "Mend heals 25% more."
+mods = {
+"mend_heal_mult": 1.25
+}
+
+[sub_resource type="Resource" id="T_bright_mend"]
+script = ExtResource("3_talent")
+id = &"talent_steady_mend"
+display_name = "Steady Mend"
+description = "Mend's cooldown is 30% shorter."
 row = 2
-mods = {"kindle_enemy_damage_mult": 2.5}
+mods = {
+"mend_cooldown_mult": 0.7
+}
 
-[sub_resource type="Resource" id="T_oil"]
+[sub_resource type="Resource" id="T_linger"]
 script = ExtResource("3_talent")
-id = &"talent_lantern_oil"
-display_name = "Lantern Oil"
-description = "Vigil Lantern burns 4 s longer."
+id = &"talent_lingering_curse"
+display_name = "Lingering Curse"
+description = "Hex lasts 6 s longer."
 row = 2
-mods = {"vigil_duration_add": 4.0}
+mods = {
+"hex_duration_add": 6.0
+}
 
-[sub_resource type="Resource" id="T_clean_air"]
+[sub_resource type="Resource" id="T_robes"]
 script = ExtResource("3_talent")
-id = &"talent_clean_air"
-display_name = "Clean Air"
-description = "Snuff also heals friends in the cloud."
+id = &"talent_thick_robes"
+display_name = "Thick Robes"
+description = "+10 armor."
 row = 2
-mods = {"snuff_heal": 6.0}
+mods = {
+"armor_add": 10.0
+}
 
-[sub_resource type="Resource" id="T_blinding"]
+[sub_resource type="Resource" id="T_hex_cd"]
 script = ExtResource("3_talent")
-id = &"talent_blinding"
-display_name = "Blinding"
-description = "Flare reaches 50% farther."
+id = &"talent_quick_curse"
+display_name = "Quick Curse"
+description = "Hex's cooldown is 30% shorter."
 row = 2
-mods = {"flare_radius_mult": 1.5}
+mods = {
+"hex_cooldown_mult": 0.7
+}
 
-[sub_resource type="Resource" id="T_quick_beacon"]
+[sub_resource type="Resource" id="T_hands"]
 script = ExtResource("3_talent")
-id = &"talent_quick_beacon"
-display_name = "Quick Beacon"
-description = "Beacon lands 40% sooner."
+id = &"talent_healing_hands"
+display_name = "Healing Hands"
+description = "Mend heals 40% more."
 row = 3
-mods = {"beacon_delay_mult": 0.6}
+mods = {
+"mend_heal_mult": 1.4
+}
 
-[sub_resource type="Resource" id="T_warmth"]
+[sub_resource type="Resource" id="T_wither"]
 script = ExtResource("3_talent")
-id = &"talent_pyre_warmth"
-display_name = "Pyre Warmth"
-description = "Pyre heals 50% more."
+id = &"talent_withering_curse"
+display_name = "Withering Curse"
+description = "Hexed enemies take another 15% damage."
 row = 3
-mods = {"pyre_regen_mult": 1.5}
+mods = {
+"hex_vuln_add": 0.15
+}
 
-[sub_resource type="Resource" id="T_self"]
+[sub_resource type="Resource" id="T_piercing"]
 script = ExtResource("3_talent")
-id = &"talent_self_kindling"
-display_name = "Self-Kindling"
-description = "Your heals work better on yourself (+25%)."
+id = &"talent_piercing_mind"
+display_name = "Piercing Mind"
+description = "Arcane Bolt deals 40% more damage."
 row = 3
-mods = {"self_heal_mult_add": 0.25}
+mods = {
+"arcane_bolt_damage_mult": 1.4
+}
 
-[sub_resource type="Resource" id="T_rain"]
+[sub_resource type="Resource" id="T_flame"]
 script = ExtResource("3_talent")
-id = &"talent_ember_rain"
-display_name = "Ember Rain"
-description = "Kindle's cooldown is 30% shorter."
+id = &"talent_sustaining_flame"
+display_name = "Sustaining Flame"
+description = "Oil comes back 50% faster."
 row = 3
-mods = {"kindle_cooldown_mult": 0.7}
+mods = {
+"oil_regen_mult": 1.5
+}
 
 [resource]
 script = ExtResource("1_class")
 id = &"class_lamplighter"
-display_name = "Lamplighter"
-role = "Healer"
-description = "Keeper of the old shrine-flames. Lobs embers that heal friends (and can miss), throws lanterns and smoke, and still swings a mean staff."
+display_name = "Mystic"
+role = "Magic and healing"
+description = "A quiet practitioner of the old arts, rare and mistrusted. Looses bolts of light, mends wounds and lays curses on the strongest foe. Learns Arcane Bolt at level 2, Mend at 4 and Hex at 6. Chooses a path at level 10 (later)."
 weapon = ExtResource("5_weapon")
+starting_items = Array[ExtResource("9_item")]([ExtResource("50_start"), ExtResource("51_start"), ExtResource("52_start")])
 resource_kind = 1
 resource_label = "Oil"
 resource_color = Color(0.95, 0.65, 0.25, 1)
@@ -227,13 +192,12 @@ agility = 8.0
 agility_per_level = 0.5
 intellect = 15.0
 intellect_per_level = 1.4
-vitality = 10.0
 vitality_per_level = 0.9
-armor = 10.0
 armor_per_level = 0.8
 passive_name = "Keeper of the Flame"
-passive_description = "Revives take half as long. Healing grows with Intellect. Your heals work at 50% on yourself. Oil trickles back, faster when you land hits."
-passive_mods = {"revive_time_mult": 0.5, "self_heal_mult": 0.5}
-starting_items = Array[ExtResource("9_item")]([ExtResource("50_start"), ExtResource("51_start"), ExtResource("52_start")])
-abilities = Array[ExtResource("2_ability")]([SubResource("A_kindle"), SubResource("A_vigil"), SubResource("A_snuff"), SubResource("A_flare"), SubResource("A_beacon"), SubResource("A_pyre")])
-talents = Array[ExtResource("3_talent")]([SubResource("T_wick"), SubResource("T_bright"), SubResource("T_reservoir"), SubResource("T_steady"), SubResource("T_tallow"), SubResource("T_oil"), SubResource("T_clean_air"), SubResource("T_blinding"), SubResource("T_quick_beacon"), SubResource("T_warmth"), SubResource("T_self"), SubResource("T_rain")])
+passive_description = "Revives take half as long. Spell power and healing grow with Intellect. Oil trickles back, faster when you land melee hits."
+passive_mods = {
+"revive_time_mult": 0.5
+}
+abilities = Array[ExtResource("2_ability")]([SubResource("A_bolt"), SubResource("A_mend"), SubResource("A_hex")])
+talents = Array[ExtResource("3_talent")]([SubResource("T_reservoir"), SubResource("T_keen"), SubResource("T_fingers"), SubResource("T_herbalist"), SubResource("T_bright_mend"), SubResource("T_linger"), SubResource("T_robes"), SubResource("T_hex_cd"), SubResource("T_hands"), SubResource("T_wither"), SubResource("T_piercing"), SubResource("T_flame")])

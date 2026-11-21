@@ -27,14 +27,14 @@ KINGDOM (working title) is a dark fantasy co-op action RPG in Godot 4.7.2 (GDScr
 
 All art is placeholder (gray shapes, mannequin models). Audio is not started (needs your OK to download CC0 sounds).
 
-## Waiting on you (playtests, marked with a test icon in TODO.md)
-- Explore the Tithelands, find the shortcut, hunt Hobb, play through a night.
-- Enter the Gullet (Quarry Shrine, northwest of the map; amber beam; E at the arch) and fight Brother Tallow, ideally with friends. Then tune for 3 players.
-- Try the new attack types and enemy spacing against a group.
-- A real test with friends over the internet.
+## Playtests
+You have played through the Tithelands, Hobb, the Gullet and Brother Tallow, the new attacks and enemy spacing, and an internet test with friends. Still to try: the nine new class abilities.
+
+## Just done: the three primary classes
+Headsman / Bulwark / Lamplighter are now **Martial / Vanguard / Mystic** (names provisional; internal IDs unchanged so saves work). Each has three abilities unlocked at levels 2, 4 and 6 (see DESIGN.md section 6). Subclasses are deferred: you decided they come later, and the choice should be re-pickable in future. `class_check` was rewritten and passes, as do all other checks and the 3-player check.
 
 ## Next up
-**The class overhaul**, planned in `CLASS_PLAN.md` and not started: primary classes Martial / Vanguard / Mystic (a reshape of Headsman / Bulwark / Lamplighter), nine subclasses chosen at level 10 through a preview screen, and the White Knights / Dark Ages / Outcasts lore. Start at Priority 1 (data types, saves, network sync). Five open questions for you are at the end of that file.
+Playtest the new abilities (🧪 in TODO.md). Then, when you want it, the subclass work in `CLASS_PLAN.md` (Priority 1 onward). Your decisions so far: subclass is re-pickable in future; names Martial / Vanguard / Mystic are for now.
 
 ## Things to know
 - **Checks:** run any check with `--headless --script res://tests/run.gd -- <name>` (see README.md). Current checks: movement, combat, class, loot, death, enemy, zone, boss, moves; plus the 3-player check `tests/run_net_check.ps1`. All pass as of this update.

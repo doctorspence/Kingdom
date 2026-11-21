@@ -2,7 +2,9 @@
 
 *Planning notes only. Nothing in this file is built yet. Written 2026-11-21 from your class/subclass/faction brief and a read of the current code.*
 
-> **Status (2026-11-21): planned only, nothing built.** Next step is Priority 1 (section 3). The five questions in section 4 are still open, and none of them block Priority 1. The live classes are still Bulwark, Lamplighter and Headsman (DESIGN.md section 6).
+> **Update (2026-11-21): Priority 2 is done in a new form.** The three primary classes (Martial / Vanguard / Mystic, with abilities at levels 2, 4, 6) are built; see DESIGN.md section 6. Subclasses, factions and the level 10 choice are still future work. Decisions so far: the subclass choice can be re-picked in future; the three names are provisional. Talents were rewritten for the new abilities (they stay per class for now).
+>
+> **Original status (2026-11-21): planned only, nothing built.** Next step is Priority 1 (section 3). The five questions in section 4 are still open, and none of them block Priority 1. The live classes are still Bulwark, Lamplighter and Headsman (DESIGN.md section 6).
 
 ## 1. What you asked for (kept so nothing is lost)
 

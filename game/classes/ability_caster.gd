@@ -12,6 +12,8 @@ signal ability_used(slot: int)
 
 const AREA_SCENE := preload("res://game/classes/area_effect.gd")
 const EMBER_SCRIPT := preload("res://game/classes/ember.gd")
+const SHIELD_THROW_SCRIPT := preload("res://game/classes/shield_throw.gd")
+const BOLT_SCRIPT := preload("res://game/classes/arcane_bolt.gd")
 
 ## Resolve fades this much per second out of combat; Oil refills this much per second.
 const RESOLVE_FADE := 6.0
@@ -68,7 +70,7 @@ func _physics_process(delta: float) -> void:
 				_set_resource(resource - RESOLVE_FADE * delta)
 		ClassData.ResourceKind.OIL:
 			if resource < stats().resource_max():
-				_set_resource(resource + OIL_REGEN * (1.0 + stats().intellect() / 100.0) * delta)
+				_set_resource(resource + OIL_REGEN * stats().mod_mult("oil_regen_mult") * (1.0 + stats().intellect() / 100.0) * delta)
 		ClassData.ResourceKind.TALLY:
 			if resource > 0.0 and _since_tally > TALLY_FADE_DELAY + stats().mod_add("tally_fade_add"):
 				_set_resource(0.0)
@@ -141,9 +143,9 @@ func try_use(slot: int) -> bool:
 	if not player.can_start_ability():
 		return false
 	_pay(a)
-	var cd := a.cooldown
-	if a.kind == AbilityData.Kind.KINDLE:
-		cd *= stats().mod_mult("kindle_cooldown_mult")
+	# Talents shorten one ability's cooldown with "<name>_cooldown_mult"
+	# (the name is the ability id without "ability_").
+	var cd := a.cooldown * stats().mod_mult(String(a.id).trim_prefix("ability_") + "_cooldown_mult")
 	cooldowns[a.id] = cd
 	_since_combat = 0.0
 	ability_used.emit(slot)
@@ -171,6 +173,11 @@ func modify_strike_hit(a: AbilityData, hit: HitInfo, target: Node3D) -> void:
 	hit.status_amount = a.status_amount
 	hit.threat_mult *= a.threat_mult
 	match a.kind:
+		AbilityData.Kind.WHIRLWIND:
+			hit.damage *= stats().mod_mult("whirlwind_damage_mult")
+			if stats().mod_add("whirlwind_bleed") > 0.0:
+				hit.status = Effects.Status.BLEED
+				hit.status_amount = stats().mod_add("whirlwind_bleed")
 		AbilityData.Kind.SHIELD_BASH:
 			if stats().mod_add("shield_bash_bleed") > 0.0:
 				hit.status = Effects.Status.BLEED
@@ -264,6 +271,31 @@ func cast_effect(a: AbilityData) -> void:
 					{"stamina_cost": 0.5, "lifesteal": 0.05, "damage_taken": 1.15, "label": "Red Mist"})
 		AbilityData.Kind.HOLD_THE_LINE:
 			_buff(p, &"hold_line", a.duration, {"block_all": true, "label": "Holding the line"})
+		AbilityData.Kind.BATTLE_FURY:
+			_buff(p, &"battle_fury", a.duration + stats().mod_add("battle_fury_duration_add"),
+					{"damage_dealt": 1.0 + a.value + stats().mod_add("battle_fury_damage_add"),
+					"attack_speed": 1.0 + a.power, "label": "Battle Fury"})
+			_visual(&"bellow", p.global_position, 2.0, 0.4)
+		AbilityData.Kind.IRON_RESOLVE:
+			_buff(p, &"iron_resolve", a.duration + stats().mod_add("iron_resolve_duration_add"),
+					{"damage_taken": 1.0 - clampf(a.value + stats().mod_add("iron_resolve_reduction_add"), 0.0, 0.8),
+					"poise_taken": 1.0 - a.power, "label": "Iron Resolve"})
+			_visual(&"bellow", p.global_position, 2.0, 0.4)
+		AbilityData.Kind.SHIELD_THROW:
+			_throw_shield(a)
+		AbilityData.Kind.ARCANE_BOLT:
+			_cast_bolt(a)
+		AbilityData.Kind.MEND:
+			_mend(a)
+		AbilityData.Kind.HEX:
+			var victim := p.forward_target(a.ability_range)
+			if victim and victim.has_method("apply_effect"):
+				victim.call(&"apply_effect", &"hex", a.duration + stats().mod_add("hex_duration_add"),
+						{"damage_dealt": 1.0 - a.power, "damage_taken": 1.0 + a.value + stats().mod_add("hex_vuln_add"), "label": "Hexed"})
+				CombatFx.word(victim.global_position + Vector3.UP * 2.6, "Hexed!")
+				CombatFx.burst_visual(&"flare", victim.global_position + Vector3.UP * 1.3, 1.2, 0.35)
+			else:
+				CombatFx.word(p.global_position + Vector3.UP * 2.2, "No target")
 
 
 ## Hold the Line: allies right behind you take less damage (called every frame while holding).
@@ -290,7 +322,9 @@ func dash_hit(a: AbilityData, already: Array[Node]) -> void:
 			AbilityData.Kind.SHOULDER_CHARGE:
 				_strike(e, a.power, a.value, Effects.Status.NONE, 0.0, a.threat_mult)
 			AbilityData.Kind.LUNGE:
-				_strike(e, p.weapon_damage() * a.power, p.weapon.poise_damage, Effects.Status.NONE, 0.0, 1.0)
+				var bleed := stats().mod_add("lunge_bleed")
+				_strike(e, p.weapon_damage() * a.power, p.weapon.poise_damage,
+						Effects.Status.BLEED if bleed > 0.0 else Effects.Status.NONE, bleed, 1.0)
 
 
 # --- Helpers that reach across the network ----------------------------------------
@@ -377,6 +411,92 @@ func strike_enemy(e: Node3D, damage: float) -> void:
 	_strike(e, damage, 0.0, Effects.Status.NONE, 0.0, 1.0)
 
 
+## A direct hit from a thrown or fired ability.
+func strike(e: Node3D, damage: float, poise: float, threat_mult: float) -> void:
+	_strike(e, damage, poise, Effects.Status.NONE, 0.0, threat_mult)
+
+
+# --- Primary class abilities ---------------------------------------------------------
+
+## Shield Throw: the shield flies at your target (or straight ahead) and returns.
+func _throw_shield(a: AbilityData) -> void:
+	var p := player
+	var t := p.forward_target(a.ability_range)
+	var dir := p.model.forward()
+	if t:
+		dir = t.global_position - p.global_position
+		dir.y = 0.0
+		dir = dir.normalized()
+		p.model.face_instantly(dir)
+	var dist := a.ability_range * stats().mod_mult("shield_throw_range_mult")
+	var from := p.global_position + Vector3.UP * 1.2 + dir * 0.6
+	var disc: Node3D = SHIELD_THROW_SCRIPT.new()
+	disc.set(&"caster", self)
+	disc.set(&"follow", p)
+	disc.set(&"owned", true)
+	disc.set(&"direction", dir)
+	disc.set(&"max_distance", dist)
+	disc.set(&"damage", p.weapon_damage() * a.power * stats().mod_mult("shield_throw_damage_mult"))
+	disc.set(&"poise", a.value)
+	disc.set(&"threat_mult", a.threat_mult)
+	CombatFx.world().add_child(disc)
+	disc.global_position = from
+	# While it's away your shield doesn't block (see Player.receive_hit).
+	_buff(p, &"shield_away", dist / 26.0 + dist / 30.0 + 0.4, {"shield_away": true})
+	_net_shield_throw.rpc(from, dir, dist)
+
+
+## The shield came home.
+func shield_returned() -> void:
+	player.effects.remove_mod(&"shield_away")
+
+
+## Arcane Bolt: homes on your target, else flies straight and hits the first enemy.
+func _cast_bolt(a: AbilityData) -> void:
+	var p := player
+	var from := p.global_position + Vector3.UP * 1.5 + p.model.forward() * 0.5
+	var t := p.forward_target(a.ability_range)
+	var bolt: Node3D = BOLT_SCRIPT.new()
+	bolt.set(&"caster", self)
+	bolt.set(&"owned", true)
+	bolt.set(&"target", t)
+	var dir := p.model.forward()
+	var aim := Vector3.ZERO
+	if t:
+		aim = t.call(&"get_lock_point")
+		dir = (aim - from).normalized()
+		p.model.face_instantly(dir)
+	bolt.set(&"direction", dir)
+	bolt.set(&"max_range", a.ability_range + 4.0)
+	bolt.set(&"damage", a.power * stats().ability_power() * stats().mod_mult("arcane_bolt_damage_mult"))
+	CombatFx.world().add_child(bolt)
+	bolt.global_position = from
+	_net_bolt.rpc(from, dir, aim, a.ability_range + 4.0)
+
+
+## Mend: heals the friend in front of you, or yourself if nobody is.
+func _mend(a: AbilityData) -> void:
+	var p := player
+	var amount := a.power * stats().ability_power() * stats().mod_mult("mend_heal_mult")
+	var best: Player
+	var best_angle := 40.0
+	for ally in _allies_near(p.global_position, a.ability_range):
+		if ally == p or ally.state == Player.State.DOWNED:
+			continue
+		var to := ally.global_position - p.global_position
+		to.y = 0.0
+		var angle := rad_to_deg(p.model.forward().angle_to(to))
+		if angle < best_angle:
+			best_angle = angle
+			best = ally
+	if best:
+		heal_player(best, amount)
+		_visual(&"ember_burst", best.global_position + Vector3.UP * 0.2, 1.2, 0.5)
+	else:
+		p.heal_from(amount, p.player_name)  # no self-heal penalty for Mend
+		_visual(&"ember_burst", p.global_position + Vector3.UP * 0.2, 1.2, 0.5)
+
+
 # --- What other players see -------------------------------------------------------
 
 @rpc("authority", "call_remote", "unreliable")
@@ -386,6 +506,28 @@ func _net_ember(from: Vector3, to: Vector3) -> void:
 	ember.set(&"to", to)
 	ember.set(&"owned", false)
 	CombatFx.world().add_child(ember)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _net_shield_throw(from: Vector3, dir: Vector3, dist: float) -> void:
+	var disc: Node3D = SHIELD_THROW_SCRIPT.new()
+	disc.set(&"follow", player)
+	disc.set(&"owned", false)
+	disc.set(&"direction", dir)
+	disc.set(&"max_distance", dist)
+	CombatFx.world().add_child(disc)
+	disc.global_position = from
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_bolt(from: Vector3, dir: Vector3, aim_at: Vector3, max_range: float) -> void:
+	var bolt: Node3D = BOLT_SCRIPT.new()
+	bolt.set(&"owned", false)
+	bolt.set(&"direction", dir)
+	bolt.set(&"aim_at", aim_at)
+	bolt.set(&"max_range", max_range)
+	CombatFx.world().add_child(bolt)
+	bolt.global_position = from
 
 
 @rpc("authority", "call_remote", "reliable")

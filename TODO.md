@@ -161,8 +161,17 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 
 ---
 
-## Planned: class structure, subclasses and factions
-Full notes and priority order are in [`CLASS_PLAN.md`](CLASS_PLAN.md). Nothing is built yet.
+## Primary classes ✅ (2026-11-21)
+- [x] Martial / Vanguard / Mystic (names provisional; IDs unchanged), three abilities each, unlocked at levels 2, 4, 6 and kept after level 10
+- [x] Martial: Lunge (lock-on aware), Whirlwind (360° strike), Battle Fury (damage and attack speed buff)
+- [x] Vanguard: Shield Bash, Shield Throw (pierces a line, returns, no blocking while away), Iron Resolve (damage and poise reduction)
+- [x] Mystic: Arcane Bolt (homing on lock-on), Mend (friend in front or self), Hex (enemy curse, synced via the host)
+- [x] Talents rewritten for the new abilities; "New ability" text on level-up; `class_check` rewritten (all pass)
+- [ ] 🧪 Play each class: Lunge at a locked-on enemy, Whirlwind when surrounded, Shield Throw through a line, Mend a friend, Hex a boss; try them in co-op
+- [ ] Later: real casting animations and icons; a Martial resource sink (Tally has nothing to spend on yet); hide your shield while it is thrown
+
+## Planned: subclasses and factions
+Full notes and priority order are in [`CLASS_PLAN.md`](CLASS_PLAN.md). Not built yet (the primary classes above are done). Decisions: subclass is re-pickable in future; interim gate and talents still open.
 - [ ] P1 Foundations: subclass and faction data types, subclass on the character, save and network, old class ID aliases
 - [ ] P2 Level 1 primary classes: Martial / Vanguard / Mystic (reshape of Headsman / Bulwark / Lamplighter), 3 starting abilities each
 - [ ] P3 Level 10 subclass choice: shrine button, preview screen, permanent confirmation, hotbar slots 4-6

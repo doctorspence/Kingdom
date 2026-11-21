@@ -10,6 +10,9 @@ enum Kind {
 	KINDLE, VIGIL_LANTERN, SNUFF, FLARE, BEACON, PYRE,
 	# Headsman
 	HAMSTRING, BEHEAD, LUNGE, CLEAVE, FEINT, RED_MIST,
+	# Primary class abilities (Martial, Vanguard, Mystic). New kinds go at the
+	# END of this list: data files store the number.
+	WHIRLWIND, BATTLE_FURY, SHIELD_THROW, IRON_RESOLVE, ARCANE_BOLT, MEND, HEX,
 }
 
 ## Permanent ID used by saves and the network. Never change it.

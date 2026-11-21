@@ -209,6 +209,20 @@ func _taunt(peer: int, duration: float) -> void:
 			_set_state(State.CHASE)
 
 
+## A timed buff or curse on this enemy (Hex). The host keeps it.
+func apply_effect(id: StringName, duration: float, values: Dictionary) -> void:
+	if _is_host():
+		effects.add_mod(id, duration, values)
+	else:
+		_net_effect.rpc_id(1, id, duration, values)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_effect(id: StringName, duration: float, values: Dictionary) -> void:
+	if _is_host() and state != State.DEAD:
+		effects.add_mod(id, duration, values)
+
+
 ## Multiply one player's threat (Flare halves it, Feint drops it).
 func scale_threat(peer: int, mult: float) -> void:
 	if _is_host():
@@ -448,7 +462,7 @@ func make_hit(attack_index: int) -> HitInfo:
 	hit.attacker = self
 	hit.attack = a
 	hit.origin = global_position
-	hit.damage = a.base_damage * (1.3 if _fury else 1.0)
+	hit.damage = a.base_damage * (1.3 if _fury else 1.0) * effects.product("damage_dealt")
 	hit.status = a.status
 	hit.status_amount = a.status_amount
 	hit.poise_damage = a.base_poise_damage
