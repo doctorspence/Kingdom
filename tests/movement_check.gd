@@ -62,7 +62,8 @@ func _run() -> void:
 
 	# Rolls at each equip load
 	for case in [[0.2, 0], [0.5, 1], [0.9, 2]]:
-		player.equip_load = case[0]
+		player._debug_load = case[0] - player.inventory.equipped_weight() / (60.0 + 0.5 * player.stats.strength())
+		player._refresh_gear()
 		await _seconds(0.8)
 		var start := player.global_position
 		await _tap("dodge_sprint")
@@ -73,11 +74,23 @@ func _run() -> void:
 		_check("roll distance at load %.1f" % case[0], dist, t.roll_distance[case[1]], 0.35)
 		_check_true("roll costs stamina", player.stamina < t.max_stamina)
 		await _seconds(1.5)
-	player.equip_load = 1.2
+	player._debug_load = 1.2
+	player._refresh_gear()
 	var before := player.global_position
 	await _tap("dodge_sprint")
 	await _seconds(0.6)
 	_check("no roll when overloaded", _flat(player.global_position - before).length(), 0.0, 0.05)
+	player.equip_load = 0.2
+	player._debug_load = 0.0
+	player._refresh_gear()
+	await _seconds(1.0)
+	var facing := player.model.forward()
+	var spot := player.global_position
+	await _tap("dodge_sprint")
+	await _seconds(0.8)
+	var moved := _flat(player.global_position - spot)
+	_check_true("standing roll goes backwards, still facing forward (moved %.1f m)" % moved.length(),
+			moved.length() > 2.0 and moved.normalized().dot(facing) < -0.9 and player.model.forward().dot(facing) > 0.95)
 	player.equip_load = 0.2
 	await _seconds(1.0)
 

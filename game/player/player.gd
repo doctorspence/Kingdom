@@ -80,6 +80,7 @@ var _roll_dir := Vector3.FORWARD
 var _roll_duration := 0.6
 var _roll_distance := 3.5
 var _since_roll := 99.0
+var _roll_backward := false
 var _buffered := &""
 var _buffer_timer := 0.0
 var _dodge_held := -1.0
@@ -1139,15 +1140,15 @@ func _state_move(delta: float) -> void:
 	var target_velocity := Vector3.ZERO
 	if is_sprinting:
 		# Sprinting turns in wide arcs: you go where your body points.
-		model.turn_toward(dir, deg_to_rad(tuning.sprint_turn_speed) * delta)
+		model.turn_smooth(dir, 5.0, tuning.sprint_turn_speed * 0.5, delta)
 		target_velocity = model.forward() * speed
 	else:
 		if amount > 0.0:
 			target_velocity = dir.normalized() * speed
 		if locked:
-			model.turn_toward(targeting.target_point() - global_position, deg_to_rad(tuning.turn_speed) * delta)
+			model.turn_smooth(targeting.target_point() - global_position, 14.0, 180.0, delta)
 		elif amount > 0.0:
-			model.turn_toward(dir, deg_to_rad(tuning.turn_speed) * delta)
+			model.turn_smooth(dir, 14.0, 180.0, delta)
 
 	horizontal = _steer(horizontal, target_velocity, speed, amount > 0.0 and not is_sprinting, delta)
 	velocity.x = horizontal.x
@@ -1517,20 +1518,34 @@ func _start_roll(dir: Vector3) -> void:
 	_roll_duration = tuning.roll_duration[tier]
 	_roll_distance = tuning.roll_distance[tier]
 	_iframe_timer = tuning.roll_iframes[tier]
-	_roll_dir = dir.normalized() if dir.length() > 0.1 else model.forward()
-	model.face_instantly(_roll_dir)
+	_roll_backward = dir.length() <= 0.1
+	if _roll_backward:
+		# Standing still: roll straight back, still facing forward.
+		_roll_dir = -model.forward()
+	else:
+		_roll_dir = dir.normalized()
+		model.face_instantly(_roll_dir)
 	_spend_stamina(tuning.roll_stamina)
 	is_sprinting = false
 	_set_state(State.ROLL)
-	model.play_roll(_roll_duration)
+	if _roll_backward:
+		model.play_roll_backward(_roll_duration)
+	else:
+		model.play_roll(_roll_duration)
 
 
 func _state_roll(delta: float) -> void:
 	var u := _state_time / _roll_duration
+	# Chain rolls: a roll pressed in the last quarter starts the next one at once.
+	if u >= 0.75 and _has_buffered(&"roll") and _can_roll():
+		_consume(&"roll")
+		_since_roll = 0.0
+		_start_roll(_input_direction())
+		return
 	# Fast at the start, easing down to running speed at the end (so you come out
 	# of the roll still moving). Covers exactly the roll distance.
 	var average := _roll_distance / _roll_duration
-	var end_speed := minf(tuning.run_speed, average)
+	var end_speed := minf(tuning.run_speed, average) * (0.25 if _roll_backward else 1.0)
 	var start_speed := end_speed + 1.5 * (average - end_speed)
 	if u >= 1.0:
 		# Hand the momentum straight back to normal movement.

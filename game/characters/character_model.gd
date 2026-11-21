@@ -99,6 +99,17 @@ func turn_toward(direction: Vector3, max_radians: float) -> void:
 	rotation.y += clampf(diff, -max_radians, max_radians)
 
 
+## Turn smoothly: quick at first, easing in as it lines up. Never slower than
+## `min_degrees_per_sec`, so small corrections still finish.
+func turn_smooth(direction: Vector3, sharpness: float, min_degrees_per_sec: float, delta: float) -> void:
+	var flat := Vector3(direction.x, 0.0, direction.z)
+	if flat.length_squared() < 0.0001:
+		return
+	var diff := absf(wrapf(atan2(flat.x, flat.z) - rotation.y, -PI, PI))
+	var step := maxf(diff * (1.0 - exp(-sharpness * delta)), deg_to_rad(min_degrees_per_sec) * delta)
+	turn_toward(direction, step)
+
+
 func face_instantly(direction: Vector3) -> void:
 	turn_toward(direction, TAU)
 
@@ -123,6 +134,16 @@ func update_locomotion(ground_speed: float, sprinting: bool, walking: bool) -> v
 
 func play_roll(duration: float) -> void:
 	play(ANIM_ROLL, 0.06, anim_length(ANIM_ROLL) * roll_anim_portion / duration, true)
+
+
+## A roll backwards (standing still and tapping roll): the roll played in reverse.
+func play_roll_backward(duration: float) -> void:
+	if _anim == null or not _anim.has_animation(ANIM_ROLL):
+		return
+	_current = ANIM_ROLL
+	_anim.speed_scale = anim_length(ANIM_ROLL) * roll_anim_portion / duration
+	_anim.play_backwards(ANIM_ROLL, 0.06)
+	play_count += 1
 
 
 func play_jump() -> void:
