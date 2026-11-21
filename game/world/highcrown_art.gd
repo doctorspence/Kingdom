@@ -27,6 +27,8 @@ func _ready() -> void:
 	_windows()
 	_torches()
 	_town()
+	_beacons()
+	_exempt_from_fog()
 
 
 func _mat_emit(color: Color, energy: float) -> StandardMaterial3D:
@@ -220,3 +222,36 @@ func _stall(pos: Vector3) -> void:
 	_add_box(pos + Vector3(0, 0.55, 0.3), Vector3(2.8, 0.2, 1.0), WOOD)
 	var awning := _add_box(pos + Vector3(0, 2.5, 0), Vector3(3.2, 0.12, 2.0), CLOTH)
 	awning.rotation_degrees = Vector3(-10, 0, 0)
+
+
+# --- visible from afar ----------------------------------------------------------
+# Highcrown is 350 m from the start altar, far beyond where the zone fog hides things.
+# It is exempt from distance fog (a dark, cold silhouette with warm lights), so the
+# stronghold can be seen from the first shrine.
+
+func _beacons() -> void:
+	var flame := _mat_emit(Color(1.0, 0.55, 0.2), 6.0)
+	flame.disable_fog = true
+	for t in [Vector2(-WALL_HALF, -74.0), Vector2(WALL_HALF, -74.0), Vector2(-60, 0), Vector2(65, 1), Vector2(-20, 2), Vector2(25, 0)]:
+		_add_box(Vector3(t.x, 46.0 if t.y < -50.0 else 38.0, t.y), Vector3(2.4, 1.4, 2.4), flame)
+	_add_box(Vector3(6, 82.0, -28), Vector3(1.6, 2.4, 1.6), flame)
+
+
+func _exempt_from_fog() -> void:
+	var cache := {}
+	for c in get_children():
+		var mi := c as GeometryInstance3D
+		if mi != null:
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		if mi == null or mi.material_override == null:
+			continue
+		var src := mi.material_override as BaseMaterial3D
+		if src == null:
+			continue
+		if not cache.has(src):
+			var m := src.duplicate() as BaseMaterial3D
+			m.disable_fog = true
+			if not m.emission_enabled:
+				m.albedo_color = m.albedo_color * Color(0.62, 0.66, 0.74, 1.0)
+			cache[src] = m
+		mi.material_override = cache[src]
