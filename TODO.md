@@ -50,7 +50,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] Later: limit enemies to 2 attackers per player (matters once there are packs, Phase 8)
 - [ ] Later: hit-stop is per character already; check it feels right with lag in Phase 4
 
-## Phase 4: Multiplayer ✅ (waiting for your test)
+## Phase 4: Multiplayer ✅
 - [x] Main menu: name, Host (or play alone) / Join by address / Quit; shows your LAN address; remembers name and last address
 - [x] Host-and-play server (ENet, UDP port 31415, up to 10 players)
 - [x] Players spawn at spawn points and sync (position, facing, animations, health, state); name tags over friends
@@ -66,15 +66,21 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 3 game windows on one PC, then a real test with friends over the internet
 - [ ] Later: show ping in the debug info; a "kick player" option for the host
 
-## Phase 5: Classes
-- [ ] Character creator with presets (class, look, name)
-- [ ] Bulwark, Lamplighter, Headsman: resources and 6 abilities each, hotbar with cooldowns
-- [ ] Aimed heals (lobbed projectiles and ground zones)
-- [ ] Threat table and taunts; bosses switch targets only on telegraphs
-- [ ] XP from kills, levels 1–30, stat growth
-- [ ] Small talent tree per class
-- [ ] Status effects: bleed, poison, frost buildup
+## Phase 5: Classes ✅ (waiting for your test)
+- [x] Character creator in the main menu: name, class (with role, story, passive, abilities), body (broad/slender), color; remembered
+- [x] Bulwark (Resolve), Lamplighter (Oil), Headsman (Tally notches): 6 abilities each with cooldowns, costs and unlock levels (1/3/6/10/15/20); hotbar 1-6 or hold LT + face buttons
+- [x] New weapons: Executioner's Greatsword, Lantern-Staff (2-handed, own movesets, stat scaling)
+- [x] Aimed heals: Kindle lobs an ember to the center dot (can miss), Vigil Lantern / Snuff / Beacon land where you aim, Pyre around you
+- [x] Threat table (Bulwark 2.5×), taunts (Challenge, Rallying Bellow), heals make a little threat, Flare/Feint drop threat; enemies switch at +10%
+- [x] XP from kills shared in full within 50 m; levels 1–30; stats grow per class (health, stamina, damage, armor)
+- [x] Talent trees: 12 per class in 3 rows (row 2 at 3 points, row 3 at 6), 1 point per 3 levels, T to open, free reset at shrines
+- [x] Status effects: bleed, poison, frost buildup meters on players and enemies; slows; buffs/debuffs (Unbroken, Red Mist, Rallied, Sanctuary...)
+- [x] Damage math from DESIGN.md 5.12: stat bonus, crit from Agility, armor reduction
+- [x] Everything works in co-op: heals, buffs, taunts and statuses reach friends and the host's enemies
+- [x] Automated `tests/class_check.gd`: all 28 pass (every ability of every class, XP, levels, talents, threat)
 - [ ] 🧪 Play each class against a group of enemies, with and without a friend
+- [ ] Later: bosses switch targets only at telegraphs (Phase 9, with the boss); characters and levels are saved in Phase 6
+- [ ] Later: real ability icons (your AI art), real casting animations
 
 ## Phase 6: Loot
 - [ ] Item data: weapons by type, armor by slot, jewelry; rarity colors; item level

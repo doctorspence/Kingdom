@@ -53,6 +53,9 @@ func _ready() -> void:
 	_add("debug_reset", [_key(KEY_F4)])
 	_add("toggle_health_bars", [_key(KEY_H)])
 	_add("toggle_damage_numbers", [_key(KEY_N)])
+	_add("talents", [_key(KEY_T), _button(JOY_BUTTON_DPAD_LEFT)])
+	_add("debug_level_up", [_key(KEY_PAGEUP)])
+	_add("debug_level_reset", [_key(KEY_PAGEDOWN)])
 
 
 func _add(action: StringName, events: Array, deadzone := STICK_DEADZONE) -> void:

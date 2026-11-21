@@ -1,0 +1,245 @@
+[gd_resource type="Resource" script_class="ClassData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/class_data.gd" id="1_class"]
+[ext_resource type="Script" path="res://game/classes/ability_data.gd" id="2_ability"]
+[ext_resource type="Script" path="res://game/classes/talent_data.gd" id="3_talent"]
+[ext_resource type="Script" path="res://game/combat/attack_data.gd" id="4_attack"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_rusty_sword.tres" id="5_weapon"]
+[ext_resource type="Resource" path="res://data/shields/shield_round_wood.tres" id="6_shield"]
+
+[sub_resource type="Resource" id="A_challenge"]
+script = ExtResource("2_ability")
+id = &"ability_challenge"
+display_name = "Challenge"
+description = "Taunt one enemy within 20 m: it must attack you for 6 s, and you go to the top of its threat."
+kind = 0
+unlock_level = 1
+cooldown = 10.0
+icon_color = Color(0.75, 0.25, 0.2, 1)
+cast_anim = &"Spell_Simple_Shoot"
+cast_time = 0.2
+lock_time = 0.45
+ability_range = 20.0
+duration = 6.0
+
+[sub_resource type="Resource" id="Strike_bash"]
+script = ExtResource("4_attack")
+display_name = "Shield Bash"
+anim = &"ual2/Shield_OneShot"
+hit_start = 0.05
+hit_end = 0.25
+chain_time = 9.0
+cancel_time = 0.55
+end_time = 0.7
+damage_mult = 0.5
+poise_mult = 4.0
+stamina_cost = 10.0
+hit_stop = 0.09
+reach = 1.9
+arc_degrees = 100.0
+lunge_distance = 0.6
+lunge_start = 0.0
+lunge_end = 0.2
+
+[sub_resource type="Resource" id="A_bash"]
+script = ExtResource("2_ability")
+id = &"ability_shield_bash"
+display_name = "Shield Bash"
+description = "Short-range bash: heavy poise damage, interrupts, big threat. Needs a shield."
+kind = 1
+unlock_level = 3
+cooldown = 8.0
+cost = 10.0
+icon_color = Color(0.55, 0.45, 0.3, 1)
+needs_shield = true
+attack = SubResource("Strike_bash")
+threat_mult = 3.0
+
+[sub_resource type="Resource" id="A_charge"]
+script = ExtResource("2_ability")
+id = &"ability_shoulder_charge"
+display_name = "Shoulder Charge"
+description = "Rush 6 m. Knocks enemies off balance."
+kind = 2
+unlock_level = 6
+cooldown = 15.0
+cost = 20.0
+icon_color = Color(0.6, 0.35, 0.2, 1)
+cast_anim = &"ual2/Shield_Dash"
+cast_time = 0.0
+lock_time = 0.6
+power = 15.0
+ability_range = 6.0
+value = 60.0
+threat_mult = 2.0
+
+[sub_resource type="Resource" id="A_bellow"]
+script = ExtResource("2_ability")
+id = &"ability_rallying_bellow"
+display_name = "Rallying Bellow"
+description = "Taunt every enemy within 8 m for 4 s. Nearby allies take 10% less damage for 6 s."
+kind = 3
+unlock_level = 10
+cooldown = 30.0
+cost = 30.0
+icon_color = Color(0.8, 0.6, 0.25, 1)
+cast_anim = &"Spell_Simple_Enter"
+cast_time = 0.3
+lock_time = 0.8
+radius = 8.0
+duration = 4.0
+value = 0.1
+
+[sub_resource type="Resource" id="A_hold"]
+script = ExtResource("2_ability")
+id = &"ability_hold_the_line"
+display_name = "Hold the Line"
+description = "Plant your shield for up to 5 s: you block from all sides and allies right behind you take 50% less damage. You can't move. Roll to stop early."
+kind = 4
+unlock_level = 15
+cooldown = 40.0
+cost = 25.0
+icon_color = Color(0.4, 0.45, 0.55, 1)
+cast_anim = &"ual2/Idle_Shield"
+cast_time = 0.0
+duration = 5.0
+value = 0.5
+
+[sub_resource type="Resource" id="A_unbroken"]
+script = ExtResource("2_ability")
+id = &"ability_unbroken"
+display_name = "Unbroken"
+description = "For 8 s you can't drop below 1 health and take 40% less damage."
+kind = 5
+unlock_level = 20
+cooldown = 120.0
+cost = 50.0
+icon_color = Color(0.85, 0.8, 0.7, 1)
+cast_anim = &"Spell_Simple_Shoot"
+cast_time = 0.2
+lock_time = 0.5
+duration = 8.0
+value = 0.4
+
+[sub_resource type="Resource" id="T_spiked"]
+script = ExtResource("3_talent")
+id = &"talent_spiked_rim"
+display_name = "Spiked Rim"
+description = "Shield Bash causes bleed buildup."
+row = 1
+mods = {"shield_bash_bleed": 45.0}
+
+[sub_resource type="Resource" id="T_hide"]
+script = ExtResource("3_talent")
+id = &"talent_thick_hide"
+display_name = "Thick Hide"
+description = "+15 armor."
+row = 1
+mods = {"armor_add": 15.0}
+
+[sub_resource type="Resource" id="T_lungs"]
+script = ExtResource("3_talent")
+id = &"talent_iron_lungs"
+display_name = "Iron Lungs"
+description = "Stamina refills 10% faster."
+row = 1
+mods = {"stamina_regen_mult": 1.1}
+
+[sub_resource type="Resource" id="T_long_challenge"]
+script = ExtResource("3_talent")
+id = &"talent_long_challenge"
+display_name = "Long Challenge"
+description = "Challenge lasts 3 s longer."
+row = 1
+mods = {"challenge_duration_add": 3.0}
+
+[sub_resource type="Resource" id="T_stubborn"]
+script = ExtResource("3_talent")
+id = &"talent_stubborn"
+display_name = "Stubborn"
+description = "Unbroken also refills 50 stamina."
+row = 2
+mods = {"unbroken_stamina_refill": 50.0}
+
+[sub_resource type="Resource" id="T_rampart"]
+script = ExtResource("3_talent")
+id = &"talent_rampart"
+display_name = "Rampart"
+description = "Blocking costs another 15% less stamina."
+row = 2
+mods = {"block_stamina_mult": 0.85}
+
+[sub_resource type="Resource" id="T_bulldozer"]
+script = ExtResource("3_talent")
+id = &"talent_bulldozer"
+display_name = "Bulldozer"
+description = "Shoulder Charge goes 40% farther."
+row = 2
+mods = {"charge_distance_mult": 1.4}
+
+[sub_resource type="Resource" id="T_echo"]
+script = ExtResource("3_talent")
+id = &"talent_echoing_bellow"
+display_name = "Echoing Bellow"
+description = "Rallying Bellow reaches 50% farther."
+row = 2
+mods = {"bellow_radius_mult": 1.5}
+
+[sub_resource type="Resource" id="T_last_stand"]
+script = ExtResource("3_talent")
+id = &"talent_last_stand"
+display_name = "Last Stand"
+description = "Unbroken lasts 4 s longer."
+row = 3
+mods = {"unbroken_duration_add": 4.0}
+
+[sub_resource type="Resource" id="T_iron_wall"]
+script = ExtResource("3_talent")
+id = &"talent_iron_wall"
+display_name = "Iron Wall"
+description = "Allies behind Hold the Line take another 20% less damage."
+row = 3
+mods = {"hold_line_ally_reduction_add": 0.2}
+
+[sub_resource type="Resource" id="T_grudge"]
+script = ExtResource("3_talent")
+id = &"talent_grudge"
+display_name = "Grudge"
+description = "Your attacks make even more threat (+0.5×)."
+row = 3
+mods = {"threat_mult_add": 0.5}
+
+[sub_resource type="Resource" id="T_mastery"]
+script = ExtResource("3_talent")
+id = &"talent_shield_mastery"
+display_name = "Shield Mastery"
+description = "Your parry window is 0.05 s longer."
+row = 3
+mods = {"parry_window_add": 0.05}
+
+[resource]
+script = ExtResource("1_class")
+id = &"class_bulwark"
+display_name = "Bulwark"
+role = "Tank"
+description = "A deserter from three different shield walls who outlived every one of them. Holds enemies' attention, blocks everything, keeps friends alive by standing in front of them."
+weapon = ExtResource("5_weapon")
+shield = ExtResource("6_shield")
+resource_kind = 0
+resource_label = "Resolve"
+resource_color = Color(0.62, 0.66, 0.72, 1)
+strength = 14.0
+strength_per_level = 1.2
+agility = 8.0
+agility_per_level = 0.4
+intellect = 5.0
+intellect_per_level = 0.2
+vitality = 14.0
+vitality_per_level = 1.2
+armor = 30.0
+armor_per_level = 2.0
+passive_name = "Shield-Born"
+passive_description = "+25% poise, blocking costs 20% less stamina, attacks make 2.5× threat. Resolve builds as you block and take hits."
+passive_mods = {"block_stamina_mult": 0.8, "poise_mult": 1.25, "threat_mult": 2.5}
+abilities = Array[ExtResource("2_ability")]([SubResource("A_challenge"), SubResource("A_bash"), SubResource("A_charge"), SubResource("A_bellow"), SubResource("A_hold"), SubResource("A_unbroken")])
+talents = Array[ExtResource("3_talent")]([SubResource("T_spiked"), SubResource("T_hide"), SubResource("T_lungs"), SubResource("T_long_challenge"), SubResource("T_stubborn"), SubResource("T_rampart"), SubResource("T_bulldozer"), SubResource("T_echo"), SubResource("T_last_stand"), SubResource("T_iron_wall"), SubResource("T_grudge"), SubResource("T_mastery")])

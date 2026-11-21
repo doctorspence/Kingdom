@@ -12,6 +12,12 @@ extends Resource
 @export var crit_multiplier := 1.5
 ## Share of damage stopped when you block with this weapon (no shield).
 @export_range(0.0, 1.0) var block_reduction := 0.6
+## Damage bonus per stat point = scaling ÷ 100 (DESIGN.md 5.12).
+@export var scaling_strength := 0.5
+@export var scaling_agility := 0.5
+@export var scaling_intellect := 0.0
+## Two-handed weapons can't be used with a shield.
+@export var two_handed := false
 
 @export_group("Moveset")
 ## Light attack combo, in order. The last one loops back to the first.

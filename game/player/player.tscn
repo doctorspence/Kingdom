@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://assets/characters/mannequin/UAL1_Standard.glb" id="3_mannequin"]
 [ext_resource type="Script" path="res://game/player/targeting.gd" id="4_targeting"]
 [ext_resource type="Script" path="res://game/player/player_camera.gd" id="5_camera"]
+[ext_resource type="Script" path="res://game/classes/ability_caster.gd" id="6_caster"]
 
 [sub_resource type="CapsuleShape3D" id="Shape_body"]
 radius = 0.35
@@ -41,6 +42,21 @@ properties/7/replication_mode = 2
 properties/8/path = NodePath(".:spawn_yaw")
 properties/8/spawn = true
 properties/8/replication_mode = 0
+properties/9/path = NodePath(".:net_max_health")
+properties/9/spawn = true
+properties/9/replication_mode = 2
+properties/10/path = NodePath(".:net_class")
+properties/10/spawn = true
+properties/10/replication_mode = 2
+properties/11/path = NodePath(".:net_body")
+properties/11/spawn = true
+properties/11/replication_mode = 2
+properties/12/path = NodePath(".:net_color")
+properties/12/spawn = true
+properties/12/replication_mode = 2
+properties/13/path = NodePath(".:net_level")
+properties/13/spawn = true
+properties/13/replication_mode = 2
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
@@ -58,6 +74,9 @@ body_tint = Color(0.42, 0.4, 0.37, 1)
 idle_anim = &"Sword_Idle"
 
 [node name="Model" parent="Visual" instance=ExtResource("3_mannequin")]
+
+[node name="AbilityCaster" type="Node" parent="."]
+script = ExtResource("6_caster")
 
 [node name="Targeting" type="Node" parent="."]
 script = ExtResource("4_targeting")

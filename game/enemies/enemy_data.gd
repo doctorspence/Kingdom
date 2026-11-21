@@ -6,6 +6,11 @@ extends Resource
 @export var id := &"enemy_unnamed"
 @export var display_name := "Enemy"
 @export var max_health := 150.0
+## Its level (for the armor formula) and its armor.
+@export var level := 3
+@export var armor := 20.0
+## XP each nearby player gets for the kill.
+@export var xp := 60
 ## Hits it can take before staggering (refills after a pause).
 @export var poise := 40.0
 @export var poise_regen_delay := 3.0

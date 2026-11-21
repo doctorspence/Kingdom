@@ -201,6 +201,66 @@ func _burst(where: Vector3, direction: Vector3, count: int, mesh: Mesh, v_min: f
 	get_tree().create_timer(lifetime + 0.5).timeout.connect(p.queue_free)
 
 
+## Short flashy visuals for abilities (everyone sees these):
+##   bellow (shockwave ring), flare (blinding flash), ember_burst, beacon_column
+func burst_visual(kind: StringName, where: Vector3, radius: float, duration: float) -> void:
+	var color := Color(1.0, 0.85, 0.6)
+	var mi := MeshInstance3D.new()
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var start_scale := Vector3.ONE * 0.2
+	var end_scale := Vector3.ONE
+	match kind:
+		&"bellow":
+			var torus := TorusMesh.new()
+			torus.inner_radius = radius * 0.92
+			torus.outer_radius = radius
+			mi.mesh = torus
+			color = Color(0.85, 0.82, 0.75)
+			where += Vector3.UP * 0.8
+		&"beacon_column":
+			var cyl := CylinderMesh.new()
+			cyl.top_radius = radius
+			cyl.bottom_radius = radius
+			cyl.height = 14.0
+			mi.mesh = cyl
+			color = Color(1.0, 0.95, 0.75)
+			where += Vector3.UP * 7.0
+			start_scale = Vector3(1, 1, 1)
+		_:
+			var sphere := SphereMesh.new()
+			sphere.radius = radius if kind == &"ember_burst" else 1.2
+			sphere.height = sphere.radius * 2.0
+			mi.mesh = sphere
+			color = Color(1.0, 0.65, 0.3) if kind == &"ember_burst" else Color(1.0, 1.0, 0.95)
+	mat.albedo_color = Color(color.r, color.g, color.b, 0.5)
+	mat.emission_enabled = true
+	mat.emission = color
+	mat.emission_energy_multiplier = 4.0
+	mi.material_override = mat
+	world().add_child(mi)
+	mi.global_position = where
+	mi.scale = start_scale
+	var light := OmniLight3D.new()
+	light.light_color = color
+	light.light_energy = 8.0 if kind == &"flare" else 3.0
+	light.omni_range = radius + 4.0
+	mi.add_child(light)
+	var tween := mi.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(mi, "scale", end_scale, duration * 0.4).set_ease(Tween.EASE_OUT)
+	tween.tween_property(mat, "albedo_color:a", 0.0, duration).set_delay(duration * 0.2)
+	tween.tween_property(light, "light_energy", 0.0, duration)
+	tween.chain().tween_callback(mi.queue_free)
+
+
+func world() -> Node3D:
+	return _world()
+
+
 func _world() -> Node3D:
 	var scene := get_tree().current_scene
 	return scene as Node3D if scene is Node3D else get_tree().root.get_child(get_tree().root.get_child_count() - 1) as Node3D

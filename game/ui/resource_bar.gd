@@ -25,8 +25,9 @@ func set_values(current: float, maximum: float) -> void:
 		_chip = maxf(_chip, current / maxf(maximum, 0.001))
 	value = current
 	max_value = maximum
-	custom_minimum_size.x = maximum * pixels_per_point
-	size.x = custom_minimum_size.x
+	if pixels_per_point > 0.0:
+		custom_minimum_size.x = maximum * pixels_per_point
+		size.x = custom_minimum_size.x
 	queue_redraw()
 
 

@@ -1,17 +1,18 @@
 class_name Player
 extends CharacterBody3D
 ## The player character: movement, rolling, jumping, stamina, health, falls,
-## attacks, blocking, parrying, flasks and taking hits.
+## attacks, blocking, parrying, flasks, class abilities and taking hits.
 ##
-## Movement numbers come from data/balance/player_tuning.tres; weapon numbers
-## from the weapon and shield files in data/.
+## Movement numbers come from data/balance/player_tuning.tres; class, weapon
+## and ability numbers from the files in data/.
 ## The character is in one "state" at a time:
 ##   MOVE        on the ground: walk, run, sprint, block
 ##   AIR         jumping or falling
 ##   ROLL        dodge roll (invincible for the first part)
 ##   LANDING     stumbling after a hard landing
-##   ATTACK      swinging (also ripostes)
+##   ATTACK      swinging (also ripostes and strike abilities)
 ##   DRINK       drinking a flask
+##   CAST        using a class ability (shouts, throws, charges...)
 ##   STAGGER     knocked off balance by a hit
 ##   GUARD_BREAK shield knocked aside after running out of stamina
 ##   DOWNED      at 0 health in co-op: crawling, bleeding out, waiting for a revive
@@ -24,10 +25,11 @@ extends CharacterBody3D
 signal health_changed(current: float, maximum: float)
 signal stamina_changed(current: float, maximum: float)
 signal flasks_changed(current: int, maximum: int)
+signal leveled_up(level: int)
 signal died
 signal respawned
 
-enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, STAGGER, GUARD_BREAK, DOWNED, DEAD }
+enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, CAST, STAGGER, GUARD_BREAK, DOWNED, DEAD }
 
 const RESPAWN_DELAY := 3.0
 ## Below this height you've fallen out of the world.
@@ -37,10 +39,15 @@ const TEST_LOADS := [0.2, 0.5, 0.9, 1.2]
 const INTERACT_RANGE := 2.2
 
 @export var tuning: PlayerTuning = preload("res://data/balance/player_tuning.tres")
-@export var weapon: WeaponData = preload("res://data/weapons/weapon_rusty_sword.tres")
-@export var shield: ShieldData = preload("res://data/shields/shield_round_wood.tres")
+## Used when no class was picked (e.g. running a test map straight from the editor).
+@export var default_class: ClassData = preload("res://data/classes/class_bulwark.tres")
 ## Gear weight ÷ carrying capacity. Phase 6 will compute this from your gear.
 @export var equip_load := 0.2
+
+var weapon: WeaponData
+var shield: ShieldData
+var stats: CharacterStats
+var effects := Effects.new()
 
 var state := State.MOVE
 var health := 100.0
@@ -83,6 +90,12 @@ var _block_released := -99.0
 var _clock := 0.0
 var _drink_healed := false
 var _stun_time := 0.0
+# Abilities
+var _ability_strike: AbilityData
+var _cast: AbilityData
+var _cast_done := false
+var _cast_hits: Array[Node] = []
+var _cast_dir := Vector3.FORWARD
 # Co-op
 var _downs := 0
 var _bleed := 0.0
@@ -97,15 +110,24 @@ var net_anim_speed := 1.0
 var net_anim_count := 0
 var net_state := 0
 var net_health := 100.0
+var net_max_health := 100.0
 var net_bleed := 0.0
+var net_class := &""
+var net_body := 0
+var net_color := 0
+var net_level := 1
 var spawn_yaw := 0.0
 var player_name := ""
 
 var _name_label: Label3D
+var _shown_look := ""
+var _placed := true
+var _spawn_pos := Vector3.ZERO
 
 @onready var model: CharacterModel = $Visual
 @onready var camera_rig: PlayerCamera = $CameraRig
 @onready var targeting: Targeting = $Targeting
+@onready var caster: AbilityCaster = $AbilityCaster
 
 
 func _enter_tree() -> void:
@@ -122,21 +144,18 @@ func _ready() -> void:
 		global_rotation.y = spawn_yaw
 	_spawn = global_transform
 	global_basis = Basis.IDENTITY
-	health = tuning.max_health
-	stamina = tuning.max_stamina
-	flasks = tuning.flask_count
-	_poise = tuning.poise
 	camera_rig.follow = self
 	camera_rig.targeting = targeting
 	targeting.camera = camera_rig.camera
-	if weapon and weapon.visual_scene:
-		model.attach_to_hand(weapon.visual_scene.instantiate(), "r")
-	if shield and shield.visual_scene:
-		model.attach_to_hand(shield.visual_scene.instantiate(), "l")
 	player_name = Net.name_of(get_multiplayer_authority())
 	Net.names_changed.connect(func() -> void: player_name = Net.name_of(get_multiplayer_authority()))
 	_spawn_pos = net_pos
 	if is_multiplayer_authority():
+		var choice := Net.character
+		net_class = choice.get("class", default_class.id)
+		net_body = choice.get("body", 0)
+		net_color = choice.get("color", 0)
+		_set_class(Classes.by_id(net_class))
 		add_to_group(&"local_player")
 		camera_rig.activate()
 		_face_spawn_direction()
@@ -148,11 +167,36 @@ func _ready() -> void:
 		else:
 			_write_net_state()
 	else:
+		_set_class(Classes.by_id(net_class) if net_class != &"" else default_class)
 		_become_proxy()
 
 
-var _placed := true
-var _spawn_pos := Vector3.ZERO
+## Set up class, stats and gear (also used when a proxy learns its class).
+func _set_class(c: ClassData) -> void:
+	stats = CharacterStats.new(c)
+	stats.leveled_up.connect(_on_leveled_up)
+	weapon = c.weapon
+	shield = c.shield
+	health = max_health()
+	stamina = max_stamina()
+	flasks = tuning.flask_count
+	_poise = max_poise()
+	caster.refill()
+	_apply_look()
+
+
+func _apply_look() -> void:
+	var key := "%s/%d/%d" % [stats.class_data.id, net_body, net_color]
+	if key == _shown_look:
+		return
+	_shown_look = key
+	model.clear_hands()
+	if weapon and weapon.visual_scene:
+		model.attach_to_hand(weapon.visual_scene.instantiate(), "r")
+	if shield and shield.visual_scene:
+		model.attach_to_hand(shield.visual_scene.instantiate(), "l")
+	model.set_body(net_body == 1)
+	model.set_tint(Classes.LOOK_COLORS[clampi(net_color, 0, Classes.LOOK_COLORS.size() - 1)])
 
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -195,6 +239,22 @@ func _become_proxy() -> void:
 
 # --- Public -------------------------------------------------------------------
 
+func max_health() -> float:
+	return stats.max_health() if stats else tuning.max_health
+
+
+func max_stamina() -> float:
+	return stats.max_stamina() if stats else tuning.max_stamina
+
+
+func max_poise() -> float:
+	return tuning.poise * (stats.mod_mult("poise_mult") if stats else 1.0)
+
+
+func level() -> int:
+	return stats.level if stats else 1
+
+
 func is_invulnerable() -> bool:
 	return _iframe_timer > 0.0 or (state == State.ATTACK and _is_riposte)
 
@@ -218,7 +278,7 @@ func bleed_time_left() -> float:
 
 ## Revive progress 0..1 (for the HUD), and who you're reviving.
 func revive_progress() -> float:
-	return _revive_progress / tuning.revive_time if _revive_target else 0.0
+	return _revive_progress / _revive_time() if _revive_target else 0.0
 
 
 func revive_target() -> Player:
@@ -237,9 +297,19 @@ func hit_radius() -> float:
 	return 0.35
 
 
+func armor() -> float:
+	return stats.armor() if stats else 0.0
+
+
 ## Is the parry window open right now?
 func is_parrying() -> bool:
-	return is_blocking and _clock - _block_started <= (shield.parry_window if shield else 0.12)
+	var window := (shield.parry_window if shield else 0.12) + (stats.mod_add("parry_window_add") if stats else 0.0)
+	return is_blocking and _clock - _block_started <= window
+
+
+## Weapon damage after stat bonuses (before the attack's own multiplier).
+func weapon_damage() -> float:
+	return weapon.damage * (1.0 + stats.damage_bonus(weapon)) * effects.product("damage_dealt")
 
 
 ## An enemy blow arrives. The player's own game decides what happened
@@ -252,28 +322,32 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 		return HitInfo.Result.DODGED
 	var to_attacker := hit.origin - global_position
 	to_attacker.y = 0.0
-	var in_front := rad_to_deg(model.forward().angle_to(to_attacker)) <= tuning.block_arc * 0.5
-	if is_blocking and in_front and not hit.unblockable:
+	var holding_line := effects.any("block_all")
+	var in_front := holding_line or rad_to_deg(model.forward().angle_to(to_attacker)) <= tuning.block_arc * 0.5
+	var damage := hit.damage * (1.0 - HitInfo.armor_reduction(armor(), hit.attacker_level)) * effects.damage_taken_mult()
+	if (is_blocking or holding_line) and in_front and not hit.unblockable:
 		if hit.parryable and is_parrying():
 			CombatFx.sparks(chest + model.forward() * 0.4, to_attacker, true)
 			_share_fx(2, chest + model.forward() * 0.4, to_attacker)
 			CombatFx.word(chest + Vector3.UP * 0.5, "Parry!")
 			freeze(0.12)
 			camera_rig.add_shake(0.25)
+			caster.on_blocked()
 			return HitInfo.Result.PARRIED
 		var reduction := shield.block_reduction if shield else weapon.block_reduction
-		var stamina_cost := hit.damage * (shield.stamina_per_damage if shield else 1.0)
+		var stamina_cost := damage * (shield.stamina_per_damage if shield else 1.0) * stats.mod_mult("block_stamina_mult")
 		_spend_stamina(stamina_cost)
 		CombatFx.sparks(chest + model.forward() * 0.4, to_attacker)
 		_share_fx(1, chest + model.forward() * 0.4, to_attacker)
 		freeze(hit.hit_stop)
 		camera_rig.add_shake(0.2)
-		var chip := hit.damage * (1.0 - reduction)
+		caster.on_blocked()
+		var chip := damage * (1.0 - reduction)
 		if chip > 0.0:
 			_apply_damage(chip)
-		if state == State.DEAD:
+		if state == State.DEAD or state == State.DOWNED:
 			return HitInfo.Result.KILLED
-		if stamina <= 0.0:
+		if stamina <= 0.0 and not holding_line:
 			_guard_break()
 		else:
 			CombatFx.word(chest + Vector3.UP * 0.5, "Blocked")
@@ -282,17 +356,34 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	# Clean hit.
 	CombatFx.blood(chest, -to_attacker.normalized())
 	_share_fx(0, chest, -to_attacker.normalized())
-	camera_rig.add_shake(0.45 if hit.damage >= 30.0 else 0.3)
+	camera_rig.add_shake(0.45 if damage >= 30.0 else 0.3)
 	freeze(hit.hit_stop)
-	_apply_damage(hit.damage)
-	if state == State.DEAD:
+	caster.on_hit_taken()
+	_apply_damage(damage)
+	if state == State.DEAD or state == State.DOWNED:
 		return HitInfo.Result.KILLED
+	_apply_status(hit.status, hit.status_amount)
 	_poise -= hit.poise_damage
 	_poise_timer = tuning.poise_regen_delay
 	if _poise <= 0.0:
-		_poise = tuning.poise
+		_poise = max_poise()
 		_stagger(tuning.stagger_time)
 	return HitInfo.Result.HIT
+
+
+func _apply_status(status: Effects.Status, amount: float) -> void:
+	var triggered := effects.add_buildup(status, amount)
+	var head := global_position + Vector3.UP * 2.0
+	match triggered:
+		Effects.Status.BLEED:
+			CombatFx.word(head, "Bleeding!")
+			CombatFx.blood(global_position + Vector3.UP * 1.2, Vector3.UP, 2.0)
+			_apply_damage(max_health() * Effects.BLEED_BURST)
+		Effects.Status.POISON:
+			CombatFx.word(head, "Poisoned!")
+		Effects.Status.FROST:
+			CombatFx.word(head, "Frostbitten!")
+			_apply_damage(max_health() * Effects.FROST_BURST)
 
 
 ## Fall damage and other unblockable harm.
@@ -309,34 +400,38 @@ func freeze(duration: float) -> void:
 	_hitstop = maxf(_hitstop, duration)
 
 
-## Rest at a shrine: full health and flasks, and it becomes your respawn point.
+## Rest at a shrine: full health and flasks, cures statuses, sets your respawn point.
 func rest_at(spawn_point: Transform3D) -> void:
 	_spawn = spawn_point
 	_downs = 0
-	health = tuning.max_health
-	stamina = tuning.max_stamina
+	health = max_health()
+	stamina = max_stamina()
 	flasks = tuning.flask_count
-	health_changed.emit(health, tuning.max_health)
-	stamina_changed.emit(stamina, tuning.max_stamina)
+	effects.cleanse()
+	caster.refill()
+	health_changed.emit(health, max_health())
+	stamina_changed.emit(stamina, max_stamina())
 	flasks_changed.emit(flasks, tuning.flask_count)
 
 
 func respawn() -> void:
 	global_position = _spawn.origin
 	velocity = Vector3.ZERO
-	health = tuning.max_health
-	stamina = tuning.max_stamina
+	health = max_health()
+	stamina = max_stamina()
 	flasks = tuning.flask_count
-	_poise = tuning.poise
+	_poise = max_poise()
 	_sprint_locked = false
 	_iframe_timer = 0.0
 	_hitstop = 0.0
 	is_blocking = false
+	effects.clear_all()
+	caster.refill()
 	targeting.clear()
 	_face_spawn_direction()
 	_set_state(State.MOVE)
-	health_changed.emit(health, tuning.max_health)
-	stamina_changed.emit(stamina, tuning.max_stamina)
+	health_changed.emit(health, max_health())
+	stamina_changed.emit(stamina, max_stamina())
 	flasks_changed.emit(flasks, tuning.flask_count)
 	respawned.emit()
 
@@ -365,11 +460,245 @@ func _face_spawn_direction() -> void:
 	reset_physics_interpolation()
 
 
+# --- Healing, buffs, XP (these work across the network) ------------------------
+
+## Heal this player. Called on any machine; the owner's game applies it.
+func heal_from(amount: float, healer_name: String) -> void:
+	if is_multiplayer_authority():
+		_receive_heal(amount, healer_name)
+	else:
+		_net_heal.rpc_id(get_multiplayer_authority(), amount, healer_name)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_heal(amount: float, healer_name: String) -> void:
+	_receive_heal(amount, healer_name)
+
+
+func _receive_heal(amount: float, _healer_name: String) -> void:
+	if state == State.DEAD or state == State.DOWNED or amount <= 0.0:
+		return
+	var real := minf(amount, max_health() - health)
+	if real <= 0.0:
+		return
+	health += real
+	health_changed.emit(health, max_health())
+	CombatFx.damage_number(global_position + Vector3.UP * 2.0, real, CombatFx.NumberKind.HEAL)
+
+
+## Give this player a timed buff or debuff (see Effects.add_mod).
+func apply_effect(id: StringName, duration: float, values: Dictionary) -> void:
+	if is_multiplayer_authority():
+		effects.add_mod(id, duration, values)
+	else:
+		_net_effect.rpc_id(get_multiplayer_authority(), id, duration, values)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_effect(id: StringName, duration: float, values: Dictionary) -> void:
+	effects.add_mod(id, duration, values)
+
+
+## Cure bleed/poison/frost (Snuff).
+func cleanse_from(_healer_name: String) -> void:
+	if is_multiplayer_authority():
+		effects.cleanse()
+	else:
+		_net_cleanse.rpc_id(get_multiplayer_authority())
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_cleanse() -> void:
+	effects.cleanse()
+
+
+func restore_stamina(amount: float) -> void:
+	stamina = minf(max_stamina(), stamina + amount)
+	stamina_changed.emit(stamina, max_stamina())
+
+
+## Kill XP from the host (shared in full by everyone nearby).
+func gain_xp(amount: int) -> void:
+	if is_multiplayer_authority():
+		_receive_xp(amount)
+	else:
+		_net_xp.rpc_id(get_multiplayer_authority(), amount)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_xp(amount: int) -> void:
+	if multiplayer.get_remote_sender_id() == 1:
+		_receive_xp(amount)
+
+
+func _receive_xp(amount: int) -> void:
+	stats.add_xp(amount)
+	CombatFx.word(global_position + Vector3.UP * 2.4, "+%d XP" % amount)
+
+
+func _on_leveled_up(new_level: int) -> void:
+	# Keep the same share of health; new maximums apply at once.
+	health = minf(max_health(), health + max_health() * 0.25)
+	stamina = max_stamina()
+	health_changed.emit(health, max_health())
+	stamina_changed.emit(stamina, max_stamina())
+	CombatFx.burst_visual(&"beacon_column", global_position, 0.8, 1.0)
+	leveled_up.emit(new_level)
+
+
+## Debug: jump to a level (PageUp / PageDown).
+func set_level(new_level: int) -> void:
+	stats.set_level(new_level)
+	health = max_health()
+	stamina = max_stamina()
+	health_changed.emit(health, max_health())
+	stamina_changed.emit(stamina, max_stamina())
+	leveled_up.emit(stats.level)
+
+
+# --- Abilities: used by AbilityCaster -------------------------------------------
+
+func can_start_ability() -> bool:
+	return state == State.MOVE and is_on_floor()
+
+
+## A strike ability (Shield Bash, Hamstring, Behead, Cleave): a weapon swing.
+func start_ability_strike(a: AbilityData) -> void:
+	_start_attack(a.attack, _input_direction())
+	_ability_strike = a
+
+
+## A cast ability: shouts, throws, charges, stances.
+func start_cast(a: AbilityData) -> void:
+	_cast = a
+	_cast_done = false
+	_cast_hits.clear()
+	is_sprinting = false
+	_stop_blocking()
+	_aim_attack(_input_direction())
+	_cast_dir = model.forward()
+	if a.kind == AbilityData.Kind.FEINT:
+		var side := _move_input().x
+		_cast_dir = model.forward().cross(Vector3.UP) * (-1.0 if side < 0.0 else 1.0)
+	if a.kind == AbilityData.Kind.LUNGE:
+		_iframe_timer = maxf(_iframe_timer, 0.25)
+	_set_state(State.CAST)
+	if a.cast_anim != &"":
+		model.play(a.cast_anim, 0.08, 1.0, true)
+
+
+## A hit built from this player's numbers (for abilities that hit directly).
+func make_hit(damage: float, poise: float) -> HitInfo:
+	var hit := HitInfo.new()
+	hit.attacker = self
+	hit.origin = global_position
+	hit.damage = damage
+	hit.poise_damage = poise
+	hit.attacker_level = level()
+	hit.threat_mult = stats.mod_mult("threat_mult") + stats.mod_add("threat_mult_add")
+	return hit
+
+
+## The enemy you're locked on to, or the best one ahead of you within range.
+func forward_target(max_range: float) -> Node3D:
+	if targeting.has_target() and targeting.target.global_position.distance_to(global_position) <= max_range:
+		return targeting.target
+	var best: Node3D
+	var best_angle := 50.0
+	for n in get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Node3D
+		if e == null or not e.call(&"can_be_locked"):
+			continue
+		var to := e.global_position - global_position
+		to.y = 0.0
+		if to.length() > max_range:
+			continue
+		var angle := rad_to_deg(model.forward().angle_to(to))
+		if angle < best_angle:
+			best_angle = angle
+			best = e
+	return best
+
+
+## Where the middle of your screen points, at most `max_range` meters away
+## (on the ground). Used to throw embers, lanterns and beacons.
+func aim_point(max_range: float) -> Vector3:
+	var cam := camera_rig.camera
+	var from := cam.global_position
+	var dir := -cam.global_transform.basis.z
+	var space := get_world_3d().direct_space_state
+	var q := PhysicsRayQueryParameters3D.create(from, from + dir * 80.0, 1 | 4)
+	q.exclude = [get_rid()]
+	var hit := space.intersect_ray(q)
+	var point: Vector3 = hit.position if hit else from + dir * 80.0
+	var flat := point - global_position
+	flat.y = 0.0
+	if flat.length() > max_range:
+		point = global_position + flat.normalized() * max_range + Vector3.UP * 2.0
+	# Drop it onto the ground.
+	var down := PhysicsRayQueryParameters3D.create(point + Vector3.UP * 3.0, point + Vector3.DOWN * 20.0, 1)
+	var ground := space.intersect_ray(down)
+	return ground.position if ground else Vector3(point.x, global_position.y, point.z)
+
+
+func _state_cast(delta: float) -> void:
+	var a := _cast
+	var h := Vector3.ZERO
+	match a.kind:
+		AbilityData.Kind.SHOULDER_CHARGE, AbilityData.Kind.LUNGE:
+			var dist := a.ability_range * stats.mod_mult("charge_distance_mult" if a.kind == AbilityData.Kind.SHOULDER_CHARGE else "lunge_distance_mult")
+			var dash_time := 0.4
+			if _state_time < dash_time:
+				h = _cast_dir * (dist / dash_time)
+				caster.dash_hit(a, _cast_hits)
+				if _something_close_in_front(0.9):
+					h = Vector3.ZERO
+		AbilityData.Kind.FEINT:
+			if _state_time < 0.25:
+				h = _cast_dir * 8.0
+		AbilityData.Kind.HOLD_THE_LINE:
+			is_blocking = true
+			caster.hold_line_cover(a)
+			model.play(CharacterModel.ANIM_BLOCK, 0.1)
+	velocity.x = h.x
+	velocity.z = h.z
+	if not is_on_floor():
+		velocity.y -= tuning.gravity * delta
+	move_and_slide()
+	if not _cast_done and _state_time >= a.cast_time:
+		_cast_done = true
+		caster.cast_effect(a)
+	var end := a.lock_time
+	if a.kind == AbilityData.Kind.HOLD_THE_LINE:
+		end = a.duration
+		if _state_time > 0.5 and _consume(&"roll"):
+			end = 0.0
+	if _state_time >= end:
+		is_blocking = false
+		effects.remove_mod(&"hold_line")
+		_cast = null
+		_set_state(State.MOVE)
+
+
 # --- Input --------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
 	if Net.typing:
 		return
+	# Gamepad: hold LT, then A/B/X/Y/RB/RT use abilities 1-6.
+	if Input.is_action_pressed("ability_modifier") and event is InputEventJoypadButton and event.pressed:
+		var map := {JOY_BUTTON_A: 0, JOY_BUTTON_B: 1, JOY_BUTTON_X: 2, JOY_BUTTON_Y: 3, JOY_BUTTON_RIGHT_SHOULDER: 4}
+		if map.has(event.button_index):
+			_buffer(StringName("ability_%d" % map[event.button_index]))
+			get_viewport().set_input_as_handled()
+			return
+	if Input.is_action_pressed("ability_modifier") and event.is_action_pressed("heavy_attack"):
+		_buffer(&"ability_5")
+		return
+	for i in 6:
+		if event.is_action_pressed("ability_%d" % (i + 1)):
+			_buffer(StringName("ability_%d" % i))
+			return
 	if event.is_action_pressed("jump"):
 		_buffer(&"jump")
 	elif event.is_action_pressed("light_attack"):
@@ -388,6 +717,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		equip_load = TEST_LOADS[(i + 1) % TEST_LOADS.size()]
 	elif event.is_action_pressed("debug_reset"):
 		respawn()
+	elif event.is_action_pressed("debug_level_up"):
+		set_level(stats.level + 1)
+	elif event.is_action_pressed("debug_level_reset"):
+		set_level(1)
 
 
 ## Remember a button press briefly, so pressing it slightly early still works.
@@ -409,6 +742,9 @@ func _has_buffered(action: StringName) -> bool:
 
 ## Shift / gamepad B: tap to roll (on release), hold to sprint.
 func _read_dodge_button(delta: float) -> void:
+	if Input.is_action_pressed("ability_modifier"):
+		_dodge_held = -1.0
+		return
 	if Input.is_action_just_pressed("dodge_sprint"):
 		_dodge_held = 0.0
 	elif _dodge_held >= 0.0:
@@ -436,6 +772,13 @@ func _wants_sprint() -> bool:
 	return _dodge_held >= tuning.dodge_hold_time
 
 
+## Which ability slot is waiting in the input buffer (-1 = none).
+func _buffered_ability() -> int:
+	if _buffer_timer > 0.0 and String(_buffered).begins_with("ability_"):
+		return String(_buffered).trim_prefix("ability_").to_int()
+	return -1
+
+
 # --- Main loop ----------------------------------------------------------------
 
 func _physics_process(delta: float) -> void:
@@ -457,11 +800,16 @@ func _write_net_state() -> void:
 	net_anim_count = model.play_count
 	net_state = state
 	net_health = health
+	net_max_health = max_health()
 	net_bleed = _bleed
+	net_level = level()
 
 
 ## Copy what the owner's machine says this character is doing.
 func _proxy_update(delta: float) -> void:
+	if net_class != &"" and (stats == null or stats.class_data.id != net_class):
+		_set_class(Classes.by_id(net_class))
+	_apply_look()
 	if global_position.distance_to(net_pos) > 4.0:
 		global_position = net_pos
 	else:
@@ -470,8 +818,10 @@ func _proxy_update(delta: float) -> void:
 	model.mirror(net_anim, net_anim_speed, net_anim_count)
 	state = net_state as State
 	health = net_health
+	if stats and stats.level != net_level:
+		stats.level = net_level
 	if _name_label:
-		_name_label.text = player_name + ("  (DOWN)" if state == State.DOWNED else "")
+		_name_label.text = "%s  %d%s" % [player_name, net_level, "  (DOWN)" if state == State.DOWNED else ""]
 
 
 func _authority_update(delta: float) -> void:
@@ -491,7 +841,8 @@ func _authority_update(delta: float) -> void:
 	_iframe_timer = maxf(0.0, _iframe_timer - delta)
 	_poise_timer -= delta
 	if _poise_timer <= 0.0:
-		_poise = tuning.poise
+		_poise = max_poise()
+	_tick_effects(delta)
 
 	match state:
 		State.MOVE:
@@ -506,6 +857,8 @@ func _authority_update(delta: float) -> void:
 			_state_attack(delta)
 		State.DRINK:
 			_state_drink(delta)
+		State.CAST:
+			_state_cast(delta)
 		State.STAGGER, State.GUARD_BREAK:
 			_state_stunned(delta, _stun_time)
 		State.DOWNED:
@@ -513,7 +866,7 @@ func _authority_update(delta: float) -> void:
 		State.DEAD:
 			_state_dead(delta)
 
-	if state != State.MOVE and is_blocking:
+	if state != State.MOVE and state != State.CAST and is_blocking:
 		_stop_blocking()
 	if global_position.y < KILL_HEIGHT and state != State.DEAD:
 		health = 0.0
@@ -523,6 +876,14 @@ func _authority_update(delta: float) -> void:
 		model.set_overlay("iframes", Color(0.4, 0.8, 1.0, 0.35))
 	elif model.overlay_kind() == "iframes":
 		model.set_overlay("")
+
+
+func _tick_effects(delta: float) -> void:
+	if state == State.DEAD:
+		return
+	var dot := effects.tick(delta)
+	if dot > 0.0 and state != State.DOWNED:
+		_apply_damage(max_health() * dot)
 
 
 func _set_state(new_state: State) -> void:
@@ -544,6 +905,11 @@ func _state_move(delta: float) -> void:
 	var dir := _input_direction()
 	var amount := minf(dir.length(), 1.0)
 
+	var slot := _buffered_ability()
+	if slot >= 0:
+		_buffered = &""
+		if caster.try_use(slot):
+			return
 	if _consume(&"roll") and _can_roll():
 		_start_roll(dir)
 		return
@@ -595,6 +961,7 @@ func _state_move(delta: float) -> void:
 		speed = tuning.walk_speed
 	elif locked:
 		speed = tuning.lock_on_speed
+	speed *= effects.move_mult()
 
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var target_velocity := Vector3.ZERO
@@ -646,8 +1013,9 @@ func _steer(horizontal: Vector3, target_velocity: Vector3, speed: float, keep_sp
 
 
 func _stop_blocking() -> void:
+	if is_blocking:
+		_block_released = _clock
 	is_blocking = false
-	_block_released = _clock
 
 
 # --- Attacks ------------------------------------------------------------------
@@ -674,9 +1042,10 @@ func _start_light_attack(dir: Vector3) -> void:
 func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
 	if aim:
 		_aim_attack(dir)
-	_spend_stamina(a.stamina_cost)
+	_spend_stamina(a.stamina_cost * effects.product("stamina_cost"))
 	_charging = false
 	_charge = 0.0
+	_ability_strike = null
 	if a != weapon.riposte:
 		_is_riposte = false
 	is_sprinting = false
@@ -744,6 +1113,10 @@ func _state_attack(delta: float) -> void:
 			_consume(&"roll")
 			_start_roll(_input_direction())
 			return
+		var slot := _buffered_ability()
+		if slot >= 0:
+			_finish_attack()
+			return
 		if Input.is_action_pressed("block"):
 			_finish_attack()
 			return
@@ -754,29 +1127,45 @@ func _state_attack(delta: float) -> void:
 func _finish_attack() -> void:
 	_is_riposte = false
 	_riposte_victim = null
+	_ability_strike = null
 	_set_state(State.MOVE)
 
 
 func _land_hit(target: Node3D) -> void:
 	var a := _attack.attack
-	var hit := HitInfo.new()
-	hit.attacker = self
+	var hit := make_hit(0.0, weapon.poise_damage * a.poise_mult)
 	hit.attack = a
-	hit.origin = global_position
 	hit.is_riposte = _is_riposte
-	var dmg := weapon.damage * a.damage_mult
+	var dmg := weapon_damage() * a.damage_mult
+	if a == weapon.heavy:
+		dmg *= stats.mod_mult("heavy_damage_mult")
 	if _charging or _charge > 0.0:
 		dmg *= 1.0 + weapon.heavy_charge_bonus * clampf(_charge / weapon.heavy_charge_time, 0.0, 1.0)
-	hit.is_crit = _is_riposte or randf() < weapon.crit_chance
+	var guaranteed := effects.any("guaranteed_crit")
+	hit.is_crit = _is_riposte or guaranteed or randf() < stats.crit_chance(weapon)
+	if guaranteed:
+		effects.remove_mod(&"feint")
 	if hit.is_crit and not _is_riposte:
 		dmg *= weapon.crit_multiplier
+	# Headsman passive: extra damage to bleeding targets.
+	if target.has_method("is_bleeding") and target.call(&"is_bleeding"):
+		dmg *= stats.mod_mult("bleeding_target_damage_mult")
+	if target.has_method("armor"):
+		dmg *= 1.0 - HitInfo.armor_reduction(float(target.call(&"armor")), level())
 	hit.damage = dmg
-	hit.poise_damage = weapon.poise_damage * a.poise_mult
 	hit.hit_stop = 0.15 if hit.is_crit else a.hit_stop
+	if _ability_strike and a == _ability_strike.attack:
+		caster.modify_strike_hit(_ability_strike, hit, target)
 	var result: HitInfo.Result = target.call(&"receive_hit", hit)
 	if result == HitInfo.Result.HIT or result == HitInfo.Result.KILLED:
 		freeze(hit.hit_stop)
 		camera_rig.add_shake(0.35 if hit.is_crit else (0.25 if a == weapon.heavy else 0.15))
+		caster.on_hit_landed(hit, a == weapon.heavy)
+		if _ability_strike and a == _ability_strike.attack:
+			caster.on_strike_hit(_ability_strike)
+		var steal := effects.total("lifesteal")
+		if steal > 0.0:
+			_receive_heal(hit.damage * steal, player_name)
 
 
 func _find_riposte_victim() -> Node3D:
@@ -795,6 +1184,8 @@ func _something_close_in_front(distance: float) -> bool:
 	for n in get_tree().get_nodes_in_group(&"hittable"):
 		var e := n as Node3D
 		if e == null:
+			continue
+		if e.has_method("can_be_locked") and not e.call(&"can_be_locked"):
 			continue
 		var to := e.global_position - global_position
 		to.y = 0.0
@@ -829,9 +1220,9 @@ func _state_drink(delta: float) -> void:
 	move_and_slide()
 	if not _drink_healed and _state_time >= tuning.drink_heal_at:
 		_drink_healed = true
-		var amount := minf(tuning.max_health * tuning.flask_heal, tuning.max_health - health)
+		var amount := minf(max_health() * tuning.flask_heal, max_health() - health)
 		health += amount
-		health_changed.emit(health, tuning.max_health)
+		health_changed.emit(health, max_health())
 		CombatFx.damage_number(global_position + Vector3.UP * 2.0, amount, CombatFx.NumberKind.HEAL)
 	if _state_time >= tuning.drink_time:
 		_set_state(State.MOVE)
@@ -841,7 +1232,9 @@ func _state_drink(delta: float) -> void:
 
 func _apply_damage(amount: float) -> void:
 	health = maxf(0.0, health - amount)
-	health_changed.emit(health, tuning.max_health)
+	if health <= 0.0 and effects.any("min_health"):
+		health = 1.0  # Unbroken
+	health_changed.emit(health, max_health())
 	if health <= 0.0:
 		if _someone_else_standing():
 			_go_down()
@@ -851,6 +1244,7 @@ func _apply_damage(amount: float) -> void:
 
 func _stagger(duration: float) -> void:
 	_stun_time = duration
+	_cast = null
 	_set_state(State.STAGGER)
 	velocity = Vector3(velocity.x * 0.2, velocity.y, velocity.z * 0.2)
 	model.play_fitted(CharacterModel.ANIM_HIT, duration * 1.2, 0.05)
@@ -971,10 +1365,10 @@ func _state_air(delta: float) -> void:
 func _land() -> void:
 	last_fall_height = maxf(0.0, _fall_peak_y - global_position.y)
 	_off_floor_time = 0.0
-	var damage := tuning.fall_damage_fraction(last_fall_height) * tuning.max_health
+	var damage := tuning.fall_damage_fraction(last_fall_height) * max_health()
 	if damage > 0.0:
 		take_damage(damage, true)
-		if state == State.DEAD:
+		if state == State.DEAD or state == State.DOWNED:
 			return
 	if last_fall_height >= tuning.hard_landing_height:
 		velocity.x *= 0.2
@@ -1003,6 +1397,7 @@ func _go_down() -> void:
 	_downs += 1
 	is_sprinting = false
 	is_blocking = false
+	_cast = null
 	targeting.clear()
 	_set_state(State.DOWNED)
 	model.play(&"Crouch_Idle", 0.2)
@@ -1029,6 +1424,10 @@ func _state_downed(delta: float) -> void:
 		model.play(&"Crouch_Idle", 0.2)
 
 
+func _revive_time() -> float:
+	return tuning.revive_time * (stats.mod_mult("revive_time_mult") if stats else 1.0)
+
+
 ## Holding Interact next to a downed friend revives them (costs one flask).
 ## Returns true while reviving (you stand still).
 func _update_revive(delta: float) -> bool:
@@ -1043,7 +1442,7 @@ func _update_revive(delta: float) -> bool:
 	velocity.z = 0.0
 	model.turn_toward(target.global_position - global_position, deg_to_rad(360.0) * delta)
 	model.play(&"Interact", 0.15)
-	if _revive_progress >= tuning.revive_time:
+	if _revive_progress >= _revive_time():
 		flasks -= 1
 		flasks_changed.emit(flasks, tuning.flask_count)
 		target.revive_by(self)
@@ -1082,8 +1481,8 @@ func _net_revive(reviver_name: String) -> void:
 func _on_revived(reviver_name: String) -> void:
 	if state != State.DOWNED:
 		return
-	health = tuning.max_health * tuning.revive_health
-	health_changed.emit(health, tuning.max_health)
+	health = max_health() * tuning.revive_health
+	health_changed.emit(health, max_health())
 	_set_state(State.MOVE)
 	CombatFx.word(global_position + Vector3.UP * 2.0, "Revived by %s" % reviver_name)
 
@@ -1131,6 +1530,7 @@ func _die() -> void:
 	_set_state(State.DEAD)
 	is_sprinting = false
 	is_blocking = false
+	_cast = null
 	targeting.clear()
 	model.play_death()
 	died.emit()
@@ -1152,7 +1552,7 @@ func _state_dead(delta: float) -> void:
 func _spend_stamina(amount: float) -> void:
 	stamina = maxf(0.0, stamina - amount)
 	_regen_cooldown = tuning.stamina_regen_delay
-	stamina_changed.emit(stamina, tuning.max_stamina)
+	stamina_changed.emit(stamina, max_stamina())
 
 
 func _update_stamina(delta: float) -> void:
@@ -1160,9 +1560,10 @@ func _update_stamina(delta: float) -> void:
 		return
 	if _regen_cooldown > 0.0:
 		_regen_cooldown -= delta
-	elif stamina < tuning.max_stamina:
-		var rate := tuning.stamina_regen * (tuning.block_regen_mult if is_blocking else 1.0)
-		stamina = minf(tuning.max_stamina, stamina + rate * delta)
-		stamina_changed.emit(stamina, tuning.max_stamina)
+	elif stamina < max_stamina():
+		var rate := tuning.stamina_regen * (tuning.block_regen_mult if is_blocking else 1.0) \
+				* effects.stamina_regen_mult() * stats.mod_mult("stamina_regen_mult")
+		stamina = minf(max_stamina(), stamina + rate * delta)
+		stamina_changed.emit(stamina, max_stamina())
 	if _sprint_locked and stamina >= tuning.sprint_restart_stamina:
 		_sprint_locked = false

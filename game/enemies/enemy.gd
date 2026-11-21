@@ -54,6 +54,12 @@ var _telegraphed := false
 var _bar_timer := 0.0
 var _weapon: Node3D
 var _party_size := 1
+var effects := Effects.new()
+## Threat table (host only): player network id -> threat.
+var threat := {}
+var _taunt_peer := 0
+var _taunt_time := 0.0
+var _threat_check := 0.0
 
 @onready var model: CharacterModel = $Visual
 
@@ -85,6 +91,9 @@ func _reset() -> void:
 	_poise = max_poise
 	_cooldown = 0.5
 	target = null
+	effects.clear_all()
+	threat.clear()
+	_taunt_time = 0.0
 	collision_layer = 4
 	_set_state(State.IDLE)
 	model.set_overlay("")
@@ -124,6 +133,100 @@ func bar_point() -> Vector3:
 
 func display_name() -> String:
 	return data.display_name
+
+
+func armor() -> float:
+	return data.armor
+
+
+func is_bleeding() -> bool:
+	return effects.buildup[Effects.Status.BLEED] > 0.0
+
+
+# --- Threat and taunts ------------------------------------------------------------
+
+## Force this enemy to fight `peer`'s player for a while (Challenge, Rallying Bellow).
+func taunt(peer: int, duration: float) -> void:
+	if _is_host():
+		_taunt(peer, duration)
+	else:
+		_net_taunt.rpc_id(1, peer, duration)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_taunt(peer: int, duration: float) -> void:
+	if _is_host():
+		_taunt(peer, duration)
+
+
+func _taunt(peer: int, duration: float) -> void:
+	if state == State.DEAD:
+		return
+	var top := 0.0
+	for v in threat.values():
+		top = maxf(top, v)
+	threat[peer] = top + 50.0
+	_taunt_peer = peer
+	_taunt_time = duration
+	var p := _player_of_peer(peer)
+	if p:
+		target = p
+		if state == State.IDLE or state == State.RETURN:
+			_set_state(State.CHASE)
+
+
+## Multiply one player's threat (Flare halves it, Feint drops it).
+func scale_threat(peer: int, mult: float) -> void:
+	if _is_host():
+		threat[peer] = threat.get(peer, 0.0) * mult
+	else:
+		_net_scale_threat.rpc_id(1, peer, mult)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_scale_threat(peer: int, mult: float) -> void:
+	if _is_host():
+		threat[peer] = threat.get(peer, 0.0) * mult
+
+
+## Host: healing someone this enemy is fighting makes it a little angry at the healer.
+func on_ally_healed(healed_peer: int, healer_peer: int, amount: float) -> void:
+	if target and is_fighting() and target.get_multiplayer_authority() == healed_peer:
+		threat[healer_peer] = threat.get(healer_peer, 0.0) + amount * 0.5
+
+
+func add_threat(peer: int, amount: float) -> void:
+	threat[peer] = threat.get(peer, 0.0) + amount
+
+
+## Normal enemies switch to whoever has the most threat once they pass the
+## current target by 10%. A taunt overrides this while it lasts.
+func _update_target(delta: float) -> void:
+	_taunt_time -= delta
+	if _taunt_time > 0.0:
+		var forced := _player_of_peer(_taunt_peer)
+		if forced and not forced.is_out_of_fight():
+			target = forced
+			return
+	_threat_check -= delta
+	if _threat_check > 0.0:
+		return
+	_threat_check = 0.5
+	var best: Player
+	var best_threat := 0.0
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p == null or p.is_out_of_fight():
+			continue
+		var t: float = threat.get(p.get_multiplayer_authority(), 0.0)
+		if t > best_threat:
+			best_threat = t
+			best = p
+	if best == null or best == target:
+		return
+	var current: float = threat.get(target.get_multiplayer_authority(), 0.0) if target else 0.0
+	if target == null or target.is_out_of_fight() or best_threat > current * 1.1:
+		target = best
 
 
 ## Is it fighting someone right now? (Resting is blocked near angry enemies.)
@@ -183,26 +286,20 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 		return _apply_hit(hit)
 	_show_hit(hit.damage, hit.is_crit, hit.origin)
 	_hitstop = maxf(_hitstop, hit.hit_stop)
-	_net_hit.rpc_id(1, hit.damage, hit.poise_damage, hit.is_crit, hit.is_riposte, hit.origin, hit.hit_stop)
+	_net_hit.rpc_id(1, hit.to_dict())
 	return HitInfo.Result.KILLED if health - hit.damage <= 0.0 else HitInfo.Result.HIT
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _net_hit(damage: float, poise_damage: float, is_crit: bool, is_riposte: bool, origin: Vector3, hit_stop: float) -> void:
+func _net_hit(hit_data: Dictionary) -> void:
 	if not _is_host() or state == State.DEAD:
 		return
 	var sender := multiplayer.get_remote_sender_id()
-	var hit := HitInfo.new()
-	hit.damage = damage
-	hit.poise_damage = poise_damage
-	hit.is_crit = is_crit
-	hit.is_riposte = is_riposte
-	hit.origin = origin
-	hit.hit_stop = hit_stop
+	var hit := HitInfo.from_dict(hit_data)
 	hit.attacker = _player_of_peer(sender)
 	# Show it on the host's screen and everyone else's (the attacker already saw it).
-	_show_hit(damage, is_crit, origin)
-	_net_hit_fx.rpc(damage, is_crit, origin, sender)
+	_show_hit(hit.damage, hit.is_crit, hit.origin)
+	_net_hit_fx.rpc(hit.damage, hit.is_crit, hit.origin, sender)
 	_apply_hit(hit)
 
 
@@ -224,11 +321,18 @@ func _show_hit(damage: float, is_crit: bool, origin: Vector3) -> void:
 
 ## Host only: take the damage, poise and state changes.
 func _apply_hit(hit: HitInfo) -> HitInfo.Result:
-	health = maxf(0.0, health - hit.damage)
+	var damage := hit.damage * effects.damage_taken_mult()
+	health = maxf(0.0, health - damage)
 	_bar_timer = HEALTH_BAR_SHOW_TIME
 	_hitstop = maxf(_hitstop, hit.hit_stop)
-	if target == null and hit.attacker is Player:
-		target = hit.attacker
+	if hit.attacker is Player:
+		add_threat(hit.attacker.get_multiplayer_authority(), damage * hit.threat_mult)
+		if target == null:
+			target = hit.attacker
+	if hit.slow > 0.0:
+		effects.add_mod(&"slow", hit.slow_time, {"move": 1.0 - hit.slow})
+	if health > 0.0:
+		_apply_status(hit.status, hit.status_amount)
 	if health <= 0.0:
 		_die()
 		return HitInfo.Result.KILLED
@@ -248,6 +352,40 @@ func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 	return HitInfo.Result.HIT
 
 
+## Host: status buildup from a hit; bursts when the meter fills.
+func _apply_status(status: Effects.Status, amount: float) -> void:
+	var triggered := effects.add_buildup(status, amount)
+	if triggered == Effects.Status.NONE:
+		return
+	var burst := 0.0
+	var label := ""
+	match triggered:
+		Effects.Status.BLEED:
+			burst = max_health * Effects.BLEED_BURST
+			label = "Bleed!"
+		Effects.Status.POISON:
+			label = "Poisoned!"
+		Effects.Status.FROST:
+			burst = max_health * Effects.FROST_BURST
+			label = "Frostbite!"
+	health = maxf(0.0, health - burst)
+	_status_fx(label, burst)
+	_net_status_fx.rpc(label, burst)
+
+
+func _status_fx(label: String, burst: float) -> void:
+	var head := global_position + Vector3.UP * 2.4 * data.scale
+	CombatFx.word(head, label)
+	if burst > 0.0:
+		CombatFx.damage_number(head + Vector3.UP * 0.3, burst, CombatFx.NumberKind.CRIT)
+		CombatFx.blood(global_position + Vector3.UP * 1.3 * data.scale, Vector3.UP, 2.0)
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_status_fx(label: String, burst: float) -> void:
+	_status_fx(label, burst)
+
+
 ## Build the hit for one of our attacks (used by players' machines too).
 func make_hit(attack_index: int) -> HitInfo:
 	var a: AttackData = data.attacks[clampi(attack_index, 0, data.attacks.size() - 1)]
@@ -260,6 +398,7 @@ func make_hit(attack_index: int) -> HitInfo:
 	hit.parryable = a.parryable
 	hit.unblockable = a.unblockable
 	hit.hit_stop = a.hit_stop
+	hit.attacker_level = data.level
 	return hit
 
 
@@ -309,6 +448,15 @@ func _physics_process(delta: float) -> void:
 	_poise_timer -= delta
 	if _poise_timer <= 0.0:
 		_poise = max_poise
+	if state != State.DEAD:
+		var dot := effects.tick(delta)
+		if dot > 0.0:
+			health = maxf(0.0, health - max_health * dot)
+			_bar_timer = HEALTH_BAR_SHOW_TIME
+			if health <= 0.0:
+				_die()
+	if state in [State.CHASE, State.ATTACK]:
+		_update_target(delta)
 
 	match state:
 		State.IDLE:
@@ -501,12 +649,19 @@ func _die() -> void:
 	model.set_overlay("")
 	model.play_death()
 	died.emit()
+	# Everyone in the party nearby gets the full XP (DESIGN.md 6.4).
+	var share_range := CharacterStats.PROGRESSION.xp_share_range
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p and not p.is_dead() and p.global_position.distance_to(global_position) <= share_range:
+			p.gain_xp(data.xp)
 
 
 # --- Helpers ------------------------------------------------------------------
 
 func _move(horizontal_velocity: Vector3, delta: float, instant := false) -> void:
 	var h := Vector3(velocity.x, 0, velocity.z)
+	horizontal_velocity *= effects.move_mult()
 	h = horizontal_velocity if instant else h.move_toward(horizontal_velocity, 20.0 * delta)
 	velocity.x = h.x
 	velocity.z = h.z

@@ -55,11 +55,11 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|
 | Class icons and portraits | Bulwark, Lamplighter, Headsman | n/a | ⭐ | ⬜ |
-| Ability icons (18) | 6 per class, readable at small size | n/a | ⭐ | ⬜ |
+| Ability icons (18) | 6 per class, readable at small size. Now: colored squares with 2 letters | n/a | ⭐ | 🟨 letters |
 | Resource bar styles | Resolve (steel), Oil (amber), Tally (notches) | n/a | ⭐ | ⬜ |
-| Creator presets | Faces, hair, beards, skin tones | Modular character packs | | ⬜ |
-| Starting gear looks | Chain + shield (Bulwark), robe + lantern-staff (Lamplighter), leather + executioner's greatsword (Headsman) | Packs + kitbash | ⭐ textures | ⬜ |
-| Ability effects | Shout ripple, ember projectile, lantern circle, smoke cloud, flash, light column, pyre; bleed and frost visuals | Particles + shaders | ⭐ textures | ⬜ |
+| Creator presets | Faces, hair, beards, skin tones. Now: broad/slender mannequin + 5 colors | Modular character packs / AI | | 🟨 basic |
+| Starting gear looks | Chain + shield (Bulwark), robe + lantern-staff (Lamplighter), leather + executioner's greatsword (Headsman) | Now: tinted mannequins + simple-shape staff and greatsword (`assets/placeholder/weapons/`) | ⭐ textures | 🟨 shapes |
+| Ability effects | Shout ripple, ember projectile, lantern circle, smoke cloud, flash, light column, pyre; bleed and frost visuals | Now: simple glowing shapes made in code | ⭐ textures | 🟨 basic |
 | **Sounds** | War shout, shield bash, ember whoosh and burst, lantern hum, smoke hiss, flash, executioner chop; status sounds | Freesound, Kenney | | ⬜ |
 
 ## Phase 6: Loot

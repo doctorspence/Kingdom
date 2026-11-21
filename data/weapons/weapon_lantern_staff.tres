@@ -1,0 +1,133 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/weapon_data.gd" id="1_weapon"]
+[ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
+[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/staff_placeholder.tscn" id="3_visual"]
+
+[sub_resource type="Resource" id="Attack_light1"]
+script = ExtResource("2_attack")
+display_name = "Light 1"
+anim = &"ual2/Sword_Regular_A"
+recovery_anim = &"ual2/Sword_Regular_A_Rec"
+anim_speed = 0.9
+hit_start = 0.15
+hit_end = 0.3
+chain_time = 0.34
+cancel_time = 0.38
+end_time = 0.85
+stamina_cost = 12.0
+reach = 2.4
+arc_degrees = 150.0
+lunge_distance = 0.5
+lunge_start = 0.05
+lunge_end = 0.28
+
+[sub_resource type="Resource" id="Attack_light2"]
+script = ExtResource("2_attack")
+display_name = "Light 2"
+anim = &"ual2/Sword_Regular_B"
+recovery_anim = &"ual2/Sword_Regular_B_Rec"
+anim_speed = 0.9
+hit_start = 0.17
+hit_end = 0.31
+chain_time = 0.36
+cancel_time = 0.4
+end_time = 0.9
+stamina_cost = 12.0
+reach = 2.4
+arc_degrees = 150.0
+lunge_distance = 0.5
+lunge_start = 0.05
+lunge_end = 0.3
+
+[sub_resource type="Resource" id="Attack_heavy"]
+script = ExtResource("2_attack")
+display_name = "Heavy (overhead bonk)"
+anim = &"Sword_Attack"
+anim_speed = 0.9
+windup_until = 0.3
+hit_start = 0.36
+hit_end = 0.48
+chain_time = 0.9
+cancel_time = 0.85
+end_time = 1.05
+damage_mult = 1.7
+poise_mult = 2.5
+stamina_cost = 24.0
+hit_stop = 0.09
+reach = 2.5
+arc_degrees = 70.0
+lunge_distance = 0.6
+lunge_start = 0.3
+lunge_end = 0.45
+
+[sub_resource type="Resource" id="Attack_running"]
+script = ExtResource("2_attack")
+display_name = "Running attack"
+anim = &"ual2/Sword_Dash"
+anim_speed = 1.1
+hit_start = 0.03
+hit_end = 0.38
+chain_time = 0.8
+cancel_time = 0.75
+end_time = 0.9
+damage_mult = 1.2
+poise_mult = 1.5
+stamina_cost = 16.0
+reach = 2.4
+arc_degrees = 140.0
+lunge_distance = 1.8
+lunge_start = 0.0
+lunge_end = 0.35
+
+[sub_resource type="Resource" id="Attack_rolling"]
+script = ExtResource("2_attack")
+display_name = "Rolling attack"
+anim = &"ual2/Sword_Regular_A"
+recovery_anim = &"ual2/Sword_Regular_A_Rec"
+hit_start = 0.15
+hit_end = 0.3
+chain_time = 0.34
+cancel_time = 0.38
+end_time = 0.85
+damage_mult = 0.9
+stamina_cost = 12.0
+reach = 2.4
+arc_degrees = 150.0
+lunge_distance = 1.0
+lunge_start = 0.0
+lunge_end = 0.28
+
+[sub_resource type="Resource" id="Attack_riposte"]
+script = ExtResource("2_attack")
+display_name = "Riposte"
+anim = &"ual2/Sword_Regular_C"
+hit_start = 0.56
+hit_end = 0.72
+chain_time = 9.0
+cancel_time = 1.4
+end_time = 1.5
+damage_mult = 3.0
+poise_mult = 5.0
+stamina_cost = 0.0
+hit_stop = 0.15
+reach = 2.6
+arc_degrees = 90.0
+lunge_distance = 0.0
+
+[resource]
+script = ExtResource("1_weapon")
+id = &"weapon_lantern_staff"
+display_name = "Lantern-Staff"
+visual_scene = ExtResource("3_visual")
+damage = 15.0
+poise_damage = 10.0
+scaling_strength = 0.2
+scaling_agility = 0.2
+scaling_intellect = 0.6
+two_handed = true
+light_combo = Array[ExtResource("2_attack")]([SubResource("Attack_light1"), SubResource("Attack_light2")])
+heavy = SubResource("Attack_heavy")
+running_attack = SubResource("Attack_running")
+rolling_attack = SubResource("Attack_rolling")
+riposte = SubResource("Attack_riposte")

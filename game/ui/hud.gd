@@ -19,13 +19,17 @@ Block: hold right mouse / LB  (raise it just as a hit lands = parry)
 Riposte: light attack on a reeling enemy after a parry
 Drink flask: R / X        Interact / rest: E / Y
 Revive a downed friend: hold E / Y next to them (costs a flask)
+Abilities: 1-6 / hold LT + A, B, X, Y, RB, RT
+Talents: T / D-pad left
+Thrown abilities land where the center dot points
 Chat: Enter        Menu (leave game): Esc
 
 TEST KEYS
 F2: debug info (invincibility shows as a blue tint)
 F3: change equip load (light / medium / heavy / overloaded)
 F4: reset to start, full health
-H: enemy health bars on/off    N: damage numbers on/off"""
+H: enemy health bars on/off    N: damage numbers on/off
+Page Up: gain a level    Page Down: back to level 1"""
 
 const CHAT_LINES := 8
 const CHAT_FADE_TIME := 12.0
@@ -49,6 +53,15 @@ var _chat_edit: LineEdit
 var _chat_lines: Array[String] = []
 var _chat_timer := 0.0
 var _menu: PanelContainer
+var _hotbar: Hotbar
+var _resource_bar: ResourceBar
+var _resource_label: Label
+var _level_label: Label
+var _xp_bar: ResourceBar
+var _effects_label: Label
+var _banner: Label
+var _banner_time := 0.0
+var _talents: TalentPanel
 
 
 func _ready() -> void:
@@ -62,9 +75,15 @@ func _ready() -> void:
 	player.flasks_changed.connect(_on_flasks_changed)
 	player.died.connect(_on_died)
 	player.respawned.connect(_on_respawned)
-	_health_bar.set_values(player.health, player.tuning.max_health)
-	_stamina_bar.set_values(player.stamina, player.tuning.max_stamina)
+	player.leveled_up.connect(_on_leveled_up)
+	player.caster.resource_changed.connect(_on_resource_changed)
+	_health_bar.set_values(player.health, player.max_health())
+	_stamina_bar.set_values(player.stamina, player.max_stamina())
 	_on_flasks_changed(player.flasks, player.tuning.flask_count)
+	_on_resource_changed(player.caster.resource, player.stats.resource_max())
+	_hotbar.player = player
+	_talents.player = player
+	_resource_bar.fill_color = player.stats.class_data.resource_color
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -75,6 +94,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_menu.visible = not _menu.visible
 		if _menu.visible:
 			(_menu.find_child("Resume", true, false) as Button).grab_focus()
+	elif event.is_action_pressed("talents") and not Net.typing and player:
+		_talents.toggle()
 	elif event.is_action_pressed("debug_help"):
 		_help_label.visible = not _help_label.visible
 		_hint_label.visible = false
@@ -103,6 +124,18 @@ func _process(delta: float) -> void:
 		_debug_label.text = _debug_text()
 	_update_prompt()
 	_update_party()
+	var s := player.stats
+	_level_label.text = "%s  ·  Level %d" % [s.class_data.display_name, s.level]
+	_xp_bar.set_values(float(s.xp), float(maxi(s.xp_to_next(), 1)))
+	var fx := player.effects.active_names()
+	for status in [Effects.Status.BLEED, Effects.Status.POISON, Effects.Status.FROST]:
+		var b: float = player.effects.buildup[status]
+		if b > 1.0:
+			fx.append("%s buildup %d%%" % [["", "Bleed", "Poison", "Frost"][status], roundi(b)])
+	_effects_label.text = "\n".join(fx)
+	_banner_time -= delta
+	_banner.visible = _banner_time > 0.0
+	_banner.modulate.a = clampf(_banner_time, 0.0, 1.0)
 	_down_label.visible = player.is_downed()
 	if player.is_downed():
 		_down_label.text = "You're down! Bleeding out: %d\nA friend can hold Interact next to you to revive you." % ceili(player.bleed_time_left())
@@ -150,7 +183,7 @@ func _update_party() -> void:
 			status = "  dead"
 		label.text = p.player_name + status
 		label.modulate = Color(1.0, 0.55, 0.45) if p.is_out_of_fight() else Color(1, 1, 1)
-		bar.set_values(p.health, p.tuning.max_health)
+		bar.set_values(p.health, p.max_health())
 
 
 func _make_party_frame() -> Control:
@@ -165,6 +198,32 @@ func _make_party_frame() -> Control:
 	return box
 
 
+func _on_resource_changed(current: float, maximum: float) -> void:
+	var c := player.stats.class_data if player else null
+	if c and c.resource_kind == ClassData.ResourceKind.TALLY:
+		# Notches, not a bar.
+		var marks := ""
+		for i in roundi(maximum):
+			marks += "| " if i < roundi(current) else ". "
+		_resource_label.text = "%s  %s" % [c.resource_label, marks]
+		_resource_bar.visible = false
+	else:
+		_resource_bar.visible = true
+		_resource_bar.set_values(current, maximum)
+		_resource_label.text = "%s  %d" % [c.resource_label if c else "", roundi(current)]
+
+
+func _on_leveled_up(new_level: int) -> void:
+	var text := "Level %d" % new_level
+	for a in player.stats.class_data.abilities:
+		if a.unlock_level == new_level:
+			text += "\nNew ability: %s" % a.display_name
+	if new_level % CharacterStats.PROGRESSION.levels_per_talent_point == 0:
+		text += "\nTalent point! Press T"
+	_banner.text = text
+	_banner_time = 4.0
+
+
 func _on_flasks_changed(current: int, maximum: int) -> void:
 	_flask_label.text = "Flasks  %d / %d" % [current, maximum]
 	_flask_label.modulate = Color(1, 1, 1) if current > 0 else Color(0.6, 0.4, 0.4)
@@ -177,7 +236,7 @@ func _debug_text() -> String:
 	var lines := PackedStringArray([
 		"State: %s%s" % [p.state_name(), "  (sprinting)" if p.is_sprinting else ("  (walking)" if p.is_walking else "")],
 		"Speed: %.1f m/s" % speed,
-		"Health: %d / %d    Stamina: %d / %d" % [p.health, p.tuning.max_health, p.stamina, p.tuning.max_stamina],
+		"Health: %d / %d    Stamina: %d / %d" % [p.health, p.max_health(), p.stamina, p.max_stamina()],
 		"Equip load: %d%% (%s)   [F3 to change]" % [roundi(p.equip_load * 100.0), tier_names[p.load_tier()]],
 		"Invincible: %s    Blocking: %s%s" % ["YES" if p.is_invulnerable() else "no", "yes" if p.is_blocking else "no", "  (PARRY WINDOW)" if p.is_parrying() else ""],
 		"Last fall: %.1f m" % p.last_fall_height,
@@ -241,6 +300,10 @@ func _draw_marker() -> void:
 	if player == null or not is_instance_valid(player) or not player.is_inside_tree():
 		return
 	var cam := player.camera_rig.camera
+	# Small crosshair: where thrown abilities (Kindle, lanterns...) will land.
+	var center := _marker.size * 0.5
+	_marker.draw_circle(center, 2.5, Color(0, 0, 0, 0.5))
+	_marker.draw_circle(center, 1.5, Color(1, 1, 1, 0.7))
 	# Enemy health bars (once hurt or targeted).
 	if CombatFx.show_enemy_health_bars:
 		for n in get_tree().get_nodes_in_group(&"enemies"):
@@ -290,20 +353,55 @@ func _build() -> void:
 
 	_health_bar = ResourceBar.new()
 	_health_bar.custom_minimum_size = Vector2(300, 14)
+	_health_bar.pixels_per_point = 2.2
 	_health_bar.fill_color = Color(0.58, 0.07, 0.06)
 	bars.add_child(_health_bar)
 
 	_stamina_bar = ResourceBar.new()
 	_stamina_bar.custom_minimum_size = Vector2(300, 9)
+	_stamina_bar.pixels_per_point = 2.5
 	_stamina_bar.fill_color = Color(0.3, 0.52, 0.2)
 	_stamina_bar.chip_color = Color(0.75, 0.7, 0.35)
 	bars.add_child(_stamina_bar)
 
+	_resource_bar = ResourceBar.new()
+	_resource_bar.custom_minimum_size = Vector2(300, 8)
+	_resource_bar.pixels_per_point = 3.0
+	bars.add_child(_resource_bar)
+
+	_resource_label = _make_label(16)
+	bars.add_child(_resource_label)
+
 	_flask_label = _make_label(18)
 	bars.add_child(_flask_label)
 
+	_level_label = _make_label(16)
+	bars.add_child(_level_label)
+
+	_xp_bar = ResourceBar.new()
+	_xp_bar.custom_minimum_size = Vector2(300, 5)
+	_xp_bar.pixels_per_point = 0.0
+	_xp_bar.fill_color = Color(0.55, 0.45, 0.85)
+	_xp_bar.chip_color = Color(0.55, 0.45, 0.85)
+	bars.add_child(_xp_bar)
+
+	_effects_label = _make_label(16)
+	_effects_label.add_theme_color_override("font_color", Color(0.95, 0.75, 0.55))
+	bars.add_child(_effects_label)
+
+	_hotbar = Hotbar.new()
+	_place(_hotbar, Control.PRESET_CENTER_BOTTOM, Rect2(-224, -110, 448, 90))
+	root.add_child(_hotbar)
+
+	_banner = _make_label(40)
+	_banner.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55))
+	_place(_banner, Control.PRESET_CENTER_TOP, Rect2(-500, 120, 1000, 160))
+	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner.visible = false
+	root.add_child(_banner)
+
 	_party_box = VBoxContainer.new()
-	_party_box.position = Vector2(40, 150)
+	_party_box.position = Vector2(40, 290)
 	_party_box.add_theme_constant_override("separation", 8)
 	root.add_child(_party_box)
 
@@ -382,6 +480,10 @@ func _build() -> void:
 	leave.pressed.connect(func() -> void: Net.leave())
 	menu_box.add_child(leave)
 	root.add_child(_menu)
+
+	_talents = TalentPanel.new()
+	_place(_talents, Control.PRESET_CENTER, Rect2(-400, -260, 800, 520))
+	root.add_child(_talents)
 
 
 ## Pin a control to a screen corner (or the center), offset by `rect`.

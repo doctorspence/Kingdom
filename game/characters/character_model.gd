@@ -217,6 +217,54 @@ func current_anim() -> StringName:
 
 # --- Weapons ------------------------------------------------------------------
 
+var _held: Array[Node] = []
+var _body_mesh_original: MeshInstance3D
+var _female_mesh: MeshInstance3D
+
+## Remove everything held in the hands.
+func clear_hands() -> void:
+	for h in _held:
+		if is_instance_valid(h):
+			h.queue_free()
+	_held.clear()
+
+
+## Recolor the body (placeholder for real outfits).
+func set_tint(color: Color) -> void:
+	body_tint = color
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(color.r, color.g, color.b)
+	mat.roughness = 0.85
+	mat.metallic = 0.2
+	for m in _meshes:
+		m.material_override = mat
+
+
+## Swap between the broad (male) and slender (female) mannequin. Both share
+## the same skeleton, so every animation works on both.
+func set_body(slender: bool) -> void:
+	if _body_mesh_original == null:
+		for m in _meshes:
+			if m.get_parent() == _skeleton:
+				_body_mesh_original = m
+				break
+	if slender and _female_mesh == null:
+		var scene: Node = (load("res://assets/characters/mannequin/Mannequin_F.glb") as PackedScene).instantiate()
+		var src: MeshInstance3D = scene.find_children("*", "MeshInstance3D", true, false)[0]
+		_female_mesh = MeshInstance3D.new()
+		_female_mesh.mesh = src.mesh
+		_female_mesh.skin = src.skin
+		scene.free()
+		_skeleton.add_child(_female_mesh)
+		_female_mesh.skeleton = NodePath("..")
+		_meshes.append(_female_mesh)
+		set_tint(body_tint)
+	if _female_mesh:
+		_female_mesh.visible = slender
+	if _body_mesh_original:
+		_body_mesh_original.visible = not slender
+
+
 ## Put a weapon (or shield) in a hand. Weapons are built with the grip at their
 ## origin and the blade pointing up (+Y). `side` is "r" or "l".
 func attach_to_hand(item: Node3D, side: String) -> void:
@@ -224,6 +272,7 @@ func attach_to_hand(item: Node3D, side: String) -> void:
 	holder.bone_name = "hand_" + side
 	_skeleton.add_child(holder)
 	holder.add_child(item)
+	_held.append(holder)
 	# In the hand bone, fingers point along +Y and the knuckles along +Z, so a
 	# held blade points along +Z. Rotate the item's +Y onto +Z.
 	item.position = Vector3(0.0, 0.08, 0.0)

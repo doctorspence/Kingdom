@@ -33,7 +33,7 @@ func _run() -> void:
 	await _tap("light_attack")
 	await _seconds(0.5)
 	var one_hit := hp - enemy.health
-	_check_true("light attack hits the Marauder (%.0f damage)" % one_hit, one_hit >= player.weapon.damage * 0.9)
+	_check_true("light attack hits the Marauder (%.0f damage)" % one_hit, one_hit >= _expected_hit() * 0.9)
 	await _seconds(0.6)
 
 	await _setup_duel()
@@ -42,7 +42,7 @@ func _run() -> void:
 		await _tap("light_attack")
 		await _seconds(0.4 if i < 2 else 1.3)
 	var combo_hits := hp - enemy.health
-	_check_true("3-hit light combo lands all three (%.0f damage)" % combo_hits, combo_hits >= player.weapon.damage * 3.2)
+	_check_true("3-hit light combo lands all three (%.0f damage)" % combo_hits, combo_hits >= _expected_hit() * 3.0)
 
 	await _setup_duel()
 	hp = enemy.health
@@ -77,9 +77,12 @@ func _run() -> void:
 	hp = player.health
 	st = player.stamina
 	await _force_attack(SWEEP)
-	await _seconds(2.0)
-	_check_true("shield block: no damage, costs stamina (hp %.0f->%.0f, st %.0f->%.0f)" % [hp, player.health, st, player.stamina],
-			player.health == hp and player.stamina < st)
+	var low := st
+	for i in 120:
+		await get_tree().physics_frame
+		low = minf(low, player.stamina)
+	_check_true("shield block: no damage, costs stamina (hp %.0f->%.0f, st %.0f->%.0f)" % [hp, player.health, st, low],
+			player.health == hp and low < st)
 	Input.action_release("block")
 
 	await _setup_duel()
@@ -111,7 +114,7 @@ func _run() -> void:
 	await _tap("light_attack")
 	await _seconds(1.6)
 	var riposte := hp - enemy.health
-	_check_true("riposte deals big damage (%.0f)" % riposte, riposte >= player.weapon.damage * 2.5)
+	_check_true("riposte deals big damage (%.0f)" % riposte, riposte >= _expected_hit() * 2.5)
 
 	# Holding block early is NOT a parry
 	await _setup_duel()
@@ -139,26 +142,26 @@ func _run() -> void:
 	_check_true("blocking with no stamina left breaks your guard", broke)
 	await _seconds(1.5)
 
-	# Poise: a heavy overhead staggers an unarmored player
+	# Poise: the crushing blow staggers even a Bulwark (overheads don't: +25% poise)
 	await _setup_duel()
-	await _force_attack(OVERHEAD)
+	await _force_attack(CRUSH)
 	var staggered := false
 	for i in 180:
 		await get_tree().physics_frame
 		if player.state == Player.State.STAGGER:
 			staggered = true
 			break
-	_check_true("overhead breaks player poise (stagger)", staggered)
+	_check_true("crushing blow breaks player poise (stagger)", staggered)
 	await _seconds(1.0)
 
 	# --- Flasks and shrine ----------------------------------------------------
 	await _setup_duel()
 	enemy.global_position = Vector3(40, 0, -40)
-	player.health = 40.0
+	player.health = player.max_health() * 0.4
 	await _tap("flask")
 	await _seconds(1.4)
 	_check_true("flask heals 40%% (hp %.0f, flasks %d)" % [player.health, player.flasks],
-			absf(player.health - 80.0) < 0.5 and player.flasks == player.tuning.flask_count - 1)
+			absf(player.health - player.max_health() * 0.8) < 0.5 and player.flasks == player.tuning.flask_count - 1)
 
 	enemy.global_position = player.global_position + Vector3(0, 0, -1.8)
 	enemy.reset_physics_interpolation()
@@ -176,11 +179,16 @@ func _run() -> void:
 	await _frames(5)
 	await _tap("interact")
 	await _seconds(0.3)
-	_check_true("resting refills flasks and health", player.flasks == player.tuning.flask_count and player.health == player.tuning.max_health)
+	_check_true("resting refills flasks and health", player.flasks == player.tuning.flask_count and player.health == player.max_health())
 	_check_true("resting brings the Marauder back", enemy.state != Enemy.State.DEAD and enemy.health == enemy.data.max_health)
 
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)
+
+
+## A light hit after the class's stat bonus and the Marauder's armor (DESIGN.md 5.12).
+func _expected_hit() -> float:
+	return player.weapon_damage() * (1.0 - HitInfo.armor_reduction(enemy.armor(), player.level()))
 
 
 ## Player and Marauder face to face, 2 m apart, both fresh; the Marauder won't
@@ -193,8 +201,8 @@ func _setup_duel() -> void:
 	player.model.face_instantly(Vector3.FORWARD)
 	player.camera_rig.yaw = 0.0
 	player.reset_physics_interpolation()
-	player.stamina = player.tuning.max_stamina
-	player.health = player.tuning.max_health
+	player.stamina = player.max_stamina()
+	player.health = player.max_health()
 	enemy.reset_from_rest()
 	enemy.global_position = Vector3(0, 0, -2.0)
 	enemy.model.face_instantly(Vector3.BACK)

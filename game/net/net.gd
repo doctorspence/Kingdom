@@ -23,6 +23,28 @@ var join_address := "127.0.0.1"
 var names := {}
 ## True while the chat box has the keyboard (the character ignores keys).
 var typing := false
+## Your character choice from the creator: {"class": id, "body": 0/1, "color": index}.
+var character := {}
+
+
+## A heal landed on someone: the host lets enemies fighting them notice the
+## healer a little (threat).
+func report_heal(healed_peer: int, amount: float) -> void:
+	if multiplayer.is_server():
+		_apply_heal_threat(healed_peer, multiplayer.get_unique_id(), amount)
+	else:
+		_net_heal_threat.rpc_id(1, healed_peer, amount)
+
+
+@rpc("any_peer", "call_remote", "unreliable")
+func _net_heal_threat(healed_peer: int, amount: float) -> void:
+	if multiplayer.is_server():
+		_apply_heal_threat(healed_peer, multiplayer.get_remote_sender_id(), amount)
+
+
+func _apply_heal_threat(healed_peer: int, healer_peer: int, amount: float) -> void:
+	for e in get_tree().get_nodes_in_group(&"enemies"):
+		e.call(&"on_ally_healed", healed_peer, healer_peer, amount)
 
 
 func _ready() -> void:
@@ -177,6 +199,7 @@ func _load_settings() -> void:
 	if cfg.load(SETTINGS_PATH) == OK:
 		player_name = cfg.get_value("player", "name", player_name)
 		join_address = cfg.get_value("network", "last_address", join_address)
+		character = cfg.get_value("player", "character", character)
 
 
 ## Automated checks turn this off so they don't overwrite your name and address.
@@ -189,6 +212,7 @@ func _save_settings() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(SETTINGS_PATH)
 	cfg.set_value("player", "name", player_name)
+	cfg.set_value("player", "character", character)
 	cfg.set_value("network", "last_address", join_address)
 	cfg.save(SETTINGS_PATH)
 
