@@ -7,6 +7,6 @@ script = ExtResource("1_loot")
 drop_chance = 1.0
 item_count = Vector2i(1, 1)
 item_level = Vector2i(3, 6)
-gold = Vector2i(60, 110)
+coins = Vector2i(60, 110)
 souls = Vector2i(80, 140)
 guaranteed_min_rarity = 1

@@ -8,7 +8,7 @@ var pile_id := 0
 var owner_peer := 0
 var owner_name := ""
 var item_count := 0
-var gold := 0
+var coins := 0
 var souls := 0
 ## Seconds until it's gone (the host keeps the real timer; this is for the label).
 var time_left := 3600.0
@@ -60,8 +60,8 @@ func _process(delta: float) -> void:
 	_light.light_energy = 1.4 + 0.4 * sin(_t * 2.0)
 	var me := get_tree().get_first_node_in_group(&"local_player") as Node3D
 	_label.visible = me != null and me.global_position.distance_to(global_position) < 10.0
-	_label.text = "%s's belongings  (%d items, %d gold, %d souls)  %d min" % [
-			owner_name, item_count, gold, souls, ceili(time_left / 60.0)]
+	_label.text = "%s's belongings  (%d items, %d coins, %d souls)  %d min" % [
+			owner_name, item_count, coins, souls, ceili(time_left / 60.0)]
 
 
 func get_interact_text() -> String:

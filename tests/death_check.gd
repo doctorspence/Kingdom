@@ -25,7 +25,7 @@ func _run() -> void:
 	inv.add_item(ItemDB.make_item(ItemDB.get_item(&"item_kettle_helm"), 6, ItemInstance.Rarity.EPIC))
 	inv.add_item(ItemDB.make_item(ItemDB.get_item(&"item_iron_ring"), 1, 0))
 	inv.add_item(ItemDB.make_item(ItemDB.get_item(&"item_antidote"), 1, 0))
-	inv.gold = 100
+	inv.coins = 100
 	inv.souls = 50
 	var everything: Array[ItemInstance] = []
 	for s in inv.equipped:
@@ -47,7 +47,7 @@ func _run() -> void:
 	kept.sort()
 	best3.sort()
 	_check("you keep exactly your 3 most valuable items", kept == best3)
-	_check("gold and souls all dropped", inv.gold == 0 and inv.souls == 0)
+	_check("coins and souls all dropped", inv.coins == 0 and inv.souls == 0)
 	_check("one pile, where you died", Loot.pile_count() == 1 and (Loot.piles()[0] as Node3D).global_position.distance_to(death_spot) < 0.5)
 	_check("kept equipped items stay equipped (sword kept: %s)" % str(sword_kept), not sword_kept or inv.equipped.has("main1"))
 
@@ -57,7 +57,7 @@ func _run() -> void:
 	(Loot.piles()[0] as Node).call(&"interact", player)
 	await _frames(5)
 	var count := inv.equipped.size() + inv.backpack.items.size()
-	_check("recovering gives everything back (%d / %d items, %d gold)" % [count, total, inv.gold], count == total and inv.gold == 100 and inv.souls == 50)
+	_check("recovering gives everything back (%d / %d items, %d coins)" % [count, total, inv.coins], count == total and inv.coins == 100 and inv.souls == 50)
 	_check("the pile is gone after recovery", Loot.pile_count() == 0)
 
 	# --- Die twice: the first pile is lost --------------------------------------------
@@ -65,14 +65,14 @@ func _run() -> void:
 	player.take_damage(9999.0, true)
 	await _seconds(3.3)
 	await _go_to(Vector3(-5, 0.05, -5))
-	inv.gold = 30  # something new to lose
-	var gold_second := inv.gold
+	inv.coins = 30  # something new to lose
+	var coins_second := inv.coins
 	player.take_damage(9999.0, true)
 	await _frames(5)
 	var pile: Node3D = Loot.piles()[0] if Loot.pile_count() > 0 else null
 	_check("dying again destroys the first pile (piles: %d)" % Loot.pile_count(),
 			Loot.pile_count() == 1 and pile.global_position.z < 0.0)
-	_check("second pile holds only what you had then (%d gold)" % gold_second, int(pile.get(&"gold")) == gold_second)
+	_check("second pile holds only what you had then (%d coins)" % coins_second, int(pile.get(&"coins")) == coins_second)
 	await _seconds(3.3)
 	(Loot.piles()[0] as Node).call(&"interact", player)  # tidy up
 	await _frames(3)

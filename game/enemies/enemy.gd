@@ -911,7 +911,7 @@ func _die() -> void:
 		var e := n as Enemy
 		if e and e != self and e.data.martyr_fury and e.global_position.distance_to(global_position) < 12.0:
 			e._enrage()
-	# Loot, gold, souls and XP for everyone nearby (DESIGN.md 6.4 and 9).
+	# Loot, coins, souls and XP for everyone nearby (DESIGN.md 6.4 and 9).
 	Loot.enemy_died(self, data.loot_table, data.xp)
 
 

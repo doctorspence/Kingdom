@@ -40,7 +40,7 @@ All the sounds and music are in (321+ CC0 files in `assets/audio/`, credited in 
 Menu > Settings (main menu and Esc menu) has Audio, Gameplay, Display and Controls tabs; you can rebind all keyboard and mouse actions. Saved in `settings.cfg`.
 
 ## Phase 13 (camp and night raids): built
-The Camp Hearth is east of the Crossroads shrine. Claim it (100 gold), upgrade it from the hearth menu, and defend it when raiders come at night. F7 starts a raid now, F5 skips ahead 3 hours. Design in DESIGN.md 11.5 (all numbers are my first guesses).
+The Camp Hearth is east of the Crossroads shrine. Claim it (100 coins), upgrade it from the hearth menu, and defend it when raiders come at night. F7 starts a raid now, F5 skips ahead 3 hours. Design in DESIGN.md 11.5 (all numbers are my first guesses).
 
 ## Next up
 Listen-test the audio and playtest the nine abilities (🧪 in TODO.md). Subclasses (Phase 11) are paused at your request: the framework and Warrior, Guardian and Cleric are built; the other six are "Coming later". Your decisions so far: subclass is re-pickable in future; names Martial / Vanguard / Mystic are for now.

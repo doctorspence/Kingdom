@@ -43,18 +43,18 @@ func _run() -> void:
 	_check("a new camp is cold and unclaimed", not camp.is_claimed() and not camp.is_active())
 	_check("it offers to be claimed (%s)" % camp.get_interact_text(), camp.get_interact_text().begins_with("Claim"))
 	_check("you can't rest at an unclaimed camp", camp.rest(player) == "The hearth is cold")
-	player.inventory.gold = 20
-	_check("claiming without gold is refused", camp.claim(player).begins_with("Not enough gold") and not camp.is_claimed())
-	player.inventory.gold = 130
-	_check("claiming costs 100 gold", camp.claim(player) == "" and player.inventory.gold == 30 and camp.is_claimed() and camp.is_active())
+	player.inventory.coins = 20
+	_check("claiming without coins is refused", camp.claim(player).begins_with("Not enough coins") and not camp.is_claimed())
+	player.inventory.coins = 130
+	_check("claiming costs 100 coins", camp.claim(player) == "" and player.inventory.coins == 30 and camp.is_claimed() and camp.is_active())
 	await _frames(3)
 	_check("a claimed camp shows a banner (%d decor pieces)" % camp._decor.get_child_count(), camp._decor.get_child_count() >= 2)
 	_check("it can be rested at again", camp.get_interact_text().begins_with("Use the Camp Hearth"))
 
 	# --- Upgrades ---------------------------------------------------------------------------
-	player.inventory.gold = 5000
+	player.inventory.coins = 5000
 	var bodies0 := _count(camp._decor, "StaticBody3D")
-	_check("palisade level 1 costs 150", camp.next_cost(&"palisade") == 150 and camp.upgrade(&"palisade", player) == "" and player.inventory.gold == 4850)
+	_check("palisade level 1 costs 150", camp.next_cost(&"palisade") == 150 and camp.upgrade(&"palisade", player) == "" and player.inventory.coins == 4850)
 	await _frames(3)
 	var posts1 := _count(camp._decor, "StaticBody3D")
 	camp.upgrade(&"palisade", player)
@@ -65,7 +65,7 @@ func _run() -> void:
 	var posts3 := _count(camp._decor, "StaticBody3D")
 	_check("the palisade grows with each level (%d -> %d -> %d -> %d solid posts)" % [bodies0, posts1, posts2, posts3], posts1 > bodies0 and posts2 > posts1 and posts3 > posts2)
 	_check("a fourth level is refused", camp.upgrade(&"palisade", player) == "Already at the highest level")
-	_check("the three levels cost 150 + 400 + 900", player.inventory.gold == 5000 - 150 - 400 - 900)
+	_check("the three levels cost 150 + 400 + 900", player.inventory.coins == 5000 - 150 - 400 - 900)
 	camp.upgrade(&"watch", player)
 	await _frames(3)
 	var lights1 := _count(camp._decor, "OmniLight3D")
@@ -78,17 +78,17 @@ func _run() -> void:
 	camp.upgrade(&"stores", player)
 	camp.upgrade(&"stores", player)
 	_check("all upgrades at level 3 (total %d)" % camp.total_level(), camp.total_level() == 9)
-	player.inventory.gold = 10
+	player.inventory.coins = 10
 	WorldState.set_flag(Camp.FLAG_COLD, true)
 	_check("a cold hearth refuses upgrades", camp.upgrade(&"stores", player) == "The hearth is cold")
 	_check("a cold hearth offers to be relit", camp.get_interact_text().begins_with("Relight"))
-	player.inventory.gold = 80
-	_check("relighting costs 50", camp.relight(player) == "" and player.inventory.gold == 30 and camp.is_active())
+	player.inventory.coins = 80
+	_check("relighting costs 50", camp.relight(player) == "" and player.inventory.coins == 30 and camp.is_active())
 	_check("upgrades survive going cold", camp.total_level() == 9)
 
 	# --- The Camp menu ------------------------------------------------------------------------
 	WorldState.set_flag(&"camp_palisade", 0)
-	player.inventory.gold = 150
+	player.inventory.coins = 150
 	var panel := CampPanel.new()
 	add_child(panel)
 	await get_tree().process_frame
@@ -97,10 +97,10 @@ func _run() -> void:
 	var buy_palisade := panel.find_child("Buy_palisade", true, false) as Button
 	var buy_watch := panel.find_child("Buy_watch", true, false) as Button
 	_check("the menu lists the three upgrades", panel.find_children("Buy_*", "Button", true, false).size() == 3)
-	_check("what you can afford is enabled, the rest is not", not buy_palisade.disabled and buy_watch.disabled == (camp.level(&"watch") >= 3 or player.inventory.gold < camp.next_cost(&"watch")))
+	_check("what you can afford is enabled, the rest is not", not buy_palisade.disabled and buy_watch.disabled == (camp.level(&"watch") >= 3 or player.inventory.coins < camp.next_cost(&"watch")))
 	buy_palisade.pressed.emit()
 	await _frames(2)
-	_check("buying from the menu works (palisade %d, gold %d)" % [camp.level(&"palisade"), player.inventory.gold], camp.level(&"palisade") == 1 and player.inventory.gold == 0)
+	_check("buying from the menu works (palisade %d, coins %d)" % [camp.level(&"palisade"), player.inventory.coins], camp.level(&"palisade") == 1 and player.inventory.coins == 0)
 	panel.queue_free()
 	WorldState.set_flag(&"camp_palisade", 3)
 
@@ -164,9 +164,9 @@ func _run() -> void:
 	_check("a camp at 0 strength is overrun: raiders leave, hearth cold (%s / %s)" % [str(raids.active), str(camp.is_cold())],
 			not raids.active and camp.is_cold() and raids.raiders.is_empty() and _messages.back().begins_with("The camp is overrun"))
 	_check("no resting at a cold hearth", camp.rest(player) == "The hearth is cold")
-	player.inventory.gold = 50
+	player.inventory.coins = 50
 	camp.relight(player)
-	_check("relighted for 50 gold", camp.is_active())
+	_check("relighted for 50 coins", camp.is_active())
 
 	# Dawn.
 	raids.start_raid(3)

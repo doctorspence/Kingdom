@@ -29,12 +29,12 @@ func _run() -> void:
 	_check("Rare rolls 1 bonus, Epic 2 (%d, %d)" % [rare.bonuses.size(), epic.bonuses.size()], rare.bonuses.size() == 1 and epic.bonuses.size() == 2)
 	var table: LootTable = load("res://data/loot/loot_marauder.tres")
 	var items := 0
-	var golds := 0
+	var coinss := 0
 	for i in 200:
 		var r := ItemDB.roll(table)
 		items += r.items.size()
-		golds += r.gold
-	_check("Marauder loot: ~half drop something (%d items / 200 kills, %d gold)" % [items, golds], items > 60 and items < 260 and golds > 1000)
+		coinss += r.coins
+	_check("Marauder loot: ~half drop something (%d items / 200 kills, %d coins)" % [items, coinss], items > 60 and items < 260 and coinss > 1000)
 
 	# --- Starting gear and equipping ----------------------------------------------
 	_check("Bulwark starts with sword, shield, hauberk", player.weapon.id == &"weapon_rusty_sword" and player.shield != null
@@ -70,13 +70,13 @@ func _run() -> void:
 	g.add(potion2)
 	_check("consumables stack (x%d)" % potion.count, potion.count == 2 and g.items.size() == 2)
 
-	# --- Drops, pickup, gold and souls ---------------------------------------------------
+	# --- Drops, pickup, coins and souls ---------------------------------------------------
 	var rich: LootTable = table.duplicate()
 	rich.drop_chance = 1.0
 	rich.item_count = Vector2i(2, 2)
 	enemy.data = enemy.data.duplicate()
 	enemy.data.loot_table = rich
-	var gold_before := inv.gold
+	var coins_before := inv.coins
 	var souls_before := inv.souls
 	enemy.global_position = player.global_position + Vector3(0, 0, -2)
 	enemy.health = 1.0
@@ -84,8 +84,8 @@ func _run() -> void:
 	await _frames(3)
 	await _tap("light_attack")
 	await _seconds(1.0)
-	_check("kill: 2 items drop, gold and souls gained (%d drops, +%d gold, +%d souls)" % [Loot.drop_count(), inv.gold - gold_before, inv.souls - souls_before],
-			Loot.drop_count() >= 2 and inv.gold > gold_before and inv.souls > souls_before)
+	_check("kill: 2 items drop, coins and souls gained (%d drops, +%d coins, +%d souls)" % [Loot.drop_count(), inv.coins - coins_before, inv.souls - souls_before],
+			Loot.drop_count() >= 2 and inv.coins > coins_before and inv.souls > souls_before)
 	var drop: Node3D = Loot.drops()[0]
 	var count_before := inv.backpack.items.size()
 	player.global_position = drop.global_position + Vector3(0.5, 0.05, 0)
@@ -99,18 +99,18 @@ func _run() -> void:
 	var wenna := scene.get_node("Merchants/OldWenna") as Vendor
 	var broker := scene.get_node("Merchants/SoulBroker") as Vendor
 	_check("Soul Broker offers Rare+ gear for souls", broker.stock.size() == 4 and broker.stock.all(func(i: ItemInstance) -> bool: return i.rarity >= ItemInstance.Rarity.RARE))
-	inv.gold = 500
+	inv.coins = 500
 	var antidote := wenna.offers()[0]
-	_check("buy an antidote with gold", wenna.buy(player, antidote) == "" and inv.gold < 500)
-	var gold_now := inv.gold
+	_check("buy an antidote with coins", wenna.buy(player, antidote) == "" and inv.coins < 500)
+	var coins_now := inv.coins
 	var price := helm.sell_value()
 	inv.unequip("head")
 	inv.sell(helm.uid)
-	_check("sell the helm (+%d gold)" % price, inv.gold == gold_now + price and inv.buyback.size() == 1)
+	_check("sell the helm (+%d coins)" % price, inv.coins == coins_now + price and inv.buyback.size() == 1)
 	_check("buy it back", inv.buy_back(helm.uid) == "" and inv.backpack.items.has(helm.uid))
 	_check("move it to the bank", inv.move_between(helm.uid) == "" and inv.bank.items.has(helm.uid))
 	var rows := inv.bank.height
-	inv.gold = 1000
+	inv.coins = 1000
 	_check("buy a bank row", inv.buy_bank_row() == "" and inv.bank.height == rows + 1)
 
 	# --- Saving --------------------------------------------------------------------------------
@@ -119,7 +119,7 @@ func _run() -> void:
 	copy.load_dict(saved)
 	_check("save and load: same gear, backpack, bank, money", copy.equipped.size() == inv.equipped.size()
 			and copy.backpack.items.size() == inv.backpack.items.size() and copy.bank.items.has(helm.uid)
-			and copy.gold == inv.gold and copy.souls == inv.souls)
+			and copy.coins == inv.coins and copy.souls == inv.souls)
 
 	# --- Legendary, bow, consumables ------------------------------------------------------------
 	var noose := ItemDB.make_item(ItemDB.get_item(&"item_hobbs_noose"), 8, 0)

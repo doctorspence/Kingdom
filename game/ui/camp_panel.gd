@@ -1,7 +1,7 @@
 class_name CampPanel
 extends PanelContainer
 ## The Camp menu at the hearth: the three upgrades, their levels, what the
-## next level costs. Gold is spent from your own purse; the levels belong to
+## next level costs. Coins is spent from your own purse; the levels belong to
 ## the world (everyone sees them).
 ## Works with mouse, keyboard and gamepad (buttons take focus).
 
@@ -10,7 +10,7 @@ signal closed
 var player: Player
 var camp: Camp
 
-var _gold: Label
+var _coins: Label
 var _status: Label
 var _rows := {}  # upgrade id -> {"pips": Label, "buy": Button}
 var _message: Label
@@ -31,9 +31,9 @@ func _ready() -> void:
 	box.add_child(_status)
 	for kind in Camp.UPGRADES:
 		box.add_child(_make_row(kind))
-	_gold = Label.new()
-	_gold.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55))
-	box.add_child(_gold)
+	_coins = Label.new()
+	_coins.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55))
+	box.add_child(_coins)
 	_message = Label.new()
 	_message.add_theme_color_override("font_color", Color(0.9, 0.75, 0.4))
 	box.add_child(_message)
@@ -112,9 +112,9 @@ func _refresh() -> void:
 			buy.text = "Fully improved"
 			buy.disabled = true
 		else:
-			buy.text = "Improve (%d gold)" % cost
-			buy.disabled = player.inventory.gold < cost
-	_gold.text = "Your gold: %d" % player.inventory.gold
+			buy.text = "Improve (%d coins)" % cost
+			buy.disabled = player.inventory.coins < cost
+	_coins.text = "Your coins: %d" % player.inventory.coins
 	_status.text = "Raids repelled: %d%s" % [camp.wins(), "      The hearth is COLD" if camp.is_cold() else ""]
 
 

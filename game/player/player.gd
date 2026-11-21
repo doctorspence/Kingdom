@@ -65,7 +65,7 @@ const SHRINE_FIND_RANGE := 14.0
 @export var equip_load := 0.2
 
 var weapon: WeaponData
-## Everything you carry: gear, backpack, bank, gold, souls.
+## Everything you carry: gear, backpack, bank, coins, souls.
 var inventory := Inventory.new()
 ## Your explored map, found shrines and last shrine, per world (saved).
 var exploration := Exploration.new()
@@ -754,28 +754,28 @@ func open_menu(kind: StringName, source: Node) -> void:
 
 # --- Money, items, saving ---------------------------------------------------------
 
-## Gold and souls from a kill (the host sends these to everyone nearby).
-func gain_money(gold_amount: int, souls_amount: int) -> void:
+## Coins and souls from a kill (the host sends these to everyone nearby).
+func gain_money(coins_amount: int, souls_amount: int) -> void:
 	if is_multiplayer_authority():
-		_receive_money(gold_amount, souls_amount)
+		_receive_money(coins_amount, souls_amount)
 	else:
-		_net_money.rpc_id(get_multiplayer_authority(), gold_amount, souls_amount)
+		_net_money.rpc_id(get_multiplayer_authority(), coins_amount, souls_amount)
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _net_money(gold_amount: int, souls_amount: int) -> void:
+func _net_money(coins_amount: int, souls_amount: int) -> void:
 	if multiplayer.get_remote_sender_id() == 1:
-		_receive_money(gold_amount, souls_amount)
+		_receive_money(coins_amount, souls_amount)
 
 
-func _receive_money(gold_amount: int, souls_amount: int) -> void:
-	inventory.add_money(gold_amount, souls_amount)
-	if gold_amount > 0:
+func _receive_money(coins_amount: int, souls_amount: int) -> void:
+	inventory.add_money(coins_amount, souls_amount)
+	if coins_amount > 0:
 		Audio.sfx(&"coins")
 	if souls_amount > 0:
 		Audio.sfx(&"souls")
-	if gold_amount > 0 or souls_amount > 0:
-		CombatFx.word(global_position + Vector3.UP * 2.0, "+%d gold  +%d souls" % [gold_amount, souls_amount])
+	if coins_amount > 0 or souls_amount > 0:
+		CombatFx.word(global_position + Vector3.UP * 2.0, "+%d coins  +%d souls" % [coins_amount, souls_amount])
 
 
 ## Put a found item in the backpack. Returns false if there's no room.
@@ -2130,7 +2130,7 @@ func _die() -> void:
 
 
 ## DESIGN.md 10: you keep your 3 most valuable items (equipped ones stay
-## equipped). Everything else, plus all gold and souls, drops in a pile.
+## equipped). Everything else, plus all coins and souls, drops in a pile.
 func _drop_belongings() -> void:
 	var all: Array = []  # [item, equipment slot or ""]
 	for s in inventory.equipped:
@@ -2146,12 +2146,12 @@ func _drop_belongings() -> void:
 		else:
 			inventory.backpack.remove(it.uid)
 		dropped.append(it.to_dict())
-	var gold := inventory.gold
+	var coins := inventory.coins
 	var souls := inventory.souls
-	inventory.gold = 0
+	inventory.coins = 0
 	inventory.souls = 0
 	inventory.changed.emit()
-	Loot.create_death_pile(Net.player_name, dropped, gold, souls, _pile_position())
+	Loot.create_death_pile(Net.player_name, dropped, coins, souls, _pile_position())
 	save_character()
 
 

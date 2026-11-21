@@ -15,5 +15,5 @@ extends Resource
 @export var items: Array[ItemData] = []
 ## Always drops these too (named uniques).
 @export var always: Array[ItemData] = []
-@export var gold := Vector2i(3, 10)
+@export var coins := Vector2i(3, 10)
 @export var souls := Vector2i(5, 12)

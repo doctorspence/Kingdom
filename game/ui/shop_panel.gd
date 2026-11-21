@@ -1,6 +1,6 @@
 class_name ShopPanel
 extends PanelContainer
-## Trading with a merchant: Buy, Sell (gold merchants only) and Buy back.
+## Trading with a merchant: Buy, Sell (coins merchants only) and Buy back.
 
 var player: Player
 var vendor: Vendor
@@ -86,7 +86,7 @@ func refresh() -> void:
 	for i in 3:
 		_tabs[i].button_pressed = ["buy", "sell", "buyback"][i] == _mode
 	_title.text = "%s — \"%s\"" % [vendor.data.display_name, vendor.data.greeting]
-	_wallet.text = "You have %d gold and %d souls." % [player.inventory.gold, player.inventory.souls]
+	_wallet.text = "You have %d coins and %d souls." % [player.inventory.coins, player.inventory.souls]
 	for c in _list.get_children():
 		c.queue_free()
 	var items: Array[ItemInstance] = []
@@ -120,7 +120,7 @@ func _price(it: ItemInstance) -> int:
 
 
 func _currency() -> String:
-	return vendor.currency_name() if _mode == "buy" else "gold"
+	return vendor.currency_name() if _mode == "buy" else "coins"
 
 
 func _select(it: ItemInstance) -> void:

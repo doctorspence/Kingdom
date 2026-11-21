@@ -82,7 +82,7 @@ func _run() -> void:
 	await _seconds(0.1)
 	n = Audio.played_count
 	player._receive_money(10, 0)
-	_check("gold makes a coin sound", Audio.played_count > n)
+	_check("coins makes a coin sound", Audio.played_count > n)
 	await _seconds(0.1)
 	n = Audio.played_count
 	player._on_leveled_up(3)

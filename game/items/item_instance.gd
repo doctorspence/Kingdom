@@ -125,7 +125,7 @@ func describe() -> PackedStringArray:
 		lines.append("Use: " + {"cure_poison": "cures poison", "cure_frost": "cures frost", "heal": "heals %d" % roundi(base.use_amount)}.get(String(base.use_effect), String(base.use_effect)))
 	if count > 1:
 		lines.append("x%d" % count)
-	lines.append("Weight %.1f   Sells for %d gold" % [base.weight, sell_value()])
+	lines.append("Weight %.1f   Sells for %d coins" % [base.weight, sell_value()])
 	if base.flavor != "":
 		lines.append("\"%s\"" % base.flavor)
 	return lines

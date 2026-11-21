@@ -27,7 +27,7 @@
 7. **A friend can recover your loot pile for you**, and the items go straight back to you.
 8. **Your loot pile has no map marker.** It glows, but you have to remember where you fell.
 9. **The bank belongs to your character.** It travels with you between worlds and is safe from death.
-10. **Gold, souls and XP go to everyone nearby in full.** No splitting, so no kill-stealing. Items use need/greed.
+10. **Coins, souls and XP go to everyone nearby in full.** No splitting, so no kill-stealing. Items use need/greed.
 11. **Arrows are unlimited.** No ammo management, in line with "no survival needs".
 12. **Lock-on works on any enemy.** Soft auto-target handles most small fights; lock-on is for elites and bosses.
 13. **The renderer is Forward+**, because it's the only Godot renderer with volumetric fog. Your GTX 1080 Ti handles it easily. The target for friends' PCs is a GTX 1060-class card or better.
@@ -56,7 +56,7 @@
   - *Hobb's Noose:* "They hanged him twice. He kept the rope."
   - *Zealot's Tabard:* "Bleached white. Stays white. Nobody asks how."
   - *Shrine Flask:* "Tastes of candle smoke and somebody else's prayers."
-- **A few cryptic NPCs.** The **Soul Broker** trades for souls at shrines and never shows its face. **Old Wenna**, a deserter's widow, sells gear for gold and doesn't ask where you got yours.
+- **A few cryptic NPCs.** The **Soul Broker** trades for souls at shrines and never shows its face. **Old Wenna**, a deserter's widow, sells gear for coins and doesn't ask where you got yours.
 - **First places.** The countryside outside Highcrown is **the Tithelands** (zone 1). Its dungeon is **the Gullet**, an abandoned quarry held by bandits, ending with **Harl the Delver** (see `GULLET_DESIGN.md`; Brother Tallow is retired and kept as unused data). The zone's named rare is **Hobb the Unhanged**.
 
 ---
@@ -355,7 +355,7 @@ Head, Shoulders, Chest, Hands, Legs, Feet, Cloak, Neck, Ring ×2, and **two weap
 - **Free trading**: drop an item and a friend picks it up. A trade window comes later if we need one.
 
 ### 9.5 Currencies & vendors
-- **Gold**: from enemies and selling. Spent at ordinary vendors (consumables, basic gear) and on bank space.
+- **Coins**: from enemies and selling. Spent at ordinary vendors (consumables, basic gear) and on bank space.
 - **Souls**: from every kill. Spent at the **Soul Broker**: a rotating stock of rare gear and special consumables that changes when you rest.
 - Both drop on death (section 10).
 - **Not in the game**: gear upgrades, set bonuses, durability, crafting, gathering, survival needs.
@@ -365,7 +365,7 @@ Head, Shoulders, Chest, Hands, Legs, Feet, Cloak, Neck, Ring ×2, and **two weap
 ## 10. Death
 1. **Downed first in co-op** (section 5.9). Solo, you die at 0 health.
 2. On death **you keep your 3 most valuable items** (by item value; equipped ones stay equipped).
-3. **Everything else** (other gear, the backpack, all gold, all souls) drops as a **glowing loot pile** where you died. No grave marker, no map marker.
+3. **Everything else** (other gear, the backpack, all coins, all souls) drops as a **glowing loot pile** where you died. No grave marker, no map marker.
    - Died in a boss room? The pile appears at the **boss door**.
    - Fell to your death? It appears at the last safe ground you stood on.
 4. You **respawn at the last shrine you rested at** with full health and flasks. Enemies do not respawn.
@@ -398,15 +398,15 @@ Rest to heal, refill flasks, respawn enemies and set your respawn point. Also: *
 ### 11.5 The Camp and night raids *(my first design: tell me and I'll change any of it)*
 A place that is yours, that the Dark Ages and the White Knights' stragglers try to take at night.
 
-- **The site.** One camp per world, a few steps east of the Crossroads. It starts as a cold fire pit. Anyone can **claim** it for 100 gold. Claiming is shared by everyone in the world and saved with the world.
+- **The site.** One camp per world, a few steps east of the Crossroads. It starts as a cold fire pit. Anyone can **claim** it for 100 coins. Claiming is shared by everyone in the world and saved with the world.
 - **The hearth.** A claimed camp has a hearth that works like a shrine: rest, bank, travel and respawn there. Its menu also has a **Camp** button for upgrades.
-- **Upgrades** (gold, bought at the hearth, saved with the world, three levels each: 150 / 400 / 900):
+- **Upgrades** (coins, bought at the hearth, saved with the world, three levels each: 150 / 400 / 900):
   - **Palisade**: wooden stakes ring the camp (real walls enemies can't walk through). Each level makes raiders drain the camp's strength 25% slower.
   - **Watchfires**: torches around the camp. Level 1: the horn warns you earlier and a banner names the direction raiders come from. Level 2: raiders show on the map. Level 3: the camp is lit all night and raiders lose sight range near it.
   - **Stores**: crates and barrels, and a better reward when you win a raid (more items, better rarity).
 - **Raids.** When night falls, a claimed camp may be raided (the first night after claiming: always; after that 60%). It only happens if a player is within 120 m, so being away is never punished. A raid is a group of Dark Ages marauders, White Knight zealots and gaunt hounds (3 to start, more with more players, more as the camp is upgraded) that appears 70 to 90 m away, blows a horn and marches to the camp. They are ordinary enemies: they fight whoever they meet.
-- **Camp strength.** Every raider within 12 m of the hearth drains the camp's strength (starts at 100%). At 0 the camp is **overrun**: the raiders melt away, the hearth goes cold (no resting there) until someone relights it for 50 gold. Nothing else is lost.
-- **Winning.** Kill every raider before dawn: strength refills, a **raid chest** of loot appears at the hearth (gold, souls, 1 to 3 items; better with Stores), and the camp counts a win. If dawn comes with raiders still alive, they slink off and there is no reward.
+- **Camp strength.** Every raider within 12 m of the hearth drains the camp's strength (starts at 100%). At 0 the camp is **overrun**: the raiders melt away, the hearth goes cold (no resting there) until someone relights it for 50 coins. Nothing else is lost.
+- **Winning.** Kill every raider before dawn: strength refills, a **raid chest** of loot appears at the hearth (coins, souls, 1 to 3 items; better with Stores), and the camp counts a win. If dawn comes with raiders still alive, they slink off and there is no reward.
 - **Multiplayer.** The host runs raids. Everyone sees the same camp, upgrades and raid status.
 
 ### 11.6 Later
@@ -495,7 +495,7 @@ Kingdom/
 - Friends get the game as an exported Windows build (a zip with an .exe). No Godot needed on their side.
 
 ### 13.5 Saves
-- **Characters** are saved on each player's own PC (level, gear, backpack, bank, gold, souls, talents, look; plus per world: explored map, found shrines, last shrine). They can move between worlds, like Valheim.
+- **Characters** are saved on each player's own PC (level, gear, backpack, bank, coins, souls, talents, look; plus per world: explored map, found shrines, last shrine). They can move between worlds, like Valheim.
 - **Worlds** are saved by the host: unlocked shortcuts, first boss kills, time of day, weather, death piles and their timers. Autosave every 5 minutes and on quit.
 - Files go in `%APPDATA%\Kingdom\` as readable JSON with a version number, so old saves can be upgraded when the game changes.
 

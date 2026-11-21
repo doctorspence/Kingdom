@@ -86,21 +86,21 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 
 ## Phase 6: Loot ✅
 - [x] 32 base items in `data/items/` (7 weapons, 3 shields, 15 armor pieces, jewelry, consumables, the legendary Hobb's Noose); rarity colors; item level; Rare+ random bonus rolls (`data/balance/loot.tres`)
-- [x] Loot tables (`data/loot/`): drop chance, item count, item level, rarity weights, gold, souls; named-unique and guaranteed-rarity support for Phase 8–9
+- [x] Loot tables (`data/loot/`): drop chance, item count, item level, rarity weights, coins, souls; named-unique and guaranteed-rarity support for Phase 8–9
 - [x] Grid backpack (10×6, items take shapes, consumables stack) and equipment: 10 armor/jewelry slots + two weapon sets (X / D-pad right swaps)
 - [x] Gear changes stats, armor, poise, speed, stamina regen, status resistance and equip load (roll speed); weapon bonuses add bleed/poison/frost on hit
 - [x] New weapons: Woodcutter's Axe (bleeds), Flanged Mace (ignores 30% armor), Boar Spear (long thrusts), Hunting Bow (arrows; hold to draw); Kite Shield, Iron Buckler
 - [x] Drops glow on the ground (beam by rarity); pick up with E; drop items for friends from the inventory
-- [x] Need / Greed / Pass rolls for Uncommon+ with 2+ players nearby (30 s); winner's drop is reserved; gold, souls and XP shared in full
-- [x] Old Wenna (gold: buy consumables and gear, sell, buy back) and the Soul Broker (Rare+ gear for souls; new stock when you rest)
-- [x] Shrine menu: Rest / Bank. Bank 12×4, more rows for gold, safe and saved with your character
-- [x] Characters saved on your PC (`%APPDATA%Godotpp_userdataKingdomaracters`): class, level, XP, talents, gear, backpack, bank, gold, souls. Autosave every 5 min, on rest, level-up and leaving. Continue a saved character from the main menu
+- [x] Need / Greed / Pass rolls for Uncommon+ with 2+ players nearby (30 s); winner's drop is reserved; coins, souls and XP shared in full
+- [x] Old Wenna (coins: buy consumables and gear, sell, buy back) and the Soul Broker (Rare+ gear for souls; new stock when you rest)
+- [x] Shrine menu: Rest / Bank. Bank 12×4, more rows for coins, safe and saved with your character
+- [x] Characters saved on your PC (`%APPDATA%Godotpp_userdataKingdomaracters`): class, level, XP, talents, gear, backpack, bank, coins, souls. Autosave every 5 min, on rest, level-up and leaving. Continue a saved character from the main menu
 - [x] Automated `tests/loot_check.gd`: all 23 pass; 3-player check now also covers loot rolls and pickup
 - [ ] 🧪 Farm the arena, roll for loot with a friend, quit and reload your character
 - [ ] Later: move items around inside the backpack by hand; drops don't show for players who join after they fell; real item icons
 
 ## Phase 7: Death system ✅ (waiting for your test)
-- [x] Keep your 3 most valuable items (by sell value; equipped ones stay equipped); everything else, all gold and all souls drop as a glowing pile where you died (no map marker)
+- [x] Keep your 3 most valuable items (by sell value; equipped ones stay equipped); everything else, all coins and all souls drop as a glowing pile where you died (no map marker)
 - [x] Only you and your party can recover it; whoever picks it up, it all goes back to you (backpack, then bank, then at your feet)
 - [x] Piles last 60 minutes (`Loot.pile_minutes`, a server setting); dying again before you recover it destroys the old pile for good
 - [x] Boss-room deaths put the pile at the boss door (`game/world/boss_room.gd`, used in Phase 9); fall deaths at the last safe ground
@@ -132,7 +132,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Boss: **Brother Tallow, the Candle-Saint** (`data/enemies/enemy_tallow.tres`). Phase 1: flail sweep (parryable), red overhead slam (unblockable), wax spit (blockable, slows). Phase 2 under 50% health: he sets himself alight, moves 25% faster, calls Candle Acolytes, and adds a fire slam and burning ground (`game/enemies/fire_patch.gd`)
 - [x] Boss rules: huge poise (breaking it = stance break, he kneels 3 s, open to a riposte); each parry chips 90 poise; switches target only as an attack begins (taunts take effect at his next attack); boss bar at the bottom of the screen with a phase marker
 - [x] Candle Acolytes (`data/enemies/enemy_acolyte.tres`): weak fanatics in packs; extra packs spawn for 3+ and 6+ players; boss health x(1 + 0.8 per extra player in the arena), counted when the fight starts, and more acolytes join in phase 2
-- [x] Boss loot (`data/loot/loot_tallow.tres`): 2-3 items (one Rare or better, small chance of Legendary) plus the unique Tallow Crown, 300-450 gold, 600-800 souls
+- [x] Boss loot (`data/loot/loot_tallow.tres`): 2-3 items (one Rare or better, small chance of Legendary) plus the unique Tallow Crown, 300-450 coins, 600-800 souls
 - [x] First kill sets the `gullet_boss_killed` world flag (saved with the world) and opens a long shortcut corridor from the chapel back to the entrance hall; he still respawns on rest. Dying in the arena puts your pile at the boss door
 - [x] Automated `tests/boss_check.gd`: all 29 pass; zone, enemy, combat, death and the 3-player checks still pass
 - [ ] Tune for 3 players (needs real playtesting: boss health, damage, acolyte counts)
@@ -175,12 +175,12 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] Later: gamepad rebinding, brightness, resolution scale, accessibility (text size, colorblind-safe rarity), the F1 help text following your bindings
 
 ## Phase 13: The camp and night raids ✅ (built; waiting for your test; design in DESIGN.md 11.5)
-- [x] 1. The camp: a cold fire pit east of the Crossroads (36, 122) that anyone can claim for 100 gold (`game/world/camp.gd`, a Shrine with a different script, so it also rests, banks, travels and respawns). It goes cold when overrun and is relit for 50 gold. State is world flags, so it is shared and saved with the world
-- [x] 2. Upgrades at 150 / 400 / 900 gold per level (Palisade, Watchfires, Stores) from a **Camp upgrades** button in the hearth menu (`game/ui/camp_panel.gd`); the camp visibly grows: solid stake posts, torch poles with lights, crates
+- [x] 1. The camp: a cold fire pit east of the Crossroads (36, 122) that anyone can claim for 100 coins (`game/world/camp.gd`, a Shrine with a different script, so it also rests, banks, travels and respawns). It goes cold when overrun and is relit for 50 coins. State is world flags, so it is shared and saved with the world
+- [x] 2. Upgrades at 150 / 400 / 900 coins per level (Palisade, Watchfires, Stores) from a **Camp upgrades** button in the hearth menu (`game/ui/camp_panel.gd`); the camp visibly grows: solid stake posts, torch poles with lights, crates
 - [x] 3. Raids (`game/world/camp_raids.gd`, host only): at dusk (the first night always, then 60%) if a player is within 120 m, 3+ raiders (marauders, zealots, hounds; more with more players and better upgrades) appear 70-90 m out and march to the camp. Raiders near the hearth drain its strength; 0 = overrun (hearth cold); all dead = won; dawn = they leave
-- [x] 4. A raid chest of spoils at the hearth (better with Stores; shared gold, souls, XP, need/greed), a strength bar and raider count at the top of the screen, a horn at the start, win and loss sounds, raiders on the map at Watchfires II, the direction named at Watchfires I, shorter raider sight at Watchfires III. **F7** starts a raid now (host)
+- [x] 4. A raid chest of spoils at the hearth (better with Stores; shared coins, souls, XP, need/greed), a strength bar and raider count at the top of the screen, a horn at the start, win and loss sounds, raiders on the map at Watchfires II, the direction named at Watchfires I, shorter raider sight at Watchfires III. **F7** starts a raid now (host)
 - [x] 5. `tests/camp_check.gd` (46 checks) passes; the 3-player check now also covers claiming and a raid seen by everyone
-- [ ] 🧪 Claim the camp (you need 100 gold; Hobb and the roads give it), upgrade it, press F5 to skip to night or F7 to raid now, and defend it, alone and with a friend; tell me if raids are too easy, too hard or too long
+- [ ] 🧪 Claim the camp (you need 100 coins; Hobb and the roads give it), upgrade it, press F5 to skip to night or F7 to raid now, and defend it, alone and with a friend; tell me if raids are too easy, too hard or too long
 - [ ] Later: raiders that attack the palisade itself, repairable damage, camp NPCs and a camp vendor, camp level shown on the map, more raid types (a captain, a siege), raids on other zones' camps
 
 ## Later (after the milestone)

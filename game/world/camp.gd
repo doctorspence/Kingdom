@@ -10,7 +10,7 @@ extends Shrine
 
 const CLAIM_COST := 100
 const RELIGHT_COST := 50
-## Gold for upgrade level 1, 2, 3.
+## Coins for upgrade level 1, 2, 3.
 const UPGRADE_COSTS := [150, 400, 900]
 const MAX_LEVEL := 3
 
@@ -99,9 +99,9 @@ func next_cost(kind: StringName) -> int:
 
 func get_interact_text() -> String:
 	if not is_claimed():
-		return "Claim the camp (%d gold)" % CLAIM_COST
+		return "Claim the camp (%d coins)" % CLAIM_COST
 	if is_cold():
-		return "Relight the hearth (%d gold)" % RELIGHT_COST
+		return "Relight the hearth (%d coins)" % RELIGHT_COST
 	return "Use the Camp Hearth (rest, travel, bank, upgrades)"
 
 
@@ -161,12 +161,12 @@ func upgrade(kind: StringName, player: Player) -> String:
 	return ""
 
 
-func _pay(player: Player, gold: int) -> String:
+func _pay(player: Player, coins: int) -> String:
 	if player == null:
 		return "No one is here"
-	if player.inventory.gold < gold:
-		return "Not enough gold (%d)" % gold
-	player.inventory.gold -= gold
+	if player.inventory.coins < coins:
+		return "Not enough coins (%d)" % coins
+	player.inventory.coins -= coins
 	player.inventory.changed.emit()
 	return ""
 

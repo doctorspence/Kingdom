@@ -35,7 +35,7 @@ func all_items() -> Array:
 	return _items.values()
 
 
-## Roll a table: returns {"items": Array[ItemInstance], "gold": int, "souls": int}.
+## Roll a table: returns {"items": Array[ItemInstance], "coins": int, "souls": int}.
 func roll(table: LootTable, rng: RandomNumberGenerator = null) -> Dictionary:
 	if rng == null:
 		rng = RandomNumberGenerator.new()
@@ -55,7 +55,7 @@ func roll(table: LootTable, rng: RandomNumberGenerator = null) -> Dictionary:
 			out.append(make_item(base, rng.randi_range(table.item_level.x, table.item_level.y), rarity, rng))
 	return {
 		"items": out,
-		"gold": rng.randi_range(table.gold.x, table.gold.y),
+		"coins": rng.randi_range(table.coins.x, table.coins.y),
 		"souls": rng.randi_range(table.souls.x, table.souls.y),
 	}
 

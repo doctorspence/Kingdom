@@ -1,7 +1,7 @@
 class_name InventoryPanel
 extends PanelContainer
 ## Inventory + character (I / View button): your equipment slots, the backpack
-## grid, item details compared with what you're wearing, gold, souls, weight.
+## grid, item details compared with what you're wearing, coins, souls, weight.
 
 var player: Player
 
@@ -102,8 +102,8 @@ func refresh() -> void:
 	_grid.set_grid(inv.backpack)
 	var s := player.stats
 	var load_names := ["light", "medium", "heavy", "OVERLOADED"]
-	_summary.text = "Gold %d    Souls %d\nWeight %.1f  (%d%% — %s rolls)    Armor %d\nStr %d  Agi %d  Int %d  Vit %d    Weapon set %d" % [
-			inv.gold, inv.souls, inv.equipped_weight(), roundi(player.equip_load * 100.0), load_names[player.load_tier()],
+	_summary.text = "Coins %d    Souls %d\nWeight %.1f  (%d%% — %s rolls)    Armor %d\nStr %d  Agi %d  Int %d  Vit %d    Weapon set %d" % [
+			inv.coins, inv.souls, inv.equipped_weight(), roundi(player.equip_load * 100.0), load_names[player.load_tier()],
 			roundi(s.armor()), roundi(s.strength()), roundi(s.agility()), roundi(s.intellect()), roundi(s.vitality()), inv.active_set]
 	_show(_selected)
 

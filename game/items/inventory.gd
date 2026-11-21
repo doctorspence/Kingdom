@@ -1,7 +1,7 @@
 class_name Inventory
 extends RefCounted
 ## Everything a character carries: equipped gear (two weapon sets), the
-## backpack grid, the bank, gold and souls. Saved with the character.
+## backpack grid, the bank, coins and souls. Saved with the character.
 
 signal changed
 
@@ -18,7 +18,7 @@ const BUYBACK_SIZE := 10
 var equipped := {}  # slot key -> ItemInstance
 var backpack := ItemGrid.new(10, 6)
 var bank := ItemGrid.new(BANK_WIDTH, BANK_START_ROWS)
-var gold := 0
+var coins := 0
 var souls := 0
 ## Which weapon set is in your hands: 1 or 2.
 var active_set := 1
@@ -190,13 +190,13 @@ func remove_item(uid: String) -> ItemInstance:
 	return it
 
 
-func add_money(add_gold: int, add_souls: int) -> void:
-	gold += add_gold
+func add_money(add_coins: int, add_souls: int) -> void:
+	coins += add_coins
 	souls += add_souls
 	changed.emit()
 
 
-## Cost in gold of the next bank row (more space).
+## Cost in coins of the next bank row (more space).
 func next_bank_row_cost() -> int:
 	return 150 * (bank.height - BANK_START_ROWS + 1)
 
@@ -205,9 +205,9 @@ func buy_bank_row() -> String:
 	if bank.height >= BANK_MAX_ROWS:
 		return "The bank is as big as it gets"
 	var cost := next_bank_row_cost()
-	if gold < cost:
-		return "Not enough gold (%d)" % cost
-	gold -= cost
+	if coins < cost:
+		return "Not enough coins (%d)" % cost
+	coins -= cost
 	bank.height += 1
 	changed.emit()
 	return ""
@@ -236,7 +236,7 @@ func sell(uid: String) -> int:
 	if it == null:
 		return 0
 	var price := it.sell_value()
-	gold += price
+	coins += price
 	buyback.push_front(it)
 	if buyback.size() > BUYBACK_SIZE:
 		buyback.pop_back()
@@ -248,11 +248,11 @@ func buy_back(uid: String) -> String:
 	for it in buyback:
 		if it.uid == uid:
 			var price := it.sell_value()
-			if gold < price:
-				return "Not enough gold"
+			if coins < price:
+				return "Not enough coins"
 			if not backpack.has_room_for(it):
 				return "Your backpack is full"
-			gold -= price
+			coins -= price
 			buyback.erase(it)
 			backpack.add(it)
 			changed.emit()
@@ -267,7 +267,7 @@ func to_dict() -> Dictionary:
 	for s in equipped:
 		eq[s] = equipped[s].to_dict()
 	return {"equipped": eq, "backpack": backpack.to_dict(), "bank": bank.to_dict(),
-			"gold": gold, "souls": souls, "active_set": active_set}
+			"coins": coins, "souls": souls, "active_set": active_set}
 
 
 func load_dict(d: Dictionary) -> void:
@@ -279,7 +279,7 @@ func load_dict(d: Dictionary) -> void:
 			equipped[s] = it
 	backpack.load_dict(d.get("backpack", {}))
 	bank.load_dict(d.get("bank", {}))
-	gold = int(d.get("gold", 0))
+	coins = int(d.get("coins", d.get("gold", 0)))  # old saves used "gold"
 	souls = int(d.get("souls", 0))
 	active_set = int(d.get("active_set", 1))
 	changed.emit()

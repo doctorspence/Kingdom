@@ -15,7 +15,7 @@ var _done := {}
 var _chat_seen := false
 var _min_stamina := 999.0
 var _bag := 0
-var _gold := 0
+var _coins := 0
 
 
 func _ready() -> void:
@@ -94,16 +94,16 @@ func _physics_process(delta: float) -> void:
 		_at(23.0, func() -> void: Net.send_chat("hello from A"))
 		_at(29.5, func() -> void:
 			_bag = me.inventory.backpack.items.size()
-			_gold = me.inventory.gold
+			_coins = me.inventory.coins
 			for d in Loot.drops():
 				d.call(&"interact", me))
-		_at(30.5, func() -> void: print("RESULT a got_won_item=%s got_gold=%s" % [str(me.inventory.backpack.items.size() == _bag + 1), str(me.inventory.gold > 0)]))
+		_at(30.5, func() -> void: print("RESULT a got_won_item=%s got_coins=%s" % [str(me.inventory.backpack.items.size() == _bag + 1), str(me.inventory.coins > 0)]))
 		_at(33.0, func() -> void:
-			_gold = me.inventory.gold
+			_coins = me.inventory.coins
 			print("RESULT a sees_bryn_pile=%s" % str(Loot.pile_count() == 1))
 			for p in Loot.piles():
 				p.call(&"interact", me))
-		_at(34.5, func() -> void: print("RESULT a kept_none_of_bryns_gold=%s" % str(me.inventory.gold == _gold)))
+		_at(34.5, func() -> void: print("RESULT a kept_none_of_bryns_coins=%s" % str(me.inventory.coins == _coins)))
 	elif role == "b":
 		_at(1.0, func() -> void: _place(me, Vector3(6, 0.05, 0), Vector3.FORWARD))
 		_at(9.0, func() -> void: print("RESULT b own_health_after_hit=%d" % me.health))
@@ -118,17 +118,17 @@ func _physics_process(delta: float) -> void:
 			_bag = me.inventory.backpack.items.size()
 			for d in Loot.drops():
 				d.call(&"interact", me))
-		_at(29.4, func() -> void: print("RESULT b took_alda_item=%s got_gold=%s" % [str(me.inventory.backpack.items.size() > _bag), str(me.inventory.gold > 0)]))
+		_at(29.4, func() -> void: print("RESULT b took_alda_item=%s got_coins=%s" % [str(me.inventory.backpack.items.size() > _bag), str(me.inventory.coins > 0)]))
 		_at(31.0, func() -> void:
-			me.inventory.gold = 77
+			me.inventory.coins = 77
 			me._die())
-		_at(35.5, func() -> void: print("RESULT b gold_back_after_alda_recovered=%s (gold %d)" % [str(me.inventory.gold == 77), me.inventory.gold]))
+		_at(35.5, func() -> void: print("RESULT b coins_back_after_alda_recovered=%s (coins %d)" % [str(me.inventory.coins == 77), me.inventory.coins]))
 	_at(40.0, func() -> void: print("RESULT %s chat_seen=%s" % [role, str(_chat_seen)]))
 
 	# --- The camp: claimed by the host, raided, seen by everyone --------------------------
 	if role == "host":
 		_at(41.0, func() -> void:
-			me.inventory.gold = 300
+			me.inventory.coins = 300
 			print("RESULT host camp_claim=%s" % ("ok" if camp.claim(me) == "" else "refused")))
 		_at(43.0, func() -> void: camp.raids.start_raid(3))
 		_at(50.0, func() -> void: camp.raids.end_raid(&"fled"))

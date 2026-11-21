@@ -25,7 +25,7 @@ func _ready() -> void:
 	label.font_size = 44
 	label.outline_size = 8
 	label.position.y = 2.2
-	label.modulate = Color(0.95, 0.85, 0.6) if data.currency == VendorData.Currency.GOLD else Color(0.7, 0.8, 1.0)
+	label.modulate = Color(0.95, 0.85, 0.6) if data.currency == VendorData.Currency.COINS else Color(0.7, 0.8, 1.0)
 	add_child(label)
 	var body := StaticBody3D.new()
 	var shape := CollisionShape3D.new()
@@ -49,7 +49,7 @@ func restock() -> void:
 	table.item_count = Vector2i(data.gear_count, data.gear_count)
 	table.item_level = data.gear_item_level
 	table.rarity_weights = data.gear_rarity_weights
-	table.gold = Vector2i.ZERO
+	table.coins = Vector2i.ZERO
 	table.souls = Vector2i.ZERO
 	if data.gear_count > 0:
 		for it: ItemInstance in ItemDB.roll(table, rng).items:
@@ -61,14 +61,14 @@ func price_of(item: ItemInstance) -> int:
 
 
 func currency_name() -> String:
-	return "gold" if data.currency == VendorData.Currency.GOLD else "souls"
+	return "coins" if data.currency == VendorData.Currency.COINS else "souls"
 
 
 ## Buy an item for the player. Returns "" or the reason it failed.
 func buy(player: Player, item: ItemInstance) -> String:
 	var price := price_of(item)
 	var inv := player.inventory
-	var wallet := inv.gold if data.currency == VendorData.Currency.GOLD else inv.souls
+	var wallet := inv.coins if data.currency == VendorData.Currency.COINS else inv.souls
 	if wallet < price:
 		return "Not enough %s" % currency_name()
 	var bought := item
@@ -76,8 +76,8 @@ func buy(player: Player, item: ItemInstance) -> String:
 		bought = ItemDB.make_item(item.base, 1, 0)  # consumables: a fresh one each time
 	if not inv.backpack.has_room_for(bought):
 		return "Your backpack is full"
-	if data.currency == VendorData.Currency.GOLD:
-		inv.gold -= price
+	if data.currency == VendorData.Currency.COINS:
+		inv.coins -= price
 	else:
 		inv.souls -= price
 	inv.add_item(bought)

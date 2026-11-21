@@ -249,7 +249,7 @@ func _clear_raiders() -> void:
 
 
 ## The raid chest: ordinary drops, thrown down at the hearth (everyone nearby
-## shares the gold, souls and XP, and rolls for the items). The Stores upgrade
+## shares the coins, souls and XP, and rolls for the items). The Stores upgrade
 ## makes it better.
 func _give_reward() -> void:
 	var table := LOOT.duplicate() as LootTable
@@ -257,7 +257,7 @@ func _give_reward() -> void:
 	table.item_count = Vector2i(1 + stores, 1 + stores)
 	table.guaranteed_min_rarity = [1, 1, 2, 2][stores]
 	table.rarity_weights = PackedFloat32Array([40.0, 32.0, 18.0 + 4.0 * stores, 8.0 + 2.0 * stores, 1.0 + stores])
-	table.gold = table.gold * (1 + stores)
+	table.coins = table.coins * (1 + stores)
 	table.souls = table.souls * (1 + stores)
 	Loot.enemy_died(camp, table, 120 + 60 * camp.total_level())
 

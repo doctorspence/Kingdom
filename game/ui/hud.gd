@@ -182,7 +182,7 @@ func _process(delta: float) -> void:
 		_debug_label.text = _debug_text()
 	_update_prompt()
 	_update_party()
-	_money_label.text = "Gold %d   Souls %d" % [player.inventory.gold, player.inventory.souls]
+	_money_label.text = "Coins %d   Souls %d" % [player.inventory.coins, player.inventory.souls]
 	# While a menu is open: free mouse, the character stands still.
 	var ui_open := _any_panel_open() or _menu.visible
 	Net.in_menu = ui_open

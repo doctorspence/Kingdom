@@ -170,7 +170,7 @@ func _run() -> void:
 	await _frames(5)
 	_check("loading a world reopens its shortcuts", WorldState.get_flag(&"opened_watchtower_south") == true)
 	_check("...brings back its time of day", absf(dn.time - 0.42) < 0.01)
-	_check("...and its death piles, with their gold", Loot.pile_count() == 1 and int((Loot.piles()[0] as Node).get(&"gold")) == 77)
+	_check("...and its death piles, with their coins", Loot.pile_count() == 1 and int((Loot.piles()[0] as Node).get(&"coins")) == 77)
 
 	# --- The camp in the real zone: raiders start inside the walls, on dry land ----------------
 	var hearth_camp := get_tree().get_first_node_in_group(&"camp") as Camp

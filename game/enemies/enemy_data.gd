@@ -11,7 +11,7 @@ extends Resource
 @export var armor := 20.0
 ## XP each nearby player gets for the kill.
 @export var xp := 60
-## What it drops when it dies (items, gold, souls).
+## What it drops when it dies (items, coins, souls).
 @export var loot_table: LootTable
 ## Hits it can take before staggering (refills after a pause).
 @export var poise := 40.0

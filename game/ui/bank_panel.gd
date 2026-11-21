@@ -66,9 +66,9 @@ func refresh() -> void:
 	var inv := player.inventory
 	_backpack.set_grid(inv.backpack)
 	_bank.set_grid(inv.bank)
-	_info.text = "Gold %d    " % inv.gold
+	_info.text = "Coins %d    " % inv.coins
 	if inv.bank.height < Inventory.BANK_MAX_ROWS:
-		_row_button.text = "Buy another bank row (%d gold)" % inv.next_bank_row_cost()
+		_row_button.text = "Buy another bank row (%d coins)" % inv.next_bank_row_cost()
 		_row_button.disabled = false
 	else:
 		_row_button.text = "Bank is full size"

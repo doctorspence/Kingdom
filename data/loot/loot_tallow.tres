@@ -11,6 +11,6 @@ item_count = Vector2i(2, 3)
 item_level = Vector2i(10, 12)
 rarity_weights = PackedFloat32Array(0, 0, 62, 30, 8)
 guaranteed_min_rarity = 2
-gold = Vector2i(300, 450)
+coins = Vector2i(300, 450)
 souls = Vector2i(600, 800)
 always = Array[ExtResource("3_item")]([ExtResource("2_crown")])
