@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FactionData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/faction_data.gd" id="1_f"]
+
+[resource]
+script = ExtResource("1_f")
+id = &"faction_dark_ages"
+display_name = "The Dark Ages"
+tagline = "The next step of civilization. Mind the blood."
+description = "Raiders, cultists and warlords who call forbidden magic the next evolution. Their rituals need blood, and their blood needs a donor."
+claim = "They free the world from the old order and the old fears."
+truth = "They oppose the White Knights, and are every bit as corrupt. The only difference is that they enjoy it more, and say so."
+look = "Rust, black iron, bone trophies, ritual scars. Darker and more unsettling, but still medieval."
+associated_subclasses = [&"subclass_warlock", &"subclass_mage", &"subclass_warden"]
+color = Color(0.62, 0.22, 0.16, 1)

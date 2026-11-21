@@ -57,6 +57,9 @@ properties/12/replication_mode = 2
 properties/13/path = NodePath(".:net_level")
 properties/13/spawn = true
 properties/13/replication_mode = 2
+properties/14/path = NodePath(".:net_subclass")
+properties/14/spawn = true
+properties/14/replication_mode = 2
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2

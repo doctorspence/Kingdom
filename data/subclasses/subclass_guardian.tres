@@ -1,0 +1,75 @@
+[gd_resource type="Resource" script_class="SubclassData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+[ext_resource type="Script" uid="uid://dheyovpsv8en8" path="res://game/classes/ability_data.gd" id="2_ability"]
+
+[sub_resource type="Resource" id="A_bellow"]
+script = ExtResource("2_ability")
+id = &"ability_rallying_bellow"
+display_name = "Rallying Bellow"
+description = "Taunt every enemy within 8 m for 4 s. Nearby friends take 10% less damage for 6 s."
+kind = 3
+unlock_level = 10
+cooldown = 30.0
+cost = 30.0
+icon_color = Color(0.8, 0.6, 0.25, 1)
+cast_anim = &"Spell_Simple_Enter"
+cast_time = 0.3
+lock_time = 0.8
+radius = 8.0
+duration = 4.0
+value = 0.1
+
+[sub_resource type="Resource" id="A_hold"]
+script = ExtResource("2_ability")
+id = &"ability_hold_the_line"
+display_name = "Hold the Line"
+description = "Plant your shield for up to 5 s: you block from all sides and friends right behind you take 50% less damage. You can't move. Roll to stop early."
+kind = 4
+unlock_level = 15
+cooldown = 40.0
+cost = 25.0
+icon_color = Color(0.4, 0.45, 0.55, 1)
+needs_shield = true
+cast_anim = &"ual2/Idle_Shield"
+cast_time = 0.0
+duration = 5.0
+value = 0.5
+
+[sub_resource type="Resource" id="A_unbroken"]
+script = ExtResource("2_ability")
+id = &"ability_unbroken"
+display_name = "Unbroken"
+description = "For 8 s you can't drop below 1 health and take 40% less damage."
+kind = 5
+unlock_level = 20
+cooldown = 120.0
+cost = 50.0
+icon_color = Color(0.85, 0.8, 0.7, 1)
+cast_anim = &"Spell_Simple_Shoot"
+cast_time = 0.2
+lock_time = 0.5
+duration = 8.0
+value = 0.4
+
+[resource]
+script = ExtResource("1_sub")
+id = &"subclass_guardian"
+display_name = "Guardian"
+primary_class = &"class_bulwark"
+tagline = "The Shieldbearer"
+identity = "Blocking, taunting and counters, with the highest defense in the land. The Guardian stands where the line would be, and then becomes the line."
+weapon_specialties = "Sword and shield, tower shields, maces"
+progression_direction = "Protecting allies: wider taunts, stronger cover, and ways to survive the thing that should have killed you."
+abilities = Array[ExtResource("2_ability")]([SubResource("A_bellow"), SubResource("A_hold"), SubResource("A_unbroken")])
+passive_name = "Wall of One"
+passive_description = "Blocking costs another 10% less stamina, and +10 armor."
+passive_mods = {
+"block_stamina_mult": 0.9,
+"armor_add": 10.0
+}
+planned_abilities = "Bodyguard (cover the ally your target was attacking), tower-shield stances, counter-bashes."
+available = true
+faction = &"faction_white_knights"
+initiation_title = "The Overwhelming Assault"
+initiation_story = "Defend a settlement, or survive an assault no sane person would try. The White Knights notice the ones who stay. They do not mention that they were also the ones who left."

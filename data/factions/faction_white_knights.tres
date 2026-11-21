@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FactionData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/faction_data.gd" id="1_f"]
+
+[resource]
+script = ExtResource("1_f")
+id = &"faction_white_knights"
+display_name = "The White Knights"
+tagline = "Order, they say. Obedience, they mean."
+description = "A zealous holy order that holds the castle city of Highcrown. Noble, disciplined and endlessly certain, they cleanse villages and tax what is left."
+claim = "They keep the peace and protect the faithful from forbidden magic."
+truth = "They want control, and their own authority. They condemn forbidden magic in public and use it in private. Nobody asks how the tabards stay so white."
+look = "Bleached tabards, tarnished gold, polished plate, banners and strict ranks."
+associated_subclasses = [&"subclass_guardian", &"subclass_paladin", &"subclass_cleric"]
+color = Color(0.85, 0.8, 0.62, 1)

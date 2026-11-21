@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SubclassData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+
+[resource]
+script = ExtResource("1_sub")
+id = &"subclass_rogue"
+display_name = "Rogue"
+primary_class = &"class_headsman"
+tagline = "The Assassin"
+identity = "Critical hits, stealth and backstabs, with poison and bleed to finish what the knife started. The Rogue wins fights before they are fights."
+weapon_specialties = "Daggers, short swords, throwing knives"
+progression_direction = "Mobility and burst: getting behind things, staying unseen, and leaving before the body is found."
+planned_abilities = "Stealth and detection, backstab, throwing knives, a poison coating, a smoke step."
+available = false
+faction = &"faction_outcasts"
+initiation_title = "The Quiet Job"
+initiation_story = "Infiltrate somewhere you are not welcome, or settle an account with one clean cut. Nobody will thank you, which is rather the point."

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SubclassData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+
+[resource]
+script = ExtResource("1_sub")
+id = &"subclass_warden"
+display_name = "Warden"
+primary_class = &"class_bulwark"
+tagline = "The Spiritbinder"
+identity = "Summoned companions, spirit guardians and protective rituals, with control of the battlefield. The Warden is never as alone as the room looks."
+weapon_specialties = "Staves, axes, spears, ritual charms"
+progression_direction = "Battlefield control: bound spirits that fight and guard, rituals that shape the ground, and a bargain that keeps getting renegotiated."
+planned_abilities = "Summoned spirit companions, a guardian totem, a binding ritual."
+available = false
+faction = &"faction_dark_ages"
+initiation_title = "The Bond"
+initiation_story = "Bond with an ancient spirit or guardian. It will ask for something, and the something is rarely small, and rarely returned."

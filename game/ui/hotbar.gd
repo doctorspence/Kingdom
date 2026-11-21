@@ -24,11 +24,16 @@ func _draw() -> void:
 	if player == null or not is_instance_valid(player) or player.stats == null:
 		return
 	var font := get_theme_default_font()
-	var abilities := player.stats.class_data.abilities
+	var abilities := player.stats.abilities()
 	for i in 6:
 		var r := Rect2(Vector2(i * (SLOT + GAP), 0), Vector2(SLOT, SLOT))
 		draw_rect(r.grow(2), Color(0, 0, 0, 0.75))
 		if i >= abilities.size():
+			# Slots for the subclass: a quiet hint until a path is chosen.
+			if i == 3 and player.stats.subclass == null and player.stats.level >= Subclasses.CHOOSE_LEVEL:
+				draw_string(font, r.position + Vector2(4, 28), "Rest at a", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.8, 0.7, 0.45))
+				draw_string(font, r.position + Vector2(4, 44), "shrine to", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.8, 0.7, 0.45))
+				draw_string(font, r.position + Vector2(4, 60), "choose a path", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.8, 0.7, 0.45))
 			continue
 		var a := abilities[i]
 		var unlocked := player.stats.ability_unlocked(a)

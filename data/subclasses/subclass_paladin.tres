@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SubclassData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+
+[resource]
+script = ExtResource("1_sub")
+id = &"subclass_paladin"
+display_name = "Paladin"
+primary_class = &"class_bulwark"
+tagline = "The Oathsworn"
+identity = "Defensive auras, protective abilities and sacred strikes, with group support. The Paladin swears an oath, and then finds out what it costs."
+weapon_specialties = "Swords, shields, maces, warhammers"
+progression_direction = "Group support: auras that protect everyone nearby, blows that carry light, and the strength to keep an oath when it hurts."
+planned_abilities = "Persistent party auras, a smiting blow, a shield of faith, a last vow."
+available = false
+faction = &"faction_white_knights"
+initiation_title = "The Oath"
+initiation_story = "Swear an oath and prove you meant it. The proof tends to arrive when you least want it, at the cost of something you liked."

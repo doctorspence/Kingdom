@@ -1,0 +1,79 @@
+[gd_resource type="Resource" script_class="SubclassData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+[ext_resource type="Script" uid="uid://dheyovpsv8en8" path="res://game/classes/ability_data.gd" id="2_ability"]
+
+[sub_resource type="Resource" id="A_snuff"]
+script = ExtResource("2_ability")
+id = &"ability_snuff"
+display_name = "Snuff"
+description = "Throw a smoke vial: friends in the cloud are cured of bleed, poison and frost."
+kind = 8
+unlock_level = 10
+cooldown = 15.0
+cost = 20.0
+icon_color = Color(0.6, 0.62, 0.66, 1)
+cast_anim = &"ual2/OverhandThrow"
+cast_time = 0.35
+lock_time = 0.6
+radius = 3.5
+ability_range = 15.0
+duration = 4.0
+
+[sub_resource type="Resource" id="A_beacon"]
+script = ExtResource("2_ability")
+id = &"ability_beacon"
+display_name = "Beacon"
+description = "Mark a spot. 1.5 s later a column of light heals everyone within 3 m for a lot. Predict where your friends will be."
+kind = 10
+unlock_level = 15
+cooldown = 30.0
+cost = 40.0
+icon_color = Color(1, 0.95, 0.7, 1)
+cast_anim = &"Spell_Simple_Shoot"
+cast_time = 0.25
+lock_time = 0.5
+power = 60.0
+radius = 3.0
+ability_range = 20.0
+duration = 1.5
+
+[sub_resource type="Resource" id="A_pyre"]
+script = ExtResource("2_ability")
+id = &"ability_pyre"
+display_name = "Pyre"
+description = "Plant your staff: a 6 m sanctuary for 10 s. Friends inside regenerate and take 20% less damage; enemies inside burn."
+kind = 11
+unlock_level = 20
+cooldown = 120.0
+cost = 60.0
+icon_color = Color(1, 0.4, 0.15, 1)
+cast_anim = &"Spell_Simple_Enter"
+cast_time = 0.4
+lock_time = 0.8
+power = 5.0
+radius = 6.0
+duration = 10.0
+value = 0.2
+
+[resource]
+script = ExtResource("1_sub")
+id = &"subclass_cleric"
+display_name = "Cleric"
+primary_class = &"class_lamplighter"
+tagline = "The Healer"
+identity = "Healing, cleansing and blessings. Early on the Cleric works with herbs, bandages and remedies; the powerful magical healing comes later, and comes with a price list nobody reads."
+weapon_specialties = "Staves, maces, ritual lanterns"
+progression_direction = "From remedies to miracles: wider cleanses, heals that must be aimed and predicted, and sanctuaries where friends can catch their breath."
+abilities = Array[ExtResource("2_ability")]([SubResource("A_snuff"), SubResource("A_beacon"), SubResource("A_pyre")])
+passive_name = "Patient Hands"
+passive_description = "Mend heals 15% more, and Oil comes back 25% faster."
+passive_mods = {
+"mend_heal_mult": 1.15,
+"oil_regen_mult": 1.25
+}
+planned_abilities = "Blessings (timed buffs), Vigil Lantern (a healing circle), a revive that costs no flask."
+available = true
+faction = &"faction_white_knights"
+initiation_title = "A Rite of Healing"
+initiation_story = "Tend the dying through one long night, or perform a rite at a shrine. The Order will gladly take credit. It will also ask for a donation."

@@ -69,6 +69,8 @@ var _bank_panel: BankPanel
 var _shrine_menu: PanelContainer
 var _shrine_source: Node
 var _map_panel: MapPanel
+var _subclass_panel: SubclassPanel
+var _path_button: Button
 var _roll_box: VBoxContainer
 var _money_label: Label
 var _ui_was_open := false
@@ -272,11 +274,13 @@ func show_banner(text: String, seconds := 4.0) -> void:
 
 func _on_leveled_up(new_level: int) -> void:
 	var text := "Level %d" % new_level
-	for a in player.stats.class_data.abilities:
+	for a in player.stats.abilities():
 		if a.unlock_level == new_level:
 			text += "\nNew ability: %s" % a.display_name
 	if new_level % CharacterStats.PROGRESSION.levels_per_talent_point == 0:
 		text += "\nTalent point! Press T"
+	if new_level == Subclasses.CHOOSE_LEVEL and player.stats.subclass == null:
+		text += "\nChoose your path: rest at any shrine"
 	_banner.text = text
 	_banner_time = 4.0
 
@@ -285,7 +289,7 @@ func _on_leveled_up(new_level: int) -> void:
 
 func _any_panel_open() -> bool:
 	return _inventory_panel.visible or _shop_panel.visible or _bank_panel.visible \
-			or _shrine_menu.visible or _talents.visible or _map_panel.visible
+			or _shrine_menu.visible or _talents.visible or _map_panel.visible or _subclass_panel.visible
 
 
 func _close_panels() -> void:
@@ -294,6 +298,7 @@ func _close_panels() -> void:
 	_bank_panel.close()
 	_shrine_menu.visible = false
 	_map_panel.close()
+	_subclass_panel.close_panel()
 	if _talents.visible:
 		_talents.toggle()
 
@@ -303,10 +308,16 @@ func _on_menu_requested(kind: StringName, source: Node) -> void:
 	match kind:
 		&"shrine":
 			_shrine_source = source
+			_path_button.visible = player.stats.can_choose_subclass()
 			_shrine_menu.visible = true
 			(_shrine_menu.find_child("Rest", true, false) as Button).grab_focus()
 		&"shop":
 			_shop_panel.open(player, source as Vendor)
+
+
+func _shrine_path() -> void:
+	_close_panels()
+	_subclass_panel.open(player)
 
 
 func _shrine_rest() -> void:
@@ -699,15 +710,18 @@ func _build() -> void:
 	root.add_child(_bank_panel)
 
 	_shrine_menu = PanelContainer.new()
-	_place(_shrine_menu, Control.PRESET_CENTER, Rect2(-150, -125, 300, 250))
+	_place(_shrine_menu, Control.PRESET_CENTER, Rect2(-150, -150, 300, 300))
 	_shrine_menu.visible = false
 	var shrine_box := VBoxContainer.new()
 	shrine_box.add_theme_constant_override("separation", 10)
 	_shrine_menu.add_child(shrine_box)
-	for entry in [["Rest", _shrine_rest], ["Travel", _shrine_travel], ["Bank", _shrine_bank], ["Close", _close_panels]]:
+	for entry in [["Rest", _shrine_rest], ["Travel", _shrine_travel], ["Bank", _shrine_bank], ["Path", _shrine_path], ["Close", _close_panels]]:
 		var b := Button.new()
 		b.name = entry[0]
-		b.text = entry[0]
+		b.text = "Choose your path" if entry[0] == "Path" else entry[0]
+		if entry[0] == "Path":
+			_path_button = b
+			b.visible = false
 		b.custom_minimum_size = Vector2(0, 40)
 		b.pressed.connect(entry[1])
 		shrine_box.add_child(b)
@@ -731,8 +745,14 @@ func _build() -> void:
 	_place(_talents, Control.PRESET_CENTER, Rect2(-400, -260, 800, 520))
 	root.add_child(_talents)
 
+	_subclass_panel = SubclassPanel.new()
+	_place(_subclass_panel, Control.PRESET_CENTER, Rect2(-600, -340, 1200, 680))
+	_subclass_panel.chosen.connect(func(_id: StringName) -> void:
+		show_banner("You follow the path of the %s\nNew abilities are on your hotbar" % player.stats.subclass.display_name))
+	root.add_child(_subclass_panel)
+
 	# Panels rustle open and shut (a book for the inventory, talents and map).
-	for panel: Control in [_inventory_panel, _shop_panel, _bank_panel, _shrine_menu, _menu, _talents, _map_panel]:
+	for panel: Control in [_inventory_panel, _shop_panel, _bank_panel, _shrine_menu, _menu, _talents, _map_panel, _subclass_panel]:
 		panel.visibility_changed.connect(func() -> void:
 			if is_inside_tree():
 				Audio.sfx(&"ui_open" if panel.visible else &"ui_close"))

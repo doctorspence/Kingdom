@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SubclassData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+
+[resource]
+script = ExtResource("1_sub")
+id = &"subclass_ranger"
+display_name = "Ranger"
+primary_class = &"class_headsman"
+tagline = "The Marksman"
+identity = "Ranged damage and precision. Traps, tracking and the patience to hit the weak spot. The Ranger fights at the distance where the arguments end."
+weapon_specialties = "Longbows, shortbows, crossbows, spears"
+progression_direction = "Precision and control: weak-point shots, traps, tracking, and keeping every fight at a very comfortable distance."
+planned_abilities = "Aimed weak-point shots, bear traps, a tracking mark, a volley."
+available = false
+faction = &"faction_outcasts"
+initiation_title = "The Dangerous Hunt"
+initiation_story = "Track and kill something that has been killing the people who tried before you. Bring back proof. The proof is usually heavy."

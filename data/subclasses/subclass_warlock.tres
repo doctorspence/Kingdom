@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SubclassData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+
+[resource]
+script = ExtResource("1_sub")
+id = &"subclass_warlock"
+display_name = "Warlock"
+primary_class = &"class_lamplighter"
+tagline = "The Occultist"
+identity = "Curses, life drain and damage over time, with dark rituals and debuffs. Later: blood magic, soul manipulation and things that answer when called."
+weapon_specialties = "Daggers, staves, ritual blades"
+progression_direction = "Forbidden power: stronger curses, deeper drains, and a growing list of entities that owe you something, or vice versa."
+planned_abilities = "Damage-over-time curses, life drain, a debuff cloud, later blood magic and summons."
+available = false
+faction = &"faction_dark_ages"
+initiation_title = "The Forbidden Contact"
+initiation_story = "Make contact with something forbidden and survive the conversation. The survival is the initiation. What you promised during it is the invoice."

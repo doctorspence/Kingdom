@@ -160,8 +160,11 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Walk the zone and fight with sound on (especially Brother Tallow); tell me what is too loud, repetitive or wrong. Cues are one line each in `game/audio/sfx_library.gd`; beds and music levels are in `game/audio/zone_audio.gd`
 - [ ] Later: a shrine hum, monk chanting for the Gullet, real boss and cave music, footsteps per surface (stone vs dirt), per-weapon hit sounds
 
-## Phase 11: Subclasses and factions (not started)
-- [ ] Follows `CLASS_PLAN.md` from Priority 1: data types, saves and network, the level 10 choice screen (re-pickable in future), first subclass abilities (Guardian, Warrior, Cleric), faction lore, then the harder subclasses
+## Phase 11: Subclasses and factions (paused by you: the first part is built)
+- [x] Foundations: `SubclassData` and `FactionData` types, nine subclasses and three factions as data files (`data/subclasses/`, `data/factions/`, full lore text), a subclass on the character that adds abilities (hotbar slots 4-6) and a passive, saved with the character and synced to friends
+- [x] The level 10 choice: a banner at level 10, a **Choose your path** button in the shrine menu, a preview screen with all three paths (identity, weapons, direction, abilities, faction tie, initiation story) and a confirmation; `clear_subclass()` is the hook for a future re-pick
+- [x] First three paths playable: Warrior (Cleave, Feint, Red Mist), Guardian (Rallying Bellow, Hold the Line, Unbroken), Cleric (Snuff, Beacon, Pyre). The other six show "Coming later" and cannot be chosen. `tests/subclass_check.gd` passes
+- [ ] Paused: Paladin (auras), Mage, Rogue, Ranger, Warlock, Warden (summons); initiation trials (need quests); per-subclass talents and visuals
 
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades

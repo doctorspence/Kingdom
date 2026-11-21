@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SubclassData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+
+[resource]
+script = ExtResource("1_sub")
+id = &"subclass_mage"
+display_name = "Mage"
+primary_class = &"class_lamplighter"
+tagline = "The Arcanist"
+identity = "Fire, ice, lightning and the arcane: projectiles, area attacks and crowd control. Magic starts rare and frightening, and grows more powerful as the story does."
+weapon_specialties = "Staves, wands, tomes"
+progression_direction = "Power that grows with the world: more elements, bigger areas, and the first spells nobody has seen in a hundred years."
+planned_abilities = "Fire, frost and lightning bolts, an area blast, crowd control (freeze, stun), an arcane shield."
+available = false
+faction = &"faction_dark_ages"
+initiation_title = "The Forgotten Knowledge"
+initiation_story = "Find an ancient magical artifact or a lost text, and read it before it reads you. Every school has a story about the one who didn't."

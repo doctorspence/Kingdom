@@ -38,7 +38,7 @@ func stats() -> CharacterStats:
 
 
 func abilities() -> Array[AbilityData]:
-	return player.stats.class_data.abilities
+	return player.stats.abilities()
 
 
 func kind() -> ClassData.ResourceKind:

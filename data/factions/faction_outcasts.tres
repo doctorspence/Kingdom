@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FactionData" format=3]
+
+[ext_resource type="Script" path="res://game/classes/faction_data.gd" id="1_f"]
+
+[resource]
+script = ExtResource("1_f")
+id = &"faction_outcasts"
+display_name = "The Outcasts"
+tagline = "Neither crown nor cult. Still alive, mostly."
+description = "Mercenaries, wanderers, exiles and survivors who refuse both powers. Neither good nor evil, just unwilling to be anyone's tool. Most of them have been somebody's tool already."
+claim = "They answer to nobody."
+truth = "They answer to whoever pays, and to their own hunger. It is a freedom of sorts. You begin here."
+look = "Patched leather, mismatched mail, borrowed weapons, whatever kept out the rain."
+associated_subclasses = [&"subclass_warrior", &"subclass_rogue", &"subclass_ranger"]
+color = Color(0.6, 0.55, 0.45, 1)

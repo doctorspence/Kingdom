@@ -9,6 +9,9 @@ signal changed
 const PROGRESSION: ProgressionData = preload("res://data/balance/progression.tres")
 
 var class_data: ClassData
+## The subclass chosen at level 10, or null. It adds abilities and a passive on
+## top of the class and never takes anything away.
+var subclass: SubclassData
 var level := 1
 var xp := 0
 ## Talent ids picked.
@@ -78,6 +81,8 @@ func ability_power() -> float:
 ## Multiply: names ending in _mult (default 1).
 func mod_mult(key: String) -> float:
 	var v := float(class_data.passive_mods.get(key, 1.0))
+	if subclass:
+		v *= float(subclass.passive_mods.get(key, 1.0))
 	for t in _picked():
 		if t.mods.has(key):
 			v *= float(t.mods[key])
@@ -91,6 +96,8 @@ func mod_mult(key: String) -> float:
 ## Add: everything else (default 0).
 func mod_add(key: String) -> float:
 	var v := float(class_data.passive_mods.get(key, 0.0))
+	if subclass:
+		v += float(subclass.passive_mods.get(key, 0.0))
 	for t in _picked():
 		if t.mods.has(key):
 			v += float(t.mods[key])
@@ -170,6 +177,57 @@ func reset_talents() -> void:
 
 func ability_unlocked(a: AbilityData) -> bool:
 	return level >= a.unlock_level
+
+
+## The hotbar, in slot order: the class's three abilities, then the subclass's.
+func abilities() -> Array[AbilityData]:
+	var out: Array[AbilityData] = []
+	out.append_array(class_data.abilities)
+	if subclass:
+		out.append_array(subclass.abilities)
+	return out
+
+
+# --- Subclass ----------------------------------------------------------------------
+
+## At the choosing level with no subclass yet.
+func can_choose_subclass() -> bool:
+	return subclass == null and level >= Subclasses.CHOOSE_LEVEL
+
+
+## Why this subclass can't be taken right now ("" = it can).
+func why_not_subclass(s: SubclassData) -> String:
+	if s == null:
+		return "No such path"
+	if s.primary_class != class_data.id:
+		return "Belongs to another class"
+	if not s.available:
+		return "Coming later"
+	if subclass != null:
+		return "You already follow a path"
+	if level < Subclasses.CHOOSE_LEVEL:
+		return "Unlocks at level %d" % Subclasses.CHOOSE_LEVEL
+	return ""
+
+
+## Set the subclass without any checks (loading a save, copying a friend).
+func set_subclass(s: SubclassData) -> void:
+	subclass = s
+	changed.emit()
+
+
+## Take a subclass if the rules allow. Returns "" or the reason it can't.
+func choose_subclass(s: SubclassData) -> String:
+	var why := why_not_subclass(s)
+	if why == "":
+		set_subclass(s)
+	return why
+
+
+## Give the path up (for a future re-pick: a rare item, New Game+...).
+func clear_subclass() -> void:
+	subclass = null
+	changed.emit()
 
 
 ## A stat from worn gear (base stats + bonus rolls).

@@ -152,6 +152,8 @@ var net_class := &""
 var net_body := 0
 var net_color := 0
 var net_level := 1
+## The subclass id friends see (empty = none).
+var net_subclass := &""
 ## Item IDs in your hands (so friends see your weapon and shield).
 var net_main := &""
 var net_off := &""
@@ -653,10 +655,35 @@ func _on_leveled_up(new_level: int) -> void:
 	stamina_changed.emit(stamina, max_stamina())
 	CombatFx.burst_visual(&"beacon_column", global_position, 0.8, 1.0)
 	Audio.sfx(&"level_up")
-	for a in stats.class_data.abilities:
+	for a in stats.abilities():
 		if a.unlock_level == new_level:
 			CombatFx.word(global_position + Vector3.UP * 2.8, "New ability: %s" % a.display_name)
 	leveled_up.emit(new_level)
+
+
+## Take a subclass (the choice screen calls this). Returns "" or why not.
+## Everyone else sees it through net_subclass, and it is saved at once.
+func choose_subclass(id: StringName) -> String:
+	if stats == null or not is_multiplayer_authority():
+		return "Not your character"
+	var s := Subclasses.by_id(id)
+	var why := stats.choose_subclass(s)
+	if why != "":
+		return why
+	net_subclass = s.id
+	save_character()
+	CombatFx.word(global_position + Vector3.UP * 2.6, "You follow the path of the %s" % s.display_name)
+	CombatFx.burst_visual(&"beacon_column", global_position, 0.8, 1.0)
+	Audio.sfx(&"level_up")
+	return ""
+
+
+## Give the subclass up (for a future re-pick: a rare item, New Game+...).
+func clear_subclass() -> void:
+	if stats and is_multiplayer_authority():
+		stats.clear_subclass()
+		net_subclass = &""
+		save_character()
 
 
 ## Debug: jump to a level (PageUp / PageDown).
@@ -878,6 +905,7 @@ func save_character() -> void:
 		"level": stats.level,
 		"xp": stats.xp,
 		"talents": stats.talents.map(func(t: StringName) -> String: return String(t)),
+		"subclass": String(stats.subclass.id) if stats.subclass else "",
 		"inventory": inventory.to_dict(),
 		"worlds": exploration.to_dict(),
 	})
@@ -894,6 +922,10 @@ func _load_character(data: Dictionary) -> void:
 	stats.xp = int(data.get("xp", 0))
 	for t in data.get("talents", []):
 		stats.talents.append(StringName(t))
+	var saved_sub := Subclasses.by_id(StringName(data.get("subclass", "")))
+	if saved_sub and saved_sub.primary_class == stats.class_data.id:
+		stats.set_subclass(saved_sub)
+		net_subclass = saved_sub.id
 	_refresh_gear()
 	health = max_health()
 	stamina = max_stamina()
@@ -1181,6 +1213,8 @@ func _write_net_state() -> void:
 func _proxy_update(delta: float) -> void:
 	if net_class != &"" and (stats == null or stats.class_data.id != net_class):
 		_set_class(Classes.by_id(net_class))
+	if stats and (stats.subclass.id if stats.subclass else &"") != net_subclass:
+		stats.set_subclass(Subclasses.by_id(net_subclass))
 	_refresh_gear()
 	_apply_look()
 	if global_position.distance_to(net_pos) > 4.0:
