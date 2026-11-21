@@ -42,6 +42,10 @@ Menu > Settings (main menu and Esc menu) has Audio, Gameplay, Display and Contro
 ## Phase 13 (camp and night raids): built
 The Camp Hearth is east of the Crossroads shrine. Claim it (100 coins), upgrade it from the hearth menu, and defend it when raiders come at night. F7 starts a raid now, F5 skips ahead 3 hours. Design in DESIGN.md 11.5 (all numbers are my first guesses).
 
+## Phase 15 (environment pass): built in stages
+The Tithelands now looks like a place: photographic ground textures, Kingdom Come style earth and half-timbered buildings under Dark Souls light and fog, camps with fires, trails and clearings that connect the places, a river shader, boulders, firs and dead trees made in code, swaying grass, ground clutter. Checklist in `TODO.md` (Phase 15). To see it without playing: `Godot --path . --resolution 1280x720 --script res://tests/run.gd -- visual_env` (optionally `"x,z,yaw,name"` arguments for your own spots; yaw 0 looks north) writes PNGs to `%APPDATA%\Godot\app_userdata\Kingdom\shots`.
+**For anyone building the new Gullet:** reuse the shared materials in `levels/common/materials/` (`dark_stone` = grey cave rock, `rock`, `stone`, `wood`, `dark_wood`, `plaster`, `thatch`, `bark`, `burned`, `iron`) and the textures in `assets/textures/` (cliff, cave_rock, scree, dirt_dark, mud, wood, planks, stonewall); they are triplanar, so CSG boxes and cylinders need no UVs. `props/campfire.tscn`, `crate`, `barrel`, `log_seat`, `trophy_pole`, `lookout`, `hay_bale` are ready-made camp pieces. Do not use height fog in an environment (it buries underground rooms).
+
 ## Next up
 Listen-test the audio and playtest the nine abilities (🧪 in TODO.md). Subclasses (Phase 11) are paused at your request: the framework and Warrior, Guardian and Cleric are built; the other six are "Coming later". Your decisions so far: subclass is re-pickable in future; names Martial / Vanguard / Mystic are for now.
 

@@ -39,6 +39,7 @@ func _run() -> void:
 		player.velocity = Vector3.ZERO
 		player.reset_physics_interpolation()
 		player.camera_rig.yaw = deg_to_rad(spot[3])
+		player.camera_rig.pitch = deg_to_rad(8.0)
 		player.camera_rig.global_position = player.global_position + Vector3.UP * 1.55
 		await _frames(45)
 		await RenderingServer.frame_post_draw

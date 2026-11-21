@@ -162,16 +162,16 @@ func _apply() -> void:
 		var ds := day_share()
 		var arc := clampf(time / ds, 0.0, 1.0) if time < ds else (time - ds) / (1.0 - ds)
 		sun.rotation_degrees = Vector3(-lerpf(15.0, 165.0, arc), 35.0, 0.0)
-		sun.light_energy = lerpf(_day.get("sun_energy", 0.9), 0.3, night) * lerpf(1.0, 0.6, wet)
+		sun.light_energy = lerpf(_day.get("sun_energy", 0.9), 0.6, night) * lerpf(1.0, 0.6, wet)
 		sun.light_color = (_day.get("sun_color", Color.WHITE) as Color).lerp(Color(0.5, 0.6, 0.9), night)
 		sun.shadow_enabled = night < 0.95
 	if _env:
-		_env.ambient_light_energy = lerpf(_day.ambient, 0.35, night) * lerpf(1.0, 0.8, wet)
+		_env.ambient_light_energy = lerpf(_day.ambient, 0.95, night) * lerpf(1.0, 0.8, wet)
 		# At night the light comes from a cold moonlit color, not the black sky.
 		_env.ambient_light_color = Color(0.32, 0.38, 0.55)
 		_env.ambient_light_sky_contribution = lerpf(1.0, 0.0, night)
 		_env.fog_light_color = (_day.fog_color as Color).lerp(Color(0.16, 0.19, 0.27), night).darkened(0.2 * wet)
-		_env.fog_light_energy = lerpf(_day.fog_energy, 0.7, night)
+		_env.fog_light_energy = lerpf(_day.fog_energy, 0.9, night)
 		_env.fog_density = _day.fog_density * lerpf(1.0, 1.8, wet) * lerpf(1.0, 1.3, night)
 		_env.volumetric_fog_albedo = (_day.vol_albedo as Color).lerp(Color(0.2, 0.23, 0.3), night)
 		_env.volumetric_fog_density = _day.vol_density * lerpf(1.0, 1.6, wet)
