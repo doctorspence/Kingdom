@@ -13,6 +13,7 @@ extends CharacterBody3D
 ##   ATTACK      swinging (also ripostes and strike abilities)
 ##   DRINK       drinking a flask
 ##   CAST        using a class ability (shouts, throws, charges...)
+##   CLIMB       on a ladder
 ##   STAGGER     knocked off balance by a hit
 ##   GUARD_BREAK shield knocked aside after running out of stamina
 ##   DOWNED      at 0 health in co-op: crawling, bleeding out, waiting for a revive
@@ -31,7 +32,7 @@ signal respawned
 ## A shrine, merchant or similar wants a menu opened (the HUD shows it).
 signal menu_requested(kind: StringName, source: Node)
 
-enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, CAST, STAGGER, GUARD_BREAK, DOWNED, DEAD }
+enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, CAST, CLIMB, STAGGER, GUARD_BREAK, DOWNED, DEAD }
 
 const RESPAWN_DELAY := 3.0
 ## Below this height you've fallen out of the world.
@@ -121,6 +122,9 @@ var _cheat_death_cd := 0.0
 var _arrow_fired := false
 var _last_safe_pos := Vector3.ZERO
 var _died_falling := false
+var _ladder: Ladder
+var _climb_h := 0.0
+var _terrain: ZoneTerrain
 
 ## Shared with everyone (see the Sync node in player.tscn).
 var net_pos := Vector3.ZERO
@@ -514,7 +518,8 @@ func nearest_interactable() -> Node3D:
 		var node := n as Node3D
 		if node == null:
 			continue
-		var d := node.global_position.distance_to(global_position)
+		var at: Vector3 = node.call(&"interact_position", self) if node.has_method("interact_position") else node.global_position
+		var d := at.distance_to(global_position)
 		if d < best_d:
 			best_d = d
 			best = node
@@ -626,6 +631,58 @@ func set_level(new_level: int) -> void:
 	health_changed.emit(health, max_health())
 	stamina_changed.emit(stamina, max_stamina())
 	leveled_up.emit(stats.level)
+
+
+## Grab a ladder (from the bottom, or from the top if you're up there).
+func start_climb(l: Ladder) -> void:
+	if state != State.MOVE:
+		return
+	_ladder = l
+	var base_y := l.global_position.y
+	_climb_h = l.height if global_position.y > base_y + l.height * 0.5 else 0.0
+	velocity = Vector3.ZERO
+	is_sprinting = false
+	_stop_blocking()
+	targeting.clear()
+	model.face_instantly(l.facing())
+	_set_state(State.CLIMB)
+
+
+const CLIMB_SPEED := 1.8
+
+
+func _state_climb(delta: float) -> void:
+	if not is_instance_valid(_ladder):
+		_set_state(State.MOVE)
+		return
+	var v := -_move_input().y
+	_climb_h = clampf(_climb_h + v * CLIMB_SPEED * delta, 0.0, _ladder.height)
+	global_position = _ladder.climb_point(_climb_h)
+	velocity = Vector3.ZERO
+	model.face_instantly(_ladder.facing())
+	model.play(&"ual2/ClimbUp_1m", 0.15, absf(v) * 1.2)
+	if _consume(&"jump"):
+		# Let go.
+		global_position += -_ladder.facing() * 0.4
+		_enter_air(false)
+		return
+	if _climb_h >= _ladder.height and v > 0.0:
+		global_position = _ladder.top_exit_point()
+		reset_physics_interpolation()
+		_set_state(State.MOVE)
+	elif _climb_h <= 0.0 and v < 0.0:
+		_set_state(State.MOVE)
+
+
+## Wading through the river slows you down.
+func _water_mult() -> float:
+	if _terrain == null:
+		_terrain = get_tree().get_first_node_in_group(&"zone_terrain") as ZoneTerrain
+		if _terrain == null:
+			return 1.0
+	if global_position.y < _terrain.water_level() - 0.25:
+		return 0.55
+	return 1.0
 
 
 ## Ask the HUD to open a menu ("shrine", "shop"...).
@@ -1044,6 +1101,8 @@ func _authority_update(delta: float) -> void:
 			_state_drink(delta)
 		State.CAST:
 			_state_cast(delta)
+		State.CLIMB:
+			_state_climb(delta)
 		State.STAGGER, State.GUARD_BREAK:
 			_state_stunned(delta, _stun_time)
 		State.DOWNED:
@@ -1150,7 +1209,7 @@ func _state_move(delta: float) -> void:
 		speed = tuning.walk_speed
 	elif locked:
 		speed = tuning.lock_on_speed
-	speed *= effects.move_mult() * (1.0 + inventory.stat_total("move_speed"))
+	speed *= effects.move_mult() * (1.0 + inventory.stat_total("move_speed")) * _water_mult()
 
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var target_velocity := Vector3.ZERO

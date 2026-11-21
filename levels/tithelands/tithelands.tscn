@@ -31,6 +31,8 @@
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_pine.tscn" id="tree_pine"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_dead.tscn" id="tree_dead"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/highcrown.tscn" id="highcrown"]
+[ext_resource type="Script" path="res://game/world/ladder.gd" id="ladder"]
+[ext_resource type="Script" path="res://game/world/shortcut_gate.gd" id="gate"]
 
 [sub_resource type="BoxShape3D" id="edge_N"]
 size = Vector3(520, 80, 1)
@@ -62,6 +64,8 @@ sky_mode = 1
 [node name="Terrain" type="Node3D" parent="."]
 script = ExtResource("terrain")
 river_depth = 1.1
+pit_sharpness = 1.3
+mounds = PackedVector4Array(150, 40, 45, 11, -190, -165, 55, -14, -185, -160, 22, -10, 80, -170, 50, 5)
 material = ExtResource("terrain_mat")
 
 [node name="Players" type="Node3D" parent="."]
@@ -286,8 +290,8 @@ rotation_degrees = Vector3(0, 60, 0)
 shrine_name = "Quarry Shrine"
 shrine_id = &"quarry"
 [node name="GulletMouth" parent="Places" instance=ExtResource("gullet_mouth")]
-position = Vector3(-205, 0, -186)
-rotation_degrees = Vector3(0, 30, 0)
+position = Vector3(-222, 0, -196)
+rotation_degrees = Vector3(0, 45, 0)
 
 [node name="QuarryRock1" parent="Places" instance=ExtResource("rock")]
 position = Vector3(-175, 0, -170)
@@ -298,6 +302,19 @@ scale = Vector3(2.2, 2.2, 2.2)
 position = Vector3(-200, 0, -150)
 rotation_degrees = Vector3(0, 70, 0)
 scale = Vector3(1.8, 1.8, 1.8)
+
+[node name="TowerGate" type="StaticBody3D" parent="Places"]
+position = Vector3(150, 0, 55)
+script = ExtResource("gate")
+gate_id = &"watchtower_south"
+width = 11.6
+
+[node name="QuarryLadder" type="Node3D" parent="Places" node_paths=PackedStringArray("terrain")]
+position = Vector3(-173, 0, -160)
+rotation_degrees = Vector3(0, -90, 0)
+script = ExtResource("ladder")
+terrain = NodePath("../../Terrain")
+top_ground_point = Vector3(0, 0, -10)
 
 [node name="Highcrown" parent="." instance=ExtResource("highcrown")]
 position = Vector3(0, 0, -340)

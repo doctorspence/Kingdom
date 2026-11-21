@@ -11,7 +11,7 @@ const EXTRA_LIBRARIES := {
 	&"ual2": "res://assets/characters/mannequin/UAL2_Standard.glb",
 }
 ## Animations that should loop but don't in the source files.
-const FORCE_LOOP := [&"Sword_Idle"]
+const FORCE_LOOP := [&"Sword_Idle", &"ual2/ClimbUp_1m"]
 
 const ANIM_IDLE := &"Idle"
 const ANIM_WALK := &"Walk"

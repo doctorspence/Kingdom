@@ -23,6 +23,7 @@ CombatFx="*res://game/combat/combat_fx.gd"
 Net="*res://game/net/net.gd"
 ItemDB="*res://game/items/item_db.gd"
 Loot="*res://game/items/loot_manager.gd"
+WorldState="*res://game/world/world_state.gd"
 
 [display]
 

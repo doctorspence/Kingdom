@@ -1,5 +1,7 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://game/world/ladder.gd" id="ladder"]
+
 [ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
 [ext_resource type="Material" path="res://levels/common/materials/stone.tres" id="m_stone"]
 
@@ -65,3 +67,9 @@ height = 0.8
 sides = 10
 material = ExtResource("m_stone")
 
+
+[node name="Ladder" type="Node3D" parent="."]
+position = Vector3(0, 0, -1.5)
+script = ExtResource("ladder")
+height = 9.9
+top_exit = Vector3(0, 10.05, 1.5)

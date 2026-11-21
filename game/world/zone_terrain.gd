@@ -48,6 +48,7 @@ var _rebuild_queued := false
 
 
 func _ready() -> void:
+	add_to_group(&"zone_terrain")
 	_rebuild()
 
 
