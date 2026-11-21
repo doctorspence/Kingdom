@@ -194,7 +194,8 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] **The Gullet** gets cave rock texture through the shared `dark_stone` material (and the cave is no longer buried in fog)
 - [ ] 🧪 Walk the zone and tell me what feels wrong: too dark, too foggy, a camp in a silly place, trees too spiky
 - [x] **Buildings pass**: stake palisades (pointed logs and rails), a timber-framed mill with a spoked water wheel and loft hoist, a crenellated watchtower with arrow slits, a barred shortcut gate, muted textured thatch, cobbled paving at the crossroads and checkpoint
-- [ ] Later: Highcrown itself, banners and market props at the checkpoint, ferns, puddles, a daytime sky with clouds, LODs for distant trees
+- [x] Highcrown as a walled stronghold town backdrop, visible from the start altar (`game/world/highcrown_art.gd`); checkpoint banners, market stalls, notice board and braziers, ferns, puddles and a daytime cloud layer (`game/world/tithe_extras.gd`)
+- [ ] Later: a walkable Highcrown (needs the zone extended north), LODs for distant trees
 
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades

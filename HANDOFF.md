@@ -54,7 +54,7 @@ The Tithelands now looks like a place: photographic ground textures, Kingdom Com
 2. **Commit the leftovers:** your editor tuning (`data/classes/*.tres`, `data/enemies/enemy_hound/marauder/zealot.tres`, `data/subclasses/*.tres`, `levels/sandbox/look_test.tscn`) and `NEXT_STEPS.md` were never committed.
 3. **Playtest round (you):** all the 🧪 lines in `TODO.md` (audio, settings, camp and raids, environment, nine abilities, the new Gullet). Bugs hide here; send me what feels wrong.
 4. **Re-export the friends build** (steps in README.md "Play with friends"); the last zip is from before camp, environment, buildings and the new Gullet.
-5. **Highcrown (the checkpoint town)** and the checkpoint banners and market props; Tithelands extras (ferns, puddles, daytime clouds, distant tree LODs).
+5. **Highcrown, checkpoint props, ferns, puddles, clouds: done** (Highcrown is a backdrop town; a walkable one needs the zone extended north). Tree LODs still open.
 6. **Art pipeline test:** one bandit from AI concept to a rigged model on the standard skeleton (`ART_NEEDS.md`, `GULLET_DESIGN.md` section 10).
 7. **Subclasses (Phase 11)** are paused at your request: framework plus Warrior, Guardian and Cleric exist; Paladin, Mage, Rogue, Ranger, Warlock, Warden are "Coming later".
 8. **Milestone:** 3 friends clear the Tithelands and the new Gullet.
