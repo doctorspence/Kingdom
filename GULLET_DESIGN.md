@@ -16,7 +16,7 @@ The matching floor plan with legend and enemy positions is the "The Gullet: Dung
 | Shrine | **Halfway** through, in a side alcove off the Bandit Camp's south wall (the 5-minute mark). Resting there respawns the dungeon and the boss. |
 | Story | An abandoned quarry occupied by desperate outlaws, who dug into a sealed passage and found a black stone. Travelers vanish on the forest road. Full text lives in the designer's brief (`THE GULLET` attachment). |
 | Factions | The boss is **not** a Dark Ages member. He is an ordinary man changed by the stone, which shows forbidden power existed before either faction claimed it. |
-| Boss name | To be decided. The brief's "Quarryman" is being replaced. Suggested: The Foreman (ties to the ledger). |
+| Boss name | **Harl the Delver** (working name; the designer doesn't mind it changing). A rough bandit nickname, since these are bandits raiding the quarry for supplies. Not "Foreman" or any job title. |
 | Look | Narrow rough rock, wooden supports, carts, ropes, picks. Torches and campfires are the light: warm orange with deep shadow. No glowing crystals. Bandits look like ordinary medieval outlaws. The last chamber is an accidental discovery, not a built arena. |
 | Healing | Flasks stay the main heal. Food and potions are small extra heals (start values: bread 10%, cooked meat 20%, health potion 25% of max health; a flask is 40%). Eating takes about 1.5 s and you can be hit mid-bite. |
 | Gear tiers | Bronze and iron are Common (white). Steel is Uncommon (green). Chase items are Rare (blue) or Epic (purple). |
@@ -87,7 +87,7 @@ All art is placeholder grey skeletons for now, so this is about behavior and num
 | Bandit | Melee grunt, sword or mining pick | about 140 | 20 | 40 | Sword version: quick 2-hit combo, parryable. Pick version: slower, one parryable swing and one delayed overhead |
 | Bandit Archer | Ranged, reskin of the Bandit with a bow and less armor | about 90 | 5 | 25 | Fires arrows (blockable, not parryable). Keeps 8 to 18 m away and backs off when approached. Switches to a quick melee stab when cornered |
 | Bandit Captain | Mid-dungeon elite, sword and shield | about 380 | 40 | 90 | Blocks often when not attacking (about 50%). Moves: 3-hit combo (parryable), shield bash (heavy poise damage), delayed overhead (red, unblockable). Calls nearby bandits at the start of the fight |
-| Boss | See section 6 | TBD | TBD | TBD | Name to be decided |
+| Harl the Delver (boss) | Final fight, see section 6 | about 1,100 at 1 player (x2.6 at 3 players) | about 30 | Boss-level poise, stance break (kneels about 3 s) | Working name |
 
 XP and soul amounts are to be set when loot is finalized.
 
@@ -143,9 +143,43 @@ Notes: the Captain's small unique-weapon chance makes the whole route matter, no
 
 ---
 
-## 6. Boss (not designed in detail yet)
+## 6. Boss: Harl the Delver (approved)
 
-From the brief, to be reworked in the boss step: a large weathered man in scavenged leather and chainmail with a sharpened mining pick, a primarily melee fight with a few subtle magical moves. Candidate moves: Heavy Strike, Ground Slam (brief stagger), Black Shard (small burst of mineral fragments), Corrupted Grip (next attack hits harder), and a low-health chain of melee attacks (Desperate Assault). Magic stays understated: no fireballs, lightning or teleporting. On death: black mineral fragments, a list of missing workers, an old quarry ledger and a drawing of the black stone. The ledger entry about the sealed lower passage and the three men who refused to leave is the story hook.
+**Concept.** A large weathered man in scavenged leather and chainmail, a battered helmet and a heavy miner's coat, carrying a sharpened mining pick. His face is scarred, his hands are black with mineral dust, and dark markings run under the skin of one arm. He doesn't look like a wizard or a monster. He fights like a man swinging a tool, and the stone gives him sudden unnatural bursts of strength. Magic stays understated: no fireballs, lightning or teleporting. He fights alone, with no adds.
+
+**Backstory (short).** A survivor of the original quarry collapse who came back with the bandits promising the richest deposits. He found the black stone could hold and conduct something strange, and began embedding fragments in his gear and skin. The power is limited, unstable and painful. The bandits follow him now because they fear what happens if they refuse.
+
+**Numbers (first guesses).** About 1,100 health at one player, armor about 30, boss-level poise. Boss health already scales by x(1 + 0.8 per extra player in the arena), so about 2,900 with three.
+
+### Phase 1 (above 50% health)
+| Move | What it does | Counterplay |
+|---|---|---|
+| Pick sweep | Wide horizontal swing, about 34 damage | Parryable (white glint), or roll through |
+| Heavy Strike | Slow overhead with a long wind-up, about 55 damage | Parryable, the best riposte window |
+| Ground Slam | Pick into the floor, a radius around him, about 40 damage and a brief stagger | Red glow, unblockable: roll or jump |
+| Black Shard | Narrow cone of dark fragments when you keep your distance, about 14 damage and a short slow | Blockable. Pillars and rubble in the chamber break line of sight |
+| Corrupted Grip | He raises the pick, it darkens, and his next attack hits 50% harder | Break his poise during it and the buff is lost |
+
+### Phase 2 (below 50% health)
+- He kneels and presses his marked arm to the black stone for about 2 seconds, a window to heal or reposition (uses the existing phase-2 roar slot).
+- About 25% faster (the existing phase 2 speed setting).
+- **Desperate Assault** replaces the basic swings: a 3-hit pick chain where the second hit is delayed, to punish panic-rolling (about 30 / 30 / 45 damage).
+- Black Shard fires a 3-fragment spread.
+- The marks on his arm visibly spread.
+
+### Design rules
+- Every move has a readable tell, and no single hit is random.
+- Parrying and breaking his poise shortens the fight and cancels Corrupted Grip. The stance break leaves him kneeling for about 3 seconds, open to a critical hit.
+- Target switching follows the existing boss rule: he picks a target only as an attack begins.
+- The fight should last about 2.5 minutes, which fits the 5-minute farming loop from the halfway shrine.
+- The arena (the Deep Chamber) has pillars and rubble for cover against Black Shard, and smooth walls.
+
+### After the kill
+- The ledger, the list of missing workers and the drawing of the black stone are **readable objects** beside the formation, not loot, so anyone can read them on any run.
+- One ledger entry: *We were ordered to seal the lower passage. The foreman said there was nothing beneath the quarry worth retrieving. Three men refused to leave. I have not seen them since.*
+- The first kill opens the shortcut corridor back to the entrance.
+- He drops the boss loot table in section 5.
+- The point: the bandits weren't the first people to find what lies below, and Harl wasn't the first changed by it. It also shows that forbidden power existed before either faction claimed it.
 
 ---
 
@@ -160,7 +194,7 @@ From the brief, to be reworked in the boss step: a large weathered man in scaven
 
 ## 8. What is missing and needs building
 
-- **Enemy archers.** Enemies cannot shoot yet. The arrow code (`arrow.gd`) belongs to the player, and enemy attacks only swing. We need an enemy ranged attack plus keep-distance behavior. `AttackData` already has `projectile_speed` and `projectile_range`.
+- **Enemy archers.** The player's arrow code (`arrow.gd`) is player-only, but enemies already have long-reach cone attacks (Brother Tallow's wax spit reaches about 8.5 m in a narrow cone). A first version of the archer can reuse that kind of attack. Still new: a visible flying arrow and keep-distance behavior. Harl's Black Shard is the same kind of cone attack, so it is cheap.
 - **Powder barrels.** A new object that explodes when hit by a swing or an arrow and damages everyone nearby. Not in the code yet.
 - **Ambush trigger.** I found no ambush mechanic in the files read, only sight and hearing. The nook archer can use a short sight/hearing range plus idle until then.
 - **New level layout.** The cave is carved by `game/world/gullet.gd` and the scene `levels/tithelands/props/gullet.tscn`. The new two-story rooms, rope bridge and shortcut need rebuilding there.
@@ -176,6 +210,6 @@ From the brief, to be reworked in the boss step: a large weathered man in scaven
 2. ~~Layout and flow~~ done (shrine moved to halfway)
 3. ~~Encounters~~ done
 4. ~~Hazards and set pieces~~ done in broad strokes (barrels, barricade shortcut, spawn variety, named rare); details at build time
-5. The boss (name, moves, phases, arena)
+5. ~~The boss~~ done (Harl the Delver)
 6. Loot: confirm the tables above against the code, set souls and XP
 7. Atmosphere and audio (lighting, ambience, boss track)
