@@ -42,6 +42,43 @@ func _run() -> void:
 	_check("main menu builds with a Volume button", menu.find_children("*", "Button", true, false).any(func(b: Node) -> bool: return (b as Button).text == "Volume"))
 
 	Audio.set_volume(&"Music", before)
+
+	# --- Zone ambience and music ---------------------------------------------------
+	var dn := DayNight.new()
+	dn.process_mode = Node.PROCESS_MODE_DISABLED  # we set the numbers by hand
+	add_child(dn)
+	var za := ZoneAudio.new()
+	za.run_headless = true
+	za.day_night = dn
+	za.crow_gap = Vector2(999, 999)
+	za.fade = 0.4
+	za.music_gap = Vector2(0.1, 0.1)
+	add_child(za)
+	za._music_wait = 0.1
+	DayNight.cave = 0.0
+	DayNight.night = 0.0
+	dn.rain_amount = 0.0
+	await get_tree().create_timer(1.6).timeout
+	_check("daytime: the forest bed plays, rain and cave do not (%.2f / %.2f / %.2f)" % [za._levels[&"forest"], za._levels[&"rain"], za._levels[&"cave"]],
+			za._levels[&"forest"] > 0.9 and za._levels[&"rain"] < 0.01 and za._levels[&"cave"] < 0.01 and za.get_node("forest").playing)
+	_check("daytime music: the forest theme (%s)" % za.current_track, za.current_track == "GameMusic_ForestTheme_24.mp3")
+	dn.rain_amount = 1.0
+	await get_tree().create_timer(1.6).timeout
+	_check("rain showers bring the rain bed in and the forest down (%.2f / %.2f)" % [za._levels[&"rain"], za._levels[&"forest"]],
+			za._levels[&"rain"] > 0.9 and za._levels[&"forest"] < 0.5 and za.get_node("rain").playing)
+	dn.rain_amount = 0.0
+	DayNight.cave = 1.0
+	await get_tree().create_timer(1.6).timeout
+	_check("underground: cave beds play, forest and music stop (%.2f / %.2f, music %s)" % [za._levels[&"cave"], za._levels[&"forest"], str(za._music.playing)],
+			za._levels[&"cave"] > 0.9 and za._levels[&"forest"] < 0.01 and not za._music.playing and za.get_node("cave").playing)
+	DayNight.cave = 0.0
+	DayNight.night = 1.0
+	await get_tree().create_timer(1.6).timeout
+	_check("night: quieter forest (%.2f) and the lament plays (%s)" % [za._levels[&"forest"], za.current_track],
+			za._levels[&"forest"] < 0.5 and za.current_track == "Lament_for_a_Warriors_Soul.mp3")
+	DayNight.night = 0.0
+	za.queue_free()
+	dn.queue_free()
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)
 

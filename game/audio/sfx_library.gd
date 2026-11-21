@@ -6,6 +6,7 @@ extends RefCounted
 ## a cue sounds like, edit it here. All files are CC0 (see assets/CREDITS.md).
 
 const SFX := "res://assets/audio/sfx/"
+const AMB := "res://assets/audio/ambience/"
 
 ## cue -> {files, bus, db, pitch (min, max)}
 static var _cues := {}
@@ -125,6 +126,9 @@ static func _build() -> void:
 	_add(&"pile_appear", spells, &"Effects", -5.0, 0.5, 0.6)
 	_add(&"pile_recover", gems, &"Interface", -3.0, 0.9, 1.0, [&"pickup"])
 	_add(&"roll_offer", gems.slice(0, 1), &"Interface", -8.0, 1.4, 1.5)
+
+	# --- The world ---
+	_add(&"crow", [AMB + "crow_caw.wav"], &"Ambience", -6.0, 0.85, 1.1)
 
 	# --- Menus ---
 	_add(&"ui_click", [SFX + "kenney_rpg/metalClick.ogg"], &"Interface", -12.0, 0.95, 1.1)

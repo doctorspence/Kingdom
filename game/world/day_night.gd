@@ -63,6 +63,10 @@ func _ready() -> void:
 	_build_rain()
 	_weather_timer = _rng.randf_range(weather_minutes.x, weather_minutes.y) * 60.0
 	multiplayer.peer_connected.connect(_on_peer_connected)
+	var zone_audio := ZoneAudio.new()  # the zone's ambience and music
+	zone_audio.name = "ZoneAudio"
+	zone_audio.day_night = self
+	add_child(zone_audio)
 	_apply()
 
 
