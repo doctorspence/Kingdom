@@ -213,3 +213,17 @@ Full notes and priority order are in [`CLASS_PLAN.md`](CLASS_PLAN.md). Not built
 - [ ] P5 Unique subclass abilities, one subclass at a time (Guardian, Warrior, Cleric first; Warden last)
 - [ ] P6 Initiation events once quests exist
 - [ ] P7 Per-subclass talents, visuals, balance
+
+## Phase 14: The new Gullet (bandit quarry) 🚧 in progress
+Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces the candle-monk Gullet (Brother Tallow stays as unused data). Levels 3-6.
+- [x] 1. Docs updated and design committed
+- [ ] 2. Gold renamed to coins everywhere (saves convert old data)
+- [ ] 3. Items and loot: food, potions, bronze/iron/steel gear, iron dagger, steel pickaxe, Blackstone amulet, Harl's unique weapon, loot tables with 1-in-N odds
+- [ ] 4. Enemies: Bandit (sword, pick), Bandit Captain, Bandit Archer
+- [ ] 5. Powder barrels
+- [ ] 6. Level layout (six areas, two two-story rooms, a small river through both, rope bridge, barricade, secret wall, fog gate, shortcut)
+- [ ] 7. Populate: 19 enemies, patrols, caller, 3+ player extras, spawn tables, named rare, ambush, hidden chest, halfway shrine
+- [ ] 8. Boss: Harl the Delver
+- [ ] 9. Retire the old Gullet (Tallow kept, saves migrate)
+- [ ] 10. Atmosphere and audio
+- [ ] 11. Tests, 3-player check, friends build, handoff

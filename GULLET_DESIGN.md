@@ -10,7 +10,7 @@ The matching floor plan with legend and enemy positions is the "The Gullet: Dung
 
 | Topic | Decision |
 |---|---|
-| Role | The first dungeon, in the Tithelands (zone 1). Level 3 to 5. |
+| Role | The first dungeon, in the Tithelands (zone 1). Level 3 to 6. |
 | Length | About 10 minutes for a clean run, with fighting and no deaths. |
 | Shape | Tight, slightly winding corridors that open into bigger fight rooms, plus two large two-story areas. |
 | Shrine | **Halfway** through, in a side alcove off the Bandit Camp's south wall (the 5-minute mark). Resting there respawns the dungeon and the boss. |
@@ -21,6 +21,8 @@ The matching floor plan with legend and enemy positions is the "The Gullet: Dung
 | Healing | Flasks stay the main heal. Food and potions are small extra heals (start values: bread 10%, cooked meat 20%, health potion 25% of max health; a flask is 40%). Eating takes about 1.5 s and you can be hit mid-bite. |
 | Gear tiers | Bronze and iron are Common (white). Steel is Uncommon (green). Chase items are Rare (blue) or Epic (purple). |
 | New weapon types | Iron dagger = a fast sword-type weapon. Steel pickaxe = a mace or axe type with mining flavor. |
+| River | A small stream runs through both two-story areas (the camp and the Excavation): a shallow wade that slows movement a little. Added 2026-11-21 |
+| Old Gullet | Brother Tallow, the acolytes and their files are kept as unused, hidden data (decided 2026-11-21) |
 | Group loot | Shared need/greed stays for everything, including the rare drops. No personal rolls. |
 | Replay | The dungeon is meant to be run again and again for the rare drops. Hazards are learnable, never random. No bad-luck protection for now. |
 | Currency | "Gold" is renamed **coins** everywhere. Souls stay as the second currency and drop as a small automatic amount on top of the tables below. The rename touches code, data, saves and docs and is **not done yet**; do it after the dungeon design is finished. |

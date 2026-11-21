@@ -57,7 +57,7 @@
   - *Zealot's Tabard:* "Bleached white. Stays white. Nobody asks how."
   - *Shrine Flask:* "Tastes of candle smoke and somebody else's prayers."
 - **A few cryptic NPCs.** The **Soul Broker** trades for souls at shrines and never shows its face. **Old Wenna**, a deserter's widow, sells gear for gold and doesn't ask where you got yours.
-- **First places.** The countryside outside Highcrown is **the Tithelands** (zone 1). Its cave dungeon is **the Gullet**, home of **Brother Tallow, the Candle-Saint**. The zone's named rare is **Hobb the Unhanged**.
+- **First places.** The countryside outside Highcrown is **the Tithelands** (zone 1). Its dungeon is **the Gullet**, an abandoned quarry held by bandits, ending with **Harl the Delver** (see `GULLET_DESIGN.md`; Brother Tallow is retired and kept as unused data). The zone's named rare is **Hobb the Unhanged**.
 
 ---
 
@@ -322,8 +322,8 @@ Bonus rolls (section 9) can also add: crit chance, poise, stamina regen, bleed/p
 | **White Knight Zealot** | Zone 1 | Sword and shield; blocks, shield-bashes, 3-hit combos. Blows a horn for help. Gets stronger when an ally dies nearby ("martyr's fury"). |
 | **Gaunt Hound** | Zone 1 | Packs of 3–4: fast lunges, circling, howls for the pack. |
 | **Hobb the Unhanged** (named rare) | Zone 1, bandit camp near the mill | Elite bandit chief with a rope still around his neck. Unique drops such as *Hobb's Noose*. |
-| **Candle Acolytes** | The Gullet | Weak fanatics; extra boss adds in bigger groups. |
-| **Brother Tallow, the Candle-Saint** (boss) | The Gullet | A hulking monk crusted in burning candles with a giant censer-flail. **Phase 1**: wide flail sweeps, a red overhead slam, slowing wax spit. **Phase 2 (under 50%)**: he sets himself alight; faster, fire trails, burning ground, acolytes join. |
+| **Candle Acolytes** (retired, unused) | none | Weak fanatics; extra boss adds in bigger groups. |
+| **Brother Tallow, the Candle-Saint** (retired, unused) | none | A hulking monk crusted in burning candles with a giant censer-flail. **Phase 1**: wide flail sweeps, a red overhead slam, slowing wax spit. **Phase 2 (under 50%)**: he sets himself alight; faster, fire trails, burning ground, acolytes join. |
 
 ---
 
@@ -381,13 +381,11 @@ Head, Shoulders, Chest, Hands, Legs, Feet, Cloak, Neck, Ring ×2, and **two weap
 The countryside outside Highcrown: about 5–10 minutes across on foot.
 - **Crossroads** shrine (start), farms and a burned hamlet, the old road north to Highcrown's gates (White Knight checkpoints), woods to the east (Dark Ages raiders, hound packs), a river with a broken bridge, a ruined watchtower, a quarry in the west with the **Gullet**'s cave mouth.
 - Highcrown's walls loom in the northern fog. You can't go in yet.
-- **3–4 shrines**: Crossroads, Mill, Quarry, and one inside the Gullet.
+- **3–4 shrines**: Crossroads, Mill, Quarry, and one halfway through the Gullet.
 - **Hidden shortcut example**: a gate in the watchtower that only opens from the far side and drops you back near the Crossroads.
 
-### 11.2 The Gullet (cave dungeon)
-A winding cave under the quarry, wet stone and old bones, getting more candle-lit the deeper you go. Ends at Brother Tallow's chapel behind a fog gate. A shortcut opens after the first kill so the next run is faster. Tuned for 3 players, scaled for 1–10.
-
-**Built (Phase 9, graybox):** the cave is built underground beneath the quarry and entered by a door (E, "Descend into the Gullet") beside the Quarry Shrine, marked by an amber light beam and an always-visible map dot. Rooms: entrance hall, bone gallery, cistern, shrine alcove (the Gullet Shrine), fog gate, chapel. Dark and candle-lit; your belt lantern lights underground. Brother Tallow has two phases (phase 2 under 50%: faster, calls Candle Acolytes, burning ground, fire slam). A long corridor from the chapel back to the entrance hall opens after his first kill. He drops 2-3 items plus the unique Tallow Crown.
+### 11.2 The Gullet (bandit quarry dungeon)
+**Replaced 2026-11-21.** The full design (layout, encounters, enemies, loot, boss Harl the Delver) is in [`GULLET_DESIGN.md`](GULLET_DESIGN.md), with the floor plan in `GULLET_MAP.svg`. In short: levels 3-6, about 10 minutes per clean run, six areas (entrance yard, old tunnels, bandit camp, shrine alcove, excavation, deep chamber), two two-story rooms with a small river running through both, powder barrels, a barricade shortcut, a halfway shrine, and an OSRS-style rare-drop table. The old candle-monk Gullet and Brother Tallow (`enemy_tallow.tres` and his scenes) stay in the project as unused, hidden data.
 
 ### 11.3 Shrines (checkpoints)
 Rest to heal, refill flasks, respawn enemies and set your respawn point. Also: **bank**, **fast travel** to other shrines you've found, talents and respec, Soul Broker.
