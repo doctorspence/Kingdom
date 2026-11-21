@@ -139,6 +139,7 @@ func _ready() -> void:
 	_build_scaffolds()
 	_build_atmosphere()
 	_build_falls()
+	_build_camp()
 	_build_props()
 	_build_river()
 	_build_lights()
@@ -1057,3 +1058,140 @@ func _build_falls() -> void:
 		glow.light_energy = 1.4
 		glow.omni_range = 11.0
 		add_child(glow)
+
+
+# ---- The bandit camp: a lived-in layout ----------------------------------------
+
+func _mesh_at(mesh: Mesh, pos: Vector3, rot := Vector3.ZERO, scl := Vector3.ONE) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.position = pos
+	mi.rotation = rot
+	mi.scale = scl
+	add_child(mi)
+	return mi
+
+
+func _build_camp() -> void:
+	var fire := px(765, 400)
+	var bark: Material = load("res://levels/common/materials/bark.tres")
+	var canvas: Material = load("res://levels/common/materials/canvas.tres")
+	var cloth_red: Material = (load("res://levels/common/materials/cloth_red.tres") as Material).duplicate()
+	if cloth_red is BaseMaterial3D:
+		(cloth_red as BaseMaterial3D).cull_mode = BaseMaterial3D.CULL_DISABLED
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 77
+	# Firepit: ring of stones, ash, and three logs.
+	for i in 14:
+		var a := TAU * i / 14.0
+		_rock_chunk(fire + Vector3(cos(a) * 1.25, 0.2, sin(a) * 1.25), 0.38)
+	var ash := CylinderMesh.new()
+	ash.top_radius = 1.1
+	ash.bottom_radius = 1.1
+	ash.height = 0.04
+	var ash_mat := StandardMaterial3D.new()
+	ash_mat.albedo_color = Color(0.06, 0.055, 0.05)
+	ash_mat.roughness = 1.0
+	ash.material = ash_mat
+	_mesh_at(ash, fire + Vector3(0, 0.14, 0))
+	for i in 3:
+		var a := TAU * i / 3.0 + 0.4
+		var log_ := _timber(fire + Vector3(cos(a) * 0.5, 0.3, sin(a) * 0.5), 1.4, 0.2, 0.2, 0)
+		log_.rotation.y = -a
+		log_.rotation.z = 0.15
+	# Log seats around the fire.
+	for i in 5:
+		var a := TAU * (i + 0.5) / 5.0
+		var seat := CylinderMesh.new()
+		seat.top_radius = 0.28
+		seat.bottom_radius = 0.3
+		seat.height = 0.45
+		seat.radial_segments = 8
+		seat.material = bark
+		_mesh_at(seat, fire + Vector3(cos(a) * 3.0, 0.24, sin(a) * 3.0), Vector3(rng.randf_range(-0.1, 0.1), 0, rng.randf_range(-0.1, 0.1)))
+	# Cooking tripod with a hanging iron pot, beside the fire.
+	var tri := fire + Vector3(2.6, 0, 1.2)
+	for i in 3:
+		var a := TAU * i / 3.0
+		_timber_between(tri + Vector3(cos(a) * 0.8, 0.05, sin(a) * 0.8), tri + Vector3(0, 1.9, 0), 0.09)
+	var pot := SphereMesh.new()
+	pot.radius = 0.3
+	pot.height = 0.5
+	pot.material = _iron()
+	_mesh_at(pot, tri + Vector3(0, 0.75, 0))
+	var chain := CylinderMesh.new()
+	chain.top_radius = 0.015
+	chain.bottom_radius = 0.015
+	chain.height = 0.9
+	chain.material = _iron()
+	_mesh_at(chain, tri + Vector3(0, 1.4, 0))
+	var coals := OmniLight3D.new()
+	coals.position = tri + Vector3(0, 0.3, 0)
+	coals.light_color = Color(1.0, 0.45, 0.15)
+	coals.light_energy = 1.2
+	coals.omni_range = 4.0
+	add_child(coals)
+	# A table with a lantern and cups, and stools.
+	var tbl := Vector3(-1.0, 0, -9.5)
+	_timber(tbl + Vector3(0, 0.95, 0), 2.6, 0.1, 1.1, 0)
+	for sx in [-1.1, 1.1]:
+		for sz in [-0.4, 0.4]:
+			_timber(tbl + Vector3(sx, 0.47, sz), 0.94, 0.12, 0.12, 1)
+	for i in 3:
+		var cup := CylinderMesh.new()
+		cup.top_radius = 0.07
+		cup.bottom_radius = 0.055
+		cup.height = 0.11
+		cup.material = _iron()
+		_mesh_at(cup, tbl + Vector3(rng.randf_range(-0.9, 0.9), 1.06, rng.randf_range(-0.3, 0.3)))
+	for sx in [-0.9, 0.2, 1.1]:
+		_timber(tbl + Vector3(sx, 0.3, 1.3), 0.6, 0.35, 0.35, 1)
+	_torch(tbl + Vector3(1.3, 1.3, -0.2), 2.0)
+	# Weapon rack with leaning spears.
+	var rack := Vector3(-11.5, 0, -12.5)
+	for sx in [-0.9, 0.9]:
+		_timber(rack + Vector3(sx, 0.75, 0), 1.5, 0.12, 0.12, 1)
+	_timber(rack + Vector3(0, 1.3, 0), 2.0, 0.1, 0.1, 0)
+	_timber(rack + Vector3(0, 0.6, 0), 2.0, 0.1, 0.1, 0)
+	for i in 5:
+		var spear := _timber(rack + Vector3(-0.7 + i * 0.35, 0.95, 0.1), 2.2, 0.05, 0.05, 1)
+		spear.rotation_degrees.x = rng.randf_range(4, 9)
+		_iron_box(rack + Vector3(-0.7 + i * 0.35, 2.05, 0.1 + 0.07), Vector3(0.07, 0.25, 0.03))
+	# Lean-to tents along the south wall.
+	for t in [[-3.0, 6.4, 0.2], [11.0, 6.6, -0.15], [21.0, 5.2, 0.35]]:
+		var tent := PrismMesh.new()
+		tent.size = Vector3(3.4, 2.1, 3.0)
+		tent.material = canvas
+		_mesh_at(tent, Vector3(t[0], 1.05, t[1]), Vector3(0, t[2], 0))
+		var roll := CylinderMesh.new()
+		roll.top_radius = 0.22
+		roll.bottom_radius = 0.22
+		roll.height = 1.7
+		roll.material = canvas
+		_mesh_at(roll, Vector3(t[0] + 2.2, 0.22, t[1] - 1.8), Vector3(0, 0, PI * 0.5), Vector3.ONE)
+	# Sacks and stacked crates.
+	for p in [Vector3(24.5, 0, -9.5), Vector3(-9.5, 0, 3.5), Vector3(17, 0, 7)]:
+		for i in 4:
+			var sack := SphereMesh.new()
+			sack.radius = 0.38
+			sack.height = 0.7
+			sack.material = canvas
+			_mesh_at(sack, p + Vector3(rng.randf_range(-0.7, 0.7), 0.28, rng.randf_range(-0.7, 0.7)), Vector3(0, rng.randf() * TAU, 0), Vector3(1, 0.85, 1.1))
+		_box(p + Vector3(1.1, 0, 0.9), Vector3(0.9, 0.8, 0.9), Color.WHITE, rng.randf() * 3.0, true, true)
+		_box(p + Vector3(1.15, 0.8, 0.9), Vector3(0.7, 0.6, 0.7), Color.WHITE, rng.randf() * 3.0, false, true)
+	# Red banners hanging from the upper walkway.
+	for x in [-6.0, 3.0, 12.0, 21.0]:
+		var banner := QuadMesh.new()
+		banner.size = Vector2(1.3, 2.4)
+		banner.material = cloth_red
+		_mesh_at(banner, Vector3(x, 2.7, -12.95))
+	# Floor litter: broken planks, rubble, bones.
+	for i in 45:
+		var pos := Vector3(rng.randf_range(-12.0, 25.5), 0.15, rng.randf_range(-12.0, 7.5))
+		if Vector2(pos.x - fire.x, pos.z - fire.z).length() < 1.6:
+			continue
+		if i % 3 == 0:
+			var plank := _timber(pos, rng.randf_range(0.6, 1.6), 0.05, 0.22, 0)
+			plank.rotation.y = rng.randf() * TAU
+		else:
+			_rock_chunk(pos, rng.randf_range(0.12, 0.35))
