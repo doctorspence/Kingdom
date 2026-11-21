@@ -4,6 +4,7 @@ extends Control
 
 var _name_edit: LineEdit
 var _address_edit: LineEdit
+var _world_edit: LineEdit
 var _status: Label
 var _host_button: Button
 var _class_info: Label
@@ -49,6 +50,8 @@ func _save_choice() -> void:
 
 func _on_host() -> void:
 	_save_choice()
+	var w := _world_edit.text.strip_edges()
+	Net.world_name = w if w != "" else "World"
 	var err := Net.host_game()
 	if err != OK:
 		_show_error("Could not host: port %d is already in use (is another copy hosting?)." % Net.PORT)
@@ -214,6 +217,17 @@ func _build() -> void:
 	columns.add_child(right)
 	right.add_child(_spacer(90))
 
+	var world_row := HBoxContainer.new()
+	world_row.add_theme_constant_override("separation", 10)
+	world_row.add_child(_label("World"))
+	_world_edit = LineEdit.new()
+	_world_edit.text = Net.world_name
+	_world_edit.max_length = 24
+	_world_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_world_edit.placeholder_text = "name of the world you host"
+	_world_edit.tooltip_text = "Each world keeps its own time, opened shortcuts and death piles.\nType a new name to start a fresh world."
+	world_row.add_child(_world_edit)
+	right.add_child(world_row)
 	_host_button = _button("Host game  (or play alone)", _on_host)
 	right.add_child(_host_button)
 	var ips := Net.local_addresses()

@@ -58,3 +58,43 @@ static func list_characters() -> Array:
 
 static func exists(character_name: String) -> bool:
 	return FileAccess.file_exists(file_for(character_name))
+
+
+# --- Worlds (saved by the host) -------------------------------------------------------
+## Worlds live next to characters, in %APPDATA%\Godot\app_userdata\Kingdom\worlds\.
+
+const WORLD_DIR := "user://worlds"
+
+
+static func world_file_for(world_name: String) -> String:
+	return WORLD_DIR.path_join(file_for(world_name).get_file())
+
+
+static func save_world(data: Dictionary) -> bool:
+	DirAccess.make_dir_recursive_absolute(WORLD_DIR)
+	data["version"] = VERSION
+	data["saved_at"] = Time.get_datetime_string_from_system()
+	var path := world_file_for(data.get("name", "World"))
+	var tmp := path + ".tmp"
+	var f := FileAccess.open(tmp, FileAccess.WRITE)
+	if f == null:
+		return false
+	f.store_string(JSON.stringify(data, "\t"))
+	f.close()
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)
+	return DirAccess.rename_absolute(tmp, path) == OK
+
+
+static func load_world(world_name: String) -> Dictionary:
+	var path := world_file_for(world_name)
+	if not FileAccess.file_exists(path):
+		return {}
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	return parsed if parsed is Dictionary else {}
+
+
+static func delete_world(world_name: String) -> void:
+	var path := world_file_for(world_name)
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)

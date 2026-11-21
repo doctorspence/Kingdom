@@ -209,6 +209,7 @@ func _load_settings() -> void:
 	if cfg.load(SETTINGS_PATH) == OK:
 		player_name = cfg.get_value("player", "name", player_name)
 		join_address = cfg.get_value("network", "last_address", join_address)
+		world_name = cfg.get_value("network", "world_name", world_name)
 		character = cfg.get_value("player", "character", character)
 
 
@@ -224,6 +225,7 @@ func _save_settings() -> void:
 	cfg.set_value("player", "name", player_name)
 	cfg.set_value("player", "character", character)
 	cfg.set_value("network", "last_address", join_address)
+	cfg.set_value("network", "world_name", world_name)
 	cfg.save(SETTINGS_PATH)
 
 

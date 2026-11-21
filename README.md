@@ -9,7 +9,7 @@ A dark fantasy co-op action RPG for PC, built with **Godot 4.7.2**.
 ## Play
 Press **F5** (or the ▶ button at the top right of the editor). Close the game window, or press **F8** in the editor, to stop.
 
-The game starts at the **main menu**. Make your character (name, class, body, color), then **Host game** (also how you play alone). In the game: **I** opens your inventory, **E** at the shrine opens Rest / Bank, **E** at Old Wenna or the Soul Broker opens their shop. Your character saves automatically; pick it again from the main menu next time. Testing shortcuts: **Page Up** = gain a level (to try later abilities), **Page Down** = back to level 1, **T** = talents. It loads the combat test map. In the game, press **F1** to see the controls, **Esc** for the menu.
+The game starts at the **main menu**. Make your character (name, class, body, color), type a **World** name (each world keeps its own time, opened shortcuts and death piles), then **Host game** (also how you play alone). You start at the Crossroads in the Tithelands. In the game: **I** opens your inventory, **M** the map, **E** at a shrine opens Rest / Travel / Bank, **E** at Old Wenna or the Soul Broker opens their shop. Your character and world save automatically. Testing shortcuts: **Page Up** = gain a level, **Page Down** = back to level 1, **T** = talents, **F5** = skip 3 hours, **F6** = rain on/off. Press **F1** in the game to see all controls, **Esc** for the menu.
 
 ## Play with friends
 - **Same house (same Wi-Fi/router):** you click **Host game**. The menu shows your address (like `192.168.1.20`). Friends type it under *Host's address* and click **Join game**.
@@ -30,7 +30,7 @@ I run these before handing you a build. You can too (PowerShell, in this folder)
 ```
 & "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/run.gd -- combat_check
 ```
-(Swap `combat_check` for `movement_check` to run the other one.) It ends with PASS or FAIL.
+(Swap `combat_check` for `movement_check`, `class_check`, `loot_check`, `death_check`, `enemy_check` or `zone_check` to run the others.) Each ends with PASS or FAIL.
 
 The 3-player network check starts three copies of the game and prints what each one saw:
 ```

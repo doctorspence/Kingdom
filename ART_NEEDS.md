@@ -92,11 +92,11 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Ruins and watchtower | Broken walls, tower, gate, **ladder** | Kits | | ⬜ |
 | Shrines (3–4) | Old stone shrine with amber flame | Kit pieces + custom | ⭐ concept | 🟨 cylinder |
 | Overcast sky | Gray cloudy sky image | Poly Haven HDRI | | 🟨 gradient |
-| Rain | Rain particles, splashes, wet-surface look | Particles + shader | | ⬜ |
+| Rain | Rain particles, splashes, wet-surface look | Particles + shader | | 🟨 streaks only |
 | White Knight Zealot | Off-white tabard, tarnished gold, sword and shield, horn | Humanoid + outfits | ⭐ textures | ⬜ |
-| Gaunt Hound | Starved wolf-like dog | Quaternius animals | ⭐ textures | ⬜ |
+| Gaunt Hound | Starved wolf-like dog, rigged (run, bite, lunge, howl) | Quaternius animals | ⭐ textures | 🟨 box body |
 | Hobb the Unhanged | Bandit chief with a noose around his neck | Humanoid + outfits | ⭐ | ⬜ |
-| Map | Parchment map art, icons (shrine, party, you) | n/a | ⭐⭐ | ⬜ |
+| Map | Parchment map art, icons (shrine, party, you) | n/a | ⭐⭐ | 🟨 shaded terrain |
 | **Music** | 2–3 ambient zone loops (day, night), a combat sting | OpenGameArt (CC0) or commissioned | | ⬜ |
 | **Ambience** | Wind, rain loop, crows, distant bells, river, campfire crackle | Freesound | | ⬜ |
 | **Sounds** | Horn call, hound howl/bark/bite, knight shouts, marauder roars | Freesound | | ⬜ |

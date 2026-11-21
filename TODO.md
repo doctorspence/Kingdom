@@ -47,7 +47,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Death → respawn at the last shrine
 - [x] Automated check `tests/combat_check.gd`: all 18 pass (combo, charge, block, parry→riposte, roll through, unblockable, guard break, stagger, flask, shrine)
 - [ ] 🧪 Fight the Marauder: dodge, block, parry, riposte, drink flasks, die and respawn
-- [ ] Later: limit enemies to 2 attackers per player (matters once there are packs, Phase 8)
+- [x] Limit enemies to 2 attackers per player (Phase 8)
 - [ ] Later: hit-stop is per character already; check it feels right with lag in Phase 4
 
 ## Phase 4: Multiplayer ✅
@@ -106,19 +106,20 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Automated `tests/death_check.gd`: all 11 pass; 3-player check: a friend recovers your pile and it comes back to you
 - [ ] 🧪 Die with good gear, run back, recover it; die twice to lose it; have a friend recover your pile
 
-## Phase 8: First zone (the Tithelands)
-- [ ] Graybox layout, then an art pass: road, farms, burned hamlet, woods, river, watchtower, quarry, Highcrown backdrop
-- [ ] 3 enemy types: Dark Ages Marauder, White Knight Zealot, Gaunt Hound
-- [ ] Patrols, packs, ambushes, callers
-- [ ] Spawn points and spawn tables; respawn on rest
-- [ ] Named rare: Hobb the Unhanged and his unique loot
-- [ ] 3–4 shrines: rest, fast travel, bank
-- [ ] Fog-of-war map
-- [ ] Day/night cycle and rain
-- [ ] Ladders and a hidden shortcut that loops back
-- [ ] World save/load (host)
-- [ ] Zone music and ambience
-- [ ] 🧪 Explore the whole zone with friends; find the shortcut; hunt Hobb
+## Phase 8: First zone (the Tithelands) ✅ gray-block pass (waiting for your test)
+- [x] Gray-block layout (`levels/tithelands/`): Crossroads start, the old road north with the White Knight checkpoint and tithe barn, farms and the burned hamlet, the river with a broken bridge and a ford, the Mill and Hobb's camp, east woods with the raider camp and watchtower, the quarry down to the Gullet's mouth, Highcrown in the northern fog. Art pass comes later (needs download permission)
+- [x] 3 enemy types: Dark Ages Marauder (bleed sweep), White Knight Zealot (sword and shield, blocks, blows a horn, martyr's fury when an ally dies), Gaunt Hound (fast packs, bleeding bites, howls)
+- [x] Senses: a sight cone and range (halved at night), hearing (doubled when you sprint, roll or attack); patrols on routes; callers bring the rest of their kind; at most 2 enemies attack you at once
+- [x] Spawn points with spawn tables (`data/spawns/`): rerolled when anyone rests, except fights in progress and spots within 30 m of a player; extra spawns for 3+ and 6+ players
+- [x] Named rare: Hobb the Unhanged (5% at his camp), name over his health bar, guaranteed Hobb's Noose and better loot
+- [x] 3 shrines (Crossroads, Mill, Quarry): rest, **travel**, bank. Walking near a shrine finds it; travel to any shrine you've found (not with enemies on you)
+- [x] Fog-of-war map (M): clears as you explore, shows found shrines, your party and you; saved per character, per world; you come back at the last shrine you rested at
+- [x] Day/night: 48 minutes (32 day, 16 night), cold moonlit nights where enemies see half as far; your belt lantern lights up at night. Rain showers come and go
+- [x] Ladders (watchtower, quarry), a one-way gate that loops back from the watchtower, slow wading through the river
+- [x] World save/load (host): pick a world name in the main menu. Saved: time, weather, opened shortcuts, death piles and their timers. Every 5 minutes and when you leave. Friends joining see existing piles
+- [x] Automated checks: `tests/zone_check.gd` (34 pass), `tests/enemy_check.gd` (13 pass), all earlier checks and the 3-player check still pass
+- [ ] Zone music and ambience (needs your OK to download CC0 sounds)
+- [ ] 🧪 Explore the whole zone with friends; find the shortcut; hunt Hobb; play through a night (F5 skips 3 hours, F6 toggles rain)
 
 ## Phase 9: The Gullet (cave dungeon and boss)
 - [ ] Cave layout, fog gate, a shrine near the boss

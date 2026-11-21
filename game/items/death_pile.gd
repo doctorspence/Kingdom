@@ -65,7 +65,7 @@ func _process(delta: float) -> void:
 
 
 func get_interact_text() -> String:
-	if owner_peer == multiplayer.get_unique_id():
+	if owner_peer == multiplayer.get_unique_id() or owner_name == Net.player_name:
 		return "Recover your belongings"
 	return "Recover %s's belongings (they go back to %s)" % [owner_name, owner_name]
 

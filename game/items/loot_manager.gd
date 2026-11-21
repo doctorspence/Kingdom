@@ -25,6 +25,12 @@ var _host_drops := {}
 var _rolls := {}
 
 
+func _ready() -> void:
+	multiplayer.peer_connected.connect(func(id: int) -> void:
+		if multiplayer.is_server():
+			_send_piles_to(id))
+
+
 # --- Host: enemies die ------------------------------------------------------------
 
 ## Host: an enemy died. Share money and XP; scatter its items.
@@ -290,7 +296,7 @@ func _net_create_pile(owner_name: String, items: Array, gold: int, souls: int, w
 func _host_destroy_piles_of(peer: int) -> bool:
 	var any := false
 	for id in _host_piles.keys():
-		if _host_piles[id].owner == peer:
+		if _host_piles[id].owner == peer or (_host_piles[id].owner == 0 and _host_piles[id].name == Net.name_of(peer)):
 			_host_piles.erase(id)
 			_remove_pile.rpc(id)
 			any = true
@@ -304,7 +310,7 @@ func _host_create_pile(peer: int, owner_name: String, items: Array, gold: int, s
 	var id := _next_id
 	_next_id += 1
 	var seconds := pile_minutes * 60.0
-	_host_piles[id] = {"owner": peer, "name": owner_name, "items": items, "gold": gold, "souls": souls,
+	_host_piles[id] = {"owner": peer, "name": owner_name, "items": items, "gold": gold, "souls": souls, "where": where,
 			"expires": Time.get_ticks_msec() + int(seconds * 1000.0)}
 	_spawn_pile.rpc(id, peer, owner_name, items.size(), gold, souls, where, seconds)
 
@@ -350,14 +356,19 @@ func _host_recover(id: int, by_peer: int) -> void:
 	var p: Dictionary = _host_piles.get(id, {})
 	if p.is_empty():
 		return
+	var owner_peer := _peer_named(p.name, int(p.owner))
+	if owner_peer == 0:
+		# Its owner isn't in the game right now: leave it for them.
+		_announce.rpc("Only %s (or a friend, while %s is here) can recover those belongings." % [p.name, p.name])
+		return
 	_host_piles.erase(id)
 	_remove_pile.rpc(id)
-	if by_peer != p.owner:
+	if by_peer != owner_peer:
 		_announce.rpc("%s recovered %s's belongings." % [Net.name_of(by_peer), p.name])
-	if p.owner == multiplayer.get_unique_id():
+	if owner_peer == multiplayer.get_unique_id():
 		_return_pile(p.items, p.gold, p.souls)
 	else:
-		_net_return_pile.rpc_id(p.owner, p.items, p.gold, p.souls)
+		_net_return_pile.rpc_id(owner_peer, p.items, p.gold, p.souls)
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -409,3 +420,63 @@ func drop_count() -> int:
 ## For tests: the drop nodes currently in the world.
 func drops() -> Array:
 	return _drops.values()
+
+
+## The peer playing the character with this name (0 if they're not here).
+func _peer_named(character_name: String, hint: int) -> int:
+	if hint > 0 and (hint == multiplayer.get_unique_id() or multiplayer.get_peers().has(hint)):
+		return hint
+	if character_name == Net.player_name:
+		return multiplayer.get_unique_id()
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p and p.player_name == character_name:
+			return p.get_multiplayer_authority()
+	return 0
+
+
+## A friend joined: show them the piles already lying around.
+func _send_piles_to(peer: int) -> void:
+	var now := Time.get_ticks_msec()
+	for id in _host_piles:
+		var p: Dictionary = _host_piles[id]
+		_spawn_pile.rpc_id(peer, id, int(p.owner), p.name, p.items.size(), p.gold, p.souls, p.where,
+				maxf(0.0, (int(p.expires) - now) / 1000.0))
+
+
+## For the world save: every pile with the time it has left (the timer only runs while the world does).
+func save_piles() -> Array:
+	var out := []
+	var now := Time.get_ticks_msec()
+	for id in _host_piles:
+		var p: Dictionary = _host_piles[id]
+		var w: Vector3 = p.where
+		out.append({"name": p.name, "items": p.items, "gold": p.gold, "souls": p.souls,
+				"where": [w.x, w.y, w.z], "seconds_left": maxf(0.0, (int(p.expires) - now) / 1000.0)})
+	return out
+
+
+## Loading a world: put its piles back (host).
+func restore_piles(list: Array) -> void:
+	clear_piles()
+	for d in list:
+		var w: Array = d.get("where", [0, 0, 0])
+		var where := Vector3(float(w[0]), float(w[1]), float(w[2]))
+		var seconds := float(d.get("seconds_left", 0.0))
+		if seconds <= 0.0:
+			continue
+		var id := _next_id
+		_next_id += 1
+		var owner_name := String(d.get("name", "?"))
+		var owner := _peer_named(owner_name, 0)
+		_host_piles[id] = {"owner": owner, "name": owner_name, "items": d.get("items", []),
+				"gold": int(d.get("gold", 0)), "souls": int(d.get("souls", 0)), "where": where,
+				"expires": Time.get_ticks_msec() + int(seconds * 1000.0)}
+		_spawn_pile.rpc(id, owner, owner_name, (d.get("items", []) as Array).size(), int(d.get("gold", 0)), int(d.get("souls", 0)), where, seconds)
+
+
+## Remove every pile (leaving a world).
+func clear_piles() -> void:
+	for id in _piles.keys():
+		_remove_pile(id)
+	_host_piles.clear()

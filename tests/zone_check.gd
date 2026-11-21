@@ -154,6 +154,24 @@ func _run() -> void:
 	dn.set_rain(false)
 	dn.set_time(0.3)
 
+	# --- World save -------------------------------------------------------------------
+	var session := zone.get_node("GameSession") as GameSession
+	Loot._host_create_pile(1, "Tester", [], 77, 5, player.global_position + Vector3(3, 0, 0))
+	dn.set_time(0.42)
+	await _frames(3)
+	var world: Dictionary = JSON.parse_string(JSON.stringify(session.world_data()))
+	_check("the world file is written and read back", SaveSystem.save_world(world.duplicate(true).merged({"name": "zz_check_world"}, true))
+			and SaveSystem.load_world("zz_check_world").get("flags", {}).has("opened_watchtower_south"))
+	SaveSystem.delete_world("zz_check_world")
+	WorldState.reset()
+	Loot.clear_piles()
+	dn.set_time(0.0)
+	session.apply_world(world)
+	await _frames(5)
+	_check("loading a world reopens its shortcuts", WorldState.get_flag(&"opened_watchtower_south") == true)
+	_check("...brings back its time of day", absf(dn.time - 0.42) < 0.01)
+	_check("...and its death piles, with their gold", Loot.pile_count() == 1 and int((Loot.piles()[0] as Node).get(&"gold")) == 77)
+
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)
 
