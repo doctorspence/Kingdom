@@ -402,8 +402,8 @@ func _build_room_glow() -> void:
 		var y0: float = c[5] if c.size() > 5 else 0.0
 		var l := OmniLight3D.new()
 		l.position = Vector3((c[0] + c[2]) * 0.5, y0 + minf(c[4] - y0, 6.0) * 0.6, (c[1] + c[3]) * 0.5)
-		l.light_color = Color(0.5, 0.6, 0.85)
-		l.light_energy = 1.8
+		l.light_color = Color(0.75, 0.62, 0.5)
+		l.light_energy = 4.5
 		l.omni_range = clampf(maxf(c[2] - c[0], c[3] - c[1]) * 0.7, 9.0, 30.0)
 		add_child(l)
 
@@ -414,16 +414,16 @@ func _build_room_glow() -> void:
 # noise, so walls, ceilings and floors become lumpy and jagged. The pushed mesh is
 # also the walkable collision. The flat rock stays behind it, so there are no holes.
 
-const ROUGH_EDGE := 2.0
+const ROUGH_EDGE := 1.5
 
 var _noise_a := FastNoiseLite.new()
 var _noise_b := FastNoiseLite.new()
 
 
 func _rough_at(p: Vector3) -> float:
-	var a := 1.0 - absf(_noise_a.get_noise_3dv(p))
-	var b := 1.0 - absf(_noise_b.get_noise_3dv(p))
-	return clampf(0.7 * a * a + 0.3 * b, 0.0, 1.0)
+	var a := 0.5 + 0.5 * _noise_a.get_noise_3dv(p)
+	var b := 0.5 + 0.5 * _noise_b.get_noise_3dv(p)
+	return clampf(0.75 * a + 0.25 * b, 0.0, 1.0)
 
 
 func _roughen(combiner: CSGCombiner3D) -> void:
@@ -433,7 +433,7 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 	if baked == null or baked.get_surface_count() == 0:
 		return
 	_noise_a.seed = 7
-	_noise_a.frequency = 0.42
+	_noise_a.frequency = 0.3
 	_noise_b.seed = 19
 	_noise_b.frequency = 1.4
 	var rock_verts := PackedVector3Array()
@@ -463,8 +463,13 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 				continue
 			var n := ns[ia]
 			var sign_ := 1.0 if (b - a).cross(c - a).dot(n) >= 0.0 else -1.0
-			var amp := 0.14 if n.y > 0.7 else (0.8 if n.y < -0.7 else 0.75)
+			var amp := 0.14 if n.y > 0.7 else (0.4 if n.y < -0.7 else 0.4)
 			_subdivide(a, b, c, n, sign_, amp, rock_verts, rock_norms, collide, 0)
+	var raw_v := rock_verts
+	var raw_n := rock_norms
+	rock_verts = PackedVector3Array()
+	rock_norms = PackedVector3Array()
+	_finish_rough(raw_v, raw_n, rock_verts, rock_norms, collide)
 	if rock_verts.is_empty():
 		return
 	var arrays := []
@@ -513,16 +518,46 @@ func _subdivide(a: Vector3, b: Vector3, c: Vector3, n: Vector3, sign_: float, am
 		_subdivide(ca, bc, c, n, sign_, amp, out_v, out_n, collide, depth + 1)
 		_subdivide(ab, bc, ca, n, sign_, amp, out_v, out_n, collide, depth + 1)
 		return
-	var pa := _push(a, n, amp)
-	var pb := _push(b, n, amp)
-	var pc := _push(c, n, amp)
-	var fn := (pb - pa).cross(pc - pa).normalized() * sign_
-	out_v.append(pa)
-	out_v.append(pb)
-	out_v.append(pc)
-	out_n.append(fn)
-	out_n.append(fn)
-	out_n.append(fn)
-	collide.append(pa)
-	collide.append(pb)
-	collide.append(pc)
+	out_v.append(a)
+	out_v.append(b)
+	out_v.append(c)
+	out_n.append(n)
+	out_n.append(n)
+	out_n.append(n)
+	_raw_amp.append(amp)
+	_raw_sign.append(sign_)
+
+
+var _raw_amp := PackedFloat32Array()
+var _raw_sign := PackedFloat32Array()
+
+
+func _vkey(p: Vector3) -> Vector3i:
+	return Vector3i(roundi(p.x * 50.0), roundi(p.y * 50.0), roundi(p.z * 50.0))
+
+
+## Second pass: vertices at the same spot move together (along the average of the
+## faces that meet there), so corners between walls stay joined.
+func _finish_rough(raw_v: PackedVector3Array, raw_n: PackedVector3Array, out_v: PackedVector3Array,
+		out_n: PackedVector3Array, collide: PackedVector3Array) -> void:
+	var sums := {}
+	var amps := {}
+	for i in raw_v.size():
+		var k := _vkey(raw_v[i])
+		sums[k] = sums.get(k, Vector3.ZERO) + raw_n[i]
+		amps[k] = minf(amps.get(k, 99.0), _raw_amp[i / 3])
+	var moved := {}
+	for i in raw_v.size():
+		var k := _vkey(raw_v[i])
+		if not moved.has(k):
+			var nn: Vector3 = (sums[k] as Vector3).normalized()
+			moved[k] = _push(raw_v[i], nn, amps[k])
+	for t in raw_v.size() / 3:
+		var pa: Vector3 = moved[_vkey(raw_v[t * 3])]
+		var pb: Vector3 = moved[_vkey(raw_v[t * 3 + 1])]
+		var pc: Vector3 = moved[_vkey(raw_v[t * 3 + 2])]
+		var fn := (pb - pa).cross(pc - pa).normalized() * _raw_sign[t]
+		for p in [pa, pb, pc]:
+			out_v.append(p)
+			out_n.append(fn)
+			collide.append(p)
