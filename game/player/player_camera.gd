@@ -13,7 +13,7 @@ extends Node3D
 @export var pitch_min_deg := -65.0
 @export var pitch_max_deg := 50.0
 ## Height of the point the camera orbits around (about shoulder height).
-@export var pivot_height := 1.55
+@export var pivot_height := 1.7
 ## How tightly the camera follows you sideways / up and down (higher = tighter).
 @export var follow_sharpness := 14.0
 @export var vertical_sharpness := 8.0
@@ -21,7 +21,7 @@ extends Node3D
 @export var lock_turn_sharpness := 9.0
 
 var yaw := 0.0
-var pitch := deg_to_rad(-12.0)
+var pitch := deg_to_rad(-15.0)
 var follow: Node3D
 var targeting: Targeting
 
