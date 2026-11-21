@@ -51,9 +51,11 @@ static func _make_pine(rng: RandomNumberGenerator) -> ArrayMesh:
 	var mesh := ArrayMesh.new()
 	var bark := SurfaceTool.new()
 	bark.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var needles := SurfaceTool.new()
-	needles.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var height := rng.randf_range(8.0, 10.5)
+	var core := SurfaceTool.new()
+	core.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var fans := SurfaceTool.new()
+	fans.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var height := rng.randf_range(8.5, 11.0)
 	var lean := Vector2(rng.randf_range(-0.25, 0.25), rng.randf_range(-0.25, 0.25))
 	var points := PackedVector3Array()
 	var radii := PackedFloat32Array()
@@ -62,22 +64,111 @@ static func _make_pine(rng: RandomNumberGenerator) -> ArrayMesh:
 		points.append(Vector3(lean.x * t * t, t * height, lean.y * t * t))
 		radii.append(lerpf(0.36, 0.06, t))
 	_tube(bark, points, radii, 8)
-	var tiers := rng.randi_range(7, 9)
+	# A dark, narrow inner mass so the tree never looks hollow between branches.
+	var tiers := rng.randi_range(6, 8)
 	for k in tiers:
 		var t := float(k) / tiers
-		var y0 := 1.7 + t * (height - 2.8)
-		var reach := lerpf(2.7, 0.55, pow(t, 0.8)) * rng.randf_range(0.88, 1.15)
-		var h := rng.randf_range(1.7, 2.2)
+		var y0 := 1.9 + t * (height - 3.2)
+		var reach := lerpf(1.5, 0.3, pow(t, 0.8)) * rng.randf_range(0.9, 1.1)
 		var center := Vector3(lean.x * (y0 / height) * (y0 / height), 0.0, lean.y * (y0 / height) * (y0 / height))
-		_tier(needles, rng, center, y0, reach, h)
+		_tier(core, rng, center, y0, reach, rng.randf_range(1.8, 2.3))
+	# The branches: whorls of drooping needle fans, long at the bottom, short at the top.
+	var whorls := rng.randi_range(10, 13)
+	for k in whorls:
+		var t := float(k) / (whorls - 1)
+		var y := 1.4 + t * (height - 2.2)
+		var reach := lerpf(2.9, 0.45, pow(t, 0.85)) * rng.randf_range(0.9, 1.12)
+		var count := roundi(lerpf(9.0, 5.0, t))
+		var offset := rng.randf() * TAU
+		var center := Vector3(lean.x * (y / height) * (y / height), y, lean.y * (y / height) * (y / height))
+		for i in count:
+			var a := offset + TAU * i / count + rng.randf_range(-0.25, 0.25)
+			var dir := Vector3(cos(a), 0.0, sin(a))
+			var length := reach * rng.randf_range(0.85, 1.15)
+			_fan(fans, center + dir * 0.12 + Vector3.UP * rng.randf_range(-0.15, 0.15), dir, length, length * rng.randf_range(0.32, 0.42), length * lerpf(0.5, 0.25, t), rng)
+	# The leader at the very top.
+	for i in 5:
+		var a := TAU * i / 5.0 + rng.randf()
+		_fan(fans, Vector3(lean.x, height - 0.9, lean.y), Vector3(cos(a), 0.0, sin(a)), 0.7, 0.28, -0.25, rng)
 	bark.generate_normals()
-	needles.generate_normals()
+	core.generate_normals()
 	bark.set_material(BARK)
-	needles.set_material(NEEDLES)
+	core.set_material(NEEDLES)
+	fans.set_material(_fan_material())
 	bark.commit(mesh)
-	needles.commit(mesh)
+	core.commit(mesh)
+	fans.commit(mesh)
 	return mesh
 
+
+## One branch: a tapering strip bending down toward its tip, textured with needles.
+static func _fan(st: SurfaceTool, base: Vector3, dir: Vector3, length: float, width: float, droop: float, rng: RandomNumberGenerator) -> void:
+	var side := Vector3.UP.cross(dir).normalized()
+	var rows := 4
+	var left: Array[Vector3] = []
+	var right: Array[Vector3] = []
+	for r in rows + 1:
+		var t := float(r) / rows
+		var center := base + dir * length * t + Vector3.DOWN * droop * t * t
+		var w := width * (1.0 - 0.72 * t) * (0.55 + 0.45 * minf(t * 4.0, 1.0))
+		left.append(center - side * w)
+		right.append(center + side * w)
+	var normal := (Vector3.UP * 0.85 + dir * 0.25).normalized()
+	for r in rows:
+		var v0 := 1.0 - float(r) / rows
+		var v1 := 1.0 - float(r + 1) / rows
+		var quad := [[left[r], Vector2(0, v0)], [right[r], Vector2(1, v0)], [right[r + 1], Vector2(1, v1)],
+				[left[r], Vector2(0, v0)], [right[r + 1], Vector2(1, v1)], [left[r + 1], Vector2(0, v1)]]
+		for q in quad:
+			st.set_normal(normal)
+			st.set_uv(q[1])
+			st.add_vertex(q[0])
+
+
+static var _fan_mat: StandardMaterial3D
+
+
+## Fir needles, drawn once into a texture: a thin stem with short needles
+## sweeping forward on both sides; everything else is see-through.
+static func _fan_material() -> StandardMaterial3D:
+	if _fan_mat:
+		return _fan_mat
+	var w := 96
+	var h := 192
+	var img := Image.create(w, h, true, Image.FORMAT_RGBA8)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 77
+	var stem := Color(0.2, 0.17, 0.1, 1.0)
+	for y in range(h - 1, 2, -1):
+		var along := float(h - 1 - y) / (h - 1)
+		# The stem.
+		for dx in 2:
+			img.set_pixel(w / 2 - 1 + dx, y, stem)
+		if y % 3 != 0:
+			continue
+		var length := 40.0 * (1.0 - pow(along, 2.0)) * (0.3 + 0.7 * smoothstep(0.0, 0.2, along))
+		for side: int in [-1, 1]:
+			var needle_len := length * rng.randf_range(0.8, 1.05)
+			var ang := deg_to_rad(rng.randf_range(42.0, 62.0))
+			var shade := rng.randf()
+			var col := Color(0.09, 0.15, 0.06).lerp(Color(0.2, 0.3, 0.11), shade * 0.7 + along * 0.3)
+			var steps := int(needle_len)
+			for s in steps:
+				var px := w / 2 + side * int(cos(ang) * s)
+				var py := y - int(sin(ang) * s * 1.1)
+				for thick in 2:
+					if px >= 0 and px < w and py - thick >= 0 and py - thick < h:
+						img.set_pixel(px, py - thick, col)
+	img.generate_mipmaps()
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = ImageTexture.create_from_image(img)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_HASH
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.roughness = 1.0
+	mat.metallic_specular = 0.05
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	_fan_mat = mat
+	return mat
 
 ## One drooping skirt of branches: a ragged outer ring, an inner ring, a tip.
 static func _tier(st: SurfaceTool, rng: RandomNumberGenerator, center: Vector3, y0: float, reach: float, h: float) -> void:
