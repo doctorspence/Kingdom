@@ -17,8 +17,17 @@ enum Slot { NONE, HEAD, SHOULDERS, CHEST, HANDS, LEGS, FEET, CLOAK, NECK, RING, 
 @export var weight := 1.0
 ## Sell price at item level 1 (buy price is 4×). Rarity and item level raise it.
 @export var value := 10
-## Placeholder icon color until real icons exist.
+## Fallback tile color when an item has no icon.
 @export var icon_color := Color(0.5, 0.5, 0.5)
+## Inventory icon, rendered from the item's own 3D model (assets/equipment/InventoryIcons).
+@export var icon: Texture2D
+## The worn model of armor (a skinned mesh for the character's skeleton). Weapons and shields
+## use their WeaponData / ShieldData visual_scene instead.
+@export var model_scene: PackedScene
+## Level you should be to use this (shown in the item details).
+@export var required_level := 1
+## Material tier for display: bronze, iron, steel...
+@export var tier := &""
 ## Lowest rarity this base can drop as (unique items set this to Legendary).
 @export var min_rarity := 0
 

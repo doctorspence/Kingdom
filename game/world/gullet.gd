@@ -193,16 +193,18 @@ func _box(pos: Vector3, size: Vector3, color: Color, rot_y := 0.0, solid := true
 
 ## Crates, carts, bedrolls and the black stone: graybox set dressing.
 func _build_props() -> void:
-	var cloth := Color(0.3, 0.26, 0.2)
 	# Entrance yard: broken barricade, carts.
-	_box(px(160, 600), Vector3(2.4, 1.1, 0.5), Color.WHITE, 0.3, true, true)
-	_box(px(200, 700), Vector3(1.8, 0.9, 1.2), Color.WHITE, 0.8, true, true)
-	_box(px(240, 650), Vector3(2.0, 1.0, 1.4), Color.WHITE, 0.0, true, true)
-	# Camp: crates by the walls, bedrolls.
-	for p in [[600, 500], [620, 505], [610, 480], [930, 500], [945, 480], [660, 255]]:
-		_box(px(p[0], p[1]), Vector3(1.0, 0.9, 1.0), Color.WHITE, randf() * 3.0, true, true)
+	_asset("Wooden_Structures/barricade", px(160, 600), 0.3, true)
+	_asset("Mining_Equipment/mine_cart_empty", px(200, 700), 0.8, true)
+	_asset("Storage_Containers/crate_large", px(240, 650), 0.0, true)
+	_asset("Storage_Containers/barrel_small", px(255, 640) + Vector3(0.6, 0, 0.8), 0.0, true)
+	_asset("Storage_Containers/crate_broken", px(180, 680), 1.1)
+	var crate_kinds := ["crate_large", "crate_small", "crate_open", "barrel_small", "crate_large", "crate_broken"]
+	for ci in 6:
+		var pp: Array = [[600, 500], [620, 505], [610, 480], [930, 500], [945, 480], [660, 255]][ci]
+		_asset("Storage_Containers/" + crate_kinds[ci], px(pp[0], pp[1]), randf() * 3.0, ci != 5)
 	for p in [[620, 440], [640, 455], [690, 500]]:
-		_box(px(p[0], p[1]), Vector3(0.8, 0.12, 2.0), cloth, 0.4, false)
+		_asset("Camp_Equipment/bedding_open", px(p[0], p[1]), 0.4)
 	# Excavation: an ore cart and the black stone formations (shard crystals).
 	_shards(px(1090, 380), 0.8, 11)
 	_shards(px(1340, 420), 0.7, 23)
@@ -439,6 +441,10 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 	var collide := PackedVector3Array()
 	var back_v := PackedVector3Array()
 	var back_n := PackedVector3Array()
+	var cut_v := PackedVector3Array()
+	var cut_n := PackedVector3Array()
+	var cut_amp := PackedFloat32Array()
+	var cut_sign := PackedFloat32Array()
 	for s in baked.get_surface_count():
 		var arr := baked.surface_get_arrays(s)
 		var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
@@ -470,7 +476,11 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 				back_v.append_array(PackedVector3Array([a, b, c]))
 				back_n.append_array(PackedVector3Array([ns[ia], ns[ib], ns[ic]]))
 			var amp := 0.22 if n.y > 0.7 else 2.3
-			_subdivide(a, b, c, n, sign_, amp, rock_verts, rock_norms, collide, 0)
+			cut_v.append_array(PackedVector3Array([a, b, c]))
+			cut_n.append(n)
+			cut_amp.append(amp)
+			cut_sign.append(sign_)
+	_conform_split(cut_v, cut_n, cut_amp, cut_sign, rock_verts, rock_norms)
 	var raw_v := rock_verts
 	var raw_n := rock_norms
 	rock_verts = PackedVector3Array()
@@ -1271,3 +1281,176 @@ func _build_cave_assets() -> void:
 func _light_stairs() -> void:
 	_asset("Lighting_Props/torch_stand", Vector3(-8.3, 0, -5.4))
 	_asset("Lighting_Props/torch_stand", Vector3(-12.5, 0, -8.5))
+
+
+# ---- Crack-free subdivision ------------------------------------------------------
+# Every triangle edge is first made to include each vertex that lies on it (the baked CSG
+# leaves T-junctions), then every segment is cut at fixed spots computed from its two ends,
+# so two faces meeting along a seam always share identical points. Interiors are filled
+# with a jittered lattice and a Delaunay triangulation. Displacement is a function of
+# position only, so shared points move together and no cracks can open.
+
+func _vkey_lt(a: Vector3i, b: Vector3i) -> bool:
+	if a.x != b.x:
+		return a.x < b.x
+	if a.y != b.y:
+		return a.y < b.y
+	return a.z < b.z
+
+
+func _edge_points(p0: Vector3, p1: Vector3, grid: Dictionary, cell: float, cache: Dictionary) -> PackedVector3Array:
+	var k0 := _vkey(p0)
+	var k1 := _vkey(p1)
+	var flip := _vkey_lt(k1, k0)
+	var lo := p1 if flip else p0
+	var hi := p0 if flip else p1
+	var ck := [mini(k0.x, k1.x) * 1000003 + k0.y + k1.y, k0 if not flip else k1, k1 if not flip else k0]
+	var res: PackedVector3Array
+	if cache.has(ck):
+		res = cache[ck]
+	else:
+		var lo_c := Vector3i(floori((minf(lo.x, hi.x) - 0.02) / cell), floori((minf(lo.y, hi.y) - 0.02) / cell), floori((minf(lo.z, hi.z) - 0.02) / cell))
+		var hi_c := Vector3i(floori((maxf(lo.x, hi.x) + 0.02) / cell), floori((maxf(lo.y, hi.y) + 0.02) / cell), floori((maxf(lo.z, hi.z) + 0.02) / cell))
+		var found: Array = []
+		var klo := _vkey(lo)
+		var khi := _vkey(hi)
+		var dir := hi - lo
+		var len2 := dir.length_squared()
+		for cx in range(lo_c.x, hi_c.x + 1):
+			for cy in range(lo_c.y, hi_c.y + 1):
+				for cz in range(lo_c.z, hi_c.z + 1):
+					var bucket = grid.get(Vector3i(cx, cy, cz))
+					if bucket == null:
+						continue
+					for q in bucket:
+						var kq := _vkey(q)
+						if kq == klo or kq == khi:
+							continue
+						var tt: float = (q - lo).dot(dir) / len2
+						if tt <= 0.0 or tt >= 1.0:
+							continue
+						if (lo + dir * tt).distance_to(q) < 0.02:
+							found.append([tt, q])
+		found.sort_custom(func(x, y): return x[0] < y[0])
+		var chain := PackedVector3Array([lo])
+		for f in found:
+			chain.append(f[1])
+		chain.append(hi)
+		res = PackedVector3Array([lo])
+		for j in chain.size() - 1:
+			var q0 := chain[j]
+			var q1 := chain[j + 1]
+			var k := maxi(1, ceili(q0.distance_to(q1) / ROUGH_EDGE))
+			for s in range(1, k):
+				res.append(q0.lerp(q1, float(s) / k))
+			res.append(q1)
+		cache[ck] = res
+	if flip:
+		var r := PackedVector3Array()
+		for j in range(res.size() - 1, -1, -1):
+			r.append(res[j])
+		return r
+	return res
+
+
+func _conform_split(tv: PackedVector3Array, tn: PackedVector3Array, tamp: PackedFloat32Array,
+		tsign: PackedFloat32Array, out_v: PackedVector3Array, out_n: PackedVector3Array) -> void:
+	var cell := 4.0
+	var grid := {}
+	var seen := {}
+	for p in tv:
+		var k := _vkey(p)
+		if seen.has(k):
+			continue
+		seen[k] = true
+		var c := Vector3i(floori(p.x / cell), floori(p.y / cell), floori(p.z / cell))
+		if not grid.has(c):
+			grid[c] = []
+		grid[c].append(p)
+	var cache := {}
+	var bad := 0
+	var s := ROUGH_EDGE
+	for t in tv.size() / 3:
+		var corners := [tv[t * 3], tv[t * 3 + 1], tv[t * 3 + 2]]
+		var n: Vector3 = tn[t]
+		var sg: float = tsign[t]
+		var orig_area: float = ((corners[1] - corners[0]).cross(corners[2] - corners[0])).length() * 0.5
+		if orig_area < 1e-6:
+			continue
+		var loop := PackedVector3Array()
+		for e in 3:
+			var pts := _edge_points(corners[e], corners[(e + 1) % 3], grid, cell, cache)
+			for j in pts.size() - 1:
+				loop.append(pts[j])
+		var d := 0
+		if absf(n.y) >= absf(n.x) and absf(n.y) >= absf(n.z):
+			d = 1
+		elif absf(n.z) >= absf(n.x):
+			d = 2
+		var ua := (d + 1) % 3
+		var va := (d + 2) % 3
+		var pts3 := PackedVector3Array(loop)
+		var pts2 := PackedVector2Array()
+		for p in loop:
+			pts2.append(Vector2(p[ua], p[va]))
+		var tri2 := PackedVector2Array([Vector2(corners[0][ua], corners[0][va]), Vector2(corners[1][ua], corners[1][va]), Vector2(corners[2][ua], corners[2][va])])
+		var minp := Vector2(minf(tri2[0].x, minf(tri2[1].x, tri2[2].x)), minf(tri2[0].y, minf(tri2[1].y, tri2[2].y)))
+		var maxp := Vector2(maxf(tri2[0].x, maxf(tri2[1].x, tri2[2].x)), maxf(tri2[0].y, maxf(tri2[1].y, tri2[2].y)))
+		if orig_area > s * s * 0.8:
+			for i in range(floori(minp.x / s), ceili(maxp.x / s) + 1):
+				for j in range(floori(minp.y / s), ceili(maxp.y / s) + 1):
+					var h1 := fmod(absf(sin(i * 12.9898 + j * 78.233) * 43758.5453), 1.0)
+					var h2 := fmod(absf(sin(i * 39.346 + j * 11.135) * 24634.6345), 1.0)
+					var q := Vector2((i + 0.5 + (h1 - 0.5) * 0.5) * s, (j + 0.5 + (h2 - 0.5) * 0.5) * s)
+					if not Geometry2D.is_point_in_polygon(q, tri2):
+						continue
+					var near := false
+					for e in 3:
+						var cp := Geometry2D.get_closest_point_to_segment(q, tri2[e], tri2[(e + 1) % 3])
+						if cp.distance_to(q) < s * 0.45:
+							near = true
+							break
+					if near:
+						continue
+					var p3 := corners[0] as Vector3
+					var du := q.x - p3[ua]
+					var dv := q.y - p3[va]
+					var pd: float = p3[d] - (n[ua] * du + n[va] * dv) / n[d]
+					var v3 := Vector3.ZERO
+					v3[ua] = q.x
+					v3[va] = q.y
+					v3[d] = pd
+					pts2.append(q)
+					pts3.append(v3)
+		var idx := Geometry2D.triangulate_delaunay(pts2)
+		var area_sum := 0.0
+		var made := PackedVector3Array()
+		for i in range(0, idx.size(), 3):
+			var pa := pts3[idx[i]]
+			var pb := pts3[idx[i + 1]]
+			var pc := pts3[idx[i + 2]]
+			var cr := (pb - pa).cross(pc - pa)
+			var ar := cr.length() * 0.5
+			if ar < 1e-7:
+				continue
+			area_sum += ar
+			if cr.dot(n) * sg < 0.0:
+				var tmp := pb
+				pb = pc
+				pc = tmp
+			made.append(pa)
+			made.append(pb)
+			made.append(pc)
+		if absf(area_sum - orig_area) > orig_area * 0.08 + 0.01:
+			bad += 1
+			made = PackedVector3Array([corners[0], corners[1], corners[2]])
+		for i in made.size() / 3:
+			out_v.append(made[i * 3])
+			out_v.append(made[i * 3 + 1])
+			out_v.append(made[i * 3 + 2])
+			out_n.append(n)
+			out_n.append(n)
+			out_n.append(n)
+			_raw_amp.append(tamp[t])
+			_raw_sign.append(sg)
+	print("Gullet rock: %d triangles, %d fell back" % [out_v.size() / 3, bad])
