@@ -1,6 +1,6 @@
 # HANDOFF: where we are and how to resume
 
-*Updated 2026-11-21 (new Gullet built). Read this first in a new session or on a different Claude account. Everything lives in this folder and in git.*
+*Updated 2026-11-21 (new Gullet built and given a first cave look pass). Read this first in a new session or on a different Claude account. Everything lives in this folder and in git.*
 
 ## How to resume
 1. Open this folder (`C:\Users\reals\Documents\Kingdom`) in Claude Code.
@@ -46,8 +46,20 @@ The Camp Hearth is east of the Crossroads shrine. Claim it (100 coins), upgrade 
 The Tithelands now looks like a place: photographic ground textures, Kingdom Come style earth and half-timbered buildings under Dark Souls light and fog, camps with fires, trails and clearings that connect the places, a river shader, boulders, firs and dead trees made in code, swaying grass, ground clutter. Checklist in `TODO.md` (Phase 15). To see it without playing: `Godot --path . --resolution 1280x720 --script res://tests/run.gd -- visual_env` (optionally `"x,z,yaw,name"` arguments for your own spots; yaw 0 looks north) writes PNGs to `%APPDATA%\Godot\app_userdata\Kingdom\shots`.
 **For anyone building the new Gullet:** reuse the shared materials in `levels/common/materials/` (`dark_stone` = grey cave rock, `rock`, `stone`, `wood`, `dark_wood`, `plaster`, `thatch`, `bark`, `burned`, `iron`) and the textures in `assets/textures/` (cliff, cave_rock, scree, dirt_dark, mud, wood, planks, stonewall); they are triplanar, so CSG boxes and cylinders need no UVs. `props/campfire.tscn`, `crate`, `barrel`, `log_seat`, `trophy_pole`, `lookout`, `hay_bale` are ready-made camp pieces. Do not use height fog in an environment (it buries underground rooms).
 
-## Next up
-Listen-test the audio and playtest the nine abilities (🧪 in TODO.md). Subclasses (Phase 11) are paused at your request: the framework and Warrior, Guardian and Cleric are built; the other six are "Coming later". Your decisions so far: subclass is re-pickable in future; names Martial / Vanguard / Mystic are for now.
+## Next up (updated 2026-11-21, end of session)
+**Where we are:** Phases 1-15 are built, and the new Gullet (bandit quarry) is built and has had a first "cave look" pass (ceiling holes with blue daylight shafts, noise-roughened walls/floors/ceilings, stalagmites and stalactites, brighter torches, mine timber frames). Your feedback was: the dungeon was too dark and the walls were flat. **Still to judge by eye:** open `visual_gullet` or walk it and say whether it is now bright and rough enough; the reference targets are the tall fractured entrance with a light shaft, and the two-story "The Cave" look (teal-lit, waterfalls, ledges).
+
+**Suggested order for the next sessions (most valuable first):**
+1. **Gullet look pass 2** (only if you are not happy yet): waterfalls into the river in the camp and Excavation, wet-rock shader, more rubble and fallen rock, a lighter fill in the tunnels. Another Claude session owns `game/world/gullet.gd`; check `git status` and commit only your own files.
+2. **Commit the leftovers:** your editor tuning (`data/classes/*.tres`, `data/enemies/enemy_hound/marauder/zealot.tres`, `data/subclasses/*.tres`, `levels/sandbox/look_test.tscn`) and `NEXT_STEPS.md` were never committed.
+3. **Playtest round (you):** all the 🧪 lines in `TODO.md` (audio, settings, camp and raids, environment, nine abilities, the new Gullet). Bugs hide here; send me what feels wrong.
+4. **Re-export the friends build** (steps in README.md "Play with friends"); the last zip is from before camp, environment, buildings and the new Gullet.
+5. **Highcrown (the checkpoint town)** and the checkpoint banners and market props; Tithelands extras (ferns, puddles, daytime clouds, distant tree LODs).
+6. **Art pipeline test:** one bandit from AI concept to a rigged model on the standard skeleton (`ART_NEEDS.md`, `GULLET_DESIGN.md` section 10).
+7. **Subclasses (Phase 11)** are paused at your request: framework plus Warrior, Guardian and Cleric exist; Paladin, Mage, Rogue, Ranger, Warlock, Warden are "Coming later".
+8. **Milestone:** 3 friends clear the Tithelands and the new Gullet.
+
+**Prompt to paste into a new session:** "Read HANDOFF.md, then TODO.md and NEXT_STEPS.md. Tell me in a few lines where we are, then start on item 1 of 'Next up' in HANDOFF.md. Commit only your own files; another session may be editing game/world/gullet.gd."
 
 ## Things to know
 - **Checks:** run any check with `--headless --script res://tests/run.gd -- <name>` (see README.md). Current checks: movement, combat, class, loot, death, enemy, zone, boss, moves, audio, sound, subclass, prefs, camp; plus the 3-player check `tests/run_net_check.ps1`. All pass as of this update.
