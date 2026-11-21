@@ -67,6 +67,19 @@ const LIGHTS := [
 const PILLARS := [[880, 700], [880, 800], [1080, 690], [1080, 810], [1200, 730], [960, 750]]
 
 
+## Ceiling holes: [x, z, radius, ceiling y at that spot]
+const SHAFTS := [
+	[-51.0, 25.0, 3.0, 6.0],   # entrance yard
+	[-4.0, -4.0, 2.4, 10.0],   # camp
+	[14.0, -10.0, 2.0, 10.0],  # camp, east end
+	[44.0, -12.0, 3.2, 11.0],  # Excavation, west
+	[60.0, -8.0, 2.6, 11.0],   # Excavation, east
+	[30.0, 32.0, 2.4, 9.0],    # deep chamber
+	[48.0, 36.0, 1.8, 9.0],    # deep chamber, east
+	[16.0, 18.0, 1.4, 5.0],    # shrine
+]
+
+
 static func px(x: float, y: float) -> Vector3:
 	return Vector3((x - 700.0) * 0.1, 0.0, (y - 430.0) * 0.1)
 
@@ -114,8 +127,22 @@ func _ready() -> void:
 		pillar.size = Vector3(2.0, 9.0, 2.0)
 		pillar.material = mat
 		combiner.add_child(pillar)
+	# Holes in the cave ceiling: daylight (cool blue) falls through them.
+	for s in SHAFTS:
+		var hole := CSGCylinder3D.new()
+		hole.operation = CSGShape3D.OPERATION_SUBTRACTION
+		hole.radius = s[2]
+		hole.height = 20.0
+		hole.sides = 9
+		hole.position = Vector3(s[0], s[3] + 9.0, s[1])
+		hole.rotation = Vector3(deg_to_rad(randf_range(-4, 4)), 0.0, deg_to_rad(randf_range(-4, 4)))
+		hole.material = mat
+		combiner.add_child(hole)
 	add_child(combiner)
 
+	_build_cave_detail(mat)
+	_build_shafts()
+	_build_room_glow()
 	_build_rails()
 	_build_props()
 	_build_river()
@@ -194,6 +221,127 @@ func _build_props() -> void:
 		_box(px(p[0], p[1]), Vector3(1.4, 0.8, 1.2), Color(0.18, 0.16, 0.14), randf() * 3.0)
 
 
+## Blue daylight pouring through each ceiling hole: a spotlight, a faint glowing
+## shaft, and a cool fill light near the floor so the rooms are not black.
+func _build_shafts() -> void:
+	var shaft_mat := StandardMaterial3D.new()
+	shaft_mat.albedo_color = Color(0.5, 0.75, 1.0, 0.022)
+	shaft_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	shaft_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	shaft_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	shaft_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	for s in SHAFTS:
+		var top: float = s[3]
+		var spot := SpotLight3D.new()
+		spot.position = Vector3(s[0], top + 1.5, s[1])
+		spot.rotation_degrees = Vector3(-90, 0, 0)
+		spot.light_color = Color(0.45, 0.7, 1.0)
+		spot.light_energy = 14.0
+		spot.spot_range = top + 6.0
+		spot.spot_angle = 26.0
+		spot.spot_angle_attenuation = 0.6
+		spot.shadow_enabled = true
+		add_child(spot)
+		var fill := OmniLight3D.new()
+		fill.position = Vector3(s[0], 1.6, s[1])
+		fill.light_color = Color(0.4, 0.62, 1.0)
+		fill.light_energy = 4.0
+		fill.omni_range = 22.0
+		add_child(fill)
+		var cone := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = s[2] * 0.9
+		cm.bottom_radius = s[2] * 1.8
+		cm.height = top
+		cm.radial_segments = 12
+		cm.material = shaft_mat
+		cone.mesh = cm
+		cone.position = Vector3(s[0], top * 0.5, s[1])
+		cone.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(cone)
+
+
+## Roughs up the straight carved walls: jagged boulders and slabs jutting from every
+## wall, stalagmites on the floor, stalactites hanging from the ceiling.
+func _build_cave_detail(mat: Material) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4242
+	var tint := StandardMaterial3D.new()
+	tint.albedo_color = Color(0.62, 0.6, 0.58)
+	tint.albedo_texture = (mat as StandardMaterial3D).albedo_texture
+	tint.normal_enabled = true
+	tint.normal_texture = (mat as StandardMaterial3D).normal_texture
+	tint.uv1_scale = Vector3(0.5, 0.5, 0.5)
+	tint.uv1_triplanar = true
+	tint.roughness = 0.85
+	for c in CARVES:
+		var y0: float = c[5] if c.size() > 5 else 0.0
+		var hgt: float = c[4] - y0
+		var w: float = c[2] - c[0]
+		var d: float = c[3] - c[1]
+		var area := w * d
+		# Wall chunks along the four walls.
+		var steps_x := maxi(1, int(w / 2.2))
+		var steps_z := maxi(1, int(d / 2.2))
+		for side in 4:
+			var n := steps_x if side < 2 else steps_z
+			for i in n:
+				var t := (i + rng.randf()) / float(n)
+				var pos: Vector3
+				var out: Vector3
+				match side:
+					0: pos = Vector3(c[0] + w * t, 0, c[1]); out = Vector3(0, 0, -1)
+					1: pos = Vector3(c[0] + w * t, 0, c[3]); out = Vector3(0, 0, 1)
+					2: pos = Vector3(c[0], 0, c[1] + d * t); out = Vector3(-1, 0, 0)
+					_: pos = Vector3(c[2], 0, c[1] + d * t); out = Vector3(1, 0, 0)
+				for k in 2:
+					var rock := MeshInstance3D.new()
+					var sm := SphereMesh.new()
+					sm.radial_segments = 6
+					sm.rings = 3
+					sm.material = tint
+					rock.mesh = sm
+					var r := rng.randf_range(0.5, 1.5) * clampf(hgt / 4.0, 0.8, 1.8)
+					rock.scale = Vector3(r * rng.randf_range(0.7, 1.4), r * rng.randf_range(1.0, 2.6), r * rng.randf_range(0.7, 1.4))
+					rock.rotation = Vector3(rng.randf() * 0.6, rng.randf() * TAU, rng.randf() * 0.6)
+					rock.position = pos + Vector3(0, y0 + rng.randf() * hgt, 0) - out * rng.randf_range(-0.1, 0.35) * r
+					add_child(rock)
+		# Stalagmites and stalactites inside the bigger rooms, kept near the walls.
+		var count := clampi(int(area / 18.0), 0, 40)
+		for i in count:
+			var onwall := rng.randi() % 4
+			var sx := rng.randf_range(c[0] + 0.5, c[2] - 0.5)
+			var sz := rng.randf_range(c[1] + 0.5, c[3] - 0.5)
+			match onwall:
+				0: sz = c[1] + rng.randf_range(0.5, 1.4)
+				1: sz = c[3] - rng.randf_range(0.5, 1.4)
+				2: sx = c[0] + rng.randf_range(0.5, 1.4)
+				_: sx = c[2] - rng.randf_range(0.5, 1.4)
+			var up := rng.randf() < 0.55
+			var h := rng.randf_range(0.8, 2.6)
+			var rad := rng.randf_range(0.18, 0.5)
+			var cone := MeshInstance3D.new()
+			var cm := CylinderMesh.new()
+			cm.top_radius = 0.0 if up else rad
+			cm.bottom_radius = rad if up else 0.0
+			cm.height = h
+			cm.radial_segments = 6
+			cm.material = tint
+			cone.mesh = cm
+			cone.position = Vector3(sx, y0 + h * 0.5 if up else c[4] - h * 0.5, sz)
+			add_child(cone)
+			if up:
+				var body := StaticBody3D.new()
+				var cs := CollisionShape3D.new()
+				var cyl := CylinderShape3D.new()
+				cyl.radius = rad * 0.7
+				cyl.height = h
+				cs.shape = cyl
+				body.add_child(cs)
+				body.position = cone.position
+				add_child(body)
+
+
 func _build_river() -> void:
 	for path in RIVER:
 		var stream := WaterStream.new()
@@ -211,8 +359,8 @@ func _build_lights() -> void:
 		var light := OmniLight3D.new()
 		light.position = Vector3(v.x, l[3], v.z)
 		light.light_color = Color(1.0, 0.68, 0.38)
-		light.light_energy = l[2] * 3.0
-		light.omni_range = 14.0
+		light.light_energy = l[2] * 5.5
+		light.omni_range = 16.0
 		light.omni_attenuation = 1.4
 		add_child(light)
 	var fire := Campfire.new()
@@ -245,3 +393,15 @@ func _ladder(at: Vector3) -> void:
 	l.top_exit = Vector3(0, 4.0, -0.9)
 	l.position = at
 	add_child(l)
+
+
+## A dim cool glow in the middle of every carved room, so no room is pitch black.
+func _build_room_glow() -> void:
+	for c in CARVES:
+		var y0: float = c[5] if c.size() > 5 else 0.0
+		var l := OmniLight3D.new()
+		l.position = Vector3((c[0] + c[2]) * 0.5, y0 + minf(c[4] - y0, 6.0) * 0.6, (c[1] + c[3]) * 0.5)
+		l.light_color = Color(0.5, 0.6, 0.85)
+		l.light_energy = 1.8
+		l.omni_range = clampf(maxf(c[2] - c[0], c[3] - c[1]) * 0.7, 9.0, 30.0)
+		add_child(l)
