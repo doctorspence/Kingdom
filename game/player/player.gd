@@ -161,6 +161,10 @@ var net_subclass := &""
 ## Item IDs in your hands (so friends see your weapon and shield).
 var net_main := &""
 var net_off := &""
+## Worn armor item IDs (head / chest / legs), so friends see your armor too.
+var net_head := &""
+var net_chest := &""
+var net_legs := &""
 var spawn_yaw := 0.0
 var player_name := ""
 
@@ -264,6 +268,9 @@ func _refresh_gear() -> void:
 		var off := inventory.off_hand()
 		net_main = main.base.id if main and main.base.weapon else &""
 		net_off = off.base.id if off and off.base.shield else &""
+		net_head = _worn_id("head")
+		net_chest = _worn_id("chest")
+		net_legs = _worn_id("legs")
 	var main_item := ItemDB.get_item(net_main) if net_main != &"" else null
 	var off_item := ItemDB.get_item(net_off) if net_off != &"" else null
 	weapon = main_item.weapon if main_item and main_item.weapon else FISTS
@@ -282,7 +289,7 @@ func _on_gear_changed() -> void:
 
 
 func _apply_look() -> void:
-	var key := "%s/%d/%d/%s/%s" % [stats.class_data.id, net_body, net_color, net_main, net_off]
+	var key := "%s/%d/%d/%s/%s/%s/%s/%s" % [stats.class_data.id, net_body, net_color, net_main, net_off, net_head, net_chest, net_legs]
 	if key == _shown_look:
 		return
 	_shown_look = key
@@ -292,6 +299,9 @@ func _apply_look() -> void:
 	if shield and shield.visual_scene:
 		model.attach_to_hand(shield.visual_scene.instantiate(), "l")
 	model.set_body(net_body == 1)
+	for pair in [["head", net_head], ["chest", net_chest], ["legs", net_legs]]:
+		var worn := ItemDB.get_item(pair[1]) if pair[1] != &"" else null
+		model.set_armor(pair[0], worn.model_scene if worn else null)
 	model.set_tint(Classes.LOOK_COLORS[clampi(net_color, 0, Classes.LOOK_COLORS.size() - 1)])
 
 
@@ -2255,3 +2265,9 @@ func _update_lantern(delta: float) -> void:
 	# A gentle flicker.
 	var t := Time.get_ticks_msec() * 0.001
 	_lantern.light_energy = _lantern_glow * (0.95 + 0.05 * sin(t * 9.0 + position.x) * sin(t * 4.3))
+
+
+## ID of the armor worn in a slot ("head", "chest", "legs") that has a 3D model, or empty.
+func _worn_id(slot: String) -> StringName:
+	var it: ItemInstance = inventory.equipped.get(slot)
+	return it.base.id if it and it.base.model_scene else &""

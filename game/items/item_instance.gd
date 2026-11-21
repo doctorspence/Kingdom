@@ -94,6 +94,8 @@ func describe() -> PackedStringArray:
 	var lines := PackedStringArray()
 	lines.append("%s" % display_name())
 	lines.append("%s  ·  %s  ·  item level %d" % [RARITY_NAMES[rarity], ItemData.slot_name(base.slot), ilvl])
+	if base.required_level > 1 or base.tier != &"":
+		lines.append("%s%s" % [String(base.tier).capitalize() + ("  ·  " if base.tier != &"" else ""), "Level %d" % base.required_level])
 	if base.weapon:
 		var w := base.weapon
 		lines.append("Damage %d   Poise %d%s" % [roundi(w.damage * scale()), roundi(w.poise_damage),

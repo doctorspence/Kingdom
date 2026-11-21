@@ -303,7 +303,7 @@ func _build_cave_detail(mat: Material) -> void:
 					rock.position = pos + Vector3(0, y0 + rng.randf() * hgt, 0) + out * rng.randf_range(0.55, 0.9) * r * 1.2
 					add_child(rock)
 		# Stalagmites and stalactites inside the bigger rooms, kept near the walls.
-		var count := clampi(int(area / 18.0), 0, 40) if minf(w, d) >= 8.0 else 0
+		var count := clampi(int(area / 40.0), 0, 14) if minf(w, d) >= 8.0 else 0
 		for i in count:
 			var onwall := rng.randi() % 4
 			var sx := rng.randf_range(c[0] + 0.5, c[2] - 0.5)
@@ -313,29 +313,9 @@ func _build_cave_detail(mat: Material) -> void:
 				1: sz = c[3] - rng.randf_range(0.5, 1.4)
 				2: sx = c[0] + rng.randf_range(0.5, 1.4)
 				_: sx = c[2] - rng.randf_range(0.5, 1.4)
-			var up := rng.randf() < 0.55
-			var h := rng.randf_range(0.8, 2.6)
-			var rad := rng.randf_range(0.18, 0.5)
-			var cone := MeshInstance3D.new()
-			var cm := CylinderMesh.new()
-			cm.top_radius = 0.0 if up else rad
-			cm.bottom_radius = rad if up else 0.0
-			cm.height = h
-			cm.radial_segments = 6
-			cm.material = tint
-			cone.mesh = cm
-			cone.position = Vector3(sx, y0 + h * 0.5 if up else c[4] - h * 0.5, sz)
-			add_child(cone)
-			if false:
-				var body := StaticBody3D.new()
-				var cs := CollisionShape3D.new()
-				var cyl := CylinderShape3D.new()
-				cyl.radius = rad * 0.7
-				cyl.height = h
-				cs.shape = cyl
-				body.add_child(cs)
-				body.position = cone.position
-				add_child(body)
+			var up := rng.randf() < 0.5
+			var kind := "stalagmites" if up else "stalactites"
+			_asset("Cave_Geometry/" + kind, Vector3(sx, y0 if up else c[4] - 0.15, sz), rng.randf() * TAU, false, rng.randf_range(0.7, 1.3))
 
 
 func _build_river() -> void:
@@ -346,7 +326,19 @@ func _build_river() -> void:
 			pts.append(Vector3(p[0], 0.0, p[1]))
 		stream.points = pts
 		stream.width = RIVER_WIDTH
+		stream.shader_material = _water_material()
 		add_child(stream)
+		# Smooth wet stones along the banks.
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 5
+		for i in pts.size() - 1:
+			var a := pts[i]
+			var b := pts[i + 1]
+			var side := (b - a).cross(Vector3.UP).normalized()
+			for k in 4:
+				var base := a.lerp(b, rng.randf())
+				var sgn := 1.0 if rng.randf() < 0.5 else -1.0
+				_rock_chunk(base + side * sgn * (RIVER_WIDTH * 0.5 + rng.randf_range(0.0, 0.3)) + Vector3(0, 0.1, 0), rng.randf_range(0.15, 0.4))
 
 
 func _build_lights() -> void:
@@ -581,7 +573,15 @@ func _push(p: Vector3, n: Vector3, amp: float) -> Vector3:
 	var v := _rough_at(p)
 	if absf(n.y) > 0.8 and amp < 0.5:
 		return p + n * (amp * (v * 0.6 if v > 0.0 else v * 0.2))
-	return p + n * (amp * (v * 0.4 if v > 0.0 else v * 0.65))
+	var d := amp * (v * 0.4 if v > 0.0 else v * 0.65)
+	if amp > 1.0 and absf(n.y) < 0.5:
+		# Rock strata: each layer swells out slowly and drops back sharply, so walls
+		# grow shelves and undercut lips like weathered sedimentary rock.
+		var t := p.y * 0.55 + _noise_l.get_noise_3dv(p * 1.3) * 1.9
+		var f := t - floorf(t)
+		var prof := pow(f / 0.78, 1.6) if f < 0.78 else 1.0 - (f - 0.78) / 0.22
+		d += (prof - 0.35) * 0.5 * clampf(p.y / 1.2, 0.0, 1.0)
+	return p + n * d
 
 
 func _subdivide(a: Vector3, b: Vector3, c: Vector3, n: Vector3, sign_: float, amp: float,
@@ -964,42 +964,83 @@ func _build_scaffolds() -> void:
 			board.rotation.y += randf_range(-0.012, 0.012)
 
 
-## Cluster of black shard crystals (the Black Shard the bandits dug up).
+## One faceted crystal: a six-sided shaft with a bent, irregular point. Flat shaded.
+func _crystal_mesh(h: float, r: float, rng: RandomNumberGenerator) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var sides := 6
+	var rings := [[0.0, 1.0], [0.62, 0.82 + rng.randf() * 0.1]]
+	var tip := Vector3(rng.randf_range(-0.25, 0.25) * r, h, rng.randf_range(-0.25, 0.25) * r)
+	var prev: Array = []
+	for ri in rings.size():
+		var ring: Array = []
+		for s in sides:
+			var a := TAU * s / sides + ri * 0.12
+			var rr: float = r * float(rings[ri][1]) * rng.randf_range(0.85, 1.12)
+			ring.append(Vector3(cos(a) * rr, h * float(rings[ri][0]) * 0.97, sin(a) * rr))
+		prev.append(ring)
+	for ri in prev.size() - 1:
+		var r0: Array = prev[ri]
+		var r1: Array = prev[ri + 1]
+		for s in sides:
+			var s2 := (s + 1) % sides
+			st.add_vertex(r0[s])
+			st.add_vertex(r1[s2])
+			st.add_vertex(r1[s])
+			st.add_vertex(r0[s])
+			st.add_vertex(r0[s2])
+			st.add_vertex(r1[s2])
+	var top: Array = prev[prev.size() - 1]
+	for s in sides:
+		var s2 := (s + 1) % sides
+		st.add_vertex(top[s])
+		st.add_vertex(top[s2])
+		st.add_vertex(tip)
+	st.generate_normals()
+	return st.commit()
+
+
+## Cluster of black shard crystals (the Black Shard the bandits dug up): many faceted
+## obsidian spikes leaning away from the middle, with a skirt of cracked stone.
 func _shards(pos: Vector3, scale_: float, seed_: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.03, 0.03, 0.05)
-	mat.metallic = 0.5
-	mat.roughness = 0.22
+	mat.albedo_color = Color(0.025, 0.025, 0.04)
+	mat.metallic = 0.15
+	mat.metallic_specular = 0.9
+	mat.roughness = 0.12
+	mat.clearcoat_enabled = true
+	mat.clearcoat = 0.6
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.emission_enabled = true
-	mat.emission = Color(0.22, 0.04, 0.36)
-	mat.emission_energy_multiplier = 0.6
-	for i in 5:
-		var h := scale_ * rng.randf_range(1.2, 3.4) * (1.0 if i > 0 else 1.3)
-		var r := scale_ * rng.randf_range(0.28, 0.6)
+	mat.emission = Color(0.16, 0.03, 0.28)
+	mat.emission_energy_multiplier = 0.35
+	for i in 9:
+		var big := i == 0
+		var h := scale_ * rng.randf_range(0.9, 2.6) * (1.9 if big else 1.0)
+		var r := scale_ * rng.randf_range(0.14, 0.34) * (1.6 if big else 1.0)
 		var mi := MeshInstance3D.new()
-		var cm := CylinderMesh.new()
-		cm.radial_segments = 5
-		cm.top_radius = r * 0.12
-		cm.bottom_radius = r
-		cm.height = h
-		cm.material = mat
-		mi.mesh = cm
-		var off := Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)) * scale_ * 0.9 * (0.0 if i == 0 else 1.0)
-		mi.position = pos + off + Vector3(0, h * 0.5, 0)
-		mi.rotation = Vector3(rng.randf_range(-0.3, 0.3), rng.randf() * TAU, rng.randf_range(-0.3, 0.3))
+		mi.mesh = _crystal_mesh(h, r, rng)
+		mi.material_override = mat
+		var ang := rng.randf() * TAU
+		var dist := 0.0 if big else rng.randf_range(0.25, 1.0) * scale_
+		mi.position = pos + Vector3(cos(ang) * dist, -0.05, sin(ang) * dist)
+		var lean := 0.0 if big else rng.randf_range(0.15, 0.55)
+		mi.rotation = Vector3(sin(ang) * lean, rng.randf() * TAU, -cos(ang) * lean)
 		add_child(mi)
-		if i == 0:
-			var body := StaticBody3D.new()
-			var cs := CollisionShape3D.new()
-			var sh := CylinderShape3D.new()
-			sh.radius = r * 0.7
-			sh.height = h
-			cs.shape = sh
-			body.add_child(cs)
-			body.position = mi.position
-			add_child(body)
+	for i in 8:
+		var a := rng.randf() * TAU
+		_rock_chunk(pos + Vector3(cos(a), 0.1, sin(a)) * scale_ * rng.randf_range(0.9, 1.6), scale_ * rng.randf_range(0.2, 0.4))
+	var body := StaticBody3D.new()
+	var cs := CollisionShape3D.new()
+	var sh := CylinderShape3D.new()
+	sh.radius = scale_ * 0.5
+	sh.height = scale_ * 2.5
+	cs.shape = sh
+	body.add_child(cs)
+	body.position = pos + Vector3(0, scale_ * 1.25, 0)
+	add_child(body)
 	var glow := OmniLight3D.new()
 	glow.position = pos + Vector3(0, scale_ * 1.5, 0)
 	glow.light_color = Color(0.55, 0.25, 1.0)
@@ -1072,63 +1113,112 @@ func _build_atmosphere() -> void:
 
 ## Waterfalls spilling from clefts in the Excavation's south wall into the river,
 ## each with a splash pool, rolling mist and a cold glow.
-func _build_falls() -> void:
-	var noise := FastNoiseLite.new()
-	noise.frequency = 0.04
-	noise.fractal_octaves = 3
-	var tex := NoiseTexture2D.new()
-	tex.noise = noise
-	tex.width = 256
-	tex.height = 256
-	tex.seamless = true
-	tex.color_ramp = Gradient.new()
-	tex.color_ramp.colors = PackedColorArray([Color(0.35, 0.55, 0.65, 0.15), Color(0.95, 1.0, 1.0, 0.85)])
+var _water_normal: NoiseTexture2D
+var _water_noise: NoiseTexture2D
+
+
+func _water_textures() -> void:
+	if _water_normal:
+		return
+	var n1 := FastNoiseLite.new()
+	n1.frequency = 0.03
+	n1.fractal_octaves = 4
+	_water_normal = NoiseTexture2D.new()
+	_water_normal.noise = n1
+	_water_normal.as_normal_map = true
+	_water_normal.bump_strength = 5.0
+	_water_normal.seamless = true
+	_water_normal.width = 256
+	_water_normal.height = 256
+	var n2 := FastNoiseLite.new()
+	n2.frequency = 0.025
+	n2.seed = 9
+	n2.fractal_octaves = 3
+	_water_noise = NoiseTexture2D.new()
+	_water_noise.noise = n2
+	_water_noise.seamless = true
+	_water_noise.width = 256
+	_water_noise.height = 256
+
+
+func _water_material(flow := Vector2.ZERO) -> ShaderMaterial:
+	_water_textures()
+	var sm := ShaderMaterial.new()
+	sm.shader = load("res://game/world/shaders/cave_water.gdshader")
+	sm.set_shader_parameter("normal_tex", _water_normal)
+	sm.set_shader_parameter("noise_tex", _water_noise)
+	sm.set_shader_parameter("flow", flow)
+	return sm
+
+
+## Little white droplets that leap and fall, for waterfall bases.
+func _splash(pos: Vector3, radius: float) -> void:
+	var gp := GPUParticles3D.new()
+	gp.amount = 70
+	gp.lifetime = 1.1
+	gp.position = pos
+	gp.visibility_aabb = AABB(Vector3(-4, -1, -4), Vector3(8, 6, 8))
+	gp.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var pm := ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pm.emission_sphere_radius = radius
+	pm.direction = Vector3(0, 1, 0.4)
+	pm.spread = 55.0
+	pm.initial_velocity_min = 1.0
+	pm.initial_velocity_max = 3.2
+	pm.gravity = Vector3(0, -6.0, 0)
+	pm.scale_min = 0.6
+	pm.scale_max = 1.5
+	gp.process_material = pm
+	var q := QuadMesh.new()
+	q.size = Vector2(0.07, 0.07)
 	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = tex
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	mat.uv1_scale = Vector3(1.0, 0.12, 1.0)
-	mat.emission_enabled = true
-	mat.emission = Color(0.1, 0.25, 0.35)
-	var tw := create_tween().set_loops()
-	tw.tween_property(mat, "uv1_offset:y", 1.0, 2.2).from(0.0)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	mat.albedo_color = Color(0.9, 0.96, 1.0, 0.7)
+	mat.albedo_texture = _soft_dot()
+	q.material = mat
+	gp.draw_pass_1 = q
+	add_child(gp)
+
+
+func _build_falls() -> void:
+	_water_textures()
+	var fall_mat := ShaderMaterial.new()
+	fall_mat.shader = load("res://game/world/shaders/cave_waterfall.gdshader")
+	fall_mat.set_shader_parameter("noise_tex", _water_noise)
 	for x in [38.0, 48.0, 57.0]:
 		var top := 9.5
 		var wallz := 3.9
+		var width := 1.5 if x != 48.0 else 2.4
 		var sheet := MeshInstance3D.new()
 		var qm := QuadMesh.new()
-		qm.size = Vector2(1.5 if x != 48.0 else 2.4, top)
-		qm.material = mat
+		qm.size = Vector2(width, top)
+		qm.subdivide_depth = 24
+		qm.subdivide_width = 4
+		qm.material = fall_mat
 		sheet.mesh = qm
 		sheet.position = Vector3(x, top * 0.5, wallz)
 		sheet.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(sheet)
-		# A dark rock lip the water pours over.
-		var lip := MeshInstance3D.new()
-		var lm := SphereMesh.new()
-		lm.radial_segments = 6
-		lm.rings = 3
-		lm.material = _chunk()
-		lip.mesh = lm
-		lip.scale = Vector3(1.6, 0.7, 1.1)
-		lip.position = Vector3(x, top, wallz + 0.4)
-		add_child(lip)
+		# A rough rock lip the water pours over, and wet boulders at its foot.
+		for k in 3:
+			_rock_chunk(Vector3(x + (k - 1) * width * 0.4, top - 0.1, wallz + 0.35), 0.5)
+		for k in 6:
+			_rock_chunk(Vector3(x + randf_range(-1.8, 1.8), 0.15, wallz - randf_range(1.8, 2.8)), randf_range(0.2, 0.45))
 		var pool := MeshInstance3D.new()
 		var pm := CylinderMesh.new()
-		pm.top_radius = 1.9
-		pm.bottom_radius = 1.9
-		pm.height = 0.08
-		pm.radial_segments = 14
-		var pmat := StandardMaterial3D.new()
-		pmat.albedo_color = Color(0.2, 0.32, 0.4, 0.75)
-		pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		pmat.roughness = 0.1
-		pmat.metallic = 0.3
-		pm.material = pmat
+		pm.top_radius = 2.2
+		pm.bottom_radius = 2.2
+		pm.height = 0.06
+		pm.radial_segments = 20
+		pm.material = _water_material(Vector2(0.0, -1.0))
 		pool.mesh = pm
-		pool.position = Vector3(x, 0.1, wallz - 0.9)
+		pool.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		pool.position = Vector3(x, 0.08, wallz - 1.1)
 		add_child(pool)
+		_splash(Vector3(x, 0.2, wallz - 0.7), width * 0.35)
 		_fog_volume(RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID, Vector3(x, 1.4, wallz - 1.0),
 				Vector3(5.0, 2.6, 4.0), Color(0.8, 0.9, 1.0), 0.12)
 		var glow := OmniLight3D.new()
@@ -1524,7 +1614,8 @@ func _dust(pos: Vector3, extents: Vector3, amount: int) -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	mat.albedo_color = Color(0.8, 0.88, 1.0, 0.35)
+	mat.albedo_color = Color(0.8, 0.88, 1.0, 0.5)
+	mat.albedo_texture = _soft_dot()
 	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	q.material = mat
 	gp.draw_pass_1 = q
@@ -1542,3 +1633,16 @@ func _build_realism() -> void:
 	# Dust drifting in every shaft of daylight.
 	for sh in SHAFTS:
 		_dust(Vector3(sh[0], sh[3] * 0.5, sh[1]), Vector3(sh[2] * 0.8, sh[3] * 0.5, sh[2] * 0.8), 90)
+
+
+## Soft round sprite so particles are blobs, not squares.
+func _soft_dot() -> GradientTexture2D:
+	var t := GradientTexture2D.new()
+	t.fill = GradientTexture2D.FILL_RADIAL
+	t.fill_from = Vector2(0.5, 0.5)
+	t.fill_to = Vector2(1.0, 0.5)
+	t.width = 32
+	t.height = 32
+	t.gradient = Gradient.new()
+	t.gradient.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0)])
+	return t

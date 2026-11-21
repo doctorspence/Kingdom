@@ -87,10 +87,15 @@ func _draw() -> void:
 		var it: ItemInstance = grid.items[uid]
 		var p: Vector2i = grid.positions[uid]
 		var r := Rect2(top + Vector2(p) * CELL, Vector2(it.base.grid_size) * CELL).grow(-3)
-		draw_rect(r, it.base.icon_color.darkened(0.3))
+		draw_rect(r, it.base.icon_color.darkened(0.6) if it.base.icon else it.base.icon_color.darkened(0.3))
+		if it.base.icon:
+			# the icon, as large as fits in the item's cells, centered
+			var s := minf(r.size.x, r.size.y)
+			draw_texture_rect(it.base.icon, Rect2(r.position + (r.size - Vector2(s, s)) * 0.5, Vector2(s, s)), false)
 		draw_rect(r, it.color(), false, 2.0)
-		var short := it.display_name().get_slice(" ", it.display_name().get_slice_count(" ") - 1).left(7)
-		draw_string(font, r.position + Vector2(4, 16), short, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 6, 12, Color(1, 1, 1, 0.95))
+		if it.base.icon == null:
+			var short := it.display_name().get_slice(" ", it.display_name().get_slice_count(" ") - 1).left(7)
+			draw_string(font, r.position + Vector2(4, 16), short, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 6, 12, Color(1, 1, 1, 0.95))
 		if it.count > 1:
 			draw_string(font, r.position + Vector2(4, r.size.y - 4), "x%d" % it.count, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 0.8))
 	if has_focus():

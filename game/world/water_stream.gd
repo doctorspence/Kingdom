@@ -7,6 +7,7 @@ extends Node3D
 @export var width := 2.0
 ## Move speed multiplier while wading.
 @export var wade_speed := 0.8
+@export var shader_material: ShaderMaterial
 
 var _areas: Array[Area3D] = []
 
@@ -29,7 +30,12 @@ func _ready() -> void:
 		var mi := MeshInstance3D.new()
 		var bm := BoxMesh.new()
 		bm.size = Vector3(length + width * 0.5, 0.1, width)
-		bm.material = mat
+		if shader_material:
+			var sm := shader_material.duplicate() as ShaderMaterial
+			sm.set_shader_parameter("flow", Vector2(seg.x, seg.z).normalized())
+			bm.material = sm
+		else:
+			bm.material = mat
 		mi.mesh = bm
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		mi.position = mid + Vector3(0, 0.05, 0)

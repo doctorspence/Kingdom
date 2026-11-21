@@ -98,6 +98,9 @@ func refresh() -> void:
 		var it: ItemInstance = inv.equipped.get(s)
 		var active: bool = not (s.begins_with("main") or s.begins_with("off")) or s.right(1) == str(inv.active_set)
 		b.text = "%s: %s" % [Inventory.SLOT_LABELS[s], it.display_name() if it else "—"]
+		b.icon = it.base.icon if it else null
+		b.expand_icon = true
+		b.add_theme_constant_override("icon_max_width", 26)
 		b.modulate = (it.color() if it else Color(0.7, 0.7, 0.7)) * (Color(1, 1, 1) if active else Color(0.6, 0.6, 0.6))
 	_grid.set_grid(inv.backpack)
 	var s := player.stats
