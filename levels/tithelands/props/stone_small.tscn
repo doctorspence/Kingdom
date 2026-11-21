@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/world/boulder.gd" id="1_boulder"]
+
+[node name="StoneSmall" type="StaticBody3D"]
+script = ExtResource("1_boulder")
+radius = 0.38
+roughness = 0.42

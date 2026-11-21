@@ -183,6 +183,18 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Claim the camp (you need 100 coins; Hobb and the roads give it), upgrade it, press F5 to skip to night or F7 to raid now, and defend it, alone and with a friend; tell me if raids are too easy, too hard or too long
 - [ ] Later: raiders that attack the palisade itself, repairable damage, camp NPCs and a camp vendor, camp level shown on the map, more raid types (a captain, a siege), raids on other zones' camps
 
+## Phase 15: Environment pass: the Tithelands look (built in stages; waiting for your look)
+- [x] **Real textures** (CC0, ambientCG, logged in `assets/CREDITS.md`): 15 PBR sets in `assets/textures/`. The ground is a custom shader (`levels/common/terrain_pbr.gdshader`) that blends grass, mud, road and rock, breaks up edges and repetition with noise, adds moss and dark-soil patches, and projects rock from three sides so cliffs do not stretch
+- [x] **Kingdom Come style ground with Dark Souls light**: muted grass, pebbled dirt roads, mud and riverbanks; lower warm sun against cold shadows, thicker fog and softer sky (`levels/common/tithelands_env.tres`, the Sun in `tithelands.tscn`)
+- [x] **Layout that connects**: narrow camp trails (west road to the bandit camp, ford camp, a raider trail from the east road through the woods camps to the north-east camp) and trampled-dirt clearings around every village, farm, camp, the camp site, tithe barn and watchtower (`tracks` and `clearings` on the terrain)
+- [x] **Bandit camps**: Hobb's camp is now a real camp (fire, log seats, crates, barrels, hay, trophy pole with skulls and banner, lookout platform, cart); the ford camp and the raiders' camp got fires, seats, crates and poles; the woods outposts got small fires. New props: campfire (flames, smoke, sparks, flickering light), crate, barrel, hay bale, trophy pole, log seat, lookout, small stone, fallen log, stump
+- [x] **Natural assets made in code**: noise-shaped boulders with collision (`game/world/boulder.gd`), ragged drooping firs and gnarled dead trees with real bark and shared shapes (`game/world/generated_tree.gd`), ground clutter scattered over the zone
+- [x] **Buildings**: shared materials are now textured (plaster, thatch, wood, planks, stone, bark); cottages and the tithe barn are half-timbered on stone footings
+- [x] **Water**: a dark river shader with drifting ripples and a cold sheen (`levels/common/water.gdshader`)
+- [x] **The Gullet** gets cave rock texture through the shared `dark_stone` material (and the cave is no longer buried in fog)
+- [ ] 🧪 Walk the zone and tell me what feels wrong: too dark, too foggy, a camp in a silly place, trees too spiky
+- [ ] Later: grass tufts and ferns, a proper mill/watchtower/Highcrown pass, cobbles and market props at the checkpoint, banners, rain streaks and puddles, a day-time sky with clouds, LODs for distant trees
+
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
 - Quests and public quests

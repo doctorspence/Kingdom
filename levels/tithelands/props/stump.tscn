@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/bark.tres" id="m_bark"]
+
+[node name="Stump" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Trunk" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 0.35, 0)
+radius = 0.42
+height = 0.8
+sides = 9
+material = ExtResource("m_bark")
+
+[node name="Root1" type="CSGBox3D" parent="Shape"]
+position = Vector3(0.38, 0.1, 0.1)
+size = Vector3(0.7, 0.2, 0.18)
+material = ExtResource("m_bark")
+rotation_degrees = Vector3(0, 15, 8)
+
+[node name="Root2" type="CSGBox3D" parent="Shape"]
+position = Vector3(-0.3, 0.1, -0.3)
+size = Vector3(0.6, 0.2, 0.16)
+material = ExtResource("m_bark")
+rotation_degrees = Vector3(0, -50, -8)

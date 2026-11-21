@@ -6,6 +6,9 @@
 [ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="shrine"]
 [ext_resource type="Script" path="res://game/world/camp.gd" id="camp_script"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/campfire.tscn" id="fire_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/stone_small.tscn" id="stone_small"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/log_fallen.tscn" id="log_fallen"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/stump.tscn" id="stump_scene"]
 [ext_resource type="Material" path="res://levels/common/materials/water.tres" id="water_mat"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/log_seat.tscn" id="logseat_scene"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/crate.tscn" id="crate_scene"]
@@ -978,3 +981,17 @@ rotation_degrees = Vector3(0, 60, 0)
 position = Vector3(87.5, 0, -47.5)
 rotation_degrees = Vector3(0, 30, 0)
 
+
+[node name="Clutter" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("scatter")
+terrain = NodePath("../Terrain")
+scenes = Array[PackedScene]([ExtResource("stone_small"), ExtResource("stone_small"), ExtResource("stone_small"), ExtResource("log_fallen"), ExtResource("stump_scene")])
+area = Rect2(-168.00, -168.00, 336.00, 336.00)
+count = 300
+scatter_seed = 41
+min_spacing = 3.0
+keep_off_roads = 3.2
+keep_off_river = 5.0
+scale_range = Vector2(0.7, 1.5)
+height_limits = Vector2(-4, 12)
+avoid = PackedVector3Array(-105.50, 22.50, 12.00, 121.00, -83.00, 12.00, 27.00, -12.00, 8.00, 36.00, 122.00, 12.00, 3.00, 118.00, 14.00)

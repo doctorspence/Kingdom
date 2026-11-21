@@ -241,7 +241,10 @@ func _ground_color(v: Vector3, slope: float) -> Color:
 	var road := Color(0.27, 0.23, 0.18)
 	var rock := Color(0.33, 0.32, 0.3)
 	var c := grass.lerp(mud, clampf(_noise.get_noise_2d(v.x * 4.0, v.z * 4.0) * 0.8 + 0.3, 0.0, 1.0))
-	if _distance_to_lines(roads, p) < road_width * 0.55:
+	for cl in clearings:
+		if Vector2(cl.x, cl.y).distance_to(p) < cl.z * 0.8:
+			c = mud
+	if _distance_to_lines(roads, p) < road_width * 0.55 or (not tracks.is_empty() and _distance_to_lines(tracks, p) < track_width * 0.5):
 		c = road
 	if _distance_to_line(river, p) < river_width * 0.9:
 		c = mud.darkened(0.2)
