@@ -143,6 +143,7 @@ func _ready() -> void:
 	_roughen(combiner)
 	_build_cave_detail(mat)
 	_build_shafts()
+	_build_timbers()
 	_build_room_glow()
 	_build_rails()
 	_build_props()
@@ -561,3 +562,51 @@ func _finish_rough(raw_v: PackedVector3Array, raw_n: PackedVector3Array, out_v: 
 			out_v.append(p)
 			out_n.append(fn)
 			collide.append(p)
+
+
+## Mine timbers: a post on each side and a heavy crossbeam every few meters inside the
+## narrow tunnels (decoration only, nothing to bump into).
+func _build_timbers() -> void:
+	var wood: Material = load(WOOD)
+	var skip := [Vector2(-18, 5.4), Vector2(5.8, 30), Vector2(-45, 4.0), Vector2(49, 22.6)]
+	for c in CARVES:
+		var y0: float = c[5] if c.size() > 5 else 0.0
+		var h: float = c[4] - y0
+		var w: float = c[2] - c[0]
+		var d: float = c[3] - c[1]
+		if minf(w, d) >= 8.0 or h > 4.6:
+			continue
+		var along_x := w > d
+		var length := w if along_x else d
+		var span := d if along_x else w
+		var t := 2.0
+		while t < length - 1.0:
+			var p := Vector2(c[0] + t, (c[1] + c[3]) * 0.5) if along_x else Vector2((c[0] + c[2]) * 0.5, c[1] + t)
+			t += 4.5
+			var inside := 0
+			for o in CARVES:
+				if p.x > o[0] - 1.0 and p.x < o[2] + 1.0 and p.y > o[1] - 1.0 and p.y < o[3] + 1.0:
+					inside += 1
+			var near_gate := false
+			for s in skip:
+				if p.distance_to(s) < 3.0:
+					near_gate = true
+			if inside != 1 or near_gate:
+				continue
+			for side in [-1.0, 1.0]:
+				var post := MeshInstance3D.new()
+				var pm := BoxMesh.new()
+				pm.size = Vector3(0.45, h - 0.3, 0.45) if along_x else Vector3(0.45, h - 0.3, 0.45)
+				pm.material = wood
+				post.mesh = pm
+				var off: float = side * (span * 0.5 - 0.3)
+				post.position = Vector3(p.x, y0 + (h - 0.3) * 0.5, p.y + off) if along_x else Vector3(p.x + off, y0 + (h - 0.3) * 0.5, p.y)
+				post.rotation_degrees = Vector3(randf_range(-2, 2), 0, randf_range(-2, 2))
+				add_child(post)
+			var beam := MeshInstance3D.new()
+			var bm := BoxMesh.new()
+			bm.size = Vector3(0.5, 0.4, span - 0.1) if along_x else Vector3(span - 0.1, 0.4, 0.5)
+			bm.material = wood
+			beam.mesh = bm
+			beam.position = Vector3(p.x, y0 + h - 0.55, p.y)
+			add_child(beam)
