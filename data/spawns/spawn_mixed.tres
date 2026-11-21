@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SpawnTable" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/spawn_table.gd" id="1_table"]
+[ext_resource type="PackedScene" path="res://game/enemies/marauder.tscn" id="s2"]
+[ext_resource type="PackedScene" path="res://game/enemies/hound.tscn" id="s3"]
+[ext_resource type="PackedScene" path="res://game/enemies/zealot.tscn" id="s4"]
+
+[resource]
+script = ExtResource("1_table")
+scenes = Array[PackedScene]([ExtResource("s2"), ExtResource("s3"), ExtResource("s4"), null])
+weights = PackedFloat32Array(45, 30, 10, 15)
+counts = PackedVector2Array(1, 1, 2, 3, 1, 1, 0, 0)

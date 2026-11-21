@@ -7,6 +7,8 @@ extends RefCounted
 var attack: AttackData
 var t := 0.0
 var hit_targets: Array[Node] = []
+## Each combo hit can strike the same target again.
+var _last_window := -1
 
 var _model: CharacterModel
 var _in_recovery := false
@@ -18,6 +20,7 @@ func start(a: AttackData, model: CharacterModel) -> void:
 	t = 0.0
 	_in_recovery = false
 	hit_targets.clear()
+	_last_window = -1
 	model.play(a.anim, 0.08, a.anim_speed, true)
 
 
@@ -36,7 +39,18 @@ func step(delta: float, extra_mult := 1.0) -> void:
 
 
 func in_hit_window() -> bool:
-	return t >= attack.hit_start and t <= attack.hit_end
+	return _window() >= 0
+
+
+## Which hit moment we're in (0 = the main one, 1+ = extra combo hits), or -1.
+func _window() -> int:
+	if t >= attack.hit_start and t <= attack.hit_end:
+		return 0
+	for i in attack.extra_hits.size():
+		var w := attack.extra_hits[i]
+		if t >= w.x and t <= w.y:
+			return i + 1
+	return -1
 
 
 func past(time: float) -> bool:
@@ -58,6 +72,10 @@ func lunge_speed() -> float:
 ## Who is inside the swing right now (each target only once per attack).
 func find_new_targets(attacker: Node3D, forward: Vector3, group: StringName) -> Array[Node3D]:
 	var result: Array[Node3D] = []
+	var w := _window()
+	if w != _last_window:
+		_last_window = w
+		hit_targets.clear()
 	for n in attacker.get_tree().get_nodes_in_group(group):
 		var target := n as Node3D
 		if target == null or target == attacker or hit_targets.has(target):

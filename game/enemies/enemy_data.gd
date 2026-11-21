@@ -28,6 +28,26 @@ extends Resource
 ## How fast it turns (degrees per second).
 @export var turn_speed := 300.0
 
+@export_group("Senses")
+## Sees you this far (meters) inside a cone this wide (degrees), if nothing blocks the view.
+@export var sight_range := 22.0
+@export var sight_angle := 120.0
+## Hears you this close (doubled while you sprint or fight).
+@export var hearing_range := 6.0
+
+@export_group("Special behavior")
+## Blows a horn / howls when it spots you: everyone of its kind nearby joins in.
+@export var caller := false
+@export var call_range := 35.0
+@export var call_anim := &"ual2/Idle_Rail_Call"
+@export var call_time := 1.4
+## Chance to block your blows from the front with a shield (when not attacking).
+@export_range(0.0, 1.0) var block_chance := 0.0
+## Gets faster and hits harder when an ally dies nearby (White Knights).
+@export var martyr_fury := false
+## A named enemy (rare): name shown over its health bar.
+@export var named := false
+
 @export_group("Behavior")
 ## Notices you from this far away (meters), if it can see you.
 @export var aggro_range := 14.0
@@ -44,3 +64,8 @@ extends Resource
 @export var body_tint := Color(0.2, 0.07, 0.06)
 @export var scale := 1.12
 @export var weapon_scene: PackedScene
+## Something in the left hand (a shield).
+@export var offhand_scene: PackedScene
+## Height of the lock-on point and the health bar (meters, before scaling).
+@export var lock_height := 1.35
+@export var bar_height := 2.25

@@ -61,6 +61,7 @@ func _net_rest() -> void:
 
 ## Host only: bring back enemies that aren't busy fighting someone.
 func _respawn_enemies() -> void:
+	get_tree().call_group(&"spawn_directors", &"on_rest")
 	for n in get_tree().get_nodes_in_group(&"respawn_on_rest"):
 		if n is Enemy and (n as Enemy).is_fighting():
 			continue

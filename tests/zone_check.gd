@@ -64,6 +64,37 @@ func _run() -> void:
 	Input.action_release("move_right")
 	_check("wading through the river is slow (%.1f m/s)" % wade_speed, wade_speed < 3.0 and wade_speed > 1.0)
 
+	# --- Spawning ------------------------------------------------------------------
+	var enemies := zone.get_node("Enemies").get_children()
+	_check("enemies spawn around the zone (%d)" % enemies.size(), enemies.size() >= 12)
+	var near_start := enemies.filter(func(e: Node3D) -> bool: return Vector2(e.global_position.x, e.global_position.z).distance_to(Vector2(0, 172)) < 40.0)
+	_check("the Crossroads start is quiet", near_start.is_empty())
+	var floating := enemies.filter(func(e: Node3D) -> bool: return absf(e.global_position.y - terrain.height_at(e.global_position.x, e.global_position.z)) > 1.5)
+	_check("enemies stand on the ground (%d off)" % floating.size(), floating.is_empty())
+	var kinds := {}
+	for e in enemies:
+		kinds[(e as Enemy).data.id] = true
+	_check("several kinds appear (%s)" % ", ".join(kinds.keys()), kinds.size() >= 2)
+	_check("6-player extras stay empty with 1 player", (zone.get_node("EnemySpawns/HamletEdge") as SpawnPoint).spawned.is_empty()
+			and (zone.get_node("EnemySpawns/RaiderCampExtra") as SpawnPoint).spawned.is_empty())
+	# Resting rerolls far points, but not one next to a player.
+	var hamlet := zone.get_node("EnemySpawns/Hamlet") as SpawnPoint
+	var checkpoint := zone.get_node("EnemySpawns/Checkpoint") as SpawnPoint
+	await _go_to(hamlet.global_position + Vector3(6, 0, 6))
+	var hamlet_before := hamlet.spawned.duplicate()
+	var checkpoint_before := checkpoint.spawned.duplicate()
+	(zone.get_node("Places/MillShrine") as Shrine).rest(player)
+	await _frames(5)
+	_check("resting brings far enemies back fresh", checkpoint.spawned.size() == 2 and checkpoint.spawned[0] != checkpoint_before[0])
+	_check("...but leaves the ones near you alone", hamlet.spawned == hamlet_before)
+	# Named rare: force the roll.
+	var camp := zone.get_node("EnemySpawns/HobbCamp") as SpawnPoint
+	camp.named_chance = 1.0
+	await _go_to(Vector3(0, 0, 172))
+	(zone.get_node("SpawnDirector") as SpawnDirector).populate(true)
+	await _frames(5)
+	_check("Hobb the Unhanged can appear at his camp", camp.spawned.size() == 1 and (camp.spawned[0] as Enemy).data.named)
+
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)
 

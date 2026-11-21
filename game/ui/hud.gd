@@ -433,6 +433,13 @@ func _draw_marker() -> void:
 			var r := Rect2(p - Vector2(w * 0.5, 0), Vector2(w, 7))
 			_marker.draw_rect(r.grow(1.0), Color(0, 0, 0, 0.8))
 			_marker.draw_rect(Rect2(r.position, Vector2(w * ratio, 7)), Color(0.62, 0.08, 0.06))
+			var ed = e.get(&"data")
+			if ed is EnemyData and (ed as EnemyData).named:
+				var font: Font = ThemeDB.fallback_font
+				var label: String = (ed as EnemyData).display_name
+				var tw: float = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
+				_marker.draw_string(font, p + Vector2(-tw * 0.5 + 1, -5), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0, 0, 0, 0.8))
+				_marker.draw_string(font, p + Vector2(-tw * 0.5, -6), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.95, 0.8, 0.45))
 	if not player.targeting.has_target():
 		return
 	var point := player.targeting.target_point()

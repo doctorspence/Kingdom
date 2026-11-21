@@ -11,6 +11,7 @@ extends CharacterBody3D
 ##   RIPOSTED knocked down by a riposte
 ##   RETURN   walking home after you ran too far away
 ##   DEAD     dead until someone rests at a shrine
+##   CALL     blowing a horn / howling for help (callers only)
 ##
 ## Multiplayer: the host runs every enemy and shares its state. Players report
 ## their hits to the host; the host sends enemy blows to the player's own game,
@@ -18,14 +19,20 @@ extends CharacterBody3D
 
 signal died
 
-enum State { IDLE, CHASE, ATTACK, STAGGER, PARRIED, RIPOSTED, RETURN, DEAD }
+enum State { IDLE, CHASE, ATTACK, STAGGER, PARRIED, RIPOSTED, RETURN, DEAD, CALL }
 
 const HEALTH_BAR_SHOW_TIME := 6.0
 ## Group scaling (DESIGN.md 8.4): extra health and poise per extra player.
 const HEALTH_PER_EXTRA_PLAYER := 0.6
 const POISE_PER_EXTRA_PLAYER := 0.25
+## At most this many enemies attack the same player at once; the rest circle.
+const MAX_ATTACKERS := 2
+## Night makes everyone harder to see (set by the day/night cycle).
+static var sight_mult := 1.0
 
 @export var data: EnemyData
+## Optional patrol route (world points). Empty = stand guard.
+@export var patrol_points := PackedVector3Array()
 
 var state := State.IDLE
 var health := 100.0
@@ -60,6 +67,9 @@ var threat := {}
 var _taunt_peer := 0
 var _taunt_time := 0.0
 var _threat_check := 0.0
+var _patrol_i := 0
+var _called := false
+var _fury := false
 
 @onready var model: CharacterModel = $Visual
 
@@ -76,6 +86,8 @@ func _ready() -> void:
 	if data.weapon_scene:
 		_weapon = data.weapon_scene.instantiate()
 		model.attach_to_hand(_weapon, "r")
+	if data.offhand_scene:
+		model.attach_to_hand(data.offhand_scene.instantiate(), "l")
 	max_health = data.max_health
 	max_poise = data.poise
 	_reset()
@@ -94,6 +106,9 @@ func _reset() -> void:
 	effects.clear_all()
 	threat.clear()
 	_taunt_time = 0.0
+	_called = false
+	_fury = false
+	_patrol_i = 0
 	collision_layer = 4
 	_set_state(State.IDLE)
 	model.set_overlay("")
@@ -103,7 +118,7 @@ func _reset() -> void:
 # --- Used by players, the HUD and shrines --------------------------------------
 
 func get_lock_point() -> Vector3:
-	return global_position + Vector3.UP * 1.35 * data.scale
+	return global_position + Vector3.UP * data.lock_height * data.scale
 
 
 func can_be_locked() -> bool:
@@ -128,7 +143,7 @@ func wants_health_bar() -> bool:
 
 
 func bar_point() -> Vector3:
-	return global_position + Vector3.UP * 2.25 * data.scale
+	return global_position + Vector3.UP * data.bar_height * data.scale
 
 
 func display_name() -> String:
@@ -321,6 +336,17 @@ func _show_hit(damage: float, is_crit: bool, origin: Vector3) -> void:
 
 ## Host only: take the damage, poise and state changes.
 func _apply_hit(hit: HitInfo) -> HitInfo.Result:
+	# Shield-bearers block blows from the front when they aren't swinging.
+	if data.block_chance > 0.0 and not hit.is_riposte and state in [State.IDLE, State.CHASE, State.RETURN]:
+		var from := hit.origin - global_position
+		from.y = 0.0
+		if rad_to_deg(model.forward().angle_to(from)) < 60.0 and randf() < data.block_chance:
+			hit.damage *= 0.15
+			hit.poise_damage *= 0.5
+			_status_fx("Blocked", 0.0)
+			_net_status_fx.rpc("Blocked", 0.0)
+			CombatFx.sparks(global_position + Vector3.UP * 1.3 + model.forward() * 0.5, from)
+			model.play(&"ual2/Sword_Block", 0.05, 1.5, true)
 	var damage := hit.damage * effects.damage_taken_mult()
 	health = maxf(0.0, health - damage)
 	_bar_timer = HEALTH_BAR_SHOW_TIME
@@ -348,7 +374,8 @@ func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 	elif state != State.ATTACK:
 		model.play(CharacterModel.ANIM_HIT, 0.05, 1.0, true)
 		if state == State.IDLE:
-			_set_state(State.CHASE)
+			if target:
+				_aggro(target)
 	return HitInfo.Result.HIT
 
 
@@ -393,7 +420,9 @@ func make_hit(attack_index: int) -> HitInfo:
 	hit.attacker = self
 	hit.attack = a
 	hit.origin = global_position
-	hit.damage = a.base_damage
+	hit.damage = a.base_damage * (1.3 if _fury else 1.0)
+	hit.status = a.status
+	hit.status_amount = a.status_amount
 	hit.poise_damage = a.base_poise_damage
 	hit.parryable = a.parryable
 	hit.unblockable = a.unblockable
@@ -473,6 +502,8 @@ func _physics_process(delta: float) -> void:
 			_state_wait(delta, data.riposted_time)
 		State.RETURN:
 			_state_return(delta)
+		State.CALL:
+			_state_call(delta)
 		State.DEAD:
 			_move(Vector3.ZERO, delta)
 	_write_net_state()
@@ -509,12 +540,69 @@ func _set_state(s: State) -> void:
 
 
 func _state_idle(delta: float) -> void:
-	_move(Vector3.ZERO, delta)
-	model.play(model.idle_anim, 0.25)
+	# Walk the patrol route, or stand guard.
+	if patrol_points.size() >= 2:
+		var goal := patrol_points[_patrol_i]
+		var to := goal - global_position
+		to.y = 0.0
+		if to.length() < 1.0:
+			_patrol_i = (_patrol_i + 1) % patrol_points.size()
+		else:
+			model.turn_toward(to, deg_to_rad(data.turn_speed) * 0.5 * delta)
+			_move(to.normalized() * data.walk_speed, delta)
+			model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
+	else:
+		_move(Vector3.ZERO, delta)
+		model.play(model.idle_anim, 0.25)
 	var p := _find_player()
 	if p:
-		target = p
-		_set_state(State.CHASE)
+		_aggro(p)
+
+
+## Noticed a player: callers raise the alarm first.
+func _aggro(p: Player) -> void:
+	target = p
+	if data.caller and not _called:
+		_called = true
+		model.face_instantly(p.global_position - global_position)
+		model.play(data.call_anim, 0.15, 1.0, true)
+		_set_state(State.CALL)
+		return
+	_set_state(State.CHASE)
+
+
+func _state_call(delta: float) -> void:
+	_move(Vector3.ZERO, delta)
+	if _state_time < data.call_time:
+		return
+	# Everyone of its kind nearby joins the fight.
+	for n in get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e and e != self and e.data.id == data.id and e.state in [State.IDLE, State.RETURN] \
+				and e.global_position.distance_to(global_position) <= data.call_range:
+			e._called = true  # one horn is enough
+			e.target = target
+			e._set_state(State.CHASE)
+	_set_state(State.CHASE)
+
+
+## How many enemies are swinging at this player right now.
+func _attackers_on(p: Player) -> int:
+	var n := 0
+	for e in get_tree().get_nodes_in_group(&"enemies"):
+		if e != self and (e as Enemy).state == State.ATTACK and (e as Enemy).target == p:
+			n += 1
+	return n
+
+
+## A nearby ally died: martyr's fury (faster, harder hits, shorter pauses).
+func _enrage() -> void:
+	if _fury or state == State.DEAD:
+		return
+	_fury = true
+	effects.add_mod(&"fury", 99999.0, {"move": 1.25})
+	_status_fx("Fury!", 0.0)
+	_net_status_fx.rpc("Fury!", 0.0)
 
 
 func _state_chase(delta: float) -> void:
@@ -532,7 +620,7 @@ func _state_chase(delta: float) -> void:
 	to.y = 0.0
 	var dist := to.length()
 	model.turn_toward(to, deg_to_rad(data.turn_speed) * delta)
-	if dist <= data.attack_range and _cooldown <= 0.0 and _facing_error(to) < 30.0:
+	if dist <= data.attack_range and _cooldown <= 0.0 and _facing_error(to) < 30.0 and _attackers_on(target) < MAX_ATTACKERS:
 		_start_attack(dist)
 		return
 	if dist > data.attack_range * 0.9:
@@ -605,7 +693,7 @@ func _state_attack(delta: float) -> void:
 			if state != State.ATTACK:
 				return
 	if _attack.done():
-		_cooldown = randf_range(data.attack_cooldown_min, data.attack_cooldown_max)
+		_cooldown = randf_range(data.attack_cooldown_min, data.attack_cooldown_max) * (0.6 if _fury else 1.0)
 		_set_state(State.CHASE)
 
 
@@ -649,6 +737,11 @@ func _die() -> void:
 	model.set_overlay("")
 	model.play_death()
 	died.emit()
+	# White Knights nearby fly into a martyr's fury.
+	for n in get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e and e != self and e.data.martyr_fury and e.global_position.distance_to(global_position) < 12.0:
+			e._enrage()
 	# Loot, gold, souls and XP for everyone nearby (DESIGN.md 6.4 and 9).
 	Loot.enemy_died(self, data.loot_table, data.xp)
 
@@ -669,15 +762,22 @@ func _facing_error(to: Vector3) -> float:
 	return rad_to_deg(model.forward().angle_to(Vector3(to.x, 0, to.z)))
 
 
+## Spot a player: in the sight cone (shorter at night) with a clear view, or
+## close enough to hear (twice as far if they sprint or fight).
 func _find_player() -> Player:
 	var best: Player
-	var best_d := data.aggro_range
+	var best_d := INF
 	for n in get_tree().get_nodes_in_group(&"player"):
 		var p := n as Player
 		if p == null or p.is_out_of_fight():
 			continue
-		var d := p.global_position.distance_to(global_position)
-		if d < best_d and _can_see(p):
+		var to := p.global_position - global_position
+		var d := to.length()
+		var loud := p.is_sprinting or p.state == Player.State.ATTACK or p.state == Player.State.ROLL
+		var hears := d <= data.hearing_range * (2.0 if loud else 1.0)
+		var in_cone := d <= data.sight_range * sight_mult \
+				and rad_to_deg(model.forward().angle_to(Vector3(to.x, 0, to.z))) <= data.sight_angle * 0.5
+		if (hears or in_cone) and d < best_d and _can_see(p):
 			best_d = d
 			best = p
 	return best

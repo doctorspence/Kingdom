@@ -8,6 +8,8 @@
 [sub_resource type="Resource" id="Attack_sweep"]
 script = ExtResource("2_attack")
 display_name = "Sweep (parryable)"
+status = 1
+status_amount = 20.0
 anim = &"ual2/Sword_Regular_B"
 recovery_anim = &"ual2/Sword_Regular_B_Rec"
 anim_speed = 0.45
@@ -86,6 +88,7 @@ armor = 20.0
 xp = 120
 loot_table = ExtResource("4_loot")
 poise = 45.0
+leash_range = 40.0
 attack_cooldown_min = 0.8
 attack_cooldown_max = 1.8
 attacks = Array[ExtResource("2_attack")]([SubResource("Attack_sweep"), SubResource("Attack_overhead"), SubResource("Attack_crush")])

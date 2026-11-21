@@ -11,7 +11,16 @@
 [ext_resource type="Material" path="res://levels/common/materials/terrain.tres" id="terrain_mat"]
 [ext_resource type="Script" path="res://game/world/ground_snap.gd" id="snap"]
 [ext_resource type="Script" path="res://game/world/scatter.gd" id="scatter"]
-[ext_resource type="PackedScene" path="res://game/enemies/marauder.tscn" id="marauder"]
+[ext_resource type="PackedScene" path="res://game/enemies/hobb.tscn" id="hobb"]
+[ext_resource type="Script" path="res://game/enemies/spawn_director.gd" id="director"]
+[ext_resource type="Script" path="res://game/enemies/spawn_point.gd" id="spawnpt"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_road.tres" id="spawn_road"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_zealot_pair.tres" id="spawn_zealot_pair"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_zealot_or_none.tres" id="spawn_zealot_or_none"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_marauders.tres" id="spawn_marauders"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_marauder_pair.tres" id="spawn_marauder_pair"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_hound_pack.tres" id="spawn_hound_pack"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_mixed.tres" id="spawn_mixed"]
 [ext_resource type="PackedScene" path="res://levels/sandbox/props/placeholder_dead_tree.tscn" id="deadtree_vis"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/cottage.tscn" id="cottage"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/burned_cottage.tscn" id="burned_cottage"]
@@ -350,21 +359,226 @@ min_spacing = 12.0
 scale_range = Vector2(0.6, 2.0)
 height_limits = Vector2(-20, 30)
 
-[node name="Enemies" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
-script = ExtResource("snap")
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="EnemySpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://game/enemies/marauder.tscn", "res://game/enemies/zealot.tscn", "res://game/enemies/hound.tscn", "res://game/enemies/hobb.tscn")
+spawn_path = NodePath("../Enemies")
+
+[node name="SpawnDirector" type="Node" parent="." node_paths=PackedStringArray("enemies_root", "terrain")]
+script = ExtResource("director")
+enemies_root = NodePath("../Enemies")
 terrain = NodePath("../Terrain")
 
-[node name="MarauderHamlet1" parent="Enemies" instance=ExtResource("marauder")]
-position = Vector3(-84, 0, 82)
-rotation_degrees = Vector3(0, 30, 0)
+[node name="EnemySpawns" type="Node3D" parent="."]
 
-[node name="MarauderHamlet2" parent="Enemies" instance=ExtResource("marauder")]
-position = Vector3(-90, 0, 92)
-rotation_degrees = Vector3(0, 200, 0)
-
-[node name="MarauderRaiders" parent="Enemies" instance=ExtResource("marauder")]
-position = Vector3(172, 0, -112)
+[node name="RoadPatrol" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(2, 0, 110)
 rotation_degrees = Vector3(0, 180, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_road")
+radius = 2.5
+min_players = 1
+patrol = PackedVector3Array(0, 0, 0, 0, 0, 50, -2, 0, 95)
+
+[node name="Checkpoint" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(0, 0, -120)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_zealot_pair")
+radius = 2.5
+min_players = 1
+
+
+[node name="CheckpointExtra" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(12, 0, -128)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_zealot_or_none")
+radius = 2.0
+min_players = 3
+
+
+[node name="TitheBarn" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(28, 0, -80)
+rotation_degrees = Vector3(0, 270, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 1
+
+
+[node name="TitheBarnPatrol" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(20, 0, -60)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_zealot_or_none")
+radius = 2.0
+min_players = 1
+patrol = PackedVector3Array(0, 0, 0, 25, 0, -10, 10, 0, -40)
+
+[node name="Farms" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-42, 0, 132)
+rotation_degrees = Vector3(0, 120, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 1
+
+
+[node name="Hamlet" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-86, 0, 84)
+rotation_degrees = Vector3(0, 30, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauder_pair")
+radius = 3.0
+min_players = 1
+
+
+[node name="HamletExtra" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-76, 0, 70)
+rotation_degrees = Vector3(0, 200, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 3
+
+
+[node name="HamletEdge" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-110, 0, 60)
+rotation_degrees = Vector3(0, 90, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_hound_pack")
+radius = 3.0
+min_players = 6
+
+
+[node name="Mill" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-132, 0, -14)
+rotation_degrees = Vector3(0, 90, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 1
+
+
+[node name="HobbCamp" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-151, 0, 30)
+rotation_degrees = Vector3(0, 60, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauder_pair")
+radius = 3.0
+min_players = 1
+named_scene = ExtResource("hobb")
+named_chance = 0.05
+
+[node name="HobbCampBack" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-160, 0, 42)
+rotation_degrees = Vector3(0, 160, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 3
+
+
+[node name="WoodsSouth" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(115, 0, 110)
+rotation_degrees = Vector3(0, 270, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_hound_pack")
+radius = 3.5
+min_players = 1
+
+
+[node name="WoodsMid" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(105, 0, -10)
+rotation_degrees = Vector3(0, 270, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_mixed")
+radius = 3.0
+min_players = 1
+
+
+[node name="WoodsNorth" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(125, 0, -70)
+rotation_degrees = Vector3(0, 180, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_hound_pack")
+radius = 3.5
+min_players = 3
+
+
+[node name="RaiderCamp" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(172, 0, -116)
+rotation_degrees = Vector3(0, 180, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauder_pair")
+radius = 3.0
+min_players = 1
+
+
+[node name="RaiderCampBack" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(184, 0, -122)
+rotation_degrees = Vector3(0, 200, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 1
+
+
+[node name="RaiderCampExtra" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(162, 0, -128)
+rotation_degrees = Vector3(0, 150, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_mixed")
+radius = 3.0
+min_players = 6
+
+
+[node name="TowerYard" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(146, 0, 36)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 1
+patrol = PackedVector3Array(0, 0, 0, 8, 0, 6, 0, 0, 10, -8, 0, 6)
+
+[node name="TowerOutside" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(150, 0, 64)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_zealot_or_none")
+radius = 2.0
+min_players = 3
+
+
+[node name="QuarryRim" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-170, 0, -135)
+rotation_degrees = Vector3(0, 220, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_mixed")
+radius = 3.0
+min_players = 1
+
+
+[node name="QuarryFloor" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-190, 0, -170)
+rotation_degrees = Vector3(0, 45, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauder_pair")
+radius = 3.0
+min_players = 1
+
+
+[node name="QuarryDeep" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-205, 0, -185)
+rotation_degrees = Vector3(0, 45, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_hound_pack")
+radius = 3.0
+min_players = 3
+
 
 [node name="EdgeN" type="StaticBody3D" parent="."]
 position = Vector3(0, 20, -255)

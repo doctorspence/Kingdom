@@ -30,6 +30,8 @@ extends Resource
 @export var end_time := 0.8
 ## Enemies keep turning toward you until this time, then commit.
 @export var track_until := 0.0
+## More hit moments in the same attack (combos): (start, end) pairs.
+@export var extra_hits := PackedVector2Array()
 ## Enemies flash their warning (white glint or red glow) at this time.
 @export var telegraph_time := 0.0
 
@@ -40,6 +42,9 @@ extends Resource
 @export var base_damage := 0.0
 @export var base_poise_damage := 0.0
 @export var stamina_cost := 14.0
+## Enemy attacks: status buildup on a hit (Marauder axes bleed, hound bites).
+@export var status := Effects.Status.NONE
+@export var status_amount := 0.0
 ## Freeze on impact (seconds): 0.05 light, 0.09 heavy, 0.15 critical.
 @export var hit_stop := 0.05
 
