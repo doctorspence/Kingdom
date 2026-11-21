@@ -38,6 +38,8 @@ const RESPAWN_DELAY := 3.0
 const KILL_HEIGHT := -60.0
 
 const INTERACT_RANGE := 2.2
+## You keep this many of your most valuable items when you die.
+const KEEP_ON_DEATH := 3
 const FISTS: WeaponData = preload("res://data/weapons/weapon_fists.tres")
 const ARROW_SCRIPT := preload("res://game/items/arrow.gd")
 ## Your character is saved this often (seconds), and when you rest, level up or leave.
@@ -117,6 +119,8 @@ var _revive_progress := 0.0
 var _debug_load := 0.0
 var _cheat_death_cd := 0.0
 var _arrow_fired := false
+var _last_safe_pos := Vector3.ZERO
+var _died_falling := false
 
 ## Shared with everyone (see the Sync node in player.tscn).
 var net_pos := Vector3.ZERO
@@ -480,6 +484,7 @@ func rest_at(spawn_point: Transform3D) -> void:
 	save_character()
 
 func respawn() -> void:
+	_died_falling = false
 	global_position = _spawn.origin
 	velocity = Vector3.ZERO
 	health = max_health()
@@ -517,6 +522,7 @@ func nearest_interactable() -> Node3D:
 
 
 func _face_spawn_direction() -> void:
+	_last_safe_pos = global_position
 	var facing := -_spawn.basis.z
 	model.face_instantly(facing)
 	camera_rig.yaw = atan2(-facing.x, -facing.z)
@@ -1049,7 +1055,11 @@ func _authority_update(delta: float) -> void:
 		_stop_blocking()
 	if global_position.y < KILL_HEIGHT and state != State.DEAD:
 		health = 0.0
+		_died_falling = true
 		_die()
+	# Remember the last solid ground you stood on (for fall deaths).
+	if state == State.MOVE and is_on_floor():
+		_last_safe_pos = global_position
 	_update_stamina(delta)
 	if show_debug and is_invulnerable():
 		model.set_overlay("iframes", Color(0.4, 0.8, 1.0, 0.35))
@@ -1624,6 +1634,7 @@ func _land() -> void:
 	last_fall_height = maxf(0.0, _fall_peak_y - global_position.y)
 	_off_floor_time = 0.0
 	var damage := tuning.fall_damage_fraction(last_fall_height) * max_health()
+	_died_falling = damage >= health
 	if damage > 0.0:
 		take_damage(damage, true)
 		if state == State.DEAD or state == State.DOWNED:
@@ -1791,7 +1802,46 @@ func _die() -> void:
 	_cast = null
 	targeting.clear()
 	model.play_death()
+	if is_multiplayer_authority():
+		_drop_belongings()
 	died.emit()
+
+
+## DESIGN.md 10: you keep your 3 most valuable items (equipped ones stay
+## equipped). Everything else, plus all gold and souls, drops in a pile.
+func _drop_belongings() -> void:
+	var all: Array = []  # [item, equipment slot or ""]
+	for s in inventory.equipped:
+		all.append([inventory.equipped[s], s])
+	for uid in inventory.backpack.items:
+		all.append([inventory.backpack.items[uid], ""])
+	all.sort_custom(func(a: Array, b: Array) -> bool: return a[0].sell_value() > b[0].sell_value())
+	var dropped := []
+	for i in range(KEEP_ON_DEATH, all.size()):
+		var it: ItemInstance = all[i][0]
+		if all[i][1] != "":
+			inventory.equipped.erase(all[i][1])
+		else:
+			inventory.backpack.remove(it.uid)
+		dropped.append(it.to_dict())
+	var gold := inventory.gold
+	var souls := inventory.souls
+	inventory.gold = 0
+	inventory.souls = 0
+	inventory.changed.emit()
+	Loot.create_death_pile(Net.player_name, dropped, gold, souls, _pile_position())
+	save_character()
+
+
+## Where your pile ends up: at the boss door if you died in a boss room, at the
+## last safe ground if you fell to your death, otherwise where you fell.
+func _pile_position() -> Vector3:
+	for room in get_tree().get_nodes_in_group(&"boss_rooms"):
+		if room.call(&"contains", global_position):
+			return room.call(&"pile_point")
+	if _died_falling or global_position.y < KILL_HEIGHT or not is_on_floor():
+		return _last_safe_pos
+	return global_position
 
 
 func _state_dead(delta: float) -> void:

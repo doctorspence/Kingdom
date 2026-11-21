@@ -34,7 +34,7 @@ func _ready() -> void:
 		var choice: int = {"host": Loot.Choice.PASS, "a": Loot.Choice.NEED, "b": Loot.Choice.GREED}[role]
 		print("RESULT %s roll_offered=true" % role)
 		Loot.choose(id, choice))
-	get_tree().create_timer(70.0).timeout.connect(func() -> void:
+	get_tree().create_timer(80.0).timeout.connect(func() -> void:
 		print("RESULT %s timeout=true" % role)
 		get_tree().quit(3))
 
@@ -96,6 +96,12 @@ func _physics_process(delta: float) -> void:
 			for d in Loot.drops():
 				d.call(&"interact", me))
 		_at(30.5, func() -> void: print("RESULT a got_won_item=%s got_gold=%s" % [str(me.inventory.backpack.items.size() == _bag + 1), str(me.inventory.gold > 0)]))
+		_at(33.0, func() -> void:
+			_gold = me.inventory.gold
+			print("RESULT a sees_bryn_pile=%s" % str(Loot.pile_count() == 1))
+			for p in Loot.piles():
+				p.call(&"interact", me))
+		_at(34.5, func() -> void: print("RESULT a kept_none_of_bryns_gold=%s" % str(me.inventory.gold == _gold)))
 	elif role == "b":
 		_at(1.0, func() -> void: _place(me, Vector3(6, 0.05, 0), Vector3.FORWARD))
 		_at(9.0, func() -> void: print("RESULT b own_health_after_hit=%d" % me.health))
@@ -111,7 +117,11 @@ func _physics_process(delta: float) -> void:
 			for d in Loot.drops():
 				d.call(&"interact", me))
 		_at(29.4, func() -> void: print("RESULT b took_alda_item=%s got_gold=%s" % [str(me.inventory.backpack.items.size() > _bag), str(me.inventory.gold > 0)]))
-	_at(36.0, func() -> void:
+		_at(31.0, func() -> void:
+			me.inventory.gold = 77
+			me._die())
+		_at(35.5, func() -> void: print("RESULT b gold_back_after_alda_recovered=%s (gold %d)" % [str(me.inventory.gold == 77), me.inventory.gold]))
+	_at(40.0, func() -> void:
 		print("RESULT %s chat_seen=%s" % [role, str(_chat_seen)])
 		get_tree().quit(0))
 

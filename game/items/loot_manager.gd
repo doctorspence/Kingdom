@@ -246,6 +246,162 @@ func _announce(text: String) -> void:
 	Net.system_message(text)
 
 
+# --- Death piles (DESIGN.md 10) ---------------------------------------------------------
+
+const PILE_SCRIPT := preload("res://game/items/death_pile.gd")
+## How long a death pile lasts while the world is running (server setting).
+var pile_minutes := 60.0
+
+var _piles := {}  # id -> pile node (every machine)
+## Host only: id -> {"owner": peer, "name": String, "items": [dicts], "gold", "souls", "expires": msec}
+var _host_piles := {}
+
+
+## You died: leave everything you lost in a pile (called on the dying player's machine).
+func create_death_pile(owner_name: String, items: Array, gold: int, souls: int, where: Vector3) -> void:
+	if items.is_empty() and gold <= 0 and souls <= 0:
+		_destroy_owner_piles_everywhere()
+		return
+	if multiplayer.is_server():
+		_host_create_pile(multiplayer.get_unique_id(), owner_name, items, gold, souls, where)
+	else:
+		_net_create_pile.rpc_id(1, owner_name, items, gold, souls, where)
+
+
+func _destroy_owner_piles_everywhere() -> void:
+	if multiplayer.is_server():
+		_host_destroy_piles_of(multiplayer.get_unique_id())
+	else:
+		_net_destroy_my_piles.rpc_id(1)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_destroy_my_piles() -> void:
+	if multiplayer.is_server():
+		_host_destroy_piles_of(multiplayer.get_remote_sender_id())
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_create_pile(owner_name: String, items: Array, gold: int, souls: int, where: Vector3) -> void:
+	if multiplayer.is_server():
+		_host_create_pile(multiplayer.get_remote_sender_id(), owner_name, items, gold, souls, where)
+
+
+func _host_destroy_piles_of(peer: int) -> bool:
+	var any := false
+	for id in _host_piles.keys():
+		if _host_piles[id].owner == peer:
+			_host_piles.erase(id)
+			_remove_pile.rpc(id)
+			any = true
+	return any
+
+
+func _host_create_pile(peer: int, owner_name: String, items: Array, gold: int, souls: int, where: Vector3) -> void:
+	# Dying again before recovering the old pile: it's gone for good.
+	if _host_destroy_piles_of(peer):
+		_announce.rpc("%s's earlier belongings are lost for good." % owner_name)
+	var id := _next_id
+	_next_id += 1
+	var seconds := pile_minutes * 60.0
+	_host_piles[id] = {"owner": peer, "name": owner_name, "items": items, "gold": gold, "souls": souls,
+			"expires": Time.get_ticks_msec() + int(seconds * 1000.0)}
+	_spawn_pile.rpc(id, peer, owner_name, items.size(), gold, souls, where, seconds)
+
+
+@rpc("authority", "call_local", "reliable")
+func _spawn_pile(id: int, peer: int, owner_name: String, count: int, gold: int, souls: int, where: Vector3, seconds: float) -> void:
+	var pile: Node3D = PILE_SCRIPT.new()
+	pile.set(&"pile_id", id)
+	pile.set(&"owner_peer", peer)
+	pile.set(&"owner_name", owner_name)
+	pile.set(&"item_count", count)
+	pile.set(&"gold", gold)
+	pile.set(&"souls", souls)
+	pile.set(&"time_left", seconds)
+	CombatFx.world().add_child(pile)
+	pile.global_position = where
+	_piles[id] = pile
+
+
+@rpc("authority", "call_local", "reliable")
+func _remove_pile(id: int) -> void:
+	var pile: Node = _piles.get(id)
+	_piles.erase(id)
+	if is_instance_valid(pile):
+		pile.queue_free()
+
+
+## Anyone in the party can recover a pile; it all goes back to its owner.
+func request_recover(id: int) -> void:
+	if multiplayer.is_server():
+		_host_recover(id, multiplayer.get_unique_id())
+	else:
+		_net_recover.rpc_id(1, id)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_recover(id: int) -> void:
+	if multiplayer.is_server():
+		_host_recover(id, multiplayer.get_remote_sender_id())
+
+
+func _host_recover(id: int, by_peer: int) -> void:
+	var p: Dictionary = _host_piles.get(id, {})
+	if p.is_empty():
+		return
+	_host_piles.erase(id)
+	_remove_pile.rpc(id)
+	if by_peer != p.owner:
+		_announce.rpc("%s recovered %s's belongings." % [Net.name_of(by_peer), p.name])
+	if p.owner == multiplayer.get_unique_id():
+		_return_pile(p.items, p.gold, p.souls)
+	else:
+		_net_return_pile.rpc_id(p.owner, p.items, p.gold, p.souls)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _net_return_pile(items: Array, gold: int, souls: int) -> void:
+	_return_pile(items, gold, souls)
+
+
+## Your belongings come back: backpack first, then the bank, then the ground at your feet.
+func _return_pile(items: Array, gold: int, souls: int) -> void:
+	var me := get_tree().get_first_node_in_group(&"local_player") as Player
+	if me == null:
+		return
+	me.inventory.add_money(gold, souls)
+	for d in items:
+		var it := ItemInstance.from_dict(d)
+		if it == null:
+			continue
+		if not me.inventory.backpack.add(it) and not me.inventory.bank.add(it):
+			drop_item(it, me.global_position)
+	me.inventory.changed.emit()
+	CombatFx.word(me.global_position + Vector3.UP * 2.2, "Belongings recovered")
+	me.save_character()
+
+
+func _process(_delta: float) -> void:
+	if not multiplayer.has_multiplayer_peer() or not multiplayer.is_server():
+		return
+	var now := Time.get_ticks_msec()
+	for id in _host_piles.keys():
+		if now >= int(_host_piles[id].expires):
+			var p: Dictionary = _host_piles[id]
+			_host_piles.erase(id)
+			_remove_pile.rpc(id)
+			_announce.rpc("%s's belongings have crumbled to dust." % p.name)
+
+
+func pile_count() -> int:
+	return _piles.size()
+
+
+func piles() -> Array:
+	return _piles.values()
+
+
 func drop_count() -> int:
 	return _drops.size()
 

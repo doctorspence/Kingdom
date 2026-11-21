@@ -564,6 +564,13 @@ func _build() -> void:
 
 	_death_label = _make_label(64)
 	_death_label.text = "Your light goes out"
+	var death_sub := _make_label(22)
+	death_sub.text = "You kept your 3 most valuable things. Everything else lies where you fell.\nRecover it before you die again, or it's gone for good."
+	death_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	death_sub.set_anchors_preset(Control.PRESET_FULL_RECT)
+	death_sub.offset_top = 110
+	death_sub.offset_bottom = 200
+	_death_label.add_child(death_sub)
 	_death_label.add_theme_color_override("font_color", Color(0.6, 0.08, 0.06))
 	_place(_death_label, Control.PRESET_CENTER, Rect2(-500, -60, 1000, 120))
 	_death_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

@@ -82,7 +82,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] Later: bosses switch targets only at telegraphs (Phase 9, with the boss); characters and levels are saved in Phase 6
 - [ ] Later: real ability icons (your AI art), real casting animations
 
-## Phase 6: Loot ✅ (waiting for your test)
+## Phase 6: Loot ✅
 - [x] 32 base items in `data/items/` (7 weapons, 3 shields, 15 armor pieces, jewelry, consumables, the legendary Hobb's Noose); rarity colors; item level; Rare+ random bonus rolls (`data/balance/loot.tres`)
 - [x] Loot tables (`data/loot/`): drop chance, item count, item level, rarity weights, gold, souls; named-unique and guaranteed-rarity support for Phase 8–9
 - [x] Grid backpack (10×6, items take shapes, consumables stack) and equipment: 10 armor/jewelry slots + two weapon sets (X / D-pad right swaps)
@@ -97,13 +97,14 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Farm the arena, roll for loot with a friend, quit and reload your character
 - [ ] Later: move items around inside the backpack by hand; drops don't show for players who join after they fell; real item icons
 
-## Phase 7: Death system
-- [ ] Keep your 3 most valuable items; drop everything else as a glowing pile
-- [ ] Only you and your party can recover it; recovered items return to the owner
-- [ ] 60-minute timer (server setting); dying again destroys the old pile
-- [ ] Boss-room deaths put the pile at the boss door; fall deaths at the last safe ground
-- [ ] Respawn at the last rested shrine
-- [ ] 🧪 Die with good gear, run back, recover it; die twice to lose it
+## Phase 7: Death system ✅ (waiting for your test)
+- [x] Keep your 3 most valuable items (by sell value; equipped ones stay equipped); everything else, all gold and all souls drop as a glowing pile where you died (no map marker)
+- [x] Only you and your party can recover it; whoever picks it up, it all goes back to you (backpack, then bank, then at your feet)
+- [x] Piles last 60 minutes (`Loot.pile_minutes`, a server setting); dying again before you recover it destroys the old pile for good
+- [x] Boss-room deaths put the pile at the boss door (`game/world/boss_room.gd`, used in Phase 9); fall deaths at the last safe ground
+- [x] Respawn at the last rested shrine; the bank and flasks are never lost; your character saves right after dying (no quitting to dodge it)
+- [x] Automated `tests/death_check.gd`: all 11 pass; 3-player check: a friend recovers your pile and it comes back to you
+- [ ] 🧪 Die with good gear, run back, recover it; die twice to lose it; have a friend recover your pile
 
 ## Phase 8: First zone (the Tithelands)
 - [ ] Graybox layout, then an art pass: road, farms, burned hamlet, woods, river, watchtower, quarry, Highcrown backdrop
