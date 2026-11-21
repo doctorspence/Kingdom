@@ -17,3 +17,6 @@ extends Resource
 @export var always: Array[ItemData] = []
 @export var coins := Vector2i(3, 10)
 @export var souls := Vector2i(5, 12)
+## Old-school lines, each with its own chance (used by the Gullet). Roll on top of everything above;
+## set drop_chance to 0 to use only these.
+@export var entries: Array[LootEntry] = []

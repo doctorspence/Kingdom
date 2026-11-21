@@ -33,7 +33,7 @@ enum Slot { NONE, HEAD, SHOULDERS, CHEST, HANDS, LEGS, FEET, CLOAK, NECK, RING, 
 
 @export_group("Consumables")
 @export var stack_max := 1
-## What using it does: "cure_poison", "cure_frost", "heal".
+## What using it does: "cure_poison", "cure_frost", "heal" (flat), "heal_percent" (use_amount is a share, 0.1 = 10%).
 @export var use_effect := &""
 @export var use_amount := 0.0
 

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_health_potion"
+display_name = "Health Potion"
+flavor = "Tastes of iron and bad decisions."
+slot = 13
+grid_size = Vector2i(1, 1)
+weight = 0.3
+value = 30
+icon_color = Color(0.8, 0.15, 0.2, 1)
+armor = 0.0
+stats = {}
+stack_max = 10
+use_effect = &"heal_percent"
+use_amount = 0.25

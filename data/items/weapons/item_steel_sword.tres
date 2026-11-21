@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_steel_sword.tres" id="2_ref"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_steel_sword"
+display_name = "Steel Sword"
+flavor = "Better than a bandit has any right to own."
+slot = 10
+grid_size = Vector2i(1, 3)
+weight = 4.0
+value = 120
+icon_color = Color(0.75, 0.78, 0.85, 1)
+armor = 0.0
+stats = {}
+weapon = ExtResource("2_ref")

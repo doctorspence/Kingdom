@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="LootTable" format=3]
+
+[ext_resource type="Script" path="res://game/items/loot_table.gd" id="t"]
+[ext_resource type="Script" path="res://game/items/loot_entry.gd" id="e"]
+[ext_resource type="Resource" path="res://data/items/consumables/item_health_potion.tres" id="i1"]
+[ext_resource type="Resource" path="res://data/items/weapons/item_steel_pickaxe.tres" id="i2"]
+[ext_resource type="Resource" path="res://data/items/weapons/item_steel_sword.tres" id="i3"]
+[ext_resource type="Resource" path="res://data/items/jewelry/item_blackstone_amulet.tres" id="i4"]
+[ext_resource type="Resource" path="res://data/items/weapons/item_harls_pick.tres" id="i5"]
+
+[sub_resource type="Resource" id="E1_14901"]
+script = ExtResource("e")
+item = ExtResource("i1")
+chance = 1.0
+count = Vector2i(2, 2)
+rarity = 0
+
+[sub_resource type="Resource" id="E2_3099"]
+script = ExtResource("e")
+item = ExtResource("i2")
+chance = 0.05
+count = Vector2i(1, 1)
+rarity = 1
+
+[sub_resource type="Resource" id="E3_15631"]
+script = ExtResource("e")
+item = ExtResource("i3")
+chance = 0.03333
+count = Vector2i(1, 1)
+rarity = 1
+
+[sub_resource type="Resource" id="E4_7027"]
+script = ExtResource("e")
+item = ExtResource("i4")
+chance = 0.01
+count = Vector2i(1, 1)
+rarity = 2
+
+[sub_resource type="Resource" id="E5_20679"]
+script = ExtResource("e")
+item = ExtResource("i5")
+chance = 0.0078125
+count = Vector2i(1, 1)
+rarity = 3
+
+[resource]
+script = ExtResource("t")
+drop_chance = 0.0
+item_level = Vector2i(3, 6)
+coins = Vector2i(100, 200)
+souls = Vector2i(150, 220)
+entries = Array[ExtResource("e")]([SubResource("E1_14901"), SubResource("E2_3099"), SubResource("E3_15631"), SubResource("E4_7027"), SubResource("E5_20679")])

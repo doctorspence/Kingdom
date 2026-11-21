@@ -122,7 +122,7 @@ func describe() -> PackedStringArray:
 	if base.legendary_text != "":
 		lines.append(base.legendary_text)
 	if base.use_effect != &"":
-		lines.append("Use: " + {"cure_poison": "cures poison", "cure_frost": "cures frost", "heal": "heals %d" % roundi(base.use_amount)}.get(String(base.use_effect), String(base.use_effect)))
+		lines.append("Use: " + {"cure_poison": "cures poison", "cure_frost": "cures frost", "heal": "heals %d" % roundi(base.use_amount), "heal_percent": "heals %d%% of your health" % roundi(base.use_amount * 100.0)}.get(String(base.use_effect), String(base.use_effect)))
 	if count > 1:
 		lines.append("x%d" % count)
 	lines.append("Weight %.1f   Sells for %d coins" % [base.weight, sell_value()])

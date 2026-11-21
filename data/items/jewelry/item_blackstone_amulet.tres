@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_blackstone_amulet"
+display_name = "Blackstone Amulet"
+flavor = "A chip of the black stone on a leather cord. It never quite reaches room temperature."
+slot = 8
+grid_size = Vector2i(1, 1)
+weight = 0.3
+value = 220
+icon_color = Color(0.12, 0.12, 0.16, 1)
+armor = 0.0
+stats = {"strength": 2, "vitality": 2}

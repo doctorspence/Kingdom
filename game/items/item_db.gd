@@ -35,7 +35,7 @@ func all_items() -> Array:
 	return _items.values()
 
 
-## Roll a table: returns {"items": Array[ItemInstance], "coins": int, "souls": int}.
+## Roll a table (drop_chance / always / entries): returns {"items": Array[ItemInstance], "coins": int, "souls": int}.
 func roll(table: LootTable, rng: RandomNumberGenerator = null) -> Dictionary:
 	if rng == null:
 		rng = RandomNumberGenerator.new()
@@ -43,6 +43,18 @@ func roll(table: LootTable, rng: RandomNumberGenerator = null) -> Dictionary:
 	var out: Array[ItemInstance] = []
 	for item in table.always:
 		out.append(make_item(item, rng.randi_range(table.item_level.x, table.item_level.y), item.min_rarity, rng))
+	for entry in table.entries:
+		if entry == null or entry.item == null or rng.randf() >= entry.chance:
+			continue
+		var level := rng.randi_range(table.item_level.x, table.item_level.y)
+		var n := rng.randi_range(entry.count.x, entry.count.y)
+		if entry.item.stack_max > 1:
+			var stack := make_item(entry.item, level, maxi(entry.rarity, 0), rng)
+			stack.count = mini(n, entry.item.stack_max)
+			out.append(stack)
+		else:
+			for i in n:
+				out.append(make_item(entry.item, level, maxi(entry.rarity, 0), rng))
 	if rng.randf() < table.drop_chance:
 		var n := rng.randi_range(table.item_count.x, table.item_count.y)
 		for i in n:

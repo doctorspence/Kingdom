@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_leather_body"
+display_name = "Leather Body"
+flavor = "Boiled hide, stitched by someone in a hurry."
+slot = 3
+grid_size = Vector2i(2, 3)
+weight = 5.0
+value = 28
+icon_color = Color(0.45, 0.3, 0.18, 1)
+armor = 9.0
+stats = {}

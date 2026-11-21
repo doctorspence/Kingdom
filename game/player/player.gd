@@ -116,6 +116,10 @@ var _block_started := -99.0
 var _block_released := -99.0
 var _clock := 0.0
 var _drink_healed := false
+## Eating or drinking a potion reuses the flask drink: share of max health, how long, when the heal lands.
+var _drink_frac := 0.4
+var _drink_total := 1.2
+var _drink_heal_at := 0.9
 var _stun_time := 0.0
 # Abilities
 var _ability_strike: AbilityData
@@ -789,6 +793,9 @@ func receive_item(item: ItemInstance) -> bool:
 
 
 ## Use a consumable from the backpack (antidote, draught, bandage).
+## Seconds to eat or drink a food or potion (you can be hit meanwhile).
+const EAT_TIME := 1.5
+
 func use_item(uid: String) -> String:
 	var it: ItemInstance = inventory.backpack.items.get(uid)
 	if it == null or it.base.use_effect == &"":
@@ -804,6 +811,10 @@ func use_item(uid: String) -> String:
 			effects.buildup[Effects.Status.FROST] = 0.0
 		&"heal":
 			_receive_heal(it.base.use_amount, player_name)
+		&"heal_percent":
+			if state != State.MOVE or not is_on_floor():
+				return "Not now"
+			_start_eat(it.base.use_amount, EAT_TIME)
 	it.count -= 1
 	if it.count <= 0:
 		inventory.remove_item(uid)
@@ -1772,9 +1783,23 @@ func _start_drink() -> void:
 	flasks -= 1  # used up at the start, even if you get hit mid-drink
 	flasks_changed.emit(flasks, tuning.flask_count)
 	_drink_healed = false
+	_drink_frac = tuning.flask_heal
+	_drink_total = tuning.drink_time
+	_drink_heal_at = tuning.drink_heal_at
 	is_sprinting = false
 	_set_state(State.DRINK)
-	model.play_fitted(CharacterModel.ANIM_DRINK, tuning.drink_time)
+	model.play_fitted(CharacterModel.ANIM_DRINK, _drink_total)
+
+
+## Food and potions: the same stance as a flask, but a share of max health and a longer bite.
+func _start_eat(share: float, seconds: float) -> void:
+	_drink_frac = share
+	_drink_total = seconds
+	_drink_heal_at = seconds * 0.7
+	_drink_healed = false
+	is_sprinting = false
+	_set_state(State.DRINK)
+	model.play_fitted(CharacterModel.ANIM_DRINK, seconds)
 
 
 func _state_drink(delta: float) -> void:
@@ -1787,13 +1812,13 @@ func _state_drink(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= tuning.gravity * delta
 	move_and_slide()
-	if not _drink_healed and _state_time >= tuning.drink_heal_at:
+	if not _drink_healed and _state_time >= _drink_heal_at:
 		_drink_healed = true
-		var amount := minf(max_health() * tuning.flask_heal, max_health() - health)
+		var amount := minf(max_health() * _drink_frac, max_health() - health)
 		health += amount
 		health_changed.emit(health, max_health())
 		CombatFx.damage_number(global_position + Vector3.UP * 2.0, amount, CombatFx.NumberKind.HEAL)
-	if _state_time >= tuning.drink_time:
+	if _state_time >= _drink_total:
 		_set_state(State.MOVE)
 
 
