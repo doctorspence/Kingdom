@@ -35,6 +35,10 @@ func _ready() -> void:
 			volumes[g] = clampf(float(cfg.get_value("audio", String(g), DEFAULTS[g])), 0.0, 1.0)
 	for g in GROUPS:
 		_apply(g)
+	# Every button in every menu clicks.
+	get_tree().node_added.connect(func(n: Node) -> void:
+		if n is BaseButton:
+			(n as BaseButton).pressed.connect(func() -> void: sfx(&"ui_click")))
 
 
 # --- Playing sound effects ---------------------------------------------------------
@@ -113,6 +117,8 @@ func sfx(cue: StringName, where := Vector3.INF, db := 0.0) -> bool:
 		player.queue_free())
 	player.tree_exited.connect(release)  # the scene changed under it
 	player.call(&"play")
+	for layer in data.get("layers", []):
+		sfx(layer, where, db)
 	return true
 
 

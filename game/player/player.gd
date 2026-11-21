@@ -652,6 +652,7 @@ func _on_leveled_up(new_level: int) -> void:
 	health_changed.emit(health, max_health())
 	stamina_changed.emit(stamina, max_stamina())
 	CombatFx.burst_visual(&"beacon_column", global_position, 0.8, 1.0)
+	Audio.sfx(&"level_up")
 	for a in stats.class_data.abilities:
 		if a.unlock_level == new_level:
 			CombatFx.word(global_position + Vector3.UP * 2.8, "New ability: %s" % a.display_name)
@@ -742,6 +743,10 @@ func _net_money(gold_amount: int, souls_amount: int) -> void:
 
 func _receive_money(gold_amount: int, souls_amount: int) -> void:
 	inventory.add_money(gold_amount, souls_amount)
+	if gold_amount > 0:
+		Audio.sfx(&"coins")
+	if souls_amount > 0:
+		Audio.sfx(&"souls")
 	if gold_amount > 0 or souls_amount > 0:
 		CombatFx.word(global_position + Vector3.UP * 2.0, "+%d gold  +%d souls" % [gold_amount, souls_amount])
 
@@ -752,6 +757,7 @@ func receive_item(item: ItemInstance) -> bool:
 		CombatFx.word(global_position + Vector3.UP * 2.0, "Backpack full")
 		return false
 	CombatFx.word(global_position + Vector3.UP * 2.0, item.display_name())
+	Audio.sfx(&"pickup")
 	return true
 
 
@@ -2084,6 +2090,7 @@ func _die() -> void:
 	targeting.clear()
 	model.play_death()
 	if is_multiplayer_authority():
+		Audio.sfx(&"death_sting")
 		_drop_belongings()
 	died.emit()
 

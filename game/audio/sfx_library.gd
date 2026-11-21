@@ -36,8 +36,10 @@ static func _nums(folder: String, prefix: String, from: int, to: int, ext := ".o
 	return out
 
 
-static func _add(name: StringName, files: Array, bus := &"Effects", db := 0.0, pitch_min := 0.94, pitch_max := 1.06) -> void:
-	_cues[name] = {"files": files, "bus": bus, "db": db, "pitch": Vector2(pitch_min, pitch_max)}
+## `layers` are other cues played together with this one (a Legendary drop is
+## several sounds at once).
+static func _add(name: StringName, files: Array, bus := &"Effects", db := 0.0, pitch_min := 0.94, pitch_max := 1.06, layers := []) -> void:
+	_cues[name] = {"files": files, "bus": bus, "db": db, "pitch": Vector2(pitch_min, pitch_max), "layers": layers}
 
 
 static func _build() -> void:
@@ -97,3 +99,34 @@ static func _build() -> void:
 	_add(&"resolve", metal + stones, &"Effects", -2.0, 0.6, 0.8)
 	_add(&"throw", swish_heavy, &"Effects", -2.0, 0.55, 0.7)
 	_add(&"fire", fire, &"Effects", -4.0)
+
+	# --- Loot: one sound per rarity when an item hits the ground (Legendary is a big layered one) ---
+	var gems := _nums("rpg80", "item_gem_", 1, 4)
+	_add(&"gem_chime", gems.slice(2, 4), &"Effects", -5.0, 0.95, 1.05)
+	_add(&"drop_common", _nums("rpg80", "item_wood_", 1, 3), &"Effects", -6.0)
+	_add(&"drop_uncommon", _nums("rpg80", "item_misc_", 1, 6), &"Effects", -4.0)
+	_add(&"drop_rare", gems.slice(0, 2), &"Effects", -2.0)
+	_add(&"drop_epic", gems.slice(2, 4), &"Effects", 0.0, 0.95, 1.05, [&"drop_epic_shimmer"])
+	_add(&"drop_epic_shimmer", spells, &"Effects", -6.0, 1.7, 1.9)
+	_add(&"drop_legendary", fire.slice(3, 7), &"Effects", 3.0, 0.65, 0.75, [&"drop_legendary_gem", &"drop_legendary_swell"])
+	_add(&"drop_legendary_gem", gems, &"Effects", 0.0, 0.8, 0.9)
+	_add(&"drop_legendary_swell", roar_big, &"Effects", -7.0, 0.4, 0.5)
+
+	# --- Items, money, shrines, progress (play flat, only for you) ---
+	_add(&"pickup", [SFX + "kenney_rpg/handleSmallLeather.ogg", SFX + "kenney_rpg/handleSmallLeather2.ogg",
+			SFX + "kenney_rpg/beltHandle1.ogg", SFX + "kenney_rpg/beltHandle2.ogg"], &"Interface", -3.0)
+	_add(&"coins", _nums("rpg80", "item_coins_", 1, 4) + [SFX + "kenney_rpg/handleCoins.ogg", SFX + "kenney_rpg/handleCoins2.ogg"], &"Interface", -3.0)
+	_add(&"souls", spells, &"Interface", -7.0, 1.5, 1.75, [&"gem_chime"])
+	_add(&"equip", [SFX + "kenney_rpg/metalLatch.ogg", SFX + "kenney_rpg/metalClick.ogg", SFX + "kenney_rpg/clothBelt.ogg", SFX + "kenney_rpg/clothBelt2.ogg"], &"Interface", -3.0)
+	_add(&"shrine_rest", fire.slice(0, 3), &"Effects", -2.0, 0.7, 0.8, [&"mend"])
+	_add(&"shrine_found", spells, &"Effects", -3.0, 0.7, 0.8)
+	_add(&"level_up", spells, &"Interface", -3.0, 1.0, 1.05, [&"gem_chime"])
+	_add(&"death_sting", [SFX + "rpg80/creature_monster_01.ogg", SFX + "rpg80/creature_monster_02.ogg"], &"Interface", -2.0, 0.4, 0.5)
+	_add(&"pile_appear", spells, &"Effects", -5.0, 0.5, 0.6)
+	_add(&"pile_recover", gems, &"Interface", -3.0, 0.9, 1.0, [&"pickup"])
+	_add(&"roll_offer", gems.slice(0, 1), &"Interface", -8.0, 1.4, 1.5)
+
+	# --- Menus ---
+	_add(&"ui_click", [SFX + "kenney_rpg/metalClick.ogg"], &"Interface", -12.0, 0.95, 1.1)
+	_add(&"ui_open", [SFX + "kenney_rpg/bookOpen.ogg", SFX + "kenney_rpg/bookFlip1.ogg", SFX + "kenney_rpg/bookFlip2.ogg"], &"Interface", -6.0)
+	_add(&"ui_close", [SFX + "kenney_rpg/bookClose.ogg"], &"Interface", -6.0)

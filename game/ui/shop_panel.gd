@@ -154,5 +154,7 @@ func _on_action() -> void:
 			why = player.inventory.buy_back(_selected.uid)
 	if why != "":
 		CombatFx.word(player.global_position + Vector3.UP * 2.0, why)
+	else:
+		Audio.sfx(&"coins")
 	_selected = null
 	refresh()

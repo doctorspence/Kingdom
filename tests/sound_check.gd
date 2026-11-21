@@ -70,6 +70,36 @@ func _run() -> void:
 	await _seconds(0.8)
 	_check("Shield Throw makes sound (%d sounds)" % (Audio.played_count - n), Audio.played_count - n >= 1)
 
+	# --- Loot, money, progress and menus ------------------------------------------------
+	var base: ItemData = ItemDB.all_items()[0]
+	for r in 5:
+		n = Audio.played_count
+		await _seconds(0.1)  # let the same-cue repeat guard clear
+		Loot._spawn_drop(900 + r, ItemDB.make_item(base, 5, r).to_dict(), Vector3(2, 0.2, 2), false)
+		_check("a %s drop makes sound" % ItemInstance.RARITY_NAMES[r], Audio.played_count > n)
+		if r == 4:
+			_check("Legendary is layered (%d sounds at once)" % (Audio.played_count - n), Audio.played_count - n >= 3)
+	await _seconds(0.1)
+	n = Audio.played_count
+	player._receive_money(10, 0)
+	_check("gold makes a coin sound", Audio.played_count > n)
+	await _seconds(0.1)
+	n = Audio.played_count
+	player._on_leveled_up(3)
+	_check("leveling up makes sound", Audio.played_count - n >= 2)
+	await _seconds(0.1)
+	n = Audio.played_count
+	var button := Button.new()
+	add_child(button)
+	await get_tree().process_frame
+	button.pressed.emit()
+	_check("any menu button clicks", Audio.played_count > n)
+	button.queue_free()
+	await _seconds(0.1)
+	n = Audio.played_count
+	player.receive_item(ItemDB.make_item(base, 1, 0))
+	_check("picking up an item makes sound", Audio.played_count > n)
+
 	# An enemy's own voice: a hound's bite plays the beast cue.
 	var hound := Enemy.new()
 	_check("hound count voice names exist", SfxLibrary.has_cue(&"attack_beast") and SfxLibrary.has_cue(&"hurt_boss"))

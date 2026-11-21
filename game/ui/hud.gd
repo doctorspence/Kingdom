@@ -333,6 +333,7 @@ func _on_travel_chosen(shrine: Shrine) -> void:
 
 
 func _on_shrine_discovered(shrine_name: String) -> void:
+	Audio.sfx(&"shrine_found")
 	show_banner("Shrine found: %s\nRest at any shrine to travel here" % shrine_name)
 
 
@@ -343,6 +344,7 @@ func _shrine_bank() -> void:
 
 ## A Need / Greed / Pass pop-up for a drop (30 s to answer).
 func _on_roll_offered(drop_id: int, item: ItemInstance, seconds: float) -> void:
+	Audio.sfx(&"roll_offer")
 	var box := PanelContainer.new()
 	box.name = "Roll%d" % drop_id
 	var v := VBoxContainer.new()
@@ -728,6 +730,12 @@ func _build() -> void:
 	_talents = TalentPanel.new()
 	_place(_talents, Control.PRESET_CENTER, Rect2(-400, -260, 800, 520))
 	root.add_child(_talents)
+
+	# Panels rustle open and shut (a book for the inventory, talents and map).
+	for panel: Control in [_inventory_panel, _shop_panel, _bank_panel, _shrine_menu, _menu, _talents, _map_panel]:
+		panel.visibility_changed.connect(func() -> void:
+			if is_inside_tree():
+				Audio.sfx(&"ui_open" if panel.visible else &"ui_close"))
 
 
 ## Pin a control to a screen corner (or the center), offset by `rect`.

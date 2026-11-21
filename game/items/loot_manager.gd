@@ -92,6 +92,7 @@ func _spawn_drop(id: int, item_dict: Dictionary, where: Vector3, rolling: bool) 
 	CombatFx.world().add_child(drop)
 	drop.global_position = where
 	_drops[id] = drop
+	Audio.sfx([&"drop_common", &"drop_uncommon", &"drop_rare", &"drop_epic", &"drop_legendary"][item.rarity], where)
 
 
 @rpc("authority", "call_local", "reliable")
@@ -328,6 +329,7 @@ func _spawn_pile(id: int, peer: int, owner_name: String, count: int, gold: int, 
 	CombatFx.world().add_child(pile)
 	pile.global_position = where
 	_piles[id] = pile
+	Audio.sfx(&"pile_appear", where)
 
 
 @rpc("authority", "call_local", "reliable")
@@ -390,6 +392,7 @@ func _return_pile(items: Array, gold: int, souls: int) -> void:
 			drop_item(it, me.global_position)
 	me.inventory.changed.emit()
 	CombatFx.word(me.global_position + Vector3.UP * 2.2, "Belongings recovered")
+	Audio.sfx(&"pile_recover")
 	me.save_character()
 
 

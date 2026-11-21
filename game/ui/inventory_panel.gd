@@ -161,6 +161,8 @@ func _on_use() -> void:
 		why2 = player.use_item(_selected.uid)
 	else:
 		why2 = player.inventory.equip(_selected.uid)
+		if why2 == "":
+			Audio.sfx(&"equip")
 	if why2 != "":
 		CombatFx.word(player.global_position + Vector3.UP * 2.0, why2)
 	_selected = _grid.current()

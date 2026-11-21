@@ -44,6 +44,7 @@ func rest(player: Node3D) -> String:
 		_net_rest.rpc_id(1)
 	get_tree().call_group(&"vendors", &"restock")
 	CombatFx.word(global_position + Vector3.UP * 2.6, "Rested")
+	Audio.sfx(&"shrine_rest", global_position + Vector3.UP * 1.5)
 	rested.emit(player)
 	var tween := create_tween()
 	tween.tween_property(_light, "light_energy", _base_energy * 3.0, 0.15)
