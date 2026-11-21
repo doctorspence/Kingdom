@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/wood/color.jpg" id="1_w3u7o"]
+[ext_resource type="Texture2D" path="res://assets/textures/wood/normal.jpg" id="2_nwq5w"]
+[ext_resource type="Texture2D" path="res://assets/textures/wood/rough.jpg" id="3_idgw8"]
+
+[resource]
+albedo_color = Color(0.9, 0.78, 0.68, 1)
+albedo_texture = ExtResource("1_w3u7o")
+metallic_specular = 0.2
+roughness_texture = ExtResource("3_idgw8")
+normal_enabled = true
+normal_texture = ExtResource("2_nwq5w")
+uv1_scale = Vector3(0.55, 0.55, 0.55)
+texture_filter = 5

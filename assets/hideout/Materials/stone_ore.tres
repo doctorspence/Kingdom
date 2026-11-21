@@ -1,0 +1,17 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/cave_rock/color.jpg" id="1_5u5bn"]
+[ext_resource type="Texture2D" path="res://assets/textures/cave_rock/normal.jpg" id="2_i2b2v"]
+[ext_resource type="Texture2D" path="res://assets/textures/cave_rock/rough.jpg" id="3_f4y5f"]
+
+[resource]
+albedo_color = Color(0.9, 0.55, 0.42, 1)
+albedo_texture = ExtResource("1_5u5bn")
+metallic_specular = 0.25
+roughness_texture = ExtResource("3_f4y5f")
+normal_enabled = true
+normal_scale = 1.4
+normal_texture = ExtResource("2_i2b2v")
+uv1_scale = Vector3(0.28, 0.28, 0.28)
+uv1_triplanar = true
+texture_filter = 5
