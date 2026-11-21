@@ -22,5 +22,7 @@ Every downloaded or generated asset goes here, so we always know where things ca
 | Dark Forest Theme | `assets/audio/music/GameMusic_ForestTheme_24.mp3` | https://opengameart.org/content/dark-forest-theme | cynicmusic | CC0 1.0 | 2026-11-21 |
 | Fantasy: Lament for a Warrior's Soul | `assets/audio/music/Lament_for_a_Warriors_Soul.mp3` | https://opengameart.org/content/fantasy-lament-for-a-warriors-soul | RandomMind | CC0 1.0 | 2026-11-21 |
 | Epic Boss Battle (seamless loop; stand-in boss track, 21 MB WAV, should be compressed later) | `assets/audio/music/Juhani_Junkala_-_Epic_Boss_Battle_Seamlessly_Looping.wav` | https://opengameart.org/content/boss-battle-music | Juhani Junkala (SubspaceAudio) | CC0 1.0 | 2026-11-21 |
+| Their Coming (generic horn sound, 2 files) | `assets/audio/sfx/horn/` | https://opengameart.org/content/their-coming-generic-horn-sound | StumpyStrust | CC0 1.0 | 2026-11-21 |
+| wind whoosh loop | `assets/audio/ambience/wind_loop.ogg` | https://opengameart.org/content/wind-whoosh-loop | SketchMan3 | CC0 1.0 | 2026-11-21 |
 
 **License rules**: CC0 for art and sound packs; OFL is OK for fonts (credit the author). AI-generated art you make: note the tool used.

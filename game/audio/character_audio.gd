@@ -10,7 +10,7 @@ extends Node
 ## Sounds for hits and blocks come from CombatFx (blood and sparks), and sounds
 ## for abilities from their effects (bolts, thrown shields, bursts).
 
-## "human" (players, knights, raiders), "beast" (hounds) or "boss".
+## "human" (players), "raider" (knights, raiders, acolytes), "beast" (hounds) or "boss".
 var voice := &"human"
 
 var model: CharacterModel
@@ -51,6 +51,10 @@ func _at() -> Vector3:
 
 func _on_anim(anim: StringName) -> void:
 	var name := String(anim)
+	# Calling for help: a knight blows a horn; a boss roars (its second phase).
+	if name == "ual2/Idle_Rail_Call":
+		Audio.sfx(&"roar" if voice == &"boss" else &"horn", _at())
+		return
 	if name.ends_with("_Rec") or "Block" in name or "Idle" in name:
 		return
 	_dead = false
@@ -84,6 +88,8 @@ func _on_anim(anim: StringName) -> void:
 			if name.begins_with("ual2/Sword_") or name.begins_with("ual2/Melee") or name.begins_with("Punch"):
 				if voice == &"boss":
 					Audio.sfx(&"attack_boss", _at())
+				elif voice == &"raider":
+					Audio.sfx(&"attack_raider", _at())
 				_swing_later(&"swing_light" if voice != &"boss" else &"swing_heavy", 0.12)
 
 

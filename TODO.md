@@ -149,15 +149,16 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 
 ---
 
-## Phase 10: Audio (in progress, step 2 next)
-- [x] 1. Sounds downloaded (you approved 2026-11-21): 321 CC0 files in `assets/audio/` (sfx, ambience, music), all logged in `assets/CREDITS.md`. Got from OpenGameArt because Kenney's site blocks scripted downloads. Not yet found: wind loop, hound howl is in the creature pack, no dedicated horn, cave/boss music are stand-ins
+## Phase 10: Audio ✅ (built; waiting for your listening test)
+- [x] 1. Sounds downloaded (you approved 2026-11-21): 321 CC0 files in `assets/audio/` (sfx, ambience, music), all logged in `assets/CREDITS.md`. Got from OpenGameArt because Kenney's site blocks scripted downloads. Later also: a CC0 horn and a wind loop.
 - [x] 2. Audio setup: buses Master, Music, Effects, Ambience, Interface (`game/audio/audio_manager.gd`, autoload `Audio`); volume sliders under a **Volume** button in the main menu and the Esc menu, saved in `settings.cfg`; `tests/audio_check.gd` passes. 🧪 Open the menu and check the sliders feel right (nothing plays yet, so you can't hear a difference until step 3)
 - [x] 3. Combat sounds, first pass: swings (light, heavy, dash), flesh hits and crits, block and parry clangs, rolls, jumps, landings, footsteps, hurt and death voices (human, beast, boss), flask drinking, shield bash, and the nine class abilities (Lunge and Whirlwind swishes, Battle Fury roar, Shield Throw whoosh and clack, Iron Resolve, Arcane Bolt, Mend, Hex). They play from the animations, so **friends hear each other** with no extra network traffic. All cues live in one table, `game/audio/sfx_library.gd`; `tests/sound_check.gd` passes. I could not listen to them: picked by file name, so expect to tune by ear (which cue sounds wrong, too loud, too repetitive)
-- [ ] 4. Loot and interface sounds, a distinct sound per rarity (Legendary special), shrine rest, death
+- [x] 4. Loot and interface sounds: a distinct drop sound per rarity (Legendary is six sounds layered), pickups, coins and souls, equipping, shop, shrine rest and discovery, level-up, death sting, death-pile appear and recover, loot-roll pop-up, and a click on every menu button; menus rustle open and shut
 - [x] 5. Tithelands music and ambience (`game/audio/zone_audio.gd`, created by DayNight): a forest bed that gets quieter at night and in rain, a rain bed that follows the showers, crows by day, and slow music with 25-70 s of silence between tracks (dark forest theme by day, the lament at night); everything fades out underground and the cave beds fade in. Still missing: a wind loop and a shrine hum. Checked by `audio_check`
-- [ ] 6. The Gullet's cave ambience and Brother Tallow's boss track (two phases)
-- [ ] 7. Enemy sounds (horn, howl, roars), multiplayer check (friends hear each other), re-export the build
-- [ ] 🧪 Walk the zone and fight with sound on; tell me what's too loud, repetitive or missing
+- [x] 6. The Gullet: two cave beds fade in as you go underground (rain, forest and music fade out). Brother Tallow: when he engages, the ambience ducks and a boss track loops for everyone in range; in phase 2 it gets louder and 7% faster, with a roar. The track is a stand-in (stored compressed, 4 MB in the build)
+- [x] 7. Enemy sounds: knights blow a horn that carries 90 m (CC0 horn added), hounds howl and bark, raiders and knights grunt in a rougher voice than yours, the boss roars; a wind loop was added to the zone bed. Friends hear each other (tested through the copied-animation path); 3-player check passes. **Build re-exported**: `build/Kingdom-windows.zip` (66 MB) starts cleanly
+- [ ] 🧪 Walk the zone and fight with sound on (especially Brother Tallow); tell me what is too loud, repetitive or wrong. Cues are one line each in `game/audio/sfx_library.gd`; beds and music levels are in `game/audio/zone_audio.gd`
+- [ ] Later: a shrine hum, monk chanting for the Gullet, real boss and cave music, footsteps per surface (stone vs dirt), per-weapon hit sounds
 
 ## Phase 11: Subclasses and factions (not started)
 - [ ] Follows `CLASS_PLAN.md` from Priority 1: data types, saves and network, the level 10 choice screen (re-pickable in future), first subclass abilities (Guardian, Warrior, Cleric), faction lore, then the harder subclasses

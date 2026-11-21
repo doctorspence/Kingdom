@@ -60,7 +60,7 @@ func _run() -> void:
 	dn.rain_amount = 0.0
 	await get_tree().create_timer(1.6).timeout
 	_check("daytime: the forest bed plays, rain and cave do not (%.2f / %.2f / %.2f)" % [za._levels[&"forest"], za._levels[&"rain"], za._levels[&"cave"]],
-			za._levels[&"forest"] > 0.9 and za._levels[&"rain"] < 0.01 and za._levels[&"cave"] < 0.01 and za.get_node("forest").playing)
+			za._levels[&"forest"] > 0.9 and za._levels[&"rain"] < 0.01 and za._levels[&"cave"] < 0.01 and za.get_node("forest").playing and za.get_node("wind").playing)
 	_check("daytime music: the forest theme (%s)" % za.current_track, za.current_track == "GameMusic_ForestTheme_24.mp3")
 	dn.rain_amount = 1.0
 	await get_tree().create_timer(1.6).timeout
@@ -77,6 +77,20 @@ func _run() -> void:
 	_check("night: quieter forest (%.2f) and the lament plays (%s)" % [za._levels[&"forest"], za.current_track],
 			za._levels[&"forest"] < 0.5 and za.current_track == "Lament_for_a_Warriors_Soul.mp3")
 	DayNight.night = 0.0
+	await get_tree().create_timer(1.6).timeout
+	za.force_boss = 1  # a boss starts fighting
+	await get_tree().create_timer(2.5).timeout
+	_check("boss fight: the boss track plays, ambience ducks, normal music stops (level %.2f, forest %.2f)" % [za.boss_level, za._levels[&"forest"]],
+			za._boss.playing and za.boss_level > 0.9 and za._levels[&"forest"] < 0.4 and not za._music.playing)
+	var phase1_db := za._boss.volume_db
+	za.force_boss = 2  # phase 2
+	await get_tree().create_timer(2.0).timeout
+	_check("phase 2: louder and faster (%.1f dB -> %.1f dB, pitch %.2f)" % [phase1_db, za._boss.volume_db, za._boss.pitch_scale],
+			za._boss.volume_db > phase1_db + 1.0 and za._boss.pitch_scale > 1.0)
+	za.force_boss = -1  # the boss dies
+	await get_tree().create_timer(1.6).timeout
+	_check("boss dead: the track fades out and the forest comes back (boss %.2f, forest %.2f, playing %s)" % [za.boss_level, za._levels[&"forest"], str(za._boss.playing)],
+			not za._boss.playing and za._levels[&"forest"] > 0.9)
 	za.queue_free()
 	dn.queue_free()
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])

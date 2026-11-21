@@ -82,16 +82,17 @@ func sfx(cue: StringName, where := Vector3.INF, db := 0.0) -> bool:
 	var scene := get_tree().current_scene
 	var player: Node
 	if where != Vector3.INF and scene is Node3D:
+		var hear: float = data.get("range", HEARING_RANGE)
 		var cam := get_viewport().get_camera_3d()
-		if cam and cam.global_position.distance_to(where) > HEARING_RANGE:
+		if cam and cam.global_position.distance_to(where) > hear:
 			return false
 		var p3 := AudioStreamPlayer3D.new()
 		p3.stream = stream
 		p3.bus = data["bus"]
 		p3.volume_db = volume
 		p3.pitch_scale = randf_range(pitch.x, pitch.y)
-		p3.max_distance = HEARING_RANGE
-		p3.unit_size = 7.0
+		p3.max_distance = hear
+		p3.unit_size = 7.0 * hear / HEARING_RANGE
 		scene.add_child(p3)
 		p3.global_position = where
 		player = p3

@@ -100,6 +100,24 @@ func _run() -> void:
 	player.receive_item(ItemDB.make_item(base, 1, 0))
 	_check("picking up an item makes sound", Audio.played_count > n)
 
+	# --- Other people's characters (what a friend's machine does) --------------------------
+	await _seconds(0.1)
+	n = Audio.played_count
+	player.model.mirror(&"Roll", 1.0, 70001)
+	_check("a friend's roll, copied from their animation, is heard", Audio.played_count > n)
+	await _seconds(0.1)
+	n = Audio.played_count
+	player.model.mirror(&"ual2/Idle_Rail_Call", 1.0, 70002)
+	_check("a knight's call for help blows the horn", Audio.played_count > n)
+	player.model.audio.voice = &"raider"
+	await _seconds(0.1)
+	n = Audio.played_count
+	player.model.mirror(&"ual2/Sword_Regular_A", 1.0, 70003)
+	await _seconds(0.4)
+	_check("a raider grunts and swings (%d sounds)" % (Audio.played_count - n), Audio.played_count - n >= 2)
+	player.model.audio.voice = &"human"
+	_check("the horn carries farther than other sounds", SfxLibrary.cue(&"horn")["range"] > SfxLibrary.cue(&"footstep")["range"])
+
 	# An enemy's own voice: a hound's bite plays the beast cue.
 	var hound := Enemy.new()
 	_check("hound count voice names exist", SfxLibrary.has_cue(&"attack_beast") and SfxLibrary.has_cue(&"hurt_boss"))

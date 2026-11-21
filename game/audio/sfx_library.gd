@@ -39,8 +39,8 @@ static func _nums(folder: String, prefix: String, from: int, to: int, ext := ".o
 
 ## `layers` are other cues played together with this one (a Legendary drop is
 ## several sounds at once).
-static func _add(name: StringName, files: Array, bus := &"Effects", db := 0.0, pitch_min := 0.94, pitch_max := 1.06, layers := []) -> void:
-	_cues[name] = {"files": files, "bus": bus, "db": db, "pitch": Vector2(pitch_min, pitch_max), "layers": layers}
+static func _add(name: StringName, files: Array, bus := &"Effects", db := 0.0, pitch_min := 0.94, pitch_max := 1.06, layers := [], hear_m := 45.0) -> void:
+	_cues[name] = {"files": files, "bus": bus, "db": db, "pitch": Vector2(pitch_min, pitch_max), "layers": layers, "range": hear_m}
 
 
 static func _build() -> void:
@@ -85,6 +85,13 @@ static func _build() -> void:
 	_add(&"die_beast", [SFX + "creatures/scream_01.ogg", SFX + "creatures/scream_02.ogg"], &"Effects", 0.0, 0.8, 0.95)
 	_add(&"attack_beast", _nums("creatures", "barking_", 1, 2) + _nums("creatures", "monster_", 1, 3), &"Effects", -2.0)
 	_add(&"howl", [SFX + "creatures/howl.ogg"], &"Effects", 2.0, 0.95, 1.05)
+	# --- Voices (a raider or knight: grunts, lower and rougher than yours) ---
+	var grunts := _nums("creatures", "grunt_", 1, 5)
+	_add(&"hurt_raider", grunts, &"Effects", -2.0, 0.65, 0.8)
+	_add(&"die_raider", [SFX + "rpg80/creature_die_01.ogg"], &"Effects", 0.0, 0.6, 0.75)
+	_add(&"attack_raider", grunts, &"Effects", -5.0, 0.6, 0.75)
+	# A horn carries a long way: everyone nearby hears the alarm.
+	_add(&"horn", [SFX + "horn/theircoming.ogg", SFX + "horn/theircoming3.ogg"], &"Effects", 0.0, 0.95, 1.0, [], 90.0)
 	# --- Voices (a boss) ---
 	_add(&"hurt_boss", roar_big, &"Effects", -6.0, 0.6, 0.75)
 	_add(&"die_boss", roar_big, &"Effects", 2.0, 0.45, 0.55)

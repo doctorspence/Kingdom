@@ -424,6 +424,8 @@ An upgradeable camp that enemies raid at night (after the first milestone), ques
 - **Sources**: free CC0 assets plus your AI-generated art. Poly Haven and ambientCG (detailed textures, rocks, scanned plants) are final-quality. Quaternius, KayKit and Kenney are low-poly, so they're **stand-ins only**, except for things like UI and sound. Detailed characters, armor and props come mostly from your AI art (textures, and image-to-3D for armor and props), cleaned up and fitted to the shared skeleton. See `ART_NEEDS.md`. Every asset gets logged in `assets/CREDITS.md`.
 
 ### 12.2 Audio
+> **Built (Phase 10, 2026-11-21):** five volume groups with sliders (Master, Music, Effects, Ambience, Interface); combat, ability, loot and menu sounds from named cues (`game/audio/sfx_library.gd`); zone ambience that follows weather, time of day and depth; slow forest music with long silences; a boss track for Brother Tallow (louder in phase 2); knights' horns that carry far. Friends hear each other because sounds play from the animations every machine already copies. All sounds are CC0 stand-ins chosen without listening; see `assets/CREDITS.md`.
+
 - **Music**: ambient zone loops (a forest-zone mood); boss tracks.
 - **Sound effects**: heavy and medieval: steel on steel, wet impacts, chainmail foley, grunts, horns, crows, rain, wind, shrine hum. A distinct sound per loot rarity (the Legendary drop sound matters).
 - Volume groups: Master, Music, Effects, Ambience, Interface.
