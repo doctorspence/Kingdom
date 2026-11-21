@@ -177,7 +177,7 @@ func _run() -> void:
 	player.global_position = shrine.global_position + Vector3(0, 0.05, 1.5)
 	player.reset_physics_interpolation()
 	await _frames(5)
-	await _tap("interact")
+	(shrine as Shrine).rest(player)  # the shrine menu's "Rest" button
 	await _seconds(0.3)
 	_check_true("resting refills flasks and health", player.flasks == player.tuning.flask_count and player.health == player.max_health())
 	_check_true("resting brings the Marauder back", enemy.state != Enemy.State.DEAD and enemy.health == enemy.data.max_health)

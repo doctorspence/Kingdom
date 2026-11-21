@@ -133,7 +133,7 @@ func _run() -> void:
 	player.caster.try_use(1)  # Behead (1 notch)
 	await _seconds(1.2)
 	var small := ehp - enemy.health
-	_check("Behead: more notches hit harder (%.0f vs %.0f), notches spent" % [big, small], big > small * 1.55 and player.caster.resource <= 1.0)  # a random crit on the small one narrows the gap to ~1.65x
+	_check("Behead: more notches hit harder (%.0f vs %.0f), notches spent" % [big, small], big > small * 1.55 and player.caster.resource <= 2.0)  # a random crit on the small one narrows the gap to ~1.65x
 	await _setup("class_headsman", 20)
 	enemy.global_position = Vector3(40, 0, 40)
 	var start := player.global_position

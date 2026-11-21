@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="VendorData" format=3]
+
+[ext_resource type="Script" path="res://game/items/vendor_data.gd" id="1_vendor"]
+[ext_resource type="Resource" path="res://data/items/consumables/item_antidote.tres" id="2_antidote"]
+[ext_resource type="Resource" path="res://data/items/consumables/item_warming_draught.tres" id="3_draught"]
+[ext_resource type="Resource" path="res://data/items/consumables/item_bandage.tres" id="4_bandage"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="5_item"]
+
+[resource]
+script = ExtResource("1_vendor")
+display_name = "Old Wenna"
+greeting = "Coin first. Questions never."
+always = Array[ExtResource("5_item")]([ExtResource("2_antidote"), ExtResource("3_draught"), ExtResource("4_bandage")])
+gear_count = 5
+gear_item_level = Vector2i(1, 3)

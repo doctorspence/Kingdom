@@ -28,6 +28,8 @@ signal flasks_changed(current: int, maximum: int)
 signal leveled_up(level: int)
 signal died
 signal respawned
+## A shrine, merchant or similar wants a menu opened (the HUD shows it).
+signal menu_requested(kind: StringName, source: Node)
 
 enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, CAST, STAGGER, GUARD_BREAK, DOWNED, DEAD }
 
@@ -620,6 +622,10 @@ func set_level(new_level: int) -> void:
 	leveled_up.emit(stats.level)
 
 
+## Ask the HUD to open a menu ("shrine", "shop"...).
+func open_menu(kind: StringName, source: Node) -> void:
+	menu_requested.emit(kind, source)
+
 # --- Money, items, saving ---------------------------------------------------------
 
 ## Gold and souls from a kill (the host sends these to everyone nearby).
@@ -849,7 +855,7 @@ func _state_cast(delta: float) -> void:
 # --- Input --------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
-	if Net.typing:
+	if Net.typing or Net.in_menu:
 		return
 	# Gamepad: hold LT, then A/B/X/Y/RB/RT use abilities 1-6.
 	if Input.is_action_pressed("ability_modifier") and event is InputEventJoypadButton and event.pressed:
@@ -928,7 +934,7 @@ func _read_dodge_button(delta: float) -> void:
 
 
 func _move_input() -> Vector2:
-	if Net.typing:
+	if Net.typing or Net.in_menu:
 		return Vector2.ZERO
 	return Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 

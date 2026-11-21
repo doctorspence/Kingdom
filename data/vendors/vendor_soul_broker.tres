@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="VendorData" format=3]
+
+[ext_resource type="Script" path="res://game/items/vendor_data.gd" id="1_vendor"]
+
+[resource]
+script = ExtResource("1_vendor")
+display_name = "The Soul Broker"
+greeting = "Every soul has a price. Yours is lower than you think."
+currency = 1
+gear_count = 4
+gear_item_level = Vector2i(3, 6)
+gear_rarity_weights = PackedFloat32Array(0, 0, 70, 28, 2)
+price_mult = 3.0
+buys_items = false

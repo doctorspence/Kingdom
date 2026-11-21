@@ -62,6 +62,14 @@ var _effects_label: Label
 var _banner: Label
 var _banner_time := 0.0
 var _talents: TalentPanel
+var _inventory_panel: InventoryPanel
+var _shop_panel: ShopPanel
+var _bank_panel: BankPanel
+var _shrine_menu: PanelContainer
+var _shrine_source: Node
+var _roll_box: VBoxContainer
+var _money_label: Label
+var _ui_was_open := false
 
 
 func _ready() -> void:
@@ -75,6 +83,9 @@ func _ready() -> void:
 	player.flasks_changed.connect(_on_flasks_changed)
 	player.died.connect(_on_died)
 	player.respawned.connect(_on_respawned)
+	player.menu_requested.connect(_on_menu_requested)
+	Loot.roll_offered.connect(_on_roll_offered)
+	Loot.roll_closed.connect(_on_roll_closed)
 	player.leveled_up.connect(_on_leveled_up)
 	player.caster.resource_changed.connect(_on_resource_changed)
 	_health_bar.set_values(player.health, player.max_health())
@@ -91,11 +102,23 @@ func _unhandled_input(event: InputEvent) -> void:
 		_open_chat()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("menu") and not Net.typing:
-		_menu.visible = not _menu.visible
-		if _menu.visible:
-			(_menu.find_child("Resume", true, false) as Button).grab_focus()
+		if _any_panel_open():
+			_close_panels()
+		else:
+			_menu.visible = not _menu.visible
+			if _menu.visible:
+				(_menu.find_child("Resume", true, false) as Button).grab_focus()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("talents") and not Net.typing and player:
-		_talents.toggle()
+		var was := _talents.visible
+		_close_panels()
+		if not was:
+			_talents.toggle()
+	elif event.is_action_pressed("inventory") and not Net.typing and player:
+		var was_open := _inventory_panel.visible
+		_close_panels()
+		if not was_open:
+			_inventory_panel.open(player)
 	elif event.is_action_pressed("debug_help"):
 		_help_label.visible = not _help_label.visible
 		_hint_label.visible = false
@@ -124,6 +147,15 @@ func _process(delta: float) -> void:
 		_debug_label.text = _debug_text()
 	_update_prompt()
 	_update_party()
+	_money_label.text = "Gold %d   Souls %d" % [player.inventory.gold, player.inventory.souls]
+	# While a menu is open: free mouse, the character stands still.
+	var ui_open := _any_panel_open() or _menu.visible
+	Net.in_menu = ui_open
+	if ui_open and not Net.typing:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	elif _ui_was_open and not Net.typing:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_ui_was_open = ui_open
 	var s := player.stats
 	_level_label.text = "%s  ·  Level %d" % [s.class_data.display_name, s.level]
 	_xp_bar.set_values(float(s.xp), float(maxi(s.xp_to_next(), 1)))
@@ -222,6 +254,85 @@ func _on_leveled_up(new_level: int) -> void:
 		text += "\nTalent point! Press T"
 	_banner.text = text
 	_banner_time = 4.0
+
+
+# --- Menus: inventory, shrine, merchants, bank, loot rolls -------------------------
+
+func _any_panel_open() -> bool:
+	return _inventory_panel.visible or _shop_panel.visible or _bank_panel.visible \
+			or _shrine_menu.visible or _talents.visible
+
+
+func _close_panels() -> void:
+	_inventory_panel.close()
+	_shop_panel.close()
+	_bank_panel.close()
+	_shrine_menu.visible = false
+	if _talents.visible:
+		_talents.toggle()
+
+
+func _on_menu_requested(kind: StringName, source: Node) -> void:
+	_close_panels()
+	match kind:
+		&"shrine":
+			_shrine_source = source
+			_shrine_menu.visible = true
+			(_shrine_menu.find_child("Rest", true, false) as Button).grab_focus()
+		&"shop":
+			_shop_panel.open(player, source as Vendor)
+
+
+func _shrine_rest() -> void:
+	if _shrine_source and is_instance_valid(_shrine_source):
+		_shrine_source.call(&"rest", player)
+	_close_panels()
+
+
+func _shrine_bank() -> void:
+	_close_panels()
+	_bank_panel.open(player)
+
+
+## A Need / Greed / Pass pop-up for a drop (30 s to answer).
+func _on_roll_offered(drop_id: int, item: ItemInstance, seconds: float) -> void:
+	var box := PanelContainer.new()
+	box.name = "Roll%d" % drop_id
+	var v := VBoxContainer.new()
+	box.add_child(v)
+	var title := Label.new()
+	title.text = "%s  (%s, ilvl %d)" % [item.display_name(), ItemInstance.RARITY_NAMES[item.rarity], item.ilvl]
+	title.modulate = item.color()
+	v.add_child(title)
+	var detail := Label.new()
+	detail.text = "\n".join(item.describe().slice(1, 6))
+	detail.add_theme_font_size_override("font_size", 13)
+	v.add_child(detail)
+	var row := HBoxContainer.new()
+	v.add_child(row)
+	for c in [["Need", Loot.Choice.NEED], ["Greed", Loot.Choice.GREED], ["Pass", Loot.Choice.PASS]]:
+		var b := Button.new()
+		b.text = c[0]
+		b.pressed.connect(func() -> void:
+			Loot.choose(drop_id, c[1])
+			box.queue_free())
+		row.add_child(b)
+	var timer := ProgressBar.new()
+	timer.show_percentage = false
+	timer.custom_minimum_size = Vector2(0, 6)
+	timer.max_value = seconds
+	timer.value = seconds
+	v.add_child(timer)
+	var tw := timer.create_tween()
+	tw.tween_property(timer, "value", 0.0, seconds)
+	tw.tween_callback(box.queue_free)
+	_roll_box.add_child(box)
+
+
+func _on_roll_closed(drop_id: int) -> void:
+	var box := _roll_box.get_node_or_null("Roll%d" % drop_id)
+	if box:
+		box.queue_free()
 
 
 func _on_flasks_changed(current: int, maximum: int) -> void:
@@ -480,6 +591,40 @@ func _build() -> void:
 	leave.pressed.connect(func() -> void: Net.leave())
 	menu_box.add_child(leave)
 	root.add_child(_menu)
+
+	_inventory_panel = InventoryPanel.new()
+	_place(_inventory_panel, Control.PRESET_CENTER, Rect2(-560, -330, 1120, 660))
+	root.add_child(_inventory_panel)
+	_shop_panel = ShopPanel.new()
+	_place(_shop_panel, Control.PRESET_CENTER, Rect2(-400, -290, 800, 580))
+	root.add_child(_shop_panel)
+	_bank_panel = BankPanel.new()
+	_place(_bank_panel, Control.PRESET_CENTER, Rect2(-560, -280, 1120, 560))
+	root.add_child(_bank_panel)
+
+	_shrine_menu = PanelContainer.new()
+	_place(_shrine_menu, Control.PRESET_CENTER, Rect2(-150, -100, 300, 200))
+	_shrine_menu.visible = false
+	var shrine_box := VBoxContainer.new()
+	shrine_box.add_theme_constant_override("separation", 10)
+	_shrine_menu.add_child(shrine_box)
+	for entry in [["Rest", _shrine_rest], ["Bank", _shrine_bank], ["Close", _close_panels]]:
+		var b := Button.new()
+		b.name = entry[0]
+		b.text = entry[0]
+		b.custom_minimum_size = Vector2(0, 40)
+		b.pressed.connect(entry[1])
+		shrine_box.add_child(b)
+	root.add_child(_shrine_menu)
+
+	_roll_box = VBoxContainer.new()
+	_place(_roll_box, Control.PRESET_CENTER_RIGHT, Rect2(-400, -200, 360, 400))
+	_roll_box.add_theme_constant_override("separation", 8)
+	root.add_child(_roll_box)
+
+	_money_label = _make_label(16)
+	_money_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55))
+	bars.add_child(_money_label)
 
 	_talents = TalentPanel.new()
 	_place(_talents, Control.PRESET_CENTER, Rect2(-400, -260, 800, 520))

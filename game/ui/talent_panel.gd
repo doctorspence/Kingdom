@@ -45,11 +45,8 @@ func toggle() -> void:
 	visible = not visible
 	if visible:
 		_rebuild()
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		if _grid.get_child_count() > 0:
 			(_grid.get_child(0) as Button).grab_focus()
-	else:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _rebuild() -> void:

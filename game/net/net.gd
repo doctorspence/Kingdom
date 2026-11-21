@@ -23,6 +23,8 @@ var join_address := "127.0.0.1"
 var names := {}
 ## True while the chat box has the keyboard (the character ignores keys).
 var typing := false
+## True while a menu (inventory, shop, bank...) is open: the character stands still.
+var in_menu := false
 ## Your character choice from the creator: {"class": id, "body": 0/1, "color": index}.
 var character := {}
 
