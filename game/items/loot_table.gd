@@ -16,6 +16,8 @@ extends Resource
 ## Always drops these too (named uniques).
 @export var always: Array[ItemData] = []
 @export var coins := Vector2i(3, 10)
+## Chance that the coins drop at all (old-school tables: 0.45 = 45%).
+@export_range(0.0, 1.0) var coins_chance := 1.0
 @export var souls := Vector2i(5, 12)
 ## Old-school lines, each with its own chance (used by the Gullet). Roll on top of everything above;
 ## set drop_chance to 0 to use only these.

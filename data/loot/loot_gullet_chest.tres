@@ -46,6 +46,7 @@ rarity = 2
 [resource]
 script = ExtResource("t")
 drop_chance = 0.0
+coins_chance = 0.45
 item_level = Vector2i(3, 6)
 coins = Vector2i(50, 150)
 souls = Vector2i(0, 0)

@@ -15,6 +15,7 @@ func _run() -> void:
 	await _eating()
 	await _enemies()
 	await _barrels()
+	await _level()
 	print("PASS: 0 problem(s)" if failures == 0 else "FAIL: %d problem(s)" % failures)
 	get_tree().quit(1 if failures > 0 else 0)
 
@@ -71,8 +72,11 @@ func _items_and_loot() -> void:
 		potions_ok = potions_ok and got_potion
 	_check("Harl: always 2 potions, unique weapon about 1/128 (%d in %d) and always Epic" % [unique, m],
 			potions_ok and unique > 80 and unique < 240 and uniq_rarity_ok)
-	var chest := ItemDB.roll(load("res://data/loot/loot_gullet_chest.tres"), rng)
-	_check("the chest rolls", chest.coins >= 50 and chest.coins <= 150)
+	var chest_coins := 0
+	for i in 2000:
+		if ItemDB.roll(load("res://data/loot/loot_gullet_chest.tres"), rng).coins > 0:
+			chest_coins += 1
+	_check("the chest gives coins about 45%% of the time (%.0f%%)" % (chest_coins / 20.0), absf(chest_coins / 2000.0 - 0.45) < 0.05)
 
 
 func _check(label: String, ok: bool) -> void:
@@ -225,3 +229,92 @@ func _barrels() -> void:
 	b1.reset_from_rest()
 	_check("resting brings the barrel back", not b1.exploded and b1._body.visible)
 	scene.queue_free()
+
+
+# --- Step 6/7: the level --------------------------------------------------------------------
+func _level() -> void:
+	var zone: Node = load("res://levels/tithelands/tithelands.tscn").instantiate()
+	get_tree().root.add_child(zone)
+	await _frames(40)
+	var g := zone.get_node("Gullet") as Node3D
+	var player := get_tree().get_first_node_in_group(&"player") as Player
+	(zone.get_node("Places/GulletDoor") as CaveDoor).interact(player)
+	await _seconds(1.0)
+	var local := player.global_position - g.global_position
+	_check("the quarry door puts you in the entrance yard, on the floor (%.0f, %.0f)" % [local.x, local.z],
+			player.is_on_floor() and local.x < -42.0 and local.x > -60.0 and local.z > 16.0 and local.z < 34.0)
+	var up := g.get_node("WayUp") as CaveDoor
+	up.interact(player)
+	await _seconds(0.6)
+	_check("...and the way up takes you back to the surface", player.global_position.y > -10.0)
+
+	# Every area has floor to stand on: drop the player at a spot and see that he lands and stays.
+	var spots := {"yard": Vector3(-50, 0.4, 25), "long hall": Vector3(-27, 0.4, 18), "west loop": Vector3(-39, 0.4, 3), "chest room": Vector3(-53, 0.4, 4),
+			"camp": Vector3(5, 0.4, 0), "shrine": Vector3(17, 0.4, 18), "excavation": Vector3(48, 0.4, -8), "chamber": Vector3(30, 0.4, 32),
+			"camp walkway": Vector3(0, 4.6, -16), "north gallery": Vector3(50, 4.6, -24), "rope bridge": Vector3(29, 4.6, -15.9)}
+	var bad := []
+	for k in spots:
+		player.global_position = g.global_position + spots[k]
+		player.velocity = Vector3.ZERO
+		await _seconds(0.5)
+		var y: float = player.global_position.y - g.global_position.y
+		var want: float = 4.0 if spots[k].y > 4.0 else 0.0
+		if not player.is_on_floor() or absf(y - want) > 0.3:
+			bad.append("%s (y %.1f)" % [k, y])
+	_check("all areas, both decks and the rope bridge have solid floor %s" % str(bad), bad.is_empty())
+
+	# Stairs: walk from the camp up to the west end of the walkway.
+	player.global_position = g.global_position + Vector3(-10.5, 0.3, -4.0)
+	player.velocity = Vector3.ZERO
+	player.camera_rig.yaw = 0.0
+	await _seconds(0.3)
+	Input.action_press("move_forward")
+	await _seconds(5.0)
+	Input.action_release("move_forward")
+	var h: float = player.global_position.y - g.global_position.y
+	_check("the west stairs lead up to the walkway (height %.1f m)" % h, h > 3.6)
+
+	# Gates and barricade.
+	var back := g.get_node("ShortcutGate") as ShortcutGate
+	var barricade := g.get_node("Barricade") as ShortcutGate
+	var fog := g.get_node("FogGate") as FogGate
+	_check("shortcut shut until the boss dies; barricade shut; fog gate there", not back.is_open() and not barricade.is_open() and fog != null)
+	player.global_position = barricade.global_position + Vector3(0, 0.3, 2.0)   # south side
+	barricade.interact(player)
+	_check("the barricade will not lift from the tunnel side", not barricade.is_open())
+	player.global_position = barricade.global_position + Vector3(0, 0.3, -2.0)  # camp side
+	barricade.interact(player)
+	_check("...but lifts from the camp side", barricade.is_open())
+
+
+	# Secret wall and hidden chest.
+	var wall := g.get_node("SecretWall") as SecretWall
+	var chest := g.get_node("HiddenChest") as LootChest
+	_check("the hidden wall is shut and the chest is behind it", not wall.is_open() and chest.global_position.x < wall.global_position.x)
+	wall.interact(player)
+	await _seconds(0.3)
+	_check("pushing the wall opens it", wall.is_open())
+	var drops_before := Loot.drop_count()
+	player.global_position = chest.global_position + Vector3(2, 0.3, 0)
+	var coins_before := player.inventory.coins
+	var opened_any := false
+	for i in 6:   # open it, rest (reset), open again, until something drops
+		chest.interact(player)
+		await _seconds(0.2)
+		opened_any = opened_any or chest.opened
+		chest.interact(player)   # a second try on the same opening does nothing
+		chest.reset_from_rest()
+	_check("the chest opens once per rest, and rolls its table (%d coins, %d drops)" % [player.inventory.coins - coins_before, Loot.drop_count() - drops_before],
+			opened_any and (player.inventory.coins > coins_before or Loot.drop_count() > drops_before))
+
+	# The population.
+	var inside := 0
+	var kinds := {}
+	for n in get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		var rel := e.global_position - g.global_position
+		if absf(rel.x) < 80.0 and absf(rel.z) < 60.0 and absf(rel.y) < 20.0 and String(e.data.id).begins_with("enemy_bandit"):
+			inside += 1
+			kinds[e.data.id] = kinds.get(e.data.id, 0) + 1
+	_check("the dungeon holds 19 to 21 bandits for one player (%d: %s)" % [inside, str(kinds)], inside >= 19 and inside <= 21)
+	zone.queue_free()

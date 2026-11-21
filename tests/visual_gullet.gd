@@ -1,6 +1,6 @@
 extends Node
-## Screenshots of the Gullet (not a pass/fail check). Windowed.
-## Saves user://shots/gullet_*.png
+## Screenshots of the new Gullet (not a pass/fail check). Windowed.
+## Saves user://shots/gullet_*.png   (run with a resolution, not headless)
 
 var player: Player
 
@@ -16,8 +16,28 @@ func _run() -> void:
 	await _frames(60)
 	player = get_tree().get_first_node_in_group(&"player") as Player
 	var g: Node3D = scene.get_node("Gullet")
-	for spot in [["hall", Vector3(0, 0.3, 43), 0.0], ["gallery", Vector3(0, 0.3, 14), 0.0], ["shrine", Vector3(-30, 0.3, -22), 0.0],
-			["gate", Vector3(-30, 0.3, -42), 0.0], ["chapel", Vector3(-30, 0.3, -52), 0.0]]:
+	# Overview from inside the rock: roofs are back-faces, so you see the floor plan.
+	var cam := Camera3D.new()
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	cam.size = 105.0
+	cam.far = 200.0
+	get_tree().root.add_child(cam)
+	cam.global_position = g.global_position + Vector3(0, 14.5, 0)
+	cam.rotation_degrees = Vector3(-90, 0, 0)
+	cam.current = true
+	var sun := DirectionalLight3D.new()
+	sun.light_energy = 2.5
+	sun.rotation_degrees = Vector3(-90, 0, 0)
+	sun.shadow_enabled = false
+	sun.light_cull_mask = 0xFFFFF
+	get_tree().root.add_child(sun)
+	await _frames(20)
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png("user://shots/gullet_overview.png")
+	cam.queue_free()
+	sun.queue_free()
+	for spot in [["yard", Vector3(-55, 0.3, 25), -90.0], ["camp", Vector3(-10, 0.3, -4), -90.0], ["camp_up", Vector3(0, 4.4, -16), 90.0],
+			["dig", Vector3(34, 0.3, 0), -90.0], ["chamber", Vector3(49, 0.3, 26), 0.0]]:
 		player.global_position = g.global_position + spot[1]
 		player.velocity = Vector3.ZERO
 		player.reset_physics_interpolation()

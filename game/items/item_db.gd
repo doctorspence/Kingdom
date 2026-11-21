@@ -67,7 +67,7 @@ func roll(table: LootTable, rng: RandomNumberGenerator = null) -> Dictionary:
 			out.append(make_item(base, rng.randi_range(table.item_level.x, table.item_level.y), rarity, rng))
 	return {
 		"items": out,
-		"coins": rng.randi_range(table.coins.x, table.coins.y),
+		"coins": rng.randi_range(table.coins.x, table.coins.y) if rng.randf() < table.coins_chance else 0,
 		"souls": rng.randi_range(table.souls.x, table.souls.y),
 	}
 
