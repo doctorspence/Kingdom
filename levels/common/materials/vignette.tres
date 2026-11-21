@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://levels/common/vignette.gdshader" id="1_vig"]
+
+[resource]
+shader = ExtResource("1_vig")
+shader_parameter/strength = 0.5
+shader_parameter/start = 0.38
+shader_parameter/finish = 1.0

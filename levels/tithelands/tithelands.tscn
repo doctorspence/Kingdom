@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://game/world/camp.gd" id="camp_script"]
 [ext_resource type="Script" path="res://game/world/grass_field.gd" id="grass_field"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/campfire.tscn" id="fire_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/cobble_patch.tscn" id="cobble_scene"]
+[ext_resource type="Material" path="res://levels/common/materials/vignette.tres" id="vignette_mat"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/stone_small.tscn" id="stone_small"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/log_fallen.tscn" id="log_fallen"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/stump.tscn" id="stump_scene"]
@@ -1001,3 +1003,26 @@ avoid = PackedVector3Array(-105.50, 22.50, 12.00, 121.00, -83.00, 12.00, 27.00, 
 [node name="Grass" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
 script = ExtResource("grass_field")
 terrain = NodePath("../Terrain")
+
+[node name="CheckpointPaving" parent="Places" instance=ExtResource("cobble_scene")]
+position = Vector3(0, 0, -84)
+
+[node name="CheckpointPaving2" parent="Places" instance=ExtResource("cobble_scene")]
+position = Vector3(0, 0, -76)
+scale = Vector3(0.8, 1, 0.8)
+
+[node name="CrossroadsPaving" parent="Places" instance=ExtResource("cobble_scene")]
+position = Vector3(5, 0, 117)
+scale = Vector3(0.9, 1, 0.9)
+
+[node name="Vignette" type="CanvasLayer" parent="."]
+layer = 0
+
+[node name="Rect" type="ColorRect" parent="Vignette"]
+material = ExtResource("vignette_mat")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

@@ -1,0 +1,29 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/cobble/color.jpg" id="c"]
+[ext_resource type="Texture2D" path="res://assets/textures/cobble/normal.jpg" id="n"]
+[ext_resource type="Texture2D" path="res://assets/textures/cobble/rough.jpg" id="r"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_cobble"]
+albedo_color = Color(0.7, 0.7, 0.72, 1)
+albedo_texture = ExtResource("c")
+roughness_texture = ExtResource("r")
+normal_enabled = true
+normal_texture = ExtResource("n")
+uv1_scale = Vector3(0.35, 0.35, 0.35)
+uv1_triplanar = true
+metallic_specular = 0.2
+texture_filter = 5
+
+[sub_resource type="CylinderMesh" id="Mesh_patch"]
+material = SubResource("Mat_cobble")
+top_radius = 7.0
+bottom_radius = 7.4
+height = 0.12
+radial_segments = 28
+
+[node name="CobblePatch" type="Node3D"]
+
+[node name="Paving" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.02, 0)
+mesh = SubResource("Mesh_patch")
