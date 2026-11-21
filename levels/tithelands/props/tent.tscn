@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/canvas.tres" id="m_canvas"]
+
+[node name="Tent" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Canvas" type="CSGPolygon3D" parent="Shape"]
+position = Vector3(0, 0, 1.5)
+polygon = PackedVector2Array(-1.6, 0, 1.6, 0, 0, 2.2)
+depth = 3
+material = ExtResource("m_canvas")
+
+[node name="Inside" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.7, 0)
+size = Vector3(2.2, 1.4, 3.2)
+material = ExtResource("m_canvas")
+operation = 2
+

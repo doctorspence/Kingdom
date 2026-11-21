@@ -1,0 +1,67 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/stone.tres" id="m_stone"]
+
+[node name="Watchtower" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Tower" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 6, 0)
+radius = 3.2
+height = 12
+sides = 10
+material = ExtResource("m_stone")
+
+[node name="Hollow" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 6.3, 0)
+radius = 2.7
+height = 11.8
+sides = 10
+material = ExtResource("m_stone")
+
+[node name="DoorN" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.2, -3)
+size = Vector3(1.6, 2.4, 1.4)
+material = ExtResource("m_stone")
+operation = 2
+
+[node name="DoorS" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.2, 3)
+size = Vector3(1.6, 2.4, 1.4)
+material = ExtResource("m_stone")
+operation = 2
+
+[node name="Breach" type="CSGBox3D" parent="Shape"]
+position = Vector3(2.6, 9.5, 0)
+size = Vector3(1.5, 3, 2.2)
+material = ExtResource("m_stone")
+operation = 2
+
+[node name="Floor" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 9.9, 0.5)
+size = Vector3(5, 0.25, 4.5)
+material = ExtResource("m_dark_wood")
+
+[node name="Hole" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 9.9, -1.5)
+size = Vector3(1.2, 0.6, 1.2)
+material = ExtResource("m_dark_wood")
+operation = 2
+
+[node name="Rim" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 12.3, 0)
+radius = 3.4
+height = 0.6
+sides = 10
+material = ExtResource("m_stone")
+
+[node name="RimHole" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 12.3, 0)
+radius = 2.9
+height = 0.8
+sides = 10
+material = ExtResource("m_stone")
+

@@ -16,7 +16,9 @@ const PORT := 31415
 var port := PORT
 const MAX_PLAYERS := 10
 const MENU_SCENE := "res://game/ui/main_menu.tscn"
-const WORLD_SCENE := "res://levels/sandbox/combat_test.tscn"
+const WORLD_SCENE := "res://levels/tithelands/tithelands.tscn"
+## The world to load (automated checks use the small arena).
+var world_scene := WORLD_SCENE
 const SETTINGS_PATH := "user://settings.cfg"
 
 var mode := Mode.OFFLINE
@@ -74,7 +76,7 @@ func host_game() -> Error:
 	mode = Mode.HOST
 	names = {1: player_name}
 	_save_settings()
-	get_tree().change_scene_to_file(WORLD_SCENE)
+	get_tree().change_scene_to_file(world_scene)
 	return OK
 
 
@@ -83,7 +85,7 @@ func join_game(address: String) -> void:
 	join_address = address.strip_edges()
 	mode = Mode.JOIN
 	_save_settings()
-	get_tree().change_scene_to_file(WORLD_SCENE)
+	get_tree().change_scene_to_file(world_scene)
 
 
 ## Called by the world once it has loaded, when joining.

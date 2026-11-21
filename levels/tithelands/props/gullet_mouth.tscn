@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_stone.tres" id="m_dark_stone"]
+[ext_resource type="Material" path="res://levels/common/materials/stone.tres" id="m_stone"]
+
+[node name="GulletMouth" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="ArchL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-3.5, 3, 0)
+size = Vector3(2.5, 6, 3)
+material = ExtResource("m_dark_stone")
+rotation_degrees = Vector3(0, 0, 6)
+
+[node name="ArchR" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.5, 3, 0)
+size = Vector3(2.5, 6, 3)
+material = ExtResource("m_dark_stone")
+rotation_degrees = Vector3(0, 0, -6)
+
+[node name="ArchTop" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 6.2, 0)
+size = Vector3(9.5, 2, 3.2)
+material = ExtResource("m_dark_stone")
+
+[node name="Rubble1" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1, 0.5)
+size = Vector3(4.5, 2, 2.5)
+material = ExtResource("m_stone")
+rotation_degrees = Vector3(0, 20, 8)
+
+[node name="Rubble2" type="CSGBox3D" parent="Shape"]
+position = Vector3(-1, 2.6, 0.3)
+size = Vector3(3, 1.6, 2)
+material = ExtResource("m_stone")
+rotation_degrees = Vector3(10, -15, 0)
+
+[node name="Rubble3" type="CSGBox3D" parent="Shape"]
+position = Vector3(1.2, 3.8, 0)
+size = Vector3(2.6, 1.4, 1.8)
+material = ExtResource("m_stone")
+rotation_degrees = Vector3(-8, 30, 12)
+

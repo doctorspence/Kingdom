@@ -1,0 +1,36 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
+
+[node name="Palisade" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Wall" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.6, 0)
+size = Vector3(8, 3.2, 0.5)
+material = ExtResource("m_dark_wood")
+
+[node name="Tip1" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-3, 3.4, 0)
+radius = 0.25
+height = 0.6
+sides = 10
+material = ExtResource("m_wood")
+
+[node name="Tip2" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 3.4, 0)
+radius = 0.25
+height = 0.6
+sides = 10
+material = ExtResource("m_wood")
+
+[node name="Tip3" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(3, 3.4, 0)
+radius = 0.25
+height = 0.6
+sides = 10
+material = ExtResource("m_wood")
+

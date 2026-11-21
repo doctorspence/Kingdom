@@ -1,0 +1,48 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
+
+[node name="Cart" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Bed" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.8, 0)
+size = Vector3(1.6, 0.2, 2.8)
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(0, 0, 4)
+
+[node name="Side1" type="CSGBox3D" parent="Shape"]
+position = Vector3(0.78, 1.1, 0)
+size = Vector3(0.08, 0.5, 2.8)
+material = ExtResource("m_wood")
+
+[node name="Side2" type="CSGBox3D" parent="Shape"]
+position = Vector3(-0.78, 1.1, 0)
+size = Vector3(0.08, 0.5, 2.8)
+material = ExtResource("m_wood")
+
+[node name="WheelL" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0.95, 0.5, 0.4)
+radius = 0.5
+height = 0.12
+sides = 10
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 90)
+
+[node name="WheelR" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-0.95, 0.45, 0.4)
+radius = 0.5
+height = 0.12
+sides = 10
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(8, 0, 90)
+
+[node name="Shaft" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.6, -2)
+size = Vector3(0.12, 0.12, 2)
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(-10, 0, 0)
+

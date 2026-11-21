@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/iron.tres" id="m_iron"]
+[ext_resource type="Material" path="res://levels/common/materials/stone.tres" id="m_stone"]
+[ext_resource type="Material" path="res://levels/common/materials/thatch.tres" id="m_thatch"]
+
+[node name="Mill" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Walls" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 3, 0)
+size = Vector3(7, 6, 7)
+material = ExtResource("m_stone")
+
+[node name="Inside" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 3, 0)
+size = Vector3(6.4, 5.8, 6.4)
+material = ExtResource("m_stone")
+operation = 2
+
+[node name="Door" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.2, 3.5)
+size = Vector3(1.6, 2.4, 0.8)
+material = ExtResource("m_stone")
+operation = 2
+
+[node name="Roof" type="CSGPolygon3D" parent="Shape"]
+position = Vector3(0, 6, 3.75)
+polygon = PackedVector2Array(-4, 0, 4, 0, 0, 3.5)
+depth = 7.5
+material = ExtResource("m_thatch")
+
+[node name="Wheel" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(4.2, 2.5, 0)
+radius = 2.6
+height = 0.6
+sides = 10
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 90)
+
+[node name="Axle" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(3.7, 2.5, 0)
+radius = 0.25
+height = 1.2
+sides = 10
+material = ExtResource("m_iron")
+rotation_degrees = Vector3(0, 0, 90)
+

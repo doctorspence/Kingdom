@@ -1,0 +1,39 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/stone.tres" id="m_stone"]
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
+
+[node name="BrokenBridge" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="DeckN" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.0, -7)
+size = Vector3(4, 0.4, 7)
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(-4, 0, 0)
+
+[node name="DeckS" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.0, 7)
+size = Vector3(4, 0.4, 7)
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(4, 0, 0)
+
+[node name="Stub" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.6, 2)
+size = Vector3(4, 0.3, 2)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 15)
+
+[node name="PierN" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, -0.5, -4)
+size = Vector3(4.5, 3, 1)
+material = ExtResource("m_stone")
+
+[node name="PierS" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, -0.5, 4)
+size = Vector3(4.5, 3, 1)
+material = ExtResource("m_stone")
+

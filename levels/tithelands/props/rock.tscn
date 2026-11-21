@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/stone.tres" id="m_stone"]
+
+[node name="Rock" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Body" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.6, 0)
+size = Vector3(2.4, 1.6, 2)
+material = ExtResource("m_stone")
+rotation_degrees = Vector3(8, 20, 5)
+
+[node name="Top" type="CSGBox3D" parent="Shape"]
+position = Vector3(0.3, 1.3, -0.2)
+size = Vector3(1.4, 0.9, 1.3)
+material = ExtResource("m_stone")
+rotation_degrees = Vector3(-12, 50, 10)
+

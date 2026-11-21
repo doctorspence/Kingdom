@@ -1,0 +1,375 @@
+[gd_scene format=3]
+
+[ext_resource type="Environment" path="res://levels/common/overcast_env.tres" id="env"]
+[ext_resource type="Script" path="res://game/net/game_session.gd" id="session"]
+[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="hud"]
+[ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="shrine"]
+[ext_resource type="Script" path="res://game/world/vendor.gd" id="vendor"]
+[ext_resource type="Resource" path="res://data/vendors/vendor_old_wenna.tres" id="wenna"]
+[ext_resource type="Resource" path="res://data/vendors/vendor_soul_broker.tres" id="broker"]
+[ext_resource type="Script" path="res://game/world/zone_terrain.gd" id="terrain"]
+[ext_resource type="Material" path="res://levels/common/materials/terrain.tres" id="terrain_mat"]
+[ext_resource type="Script" path="res://game/world/ground_snap.gd" id="snap"]
+[ext_resource type="Script" path="res://game/world/scatter.gd" id="scatter"]
+[ext_resource type="PackedScene" path="res://game/enemies/marauder.tscn" id="marauder"]
+[ext_resource type="PackedScene" path="res://levels/sandbox/props/placeholder_dead_tree.tscn" id="deadtree_vis"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/cottage.tscn" id="cottage"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/burned_cottage.tscn" id="burned_cottage"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/tithe_barn.tscn" id="tithe_barn"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/mill.tscn" id="mill"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/tent.tscn" id="tent"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/barricade.tscn" id="barricade"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/fence.tscn" id="fence"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/cart.tscn" id="cart"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/palisade.tscn" id="palisade"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/watchtower.tscn" id="watchtower"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/bridge_broken.tscn" id="bridge_broken"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/gullet_mouth.tscn" id="gullet_mouth"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/rock.tscn" id="rock"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/gallows.tscn" id="gallows"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/signpost.tscn" id="signpost"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_pine.tscn" id="tree_pine"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_dead.tscn" id="tree_dead"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/highcrown.tscn" id="highcrown"]
+
+[sub_resource type="BoxShape3D" id="edge_N"]
+size = Vector3(520, 80, 1)
+
+[sub_resource type="BoxShape3D" id="edge_S"]
+size = Vector3(520, 80, 1)
+
+[sub_resource type="BoxShape3D" id="edge_W"]
+size = Vector3(1, 80, 520)
+
+[sub_resource type="BoxShape3D" id="edge_E"]
+size = Vector3(1, 80, 520)
+
+
+[node name="Tithelands" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-50, 35, 0)
+light_color = Color(0.84, 0.86, 0.9, 1)
+light_energy = 0.9
+shadow_enabled = true
+shadow_blur = 2.0
+directional_shadow_max_distance = 140.0
+sky_mode = 1
+
+[node name="Terrain" type="Node3D" parent="."]
+script = ExtResource("terrain")
+river_depth = 1.1
+material = ExtResource("terrain_mat")
+
+[node name="Players" type="Node3D" parent="."]
+
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://game/player/player.tscn")
+spawn_path = NodePath("../Players")
+
+[node name="SpawnPoints" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("snap")
+terrain = NodePath("../Terrain")
+
+[node name="Spawn0" type="Marker3D" parent="SpawnPoints"]
+position = Vector3(-4, 0, 172)
+metadata/y_offset = 0.1
+
+[node name="Spawn1" type="Marker3D" parent="SpawnPoints"]
+position = Vector3(-2, 0, 172)
+metadata/y_offset = 0.1
+
+[node name="Spawn2" type="Marker3D" parent="SpawnPoints"]
+position = Vector3(0, 0, 172)
+metadata/y_offset = 0.1
+
+[node name="Spawn3" type="Marker3D" parent="SpawnPoints"]
+position = Vector3(2, 0, 172)
+metadata/y_offset = 0.1
+
+[node name="Spawn4" type="Marker3D" parent="SpawnPoints"]
+position = Vector3(4, 0, 172)
+metadata/y_offset = 0.1
+
+[node name="GameSession" type="Node" parent="." node_paths=PackedStringArray("spawn_points", "players_root")]
+script = ExtResource("session")
+spawn_points = NodePath("../SpawnPoints")
+players_root = NodePath("../Players")
+
+[node name="Hud" parent="." instance=ExtResource("hud")]
+
+[node name="Places" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("snap")
+terrain = NodePath("../Terrain")
+
+[node name="CrossroadsShrine" parent="Places" instance=ExtResource("shrine")]
+position = Vector3(9, 0, 164)
+rotation_degrees = Vector3(0, 200, 0)
+shrine_name = "Crossroads Shrine"
+shrine_id = &"crossroads"
+[node name="Gallows" parent="Places" instance=ExtResource("gallows")]
+position = Vector3(-11, 0, 170)
+rotation_degrees = Vector3(0, -15, 0)
+
+[node name="Signpost" parent="Places" instance=ExtResource("signpost")]
+position = Vector3(4, 0, 157)
+rotation_degrees = Vector3(0, 10, 0)
+
+
+[node name="OldWenna" type="Node3D" parent="Places"]
+position = Vector3(14, 0, 173)
+rotation_degrees = Vector3(0, 230, 0)
+script = ExtResource("vendor")
+data = ExtResource("wenna")
+body_tint = Color(0.45, 0.38, 0.3, 1)
+
+[node name="SoulBroker" type="Node3D" parent="Places"]
+position = Vector3(-8, 0, 184)
+rotation_degrees = Vector3(0, 150, 0)
+script = ExtResource("vendor")
+data = ExtResource("broker")
+body_tint = Color(0.12, 0.12, 0.16, 1)
+
+[node name="Farm1" parent="Places" instance=ExtResource("cottage")]
+position = Vector3(-30, 0, 140)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="Farm2" parent="Places" instance=ExtResource("cottage")]
+position = Vector3(-50, 0, 126)
+rotation_degrees = Vector3(0, 20, 0)
+
+[node name="FarmFence1" parent="Places" instance=ExtResource("fence")]
+position = Vector3(-36, 0, 150)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="FarmFence2" parent="Places" instance=ExtResource("fence")]
+position = Vector3(-42, 0, 150)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="FarmFence3" parent="Places" instance=ExtResource("fence")]
+position = Vector3(-48, 0, 150)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="FarmCart" parent="Places" instance=ExtResource("cart")]
+position = Vector3(-38, 0, 156)
+rotation_degrees = Vector3(0, 70, 0)
+
+[node name="Burned1" parent="Places" instance=ExtResource("burned_cottage")]
+position = Vector3(-80, 0, 90)
+rotation_degrees = Vector3(0, 10, 0)
+
+[node name="Burned2" parent="Places" instance=ExtResource("burned_cottage")]
+position = Vector3(-94, 0, 78)
+rotation_degrees = Vector3(0, 50, 0)
+
+[node name="Burned3" parent="Places" instance=ExtResource("burned_cottage")]
+position = Vector3(-74, 0, 70)
+rotation_degrees = Vector3(0, -30, 0)
+
+[node name="HamletCottage" parent="Places" instance=ExtResource("cottage")]
+position = Vector3(-100, 0, 98)
+rotation_degrees = Vector3(0, 120, 0)
+
+[node name="HamletCart" parent="Places" instance=ExtResource("cart")]
+position = Vector3(-86, 0, 96)
+rotation_degrees = Vector3(0, 200, 0)
+
+[node name="CheckpointBarricadeW" parent="Places" instance=ExtResource("barricade")]
+position = Vector3(-6, 0, -110)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="CheckpointBarricadeE" parent="Places" instance=ExtResource("barricade")]
+position = Vector3(7, 0, -113)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="CheckpointTent1" parent="Places" instance=ExtResource("tent")]
+position = Vector3(14, 0, -122)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="CheckpointTent2" parent="Places" instance=ExtResource("tent")]
+position = Vector3(-14, 0, -124)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="TitheBarn" parent="Places" instance=ExtResource("tithe_barn")]
+position = Vector3(36, 0, -88)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="Bridge" parent="Places" instance=ExtResource("bridge_broken")]
+position = Vector3(0, 0, -5)
+rotation_degrees = Vector3(0, 0, 0)
+metadata/y_offset = 0.4
+[node name="Mill" parent="Places" instance=ExtResource("mill")]
+position = Vector3(-125, 0, -28)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="MillShrine" parent="Places" instance=ExtResource("shrine")]
+position = Vector3(-108, 0, -40)
+rotation_degrees = Vector3(0, 140, 0)
+shrine_name = "Mill Shrine"
+shrine_id = &"mill"
+[node name="HobbTent1" parent="Places" instance=ExtResource("tent")]
+position = Vector3(-150, 0, 25)
+rotation_degrees = Vector3(0, 30, 0)
+
+[node name="HobbTent2" parent="Places" instance=ExtResource("tent")]
+position = Vector3(-160, 0, 36)
+rotation_degrees = Vector3(0, -20, 0)
+
+[node name="HobbTent3" parent="Places" instance=ExtResource("tent")]
+position = Vector3(-141, 0, 40)
+rotation_degrees = Vector3(0, 75, 0)
+
+[node name="HobbBarricade" parent="Places" instance=ExtResource("barricade")]
+position = Vector3(-138, 0, 18)
+rotation_degrees = Vector3(0, 40, 0)
+
+[node name="HobbPalisade" parent="Places" instance=ExtResource("palisade")]
+position = Vector3(-165, 0, 22)
+rotation_degrees = Vector3(0, 70, 0)
+
+[node name="RaiderTent1" parent="Places" instance=ExtResource("tent")]
+position = Vector3(170, 0, -120)
+rotation_degrees = Vector3(0, 10, 0)
+
+[node name="RaiderTent2" parent="Places" instance=ExtResource("tent")]
+position = Vector3(182, 0, -128)
+rotation_degrees = Vector3(0, -40, 0)
+
+[node name="RaiderBarricade" parent="Places" instance=ExtResource("barricade")]
+position = Vector3(160, 0, -110)
+rotation_degrees = Vector3(0, 60, 0)
+
+[node name="RaiderBurned" parent="Places" instance=ExtResource("burned_cottage")]
+position = Vector3(188, 0, -110)
+rotation_degrees = Vector3(0, 15, 0)
+
+[node name="Watchtower" parent="Places" instance=ExtResource("watchtower")]
+position = Vector3(150, 0, 40)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="TowerWall0" parent="Places" instance=ExtResource("palisade")]
+position = Vector3(165.00, 0, 40.00)
+rotation_degrees = Vector3(0, 90, 0)
+scale = Vector3(1.45, 1.45, 1.45)
+
+[node name="TowerWall1" parent="Places" instance=ExtResource("palisade")]
+position = Vector3(160.61, 0, 29.39)
+rotation_degrees = Vector3(0, 135, 0)
+scale = Vector3(1.45, 1.45, 1.45)
+
+[node name="TowerWall3" parent="Places" instance=ExtResource("palisade")]
+position = Vector3(139.39, 0, 29.39)
+rotation_degrees = Vector3(0, 225, 0)
+scale = Vector3(1.45, 1.45, 1.45)
+
+[node name="TowerWall4" parent="Places" instance=ExtResource("palisade")]
+position = Vector3(135.00, 0, 40.00)
+rotation_degrees = Vector3(0, 270, 0)
+scale = Vector3(1.45, 1.45, 1.45)
+
+[node name="TowerWall5" parent="Places" instance=ExtResource("palisade")]
+position = Vector3(139.39, 0, 50.61)
+rotation_degrees = Vector3(0, 315, 0)
+scale = Vector3(1.45, 1.45, 1.45)
+
+[node name="TowerWall7" parent="Places" instance=ExtResource("palisade")]
+position = Vector3(160.61, 0, 50.61)
+rotation_degrees = Vector3(0, 405, 0)
+scale = Vector3(1.45, 1.45, 1.45)
+
+[node name="QuarryShrine" parent="Places" instance=ExtResource("shrine")]
+position = Vector3(-148, 0, -110)
+rotation_degrees = Vector3(0, 60, 0)
+shrine_name = "Quarry Shrine"
+shrine_id = &"quarry"
+[node name="GulletMouth" parent="Places" instance=ExtResource("gullet_mouth")]
+position = Vector3(-205, 0, -186)
+rotation_degrees = Vector3(0, 30, 0)
+
+[node name="QuarryRock1" parent="Places" instance=ExtResource("rock")]
+position = Vector3(-175, 0, -170)
+rotation_degrees = Vector3(0, 20, 0)
+scale = Vector3(2.2, 2.2, 2.2)
+
+[node name="QuarryRock2" parent="Places" instance=ExtResource("rock")]
+position = Vector3(-200, 0, -150)
+rotation_degrees = Vector3(0, 70, 0)
+scale = Vector3(1.8, 1.8, 1.8)
+
+[node name="Highcrown" parent="." instance=ExtResource("highcrown")]
+position = Vector3(0, 0, -340)
+
+[node name="Woods" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("scatter")
+terrain = NodePath("../Terrain")
+scenes = Array[PackedScene]([ExtResource("tree_pine"), ExtResource("tree_pine"), ExtResource("tree_dead")])
+area = Rect2(45, -235, 195, 440)
+count = 320
+scatter_seed = 11
+min_spacing = 5.5
+avoid = PackedVector3Array(150, 40, 22, 176, -118, 16)
+
+[node name="FarmTrees" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("scatter")
+terrain = NodePath("../Terrain")
+scenes = Array[PackedScene]([ExtResource("tree_dead"), ExtResource("tree_pine")])
+area = Rect2(-235, -100, 225, 330)
+count = 70
+scatter_seed = 23
+min_spacing = 9.0
+avoid = PackedVector3Array(-85, 85, 20, -40, 140, 24, -150, 30, 20, -120, -30, 16, -108, -40, 8, 0, 168, 22)
+
+[node name="Rocks" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("scatter")
+terrain = NodePath("../Terrain")
+scenes = Array[PackedScene]([ExtResource("rock")])
+area = Rect2(-245, -245, 490, 490)
+count = 60
+scatter_seed = 5
+min_spacing = 12.0
+scale_range = Vector2(0.6, 2.0)
+height_limits = Vector2(-20, 30)
+
+[node name="Enemies" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("snap")
+terrain = NodePath("../Terrain")
+
+[node name="MarauderHamlet1" parent="Enemies" instance=ExtResource("marauder")]
+position = Vector3(-84, 0, 82)
+rotation_degrees = Vector3(0, 30, 0)
+
+[node name="MarauderHamlet2" parent="Enemies" instance=ExtResource("marauder")]
+position = Vector3(-90, 0, 92)
+rotation_degrees = Vector3(0, 200, 0)
+
+[node name="MarauderRaiders" parent="Enemies" instance=ExtResource("marauder")]
+position = Vector3(172, 0, -112)
+rotation_degrees = Vector3(0, 180, 0)
+
+[node name="EdgeN" type="StaticBody3D" parent="."]
+position = Vector3(0, 20, -255)
+
+[node name="Shape" type="CollisionShape3D" parent="EdgeN"]
+shape = SubResource("edge_N")
+
+[node name="EdgeS" type="StaticBody3D" parent="."]
+position = Vector3(0, 20, 255)
+
+[node name="Shape" type="CollisionShape3D" parent="EdgeS"]
+shape = SubResource("edge_S")
+
+[node name="EdgeW" type="StaticBody3D" parent="."]
+position = Vector3(-255, 20, 0)
+
+[node name="Shape" type="CollisionShape3D" parent="EdgeW"]
+shape = SubResource("edge_W")
+
+[node name="EdgeE" type="StaticBody3D" parent="."]
+position = Vector3(255, 20, 0)
+
+[node name="Shape" type="CollisionShape3D" parent="EdgeE"]
+shape = SubResource("edge_E")
+

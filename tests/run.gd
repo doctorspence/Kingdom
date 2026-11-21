@@ -17,6 +17,7 @@ func _start() -> void:
 	root.get_node("Net").set(&"character", {})
 	root.get_node("Net").set(&"player_name", "Tester")
 	root.get_node("Net").set(&"port", 31499)
+	root.get_node("Net").set(&"world_scene", "res://levels/sandbox/combat_test.tscn")
 	var args := OS.get_cmdline_user_args()
 	var check_name := args[0] if args.size() > 0 else "movement_check"
 	var script: GDScript = load("res://tests/%s.gd" % check_name)

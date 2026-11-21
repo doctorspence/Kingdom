@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
+
+[node name="Barricade" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Log1" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.4, 0)
+size = Vector3(6, 0.5, 0.5)
+material = ExtResource("m_dark_wood")
+
+[node name="Log2" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.0, 0)
+size = Vector3(6, 0.5, 0.5)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 3)
+
+[node name="Spike1" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-2.5, 0.9, 0.5)
+radius = 0.12
+height = 2.2
+sides = 10
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(45, 0, 0)
+
+[node name="Spike2" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-0.8, 0.9, 0.5)
+radius = 0.12
+height = 2.2
+sides = 10
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(45, 0, 0)
+
+[node name="Spike3" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0.8, 0.9, 0.5)
+radius = 0.12
+height = 2.2
+sides = 10
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(45, 0, 0)
+
+[node name="Spike4" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(2.5, 0.9, 0.5)
+radius = 0.12
+height = 2.2
+sides = 10
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(45, 0, 0)
+

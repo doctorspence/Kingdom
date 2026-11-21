@@ -9,6 +9,8 @@ signal rested(player: Node3D)
 const UNSAFE_RANGE := 15.0
 
 @export var shrine_name := "Wayside Shrine"
+## Permanent ID (saves remember which shrines you found). Never change it.
+@export var shrine_id := &"shrine"
 
 @onready var _light: OmniLight3D = $FlameLight
 @onready var _spawn: Marker3D = $SpawnPoint

@@ -1,0 +1,30 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
+
+[node name="Gallows" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="PostL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-1.2, 1.8, 0)
+size = Vector3(0.25, 3.6, 0.25)
+material = ExtResource("m_dark_wood")
+
+[node name="PostR" type="CSGBox3D" parent="Shape"]
+position = Vector3(1.2, 1.8, 0)
+size = Vector3(0.25, 3.6, 0.25)
+material = ExtResource("m_dark_wood")
+
+[node name="Beam" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 3.6, 0)
+size = Vector3(3, 0.25, 0.3)
+material = ExtResource("m_dark_wood")
+
+[node name="Platform" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.5, 0)
+size = Vector3(3.2, 1, 2)
+material = ExtResource("m_wood")
+

@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/thatch.tres" id="m_thatch"]
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
+
+[node name="TitheBarn" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Walls" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 3, 0)
+size = Vector3(9, 6, 15)
+material = ExtResource("m_wood")
+
+[node name="Inside" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 3, 0)
+size = Vector3(8.4, 5.8, 14.4)
+material = ExtResource("m_wood")
+operation = 2
+
+[node name="Doors" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 2, 7.5)
+size = Vector3(4, 4, 0.8)
+material = ExtResource("m_wood")
+operation = 2
+
+[node name="Roof" type="CSGPolygon3D" parent="Shape"]
+position = Vector3(0, 6, 8)
+polygon = PackedVector2Array(-5.25, 0, 5.25, 0, 0, 4)
+depth = 16
+material = ExtResource("m_thatch")
+

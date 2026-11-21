@@ -1,0 +1,26 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
+
+[node name="Signpost" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Post" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.3, 0)
+size = Vector3(0.15, 2.6, 0.15)
+material = ExtResource("m_dark_wood")
+
+[node name="SignN" type="CSGBox3D" parent="Shape"]
+position = Vector3(0.5, 2.2, 0)
+size = Vector3(1.1, 0.3, 0.05)
+material = ExtResource("m_wood")
+
+[node name="SignW" type="CSGBox3D" parent="Shape"]
+position = Vector3(-0.45, 1.8, 0)
+size = Vector3(1, 0.3, 0.05)
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(0, 30, 0)
+

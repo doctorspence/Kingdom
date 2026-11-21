@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/plaster.tres" id="m_plaster"]
+[ext_resource type="Material" path="res://levels/common/materials/stone.tres" id="m_stone"]
+[ext_resource type="Material" path="res://levels/common/materials/thatch.tres" id="m_thatch"]
+
+[node name="Cottage" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Walls" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.5, 0)
+size = Vector3(6, 3, 5)
+material = ExtResource("m_plaster")
+
+[node name="Door" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.1, 2.5)
+size = Vector3(1.4, 2.2, 0.6)
+material = ExtResource("m_plaster")
+operation = 2
+
+[node name="Inside" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.5, 0)
+size = Vector3(5.4, 2.8, 4.4)
+material = ExtResource("m_plaster")
+operation = 2
+
+[node name="Window" type="CSGBox3D" parent="Shape"]
+position = Vector3(2.6, 1.6, 0)
+size = Vector3(1, 0.8, 1)
+material = ExtResource("m_plaster")
+operation = 2
+
+[node name="Roof" type="CSGPolygon3D" parent="Shape"]
+position = Vector3(0, 3, 2.75)
+polygon = PackedVector2Array(-3.5, 0, 3.5, 0, 0, 2.4)
+depth = 5.5
+material = ExtResource("m_thatch")
+
+[node name="Chimney" type="CSGBox3D" parent="Shape"]
+position = Vector3(2, 4, -1.2)
+size = Vector3(0.7, 2.5, 0.7)
+material = ExtResource("m_stone")
+
