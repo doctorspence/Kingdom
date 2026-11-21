@@ -144,6 +144,7 @@ func _ready() -> void:
 	_build_cave_detail(mat)
 	_build_shafts()
 	_build_timbers()
+	_build_excavation_light()
 	_build_room_glow()
 	_build_rails()
 	_build_props()
@@ -422,9 +423,10 @@ var _noise_b := FastNoiseLite.new()
 
 
 func _rough_at(p: Vector3) -> float:
-	var a := 0.5 + 0.5 * _noise_a.get_noise_3dv(p)
+	var a := 1.0 - absf(_noise_a.get_noise_3dv(p))
+	a = a * a
 	var b := 0.5 + 0.5 * _noise_b.get_noise_3dv(p)
-	return clampf(0.75 * a + 0.25 * b, 0.0, 1.0)
+	return clampf(0.7 * a + 0.3 * b, 0.0, 1.0)
 
 
 func _roughen(combiner: CSGCombiner3D) -> void:
@@ -434,9 +436,9 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 	if baked == null or baked.get_surface_count() == 0:
 		return
 	_noise_a.seed = 7
-	_noise_a.frequency = 0.3
+	_noise_a.frequency = 0.38
 	_noise_b.seed = 19
-	_noise_b.frequency = 1.4
+	_noise_b.frequency = 1.7
 	var rock_verts := PackedVector3Array()
 	var rock_norms := PackedVector3Array()
 	var collide := PackedVector3Array()
@@ -464,7 +466,7 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 				continue
 			var n := ns[ia]
 			var sign_ := 1.0 if (b - a).cross(c - a).dot(n) >= 0.0 else -1.0
-			var amp := 0.14 if n.y > 0.7 else (0.4 if n.y < -0.7 else 0.4)
+			var amp := 0.2 if n.y > 0.7 else (0.9 if n.y < -0.7 else 0.95)
 			_subdivide(a, b, c, n, sign_, amp, rock_verts, rock_norms, collide, 0)
 	var raw_v := rock_verts
 	var raw_n := rock_norms
@@ -567,7 +569,8 @@ func _finish_rough(raw_v: PackedVector3Array, raw_n: PackedVector3Array, out_v: 
 ## Mine timbers: a post on each side and a heavy crossbeam every few meters inside the
 ## narrow tunnels (decoration only, nothing to bump into).
 func _build_timbers() -> void:
-	var wood: Material = load(WOOD)
+	var wood := (load(WOOD) as StandardMaterial3D).duplicate() as StandardMaterial3D
+	wood.albedo_color = Color(1.25, 1.0, 0.8)
 	var skip := [Vector2(-18, 5.4), Vector2(5.8, 30), Vector2(-45, 4.0), Vector2(49, 22.6)]
 	for c in CARVES:
 		var y0: float = c[5] if c.size() > 5 else 0.0
@@ -610,3 +613,71 @@ func _build_timbers() -> void:
 			beam.mesh = bm
 			beam.position = Vector3(p.x, y0 + h - 0.55, p.y)
 			add_child(beam)
+			# Warm torch on every other frame, plank floor and rubble around it.
+			if int(t / 4.5) % 2 == 0:
+				var tp := Vector3(p.x, y0 + 2.0, p.y)
+				var off2: float = (span * 0.5 - 0.75)
+				if along_x:
+					tp.z += off2
+				else:
+					tp.x += off2
+				var flame := MeshInstance3D.new()
+				var fm := SphereMesh.new()
+				fm.radius = 0.12
+				fm.height = 0.3
+				var fmat := StandardMaterial3D.new()
+				fmat.albedo_color = Color(1.0, 0.7, 0.3)
+				fmat.emission_enabled = true
+				fmat.emission = Color(1.0, 0.6, 0.2)
+				fmat.emission_energy_multiplier = 4.0
+				fm.material = fmat
+				flame.mesh = fm
+				flame.position = tp
+				add_child(flame)
+				var handle := MeshInstance3D.new()
+				var hm := BoxMesh.new()
+				hm.size = Vector3(0.08, 0.6, 0.08)
+				hm.material = wood
+				handle.mesh = hm
+				handle.position = tp - Vector3(0, 0.4, 0)
+				add_child(handle)
+				var tl := OmniLight3D.new()
+				tl.position = tp + Vector3(0, 0.2, 0)
+				tl.light_color = Color(1.0, 0.62, 0.3)
+				tl.light_energy = 3.2
+				tl.omni_range = 10.0
+				add_child(tl)
+			var planks := MeshInstance3D.new()
+			var plm := BoxMesh.new()
+			plm.size = Vector3(3.4, 0.07, span * 0.55) if along_x else Vector3(span * 0.55, 0.07, 3.4)
+			plm.material = wood
+			planks.mesh = plm
+			planks.position = Vector3(p.x, y0 + 0.2, p.y)
+			add_child(planks)
+			for k in 4:
+				var rock := MeshInstance3D.new()
+				var rm := BoxMesh.new()
+				rm.size = Vector3(randf_range(0.3, 0.8), randf_range(0.15, 0.4), randf_range(0.3, 0.7))
+				var rmat := StandardMaterial3D.new()
+				rmat.albedo_color = Color(0.38, 0.3, 0.24)
+				rmat.roughness = 0.95
+				rm.material = rmat
+				rock.mesh = rm
+				var side2 := 1.0 if randf() < 0.5 else -1.0
+				var sp := side2 * (span * 0.5 - randf_range(0.7, 1.3))
+				var al := randf_range(-2.0, 2.0)
+				rock.position = Vector3(p.x + al, y0 + 0.15, p.y + sp) if along_x else Vector3(p.x + sp, y0 + 0.15, p.y + al)
+				rock.rotation = Vector3(randf(), randf() * TAU, randf())
+				add_child(rock)
+
+
+## Extra warm and cool light for the big Excavation, which was too dark.
+func _build_excavation_light() -> void:
+	for x in [36.0, 46.0, 56.0, 64.0]:
+		for z in [-22.0, -4.0]:
+			var l := OmniLight3D.new()
+			l.position = Vector3(x, 6.0, z)
+			l.light_color = Color(1.0, 0.65, 0.35) if int(x + z) % 2 == 0 else Color(0.45, 0.65, 1.0)
+			l.light_energy = 5.0
+			l.omni_range = 18.0
+			add_child(l)
