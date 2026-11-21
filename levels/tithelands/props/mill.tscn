@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_dark_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
 [ext_resource type="Material" path="res://levels/common/materials/iron.tres" id="m_iron"]
 [ext_resource type="Material" path="res://levels/common/materials/stone.tres" id="m_stone"]
 [ext_resource type="Material" path="res://levels/common/materials/thatch.tres" id="m_thatch"]
@@ -9,6 +10,11 @@
 
 [node name="Shape" type="CSGCombiner3D" parent="."]
 use_collision = true
+
+[node name="Plinth" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.25, 0)
+size = Vector3(7.6, 0.5, 7.6)
+material = ExtResource("m_stone")
 
 [node name="Walls" type="CSGBox3D" parent="Shape"]
 position = Vector3(0, 3, 0)
@@ -27,25 +33,220 @@ size = Vector3(1.6, 2.4, 0.8)
 material = ExtResource("m_stone")
 operation = 2
 
+[node name="LoftDoor" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 4.6, 3.5)
+size = Vector3(1.2, 1.4, 0.8)
+material = ExtResource("m_stone")
+operation = 2
+
 [node name="Roof" type="CSGPolygon3D" parent="Shape"]
-position = Vector3(0, 6, 3.75)
-polygon = PackedVector2Array(-4, 0, 4, 0, 0, 3.5)
-depth = 7.5
+position = Vector3(0, 6, 4.2)
+polygon = PackedVector2Array(-4.7, -0.25, 4.7, -0.25, 0, 3.9)
+depth = 8.4
 material = ExtResource("m_thatch")
 
-[node name="Wheel" type="CSGCylinder3D" parent="Shape"]
-position = Vector3(4.2, 2.5, 0)
-radius = 2.6
-height = 0.6
-sides = 10
+[node name="Ridge" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 9.95, 0)
+size = Vector3(0.28, 0.28, 8.6)
 material = ExtResource("m_dark_wood")
-rotation_degrees = Vector3(0, 0, 90)
+
+[node name="DoorPostL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-0.95, 1.25, 3.62)
+size = Vector3(0.25, 2.5, 0.3)
+material = ExtResource("m_dark_wood")
+
+[node name="DoorPostR" type="CSGBox3D" parent="Shape"]
+position = Vector3(0.95, 1.25, 3.62)
+size = Vector3(0.25, 2.5, 0.3)
+material = ExtResource("m_dark_wood")
+
+[node name="DoorLintel" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 2.5, 3.62)
+size = Vector3(2.2, 0.28, 0.3)
+material = ExtResource("m_dark_wood")
+
+[node name="LoftFrame" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 5.35, 3.6)
+size = Vector3(1.6, 0.2, 0.25)
+material = ExtResource("m_dark_wood")
+
+[node name="HoistBeam" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 6.3, 4.4)
+size = Vector3(0.22, 0.22, 2.0)
+material = ExtResource("m_dark_wood")
+
+[node name="HoistBrace" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 5.8, 4.1)
+size = Vector3(0.16, 1.1, 0.16)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(40, 0, 0)
+
+[node name="PostFL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-3.5, 3, 3.5)
+size = Vector3(0.4, 6.1, 0.4)
+material = ExtResource("m_dark_wood")
+
+[node name="PostFR" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.5, 3, 3.5)
+size = Vector3(0.4, 6.1, 0.4)
+material = ExtResource("m_dark_wood")
+
+[node name="PostBL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-3.5, 3, -3.5)
+size = Vector3(0.4, 6.1, 0.4)
+material = ExtResource("m_dark_wood")
+
+[node name="PostBR" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.5, 3, -3.5)
+size = Vector3(0.4, 6.1, 0.4)
+material = ExtResource("m_dark_wood")
+
+[node name="PlateFront" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 5.9, 3.52)
+size = Vector3(7.2, 0.3, 0.25)
+material = ExtResource("m_dark_wood")
+
+[node name="PlateBack" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 5.9, -3.52)
+size = Vector3(7.2, 0.3, 0.25)
+material = ExtResource("m_dark_wood")
+
+[node name="PlateL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-3.52, 5.9, 0)
+size = Vector3(0.25, 0.3, 7.2)
+material = ExtResource("m_dark_wood")
+
+[node name="PlateR" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.52, 5.9, 0)
+size = Vector3(0.25, 0.3, 7.2)
+material = ExtResource("m_dark_wood")
 
 [node name="Axle" type="CSGCylinder3D" parent="Shape"]
-position = Vector3(3.7, 2.5, 0)
-radius = 0.25
-height = 1.2
+position = Vector3(4.3, 2.8, 0)
+radius = 0.28
+height = 1.8
 sides = 10
 material = ExtResource("m_iron")
 rotation_degrees = Vector3(0, 0, 90)
+
+[node name="WheelRim" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(4.9, 2.8, 0)
+radius = 2.7
+height = 0.7
+sides = 24
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 90)
+
+[node name="WheelHole" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(4.9, 2.8, 0)
+radius = 2.35
+height = 0.9
+sides = 24
+material = ExtResource("m_dark_wood")
+operation = 2
+rotation_degrees = Vector3(0, 0, 90)
+
+[node name="Hub" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(4.9, 2.8, 0)
+radius = 0.45
+height = 0.9
+sides = 10
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(0, 0, 90)
+
+[node name="Spoke0" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 2.8, 0)
+size = Vector3(0.2, 4.7, 0.18)
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="Spoke1" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 2.8, 0)
+size = Vector3(0.2, 4.7, 0.18)
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(45, 0, 0)
+
+[node name="Spoke2" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 2.8, 0)
+size = Vector3(0.2, 4.7, 0.18)
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(90, 0, 0)
+
+[node name="Spoke3" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 2.8, 0)
+size = Vector3(0.2, 4.7, 0.18)
+material = ExtResource("m_wood")
+rotation_degrees = Vector3(135, 0, 0)
+
+[node name="Paddle0" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 5.35, 0.00)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="Paddle1" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 5.01, 1.27)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-30, 0, 0)
+
+[node name="Paddle2" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 4.08, 2.21)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-60, 0, 0)
+
+[node name="Paddle3" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 2.80, 2.55)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-90, 0, 0)
+
+[node name="Paddle4" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 1.53, 2.21)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-120, 0, 0)
+
+[node name="Paddle5" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 0.59, 1.28)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-150, 0, 0)
+
+[node name="Paddle6" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 0.25, 0.00)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-180, 0, 0)
+
+[node name="Paddle7" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 0.59, -1.27)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-210, 0, 0)
+
+[node name="Paddle8" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 1.52, -2.21)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-240, 0, 0)
+
+[node name="Paddle9" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 2.80, -2.55)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-270, 0, 0)
+
+[node name="Paddle10" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 4.07, -2.21)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-300, 0, 0)
+
+[node name="Paddle11" type="CSGBox3D" parent="Shape"]
+position = Vector3(4.9, 5.01, -1.28)
+size = Vector3(0.9, 0.14, 0.55)
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(-330, 0, 0)
 

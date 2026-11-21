@@ -23,6 +23,7 @@ func _ready() -> void:
 	_door.mesh = m
 	_door.position.y = gate_height * 0.5
 	add_child(_door)
+	_dress_door()
 	_shape = CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = Vector3(width, gate_height, 0.4)
@@ -34,6 +35,37 @@ func _ready() -> void:
 			_show_open(true))
 	if is_open():
 		_show_open(false)
+
+
+## Iron straps across both faces and heavy posts at the edges, so it reads as
+## a barred gate and not a slab. They are children of the door, so they move with it.
+func _dress_door() -> void:
+	var iron: Material = load("res://levels/common/materials/iron.tres")
+	var timber: Material = load("res://levels/common/materials/wood.tres")
+	for face in [-1.0, 1.0]:
+		for frac in [0.18, 0.5, 0.82]:
+			var strap := MeshInstance3D.new()
+			var sm := BoxMesh.new()
+			sm.size = Vector3(width * 0.98, 0.2, 0.06)
+			sm.material = iron
+			strap.mesh = sm
+			strap.position = Vector3(0, (frac - 0.5) * gate_height, face * 0.18)
+			_door.add_child(strap)
+	for side in [-1.0, 1.0]:
+		var post := MeshInstance3D.new()
+		var pm := BoxMesh.new()
+		pm.size = Vector3(0.4, gate_height + 0.5, 0.55)
+		pm.material = timber
+		post.mesh = pm
+		post.position = Vector3(side * (width * 0.5 + 0.1), 0.25, 0)
+		_door.add_child(post)
+	var lintel := MeshInstance3D.new()
+	var lm := BoxMesh.new()
+	lm.size = Vector3(width + 0.9, 0.4, 0.6)
+	lm.material = timber
+	lintel.mesh = lm
+	lintel.position = Vector3(0, gate_height * 0.5 + 0.3, 0)
+	_door.add_child(lintel)
 
 
 func _flag() -> StringName:

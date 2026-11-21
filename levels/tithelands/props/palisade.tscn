@@ -8,29 +8,257 @@
 [node name="Shape" type="CSGCombiner3D" parent="."]
 use_collision = true
 
-[node name="Wall" type="CSGBox3D" parent="Shape"]
-position = Vector3(0, 1.6, 0)
-size = Vector3(8, 3.2, 0.5)
+[node name="Log1" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-3.85, 1.62, 0)
+radius = 0.25
+height = 3.24
+sides = 8
 material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 1.6)
 
 [node name="Tip1" type="CSGCylinder3D" parent="Shape"]
-position = Vector3(-3, 3.4, 0)
+position = Vector3(-3.85, 3.44, 0)
 radius = 0.25
-height = 0.6
-sides = 10
+height = 0.5
+sides = 8
+cone = true
 material = ExtResource("m_wood")
+
+[node name="Log2" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-3.30, 1.74, 0)
+radius = 0.25
+height = 3.48
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 1.2)
 
 [node name="Tip2" type="CSGCylinder3D" parent="Shape"]
-position = Vector3(0, 3.4, 0)
+position = Vector3(-3.30, 3.68, 0)
 radius = 0.25
-height = 0.6
-sides = 10
+height = 0.5
+sides = 8
+cone = true
 material = ExtResource("m_wood")
+
+[node name="Log3" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-2.75, 1.86, 0)
+radius = 0.25
+height = 3.72
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 0.8)
 
 [node name="Tip3" type="CSGCylinder3D" parent="Shape"]
-position = Vector3(3, 3.4, 0)
+position = Vector3(-2.75, 3.92, 0)
 radius = 0.25
-height = 0.6
-sides = 10
+height = 0.5
+sides = 8
+cone = true
 material = ExtResource("m_wood")
 
+[node name="Log4" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-2.20, 1.56, 0)
+radius = 0.25
+height = 3.12
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 0.4)
+
+[node name="Tip4" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-2.20, 3.32, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log5" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-1.65, 1.68, 0)
+radius = 0.25
+height = 3.36
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 0.0)
+
+[node name="Tip5" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-1.65, 3.56, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log6" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-1.10, 1.80, 0)
+radius = 0.25
+height = 3.60
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, -0.4)
+
+[node name="Tip6" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-1.10, 3.80, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log7" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-0.55, 1.50, 0)
+radius = 0.25
+height = 3.00
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, -0.8)
+
+[node name="Tip7" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(-0.55, 3.20, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log8" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0.00, 1.62, 0)
+radius = 0.25
+height = 3.24
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, -1.2)
+
+[node name="Tip8" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0.00, 3.44, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log9" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0.55, 1.74, 0)
+radius = 0.25
+height = 3.48
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, -1.6)
+
+[node name="Tip9" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0.55, 3.68, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log10" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(1.10, 1.86, 0)
+radius = 0.25
+height = 3.72
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 1.6)
+
+[node name="Tip10" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(1.10, 3.92, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log11" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(1.65, 1.56, 0)
+radius = 0.25
+height = 3.12
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 1.2)
+
+[node name="Tip11" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(1.65, 3.32, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log12" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(2.20, 1.68, 0)
+radius = 0.25
+height = 3.36
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 0.8)
+
+[node name="Tip12" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(2.20, 3.56, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log13" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(2.75, 1.80, 0)
+radius = 0.25
+height = 3.60
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 0.4)
+
+[node name="Tip13" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(2.75, 3.80, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log14" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(3.30, 1.50, 0)
+radius = 0.25
+height = 3.00
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, 0.0)
+
+[node name="Tip14" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(3.30, 3.20, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="Log15" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(3.85, 1.62, 0)
+radius = 0.25
+height = 3.24
+sides = 8
+material = ExtResource("m_dark_wood")
+rotation_degrees = Vector3(0, 0, -0.4)
+
+[node name="Tip15" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(3.85, 3.44, 0)
+radius = 0.25
+height = 0.5
+sides = 8
+cone = true
+material = ExtResource("m_wood")
+
+[node name="RailLow" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.9, -0.3)
+size = Vector3(8.2, 0.22, 0.2)
+material = ExtResource("m_wood")
+
+[node name="RailHigh" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 2.2, -0.3)
+size = Vector3(8.2, 0.22, 0.2)
+material = ExtResource("m_wood")
+
+[node name="Lash" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 1.6, 0.27)
+size = Vector3(8.0, 0.1, 0.06)
+material = ExtResource("m_wood")
