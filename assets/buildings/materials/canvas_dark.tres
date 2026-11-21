@@ -1,0 +1,17 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/plaster/color.jpg" id="1_320v5"]
+[ext_resource type="Texture2D" path="res://assets/textures/plaster/normal.jpg" id="2_linoj"]
+[ext_resource type="Texture2D" path="res://assets/textures/plaster/rough.jpg" id="3_mjn2c"]
+
+[resource]
+cull_mode = 2
+albedo_color = Color(0.42, 0.36, 0.29, 1)
+albedo_texture = ExtResource("1_320v5")
+metallic_specular = 0.25
+roughness_texture = ExtResource("3_mjn2c")
+normal_enabled = true
+normal_scale = 0.5
+normal_texture = ExtResource("2_linoj")
+uv1_scale = Vector3(0.9, 0.9, 0.9)
+texture_filter = 5

@@ -1,0 +1,16 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/thatch/color.jpg" id="1_640b7"]
+[ext_resource type="Texture2D" path="res://assets/textures/thatch/normal.jpg" id="2_yxroj"]
+[ext_resource type="Texture2D" path="res://assets/textures/thatch/rough.jpg" id="3_rnori"]
+
+[resource]
+albedo_color = Color(0.62, 0.5, 0.33, 1)
+albedo_texture = ExtResource("1_640b7")
+metallic_specular = 0.25
+roughness_texture = ExtResource("3_rnori")
+normal_enabled = true
+normal_scale = 0.6
+normal_texture = ExtResource("2_yxroj")
+uv1_scale = Vector3(2.5, 2.5, 2.5)
+texture_filter = 5

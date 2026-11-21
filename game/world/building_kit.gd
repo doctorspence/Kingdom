@@ -74,6 +74,7 @@ static func materials(save := false) -> Dictionary:
 		"thatch": _tex("thatch", Color(0.72, 0.62, 0.44), 0.75, 2.0),
 		"thatch_old": _tex("thatch", Color(0.52, 0.48, 0.38), 0.75, 2.0),
 		"slate": _tex("cliff", Color(0.36, 0.37, 0.4), 1.4, 1.2),
+		"slate_b": _tex("cliff", Color(0.44, 0.43, 0.42), 1.4, 1.2),
 		"canvas": _tex("plaster", Color(0.62, 0.55, 0.43), 0.9, 0.5, true),
 		"canvas_dark": _tex("plaster", Color(0.42, 0.36, 0.29), 0.9, 0.5, true),
 		"canvas_red": _tex("plaster", Color(0.45, 0.2, 0.15), 0.9, 0.5, true),
@@ -693,7 +694,7 @@ static func _burned_frame(c: Ctx, hx: float, hz: float, y0: float, plate: float,
 	c.mb.cyl(c.m.charred, Vector3(-hx + 0.3, 1.6, r.randf_range(-0.5, 0.5)), Vector3(hx - 0.5, 0.2, r.randf_range(-0.8, 0.8)), 0.13, 0.12, 7, 0.12)
 	for i in 3:
 		var p := Vector3(r.randf_range(-hx + 1.0, hx - 1.0), 0.1, r.randf_range(-hz + 0.9, hz - 0.9))
-		c.mb.blob(c.m.ash, p, Vector3(r.randf_range(0.7, 1.2), r.randf_range(0.22, 0.4), r.randf_range(0.6, 1.0)), r.randi(), 0.35, 1.2, 6, 10, Basis(), false, 0.2)
+		c.mb.blob(c.m.ash, p, Vector3(r.randf_range(0.7, 1.2), r.randf_range(0.22, 0.4), r.randf_range(0.6, 1.0)), r.randi() % 997, 0.35, 1.2, 6, 10, Basis(), false, 0.2)
 		for j in 5:
 			var q := p + Vector3(r.randf_range(-0.8, 0.8), 0.2, r.randf_range(-0.6, 0.6))
 			c.mb.box(c.m.charred, q, Vector3(r.randf_range(0.5, 1.4), 0.05, r.randf_range(0.12, 0.22)), Basis(Vector3.UP, r.randf() * TAU) * Basis(Vector3.FORWARD, r.randf_range(-0.3, 0.3)), 0.02)
@@ -719,7 +720,7 @@ static func tent(mats: Dictionary, seed_: int) -> Node3D:
 	var place := func(sgn: float, t: float, z: float, out: float) -> Vector3:
 		var zt := (z + hl) / (hl * 2.0)
 		var sag := 0.13 * sin(PI * t) * (0.55 + 0.45 * sin(PI * zt))
-		var hem := 0.1 + 0.07 * absf(sin(PI * zt * 4.0))
+		var hem := 0.04 + 0.06 * absf(sin(PI * zt * 4.0))
 		var base := Vector3(sgn * W, hem, z)
 		var ridge := Vector3(0, H + 0.06, z)
 		var q := ridge.lerp(base, t)
@@ -748,7 +749,7 @@ static func tent(mats: Dictionary, seed_: int) -> Node3D:
 		# pegs along the hem
 		for i in 5:
 			var z := -hl + hl * 2.0 * i / 4.0
-			var q: Vector3 = place.call(sgn, 1.0, z, 0.0) + Vector3(sgn * 0.12, -0.05, 0)
+			var q: Vector3 = place.call(sgn, 1.0, z, 0.0) + Vector3(sgn * 0.05, 0.02, 0)
 			c.mb.box(pole, q, Vector3(0.04, 0.28, 0.04), Basis(Vector3.FORWARD, sgn * 0.35), 0.008)
 	# back wall, front flaps tied open
 	var back := PackedVector2Array([Vector2(-W, 0.12), Vector2(W, 0.12), Vector2(0, H + 0.04)])

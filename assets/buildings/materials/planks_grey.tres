@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/planks/color.jpg" id="1_slax6"]
+[ext_resource type="Texture2D" path="res://assets/textures/planks/normal.jpg" id="2_6q6c5"]
+[ext_resource type="Texture2D" path="res://assets/textures/planks/rough.jpg" id="3_qg2ov"]
+
+[resource]
+albedo_color = Color(0.9, 0.86, 0.8, 1)
+albedo_texture = ExtResource("1_slax6")
+metallic_specular = 0.25
+roughness_texture = ExtResource("3_qg2ov")
+normal_enabled = true
+normal_texture = ExtResource("2_6q6c5")
+uv1_scale = Vector3(0.6, 0.6, 0.6)
+texture_filter = 5

@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/dirt_dark/color.jpg" id="1_eex3m"]
+[ext_resource type="Texture2D" path="res://assets/textures/dirt_dark/normal.jpg" id="2_vn2t4"]
+[ext_resource type="Texture2D" path="res://assets/textures/dirt_dark/rough.jpg" id="3_shtlr"]
+
+[resource]
+albedo_color = Color(0.3, 0.29, 0.28, 1)
+albedo_texture = ExtResource("1_eex3m")
+metallic_specular = 0.25
+roughness_texture = ExtResource("3_shtlr")
+normal_enabled = true
+normal_texture = ExtResource("2_vn2t4")
+uv1_scale = Vector3(0.7, 0.7, 0.7)
+texture_filter = 5

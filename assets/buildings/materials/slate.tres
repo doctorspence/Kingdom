@@ -1,0 +1,16 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/cliff/color.jpg" id="1_fl1sf"]
+[ext_resource type="Texture2D" path="res://assets/textures/cliff/normal.jpg" id="2_pgxo7"]
+[ext_resource type="Texture2D" path="res://assets/textures/cliff/rough.jpg" id="3_7mmyw"]
+
+[resource]
+albedo_color = Color(0.36, 0.37, 0.4, 1)
+albedo_texture = ExtResource("1_fl1sf")
+metallic_specular = 0.25
+roughness_texture = ExtResource("3_7mmyw")
+normal_enabled = true
+normal_scale = 1.2
+normal_texture = ExtResource("2_pgxo7")
+uv1_scale = Vector3(1.4, 1.4, 1.4)
+texture_filter = 5
