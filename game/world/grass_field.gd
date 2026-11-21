@@ -68,7 +68,7 @@ func _make_chunk(cell: Vector2i) -> MultiMeshInstance3D:
 			continue  # past the edge of the ground mesh: tufts would float in the air
 		var y := terrain.height_at(x, z)
 		var slope := (absf(terrain.height_at(x + 1.0, z) - y) + absf(terrain.height_at(x, z + 1.0) - y))
-		if slope > 0.7 or y < terrain.water_level() + 0.3:
+		if slope > 0.7 or y < terrain.water_level_at(x, z) + 0.3:
 			continue
 		var w := terrain._ground_weights(Vector3(x, y, z), slope)
 		# Thicker where it is properly grassy, thin along edges, none on bare ground.

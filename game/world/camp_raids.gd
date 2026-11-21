@@ -151,7 +151,7 @@ func _find_spot() -> Vector3:
 			p.x = clampf(p.x, -half, half)
 			p.z = clampf(p.z, -half, half)
 		var ground := camp._ground(p.x, p.z)
-		var dry := camp._terrain == null or ground > camp._terrain.water_level() + 0.4
+		var dry := camp._terrain == null or ground > camp._terrain.water_level_at(p.x, p.z) + 0.4
 		if dry and p.distance_to(camp.global_position) >= SPAWN_DISTANCE.x * 0.6:
 			p.y = ground + 0.1
 			return p

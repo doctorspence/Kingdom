@@ -37,6 +37,7 @@ var _wl := PackedFloat32Array()   # water level of the nearest river point
 var _vw := PackedFloat32Array()   # river half width there
 var _pm := PackedFloat32Array()   # 1 inside building pads (and their yards), 0 outside
 var _rock := PackedFloat32Array() # extra rock painting (quarry floors)
+var _fp := PackedFloat32Array()   # ploughed field furrows (0..1)
 var _ns := PackedInt32Array()     # scratch: nearest segment per cell
 var _nt := PackedFloat32Array()   # scratch: position on that segment
 var _nd := PackedFloat32Array()   # scratch: distance to it
@@ -90,6 +91,13 @@ func in_pad(x: float, z: float) -> float:
 	var fx := clampf((x + _half) / cell, 0.0, _n - 1.0)
 	var fz := clampf((z + _half) / cell, 0.0, _n - 1.0)
 	return _sample(_pm, fx, fz)
+
+
+## How ploughed the ground is here (0 = not a field).
+func in_field(x: float, z: float) -> float:
+	if not _grid_ready or absf(x) > _half or absf(z) > _half:
+		return 0.0
+	return _sample(_fp, (x + _half) / cell, (z + _half) / cell)
 
 
 func _distance_to_lines(lines: Array[PackedVector2Array], p: Vector2) -> float:
@@ -154,6 +162,12 @@ func _bake() -> void:
 		var z := -_half + iz * cell
 		for ix in _n:
 			_h[iz * _n + ix] = land.natural(-_half + ix * cell, z)
+	# 1b. Fields: ridge-and-furrow ripples in ploughland.
+	_fp.resize(nn)
+	_fp.fill(0.0)
+	if land.get("fields") != null:
+		for f in land.fields:
+			_apply_field(f)
 	# 2. Roads: dense lines, height profiles from the land under them, then flatten.
 	_road_lines.clear()
 	roads.clear()
@@ -394,7 +408,8 @@ func _apply_cut(c: Dictionary, pre: PackedFloat32Array) -> void:
 	var fl_end := float(c.get("floor_end", fl))
 	var mode: String = c.get("mode", "carve")
 	var rock := float(c.get("rock", 0.6))
-	var reach := half.length() + edge + 2.0
+	var rough := float(c.get("rough", 0.0))
+	var reach := half.length() + edge + 2.0 + rough
 	var x0 := maxi(0, int((center.x - reach + _half) / cell))
 	var x1 := mini(_n - 1, int((center.x + reach + _half) / cell) + 1)
 	var z0 := maxi(0, int((center.y - reach + _half) / cell))
@@ -403,6 +418,8 @@ func _apply_cut(c: Dictionary, pre: PackedFloat32Array) -> void:
 		for ix in range(x0, x1 + 1):
 			var p := Vector2(-_half + ix * cell, -_half + iz * cell)
 			var sd := _rect_sd(p, center, half, yaw)
+			# Ragged, quarried edges instead of a ruler-straight box.
+			sd.x += _noise.get_noise_2d(p.x * 9.0 + 300.0, p.y * 9.0) * rough + _noise.get_noise_2d(p.x * 31.0, p.y * 31.0 + 70.0) * rough * 0.35
 			var m := 1.0 - smoothstep(-edge, 0.0, sd.x)
 			if m <= 0.0:
 				continue
@@ -413,6 +430,33 @@ func _apply_cut(c: Dictionary, pre: PackedFloat32Array) -> void:
 			else:  # "fill": raise to the floor, never above the original land
 				_h[i] = lerpf(_h[i], minf(pre[i], maxf(_h[i], f)), m)
 			_rock[i] = maxf(_rock[i], rock * m)
+
+
+func _apply_field(f: Dictionary) -> void:
+	var poly: PackedVector2Array = f.poly
+	if f.get("kind", "plough") != "plough":
+		return
+	var dir := Vector2.from_angle(deg_to_rad(float(f.get("dir", 0.0))))
+	var across := dir.orthogonal()
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
+	for p in poly:
+		lo = lo.min(p)
+		hi = hi.max(p)
+	for iz in range(maxi(0, int((lo.y + _half) / cell)), mini(_n - 1, int((hi.y + _half) / cell) + 1) + 1):
+		for ix in range(maxi(0, int((lo.x + _half) / cell)), mini(_n - 1, int((hi.x + _half) / cell) + 1) + 1):
+			var p := Vector2(-_half + ix * cell, -_half + iz * cell)
+			if not Geometry2D.is_point_in_polygon(p, poly):
+				continue
+			# Distance to the field's edge: a 3 m headland of plain ground.
+			var e := INF
+			for k in poly.size():
+				e = minf(e, p.distance_to(Geometry2D.get_closest_point_to_segment(p, poly[k], poly[(k + 1) % poly.size()])))
+			var m := smoothstep(1.0, 4.0, e)
+			var stripe := 0.5 + 0.5 * sin(p.dot(across) * TAU / 4.5)
+			var i := iz * _n + ix
+			_h[i] += (stripe - 0.5) * 0.3 * m
+			_fp[i] = maxf(_fp[i], m * (0.55 + 0.45 * stripe))
 
 
 func _apply_pad(center: Vector2, half: Vector2, yaw: float, blend: float, y: float, round_pad: bool) -> void:
@@ -573,6 +617,7 @@ func _weights_at(i: int, v: Vector3, slope: float) -> Color:
 	var bank := 1.0 - smoothstep(_vw[i] * 0.9, _vw[i] * 1.6 + 1.5, _vd[i])
 	mud = maxf(mud, bank)
 	mud = maxf(mud, _pm[i] * 0.85)
+	mud = maxf(mud, _fp[i] * 0.95)
 	var p := Vector2(v.x, v.z)
 	for c in clearings:
 		var d := Vector2(c.x, c.y).distance_to(p)

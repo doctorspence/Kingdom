@@ -1,1025 +1,863 @@
-[gd_scene format=3]
+[gd_scene format=4]
 
-[ext_resource type="Environment" path="res://levels/common/tithelands_env.tres" id="env"]
-[ext_resource type="Script" path="res://game/net/game_session.gd" id="session"]
-[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="hud"]
-[ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="shrine"]
-[ext_resource type="Script" path="res://game/world/camp.gd" id="camp_script"]
-[ext_resource type="Script" path="res://game/world/grass_field.gd" id="grass_field"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/campfire.tscn" id="fire_scene"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/cobble_patch.tscn" id="cobble_scene"]
-[ext_resource type="Material" path="res://levels/common/materials/vignette.tres" id="vignette_mat"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/stone_small.tscn" id="stone_small"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/log_fallen.tscn" id="log_fallen"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/stump.tscn" id="stump_scene"]
-[ext_resource type="Material" path="res://levels/common/materials/water.tres" id="water_mat"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/log_seat.tscn" id="logseat_scene"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/crate.tscn" id="crate_scene"]
+[ext_resource type="Script" path="res://game/world/sculpted_terrain.gd" id="3_jbhel"]
+[ext_resource type="Script" path="res://levels/tithelands/tithelands_land.gd" id="4_2ne0e"]
+[ext_resource type="Script" path="res://game/world/forest_scatter.gd" id="43_5qe01"]
+[ext_resource type="Script" path="res://game/world/stone_walls.gd" id="63_og1uf"]
+[ext_resource type="Script" path="res://game/world/set_dressing.gd" id="64_17ghg"]
+[ext_resource type="Script" path="res://levels/tithelands/tithelands_dressing.gd" id="65_a6ns4"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/barrel.tscn" id="barrel_scene"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/hay_bale.tscn" id="hay_scene"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/trophy_pole.tscn" id="trophy_scene"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/lookout.tscn" id="lookout_scene"]
-[ext_resource type="Script" path="res://game/world/vendor.gd" id="vendor"]
-[ext_resource type="Resource" path="res://data/vendors/vendor_old_wenna.tres" id="wenna"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/barricade.tscn" id="barricade"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/bridge_broken.tscn" id="bridge_broken"]
 [ext_resource type="Resource" path="res://data/vendors/vendor_soul_broker.tres" id="broker"]
-[ext_resource type="Script" path="res://game/world/zone_terrain.gd" id="terrain"]
-[ext_resource type="Material" path="res://levels/common/materials/terrain_pbr.tres" id="terrain_mat"]
-[ext_resource type="Script" path="res://game/world/ground_snap.gd" id="snap"]
-[ext_resource type="Script" path="res://game/world/scatter.gd" id="scatter"]
-[ext_resource type="Script" path="res://game/world/tithe_extras.gd" id="tithe_extras"]
-[ext_resource type="PackedScene" path="res://game/enemies/hobb.tscn" id="hobb"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/burned_cottage.tscn" id="burned_cottage"]
+[ext_resource type="Script" path="res://game/world/camp.gd" id="camp_script"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/cart.tscn" id="cart"]
+[ext_resource type="Script" path="res://game/world/cave_door.gd" id="cavedoor"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/cobble_patch.tscn" id="cobble_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/cottage.tscn" id="cottage"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/crate.tscn" id="crate_scene"]
+[ext_resource type="Script" path="res://game/world/day_night.gd" id="daynight"]
 [ext_resource type="Script" path="res://game/enemies/spawn_director.gd" id="director"]
+[ext_resource type="Environment" path="res://levels/common/tithelands_env.tres" id="env"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/fence.tscn" id="fence"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/campfire.tscn" id="fire_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/gallows.tscn" id="gallows"]
+[ext_resource type="Script" path="res://game/world/shortcut_gate.gd" id="gate"]
+[ext_resource type="Script" path="res://game/world/grass_field.gd" id="grass_field"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/gullet.tscn" id="gullet"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/gullet_mouth.tscn" id="gullet_mouth"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/hay_bale.tscn" id="hay_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/highcrown.tscn" id="highcrown"]
+[ext_resource type="PackedScene" path="res://game/enemies/hobb.tscn" id="hobb"]
+[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="hud"]
+[ext_resource type="Script" path="res://game/world/ladder.gd" id="ladder"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/log_seat.tscn" id="logseat_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/log_fallen.tscn" id="log_fallen"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/lookout.tscn" id="lookout_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/mill.tscn" id="mill"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/palisade.tscn" id="palisade"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/rock.tscn" id="rock"]
+[ext_resource type="Script" path="res://game/net/game_session.gd" id="session"]
+[ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="shrine"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/signpost.tscn" id="signpost"]
+[ext_resource type="Script" path="res://game/world/ground_snap.gd" id="snap"]
 [ext_resource type="Script" path="res://game/enemies/spawn_point.gd" id="spawnpt"]
-[ext_resource type="Resource" path="res://data/spawns/spawn_road.tres" id="spawn_road"]
-[ext_resource type="Resource" path="res://data/spawns/spawn_zealot_pair.tres" id="spawn_zealot_pair"]
-[ext_resource type="Resource" path="res://data/spawns/spawn_zealot_or_none.tres" id="spawn_zealot_or_none"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_hound_pack.tres" id="spawn_hound_pack"]
 [ext_resource type="Resource" path="res://data/spawns/spawn_marauders.tres" id="spawn_marauders"]
 [ext_resource type="Resource" path="res://data/spawns/spawn_marauder_pair.tres" id="spawn_marauder_pair"]
-[ext_resource type="Resource" path="res://data/spawns/spawn_hound_pack.tres" id="spawn_hound_pack"]
 [ext_resource type="Resource" path="res://data/spawns/spawn_mixed.tres" id="spawn_mixed"]
-[ext_resource type="PackedScene" path="res://levels/sandbox/props/placeholder_dead_tree.tscn" id="deadtree_vis"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/cottage.tscn" id="cottage"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/burned_cottage.tscn" id="burned_cottage"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/tithe_barn.tscn" id="tithe_barn"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/mill.tscn" id="mill"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_road.tres" id="spawn_road"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_zealot_or_none.tres" id="spawn_zealot_or_none"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_zealot_pair.tres" id="spawn_zealot_pair"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/stone_small.tscn" id="stone_small"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/stump.tscn" id="stump_scene"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/tent.tscn" id="tent"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/barricade.tscn" id="barricade"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/fence.tscn" id="fence"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/cart.tscn" id="cart"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/palisade.tscn" id="palisade"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/watchtower.tscn" id="watchtower"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/bridge_broken.tscn" id="bridge_broken"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/gullet_mouth.tscn" id="gullet_mouth"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/gullet.tscn" id="gullet"]
-[ext_resource type="Script" path="res://game/world/cave_door.gd" id="cavedoor"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/rock.tscn" id="rock"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/gallows.tscn" id="gallows"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/signpost.tscn" id="signpost"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_pine.tscn" id="tree_pine"]
+[ext_resource type="Material" path="res://levels/common/materials/terrain_pbr.tres" id="terrain_mat"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/tithe_barn.tscn" id="tithe_barn"]
+[ext_resource type="Script" path="res://game/world/tithe_extras.gd" id="tithe_extras"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_dead.tscn" id="tree_dead"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/highcrown.tscn" id="highcrown"]
-[ext_resource type="Script" path="res://game/world/ladder.gd" id="ladder"]
-[ext_resource type="Script" path="res://game/world/shortcut_gate.gd" id="gate"]
-[ext_resource type="Script" path="res://game/world/day_night.gd" id="daynight"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_pine.tscn" id="tree_pine"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/trophy_pole.tscn" id="trophy_scene"]
+[ext_resource type="Script" path="res://game/world/underground_cull.gd" id="ucull"]
+[ext_resource type="Script" path="res://game/world/vendor.gd" id="vendor"]
+[ext_resource type="Material" path="res://levels/common/materials/vignette.tres" id="vignette_mat"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/watchtower.tscn" id="watchtower"]
+[ext_resource type="Material" path="res://levels/common/materials/water.tres" id="water_mat"]
+[ext_resource type="Resource" path="res://data/vendors/vendor_old_wenna.tres" id="wenna"]
 
 [sub_resource type="BoxShape3D" id="edge_N"]
-size = Vector3(364.00, 80, 0.70)
+size = Vector3(364, 80, 0.7)
 
 [sub_resource type="BoxShape3D" id="edge_S"]
-size = Vector3(364.00, 80, 0.70)
+size = Vector3(364, 80, 0.7)
 
 [sub_resource type="BoxShape3D" id="edge_W"]
-size = Vector3(0.70, 80, 364.00)
+size = Vector3(0.7, 80, 364)
 
 [sub_resource type="BoxShape3D" id="edge_E"]
-size = Vector3(0.70, 80, 364.00)
+size = Vector3(0.7, 80, 364)
 
+[node name="Tithelands" type="Node3D" unique_id=331369113]
 
-[node name="Tithelands" type="Node3D"]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1187005391]
 environment = ExtResource("env")
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-50, 35, 0)
-light_color = Color(0.96, 0.84, 0.68, 1)
-light_energy = 1.35
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=91928032]
+transform = Transform3D(0.81915206, -0.43938506, 0.36868784, 0, 0.64278764, 0.76604444, -0.57357645, -0.62750685, 0.5265408, 0, 0, 0)
+light_color = Color(0.98, 0.9, 0.78, 1)
+light_energy = 1.6
 shadow_enabled = true
 shadow_blur = 2.0
-directional_shadow_max_distance = 130.0
 directional_shadow_mode = 1
+directional_shadow_max_distance = 130.0
 sky_mode = 1
 
-[node name="DayNight" type="Node" parent="." node_paths=PackedStringArray("environment", "sun")]
+[node name="DayNight" type="Node" parent="." unique_id=1785888285 node_paths=PackedStringArray("environment", "sun")]
 script = ExtResource("daynight")
 environment = NodePath("../WorldEnvironment")
 sun = NodePath("../Sun")
 
-[node name="Terrain" type="Node3D" parent="."]
-script = ExtResource("terrain")
+[node name="Terrain" type="Node3D" parent="." unique_id=340342681]
+script = ExtResource("3_jbhel")
+land_script = ExtResource("4_2ne0e")
+pad_root = NodePath("../Places")
 zone_id = &"tithelands"
 zone_name = "The Tithelands"
-river_depth = 1.1
-pit_sharpness = 0.9
 size = 364.0
-edge_width = 28.0
-river = PackedVector2Array(-182, -21, -105, -10.5, -42, -5.6, 0, -3.5, 56, 3.5, 119, -7, 182, 10.5)
-roads = Array[PackedVector2Array]([PackedVector2Array(0, 161, 0, 84, 1.4, 0, 0, -84, 0, -178.5), PackedVector2Array(0, 112, -42, 91, -70, 42, -80.5, -14), PackedVector2Array(-80.5, -14, -105, -63, -115.5, -80.5), PackedVector2Array(7, 126, 42, 112, 77, 70, 98, 38.5)])
-mounds = PackedVector4Array(105.00, 28.00, 31.50, 11, -133.00, -115.50, 38.50, -9, -129.50, -112.00, 15.40, -5, 56.00, -119.00, 35.00, 5)
-tracks = Array[PackedVector2Array]([PackedVector2Array(-76, 18, -88, 23, -99, 22), PackedVector2Array(3, -10, 14, -13, 24, -13), PackedVector2Array(77, 68, 86, 40, 80, 12, 74, -8, 80, -28, 87, -42, 100, -60, 114, -76, 120, -80)])
-clearings = PackedVector3Array(3, 118, 22, 36, 122, 14, -28, 96, 16, -60, 58, 18, -87, -20, 12, -105.5, 22.5, 17, 0, -84, 18, 22, -58, 14, 105, 28, 20, 121, -83, 16, 27, -12, 10, 78, 73, 8, 76, -9, 8, 88, -43, 8)
-material = ExtResource("terrain_mat")
+cell = 1.0
+river = PackedVector2Array(-260, -30, -150, -15, -60, -8, 0, -5, 80, 5, 170, -10, 260, 15)
+roads = Array[PackedVector2Array]([PackedVector2Array(0, 230, 0, 120, 2, 0, 0, -120, 0, -255), PackedVector2Array(0, 160, -60, 130, -100, 60, -115, -20), PackedVector2Array(-115, -20, -150, -90, -165, -115), PackedVector2Array(10, 180, 60, 160, 110, 100, 140, 55)])
+mounds = PackedVector4Array(150, 40, 45, 11, -190, -165, 55, -14, 80, -170, 50, 5)
+clearings = PackedVector3Array()
 water_material = ExtResource("water_mat")
+material = ExtResource("terrain_mat")
 
-[node name="Gullet" parent="." instance=ExtResource("gullet")]
-position = Vector3(-130, -40, -100)
+[node name="Gullet" parent="." unique_id=1275893635 instance=ExtResource("gullet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -130, -40, -100)
 
-[node name="Players" type="Node3D" parent="."]
+[node name="Players" type="Node3D" parent="." unique_id=402321040]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="."]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1205365679]
 _spawnable_scenes = PackedStringArray("res://game/player/player.tscn")
 spawn_path = NodePath("../Players")
 
-[node name="SpawnPoints" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+[node name="SpawnPoints" type="Node3D" parent="." unique_id=981649069 node_paths=PackedStringArray("terrain")]
 script = ExtResource("snap")
 terrain = NodePath("../Terrain")
 
-[node name="Spawn0" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(-2.80, 0, 120.40)
+[node name="Spawn0" type="Marker3D" parent="SpawnPoints" unique_id=748741158]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8, 0, 120.4)
 metadata/y_offset = 0.1
 
-[node name="Spawn1" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(-1.40, 0, 120.40)
+[node name="Spawn1" type="Marker3D" parent="SpawnPoints" unique_id=335991624]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0, 120.4)
 metadata/y_offset = 0.1
 
-[node name="Spawn2" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(0.00, 0, 120.40)
+[node name="Spawn2" type="Marker3D" parent="SpawnPoints" unique_id=507065366]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 120.4)
 metadata/y_offset = 0.1
 
-[node name="Spawn3" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(1.40, 0, 120.40)
+[node name="Spawn3" type="Marker3D" parent="SpawnPoints" unique_id=888990473]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0, 120.4)
 metadata/y_offset = 0.1
 
-[node name="Spawn4" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(2.80, 0, 120.40)
+[node name="Spawn4" type="Marker3D" parent="SpawnPoints" unique_id=1780013625]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 0, 120.4)
 metadata/y_offset = 0.1
 
-[node name="GameSession" type="Node" parent="." node_paths=PackedStringArray("spawn_points", "players_root")]
+[node name="GameSession" type="Node" parent="." unique_id=1818184221 node_paths=PackedStringArray("spawn_points", "players_root")]
 script = ExtResource("session")
 spawn_points = NodePath("../SpawnPoints")
 players_root = NodePath("../Players")
 
-[node name="Hud" parent="." instance=ExtResource("hud")]
+[node name="Hud" parent="." unique_id=1329779854 instance=ExtResource("hud")]
 
-[node name="Places" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+[node name="Places" type="Node3D" parent="." unique_id=516986917 node_paths=PackedStringArray("terrain")]
 script = ExtResource("snap")
 terrain = NodePath("../Terrain")
 
-[node name="CrossroadsShrine" parent="Places" instance=ExtResource("shrine")]
-position = Vector3(6.30, 0, 114.80)
-rotation_degrees = Vector3(0, 200, 0)
+[node name="CrossroadsShrine" parent="Places" unique_id=473828881 instance=ExtResource("shrine")]
+transform = Transform3D(-0.8660254, 0, 0.50000006, 0, 1, 0, -0.50000006, 0, -0.8660254, -9, 0, 116)
 shrine_name = "Crossroads Shrine"
 shrine_id = &"crossroads"
-[node name="Camp" parent="Places" instance=ExtResource("shrine")]
-position = Vector3(36.00, 0, 122.00)
-rotation_degrees = Vector3(0, 90, 0)
+metadata/pad = Vector2(3, 3)
+metadata/pad_blend = 2.0
+
+[node name="Camp" parent="Places" unique_id=198783081 instance=ExtResource("shrine")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 40, 0, 128)
 script = ExtResource("camp_script")
 shrine_name = "Camp Hearth"
 shrine_id = &"camp"
 
-[node name="Gallows" parent="Places" instance=ExtResource("gallows")]
-position = Vector3(-7.70, 0, 119.00)
-rotation_degrees = Vector3(0, -15, 0)
+[node name="Gallows" parent="Places" unique_id=1919505100 instance=ExtResource("gallows")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -9, 0, 142)
+metadata/pad = Vector2(3.6, 2.4)
+metadata/pad_blend = 2.0
 
-[node name="Signpost" parent="Places" instance=ExtResource("signpost")]
-position = Vector3(2.80, 0, 109.90)
-rotation_degrees = Vector3(0, 10, 0)
+[node name="Signpost" parent="Places" unique_id=1391450613 instance=ExtResource("signpost")]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, -12, 0, 114)
 
-
-[node name="OldWenna" type="Node3D" parent="Places"]
-position = Vector3(9.80, 0, 121.10)
-rotation_degrees = Vector3(0, 230, 0)
+[node name="OldWenna" type="Node3D" parent="Places" unique_id=1623871702]
+transform = Transform3D(0.37460664, 0, -0.92718387, 0, 1, 0, 0.92718387, 0, 0.37460664, 16, 0, 104)
 script = ExtResource("vendor")
 data = ExtResource("wenna")
 body_tint = Color(0.45, 0.38, 0.3, 1)
 
-[node name="SoulBroker" type="Node3D" parent="Places"]
-position = Vector3(-5.60, 0, 128.80)
-rotation_degrees = Vector3(0, 150, 0)
+[node name="SoulBroker" type="Node3D" parent="Places" unique_id=2130246498]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -13, 0, 138)
 script = ExtResource("vendor")
 data = ExtResource("broker")
 body_tint = Color(0.12, 0.12, 0.16, 1)
 
-[node name="Farm1" parent="Places" instance=ExtResource("cottage")]
-position = Vector3(-21.00, 0, 98.00)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="Farm1" parent="Places" unique_id=2085024638 instance=ExtResource("cottage")]
+transform = Transform3D(0.95105654, 0, -0.309017, 0, 1, 0, 0.309017, 0, 0.95105654, -46, 0, 84)
+metadata/pad = Vector2(7.5, 6.5)
 
-[node name="Farm2" parent="Places" instance=ExtResource("cottage")]
-position = Vector3(-35.00, 0, 88.20)
-rotation_degrees = Vector3(0, 20, 0)
+[node name="Farm2" parent="Places" unique_id=2091181300 instance=ExtResource("cottage")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -36, 0, 121)
+metadata/pad = Vector2(7.5, 6.5)
 
-[node name="FarmFence1" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-25.20, 0, 105.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="FarmFence1" parent="Places" unique_id=792049170 instance=ExtResource("fence")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, 70)
 
-[node name="FarmFence2" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-29.40, 0, 105.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="FarmFence2" parent="Places" unique_id=1860377830 instance=ExtResource("fence")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29, 0, 70)
 
-[node name="FarmFence3" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-33.60, 0, 105.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="FarmFence3" parent="Places" unique_id=253511413 instance=ExtResource("fence")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -26, 0, 73.1)
 
-[node name="FarmCart" parent="Places" instance=ExtResource("cart")]
-position = Vector3(-26.60, 0, 109.20)
-rotation_degrees = Vector3(0, 70, 0)
+[node name="FarmCart" parent="Places" unique_id=424266281 instance=ExtResource("cart")]
+transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, -54, 0, 82)
 
-[node name="Burned1" parent="Places" instance=ExtResource("burned_cottage")]
-position = Vector3(-56.00, 0, 63.00)
-rotation_degrees = Vector3(0, 10, 0)
+[node name="Burned1" parent="Places" unique_id=445599845 instance=ExtResource("burned_cottage")]
+transform = Transform3D(0.39073116, 0, -0.92050475, 0, 1, 0, 0.92050475, 0, 0.39073116, -60.6, 0, 70.3)
+metadata/pad = Vector2(6.6, 6)
 
-[node name="Burned2" parent="Places" instance=ExtResource("burned_cottage")]
-position = Vector3(-65.80, 0, 54.60)
-rotation_degrees = Vector3(0, 50, 0)
+[node name="Burned2" parent="Places" unique_id=379196150 instance=ExtResource("burned_cottage")]
+transform = Transform3D(-0.39073116, 0, 0.92050487, 0, 1, 0, -0.92050487, 0, -0.39073116, -79.4, 0, 61.7)
+metadata/pad = Vector2(6.6, 6)
 
-[node name="Burned3" parent="Places" instance=ExtResource("burned_cottage")]
-position = Vector3(-51.80, 0, 49.00)
-rotation_degrees = Vector3(0, -30, 0)
+[node name="Burned3" parent="Places" unique_id=1960005732 instance=ExtResource("burned_cottage")]
+transform = Transform3D(-0.39073116, 0, 0.92050487, 0, 1, 0, -0.92050487, 0, -0.39073116, -86.4, 0, 45.7)
+metadata/pad = Vector2(6.6, 6)
 
-[node name="HamletCottage" parent="Places" instance=ExtResource("cottage")]
-position = Vector3(-70.00, 0, 68.60)
-rotation_degrees = Vector3(0, 120, 0)
+[node name="HamletCottage" parent="Places" unique_id=422950865 instance=ExtResource("cottage")]
+transform = Transform3D(0.39073116, 0, -0.92050475, 0, 1, 0, 0.92050475, 0, 0.39073116, -69.1, 0, 49.1)
+metadata/pad = Vector2(7.5, 6.5)
 
-[node name="HamletCart" parent="Places" instance=ExtResource("cart")]
-position = Vector3(-60.20, 0, 67.20)
-rotation_degrees = Vector3(0, 200, 0)
+[node name="HamletCart" parent="Places" unique_id=1277460452 instance=ExtResource("cart")]
+transform = Transform3D(-0.92050487, 0, -0.3907311, 0, 1, 0, 0.3907311, 0, -0.92050487, -68.3, 0, 54.2)
 
-[node name="CheckpointBarricadeW" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(-4.20, 0, -77.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="CheckpointBarricadeW" parent="Places" unique_id=69686640 instance=ExtResource("barricade")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, -113)
 
-[node name="CheckpointBarricadeE" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(4.90, 0, -79.10)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="CheckpointBarricadeE" parent="Places" unique_id=1685846144 instance=ExtResource("barricade")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 0, -118)
 
-[node name="CheckpointTent1" parent="Places" instance=ExtResource("tent")]
-position = Vector3(9.80, 0, -85.40)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="CheckpointTent1" parent="Places" unique_id=1698192558 instance=ExtResource("tent")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 13, 0, -104)
 
-[node name="CheckpointTent2" parent="Places" instance=ExtResource("tent")]
-position = Vector3(-9.80, 0, -86.80)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="CheckpointTent2" parent="Places" unique_id=1109783054 instance=ExtResource("tent")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -13, 0, -102)
 
-[node name="TitheBarn" parent="Places" instance=ExtResource("tithe_barn")]
-position = Vector3(25.20, 0, -61.60)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="TitheBarn" parent="Places" unique_id=416386618 instance=ExtResource("tithe_barn")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 24, 0, -50)
+metadata/pad = Vector2(11.5, 17)
 
-[node name="Bridge" parent="Places" instance=ExtResource("bridge_broken")]
-position = Vector3(0.00, 0, -3.50)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="Bridge" parent="Places" unique_id=136842769 instance=ExtResource("bridge_broken")]
+transform = Transform3D(0.98480743, 0, -0.17364813, 0, 1, 0, 0.17364813, 0, 0.98480743, 0, 0, 2)
 metadata/y_offset = 0.4
-[node name="Mill" parent="Places" instance=ExtResource("mill")]
-position = Vector3(-87.50, 0, -19.60)
-rotation_degrees = Vector3(0, 90, 0)
 
-[node name="MillShrine" parent="Places" instance=ExtResource("shrine")]
-position = Vector3(-75.60, 0, -28.00)
-rotation_degrees = Vector3(0, 140, 0)
+[node name="Mill" parent="Places" unique_id=645152034 instance=ExtResource("mill")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -104, 0, 3.5)
+metadata/pad = Vector2(9, 10.5)
+metadata/pad_blend = 2.0
+
+[node name="MillShrine" parent="Places" unique_id=1079375942 instance=ExtResource("shrine")]
+transform = Transform3D(-0.50000006, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, -0.50000006, -80, 0, 20)
 shrine_name = "Mill Shrine"
 shrine_id = &"mill"
-[node name="HobbTent1" parent="Places" instance=ExtResource("tent")]
-position = Vector3(-105.00, 0, 17.50)
-rotation_degrees = Vector3(0, 30, 0)
+metadata/pad = Vector2(3, 3)
+metadata/pad_blend = 2.0
 
-[node name="HobbTent2" parent="Places" instance=ExtResource("tent")]
-position = Vector3(-112.00, 0, 25.20)
-rotation_degrees = Vector3(0, -20, 0)
+[node name="HobbTent1" parent="Places" unique_id=1408892974 instance=ExtResource("tent")]
+transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, -111.5, 0, 27)
 
-[node name="HobbTent3" parent="Places" instance=ExtResource("tent")]
-position = Vector3(-98.70, 0, 28.00)
-rotation_degrees = Vector3(0, 75, 0)
+[node name="HobbTent2" parent="Places" unique_id=1024985593 instance=ExtResource("tent")]
+transform = Transform3D(0.93969256, 0, -0.3420201, 0, 1, 0, 0.3420201, 0, 0.93969256, -118.5, 0, 34.7)
 
-[node name="HobbBarricade" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(-96.60, 0, 12.60)
-rotation_degrees = Vector3(0, 40, 0)
+[node name="HobbTent3" parent="Places" unique_id=134698838 instance=ExtResource("tent")]
+transform = Transform3D(0.25881907, 0, 0.9659258, 0, 1, 0, -0.9659258, 0, 0.25881907, -105.2, 0, 37.5)
 
-[node name="HobbPalisade" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(-115.50, 0, 15.40)
-rotation_degrees = Vector3(0, 70, 0)
+[node name="HobbBarricade" parent="Places" unique_id=1952322588 instance=ExtResource("barricade")]
+transform = Transform3D(0.7660442, 0, 0.6427874, 0, 1, 0, -0.6427874, 0, 0.7660442, -106, 0, 27)
 
-[node name="RaiderTent1" parent="Places" instance=ExtResource("tent")]
-position = Vector3(119.00, 0, -84.00)
-rotation_degrees = Vector3(0, 10, 0)
+[node name="HobbPalisade" parent="Places" unique_id=2002721446 instance=ExtResource("palisade")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -127, 0, 30)
 
-[node name="RaiderTent2" parent="Places" instance=ExtResource("tent")]
-position = Vector3(127.40, 0, -89.60)
-rotation_degrees = Vector3(0, -40, 0)
+[node name="RaiderTent1" parent="Places" unique_id=2043707515 instance=ExtResource("tent")]
+transform = Transform3D(0.9848077, 0, 0.17364818, 0, 1, 0, -0.17364818, 0, 0.9848077, 119, 0, -84)
 
-[node name="RaiderBarricade" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(112.00, 0, -77.00)
-rotation_degrees = Vector3(0, 60, 0)
+[node name="RaiderTent2" parent="Places" unique_id=884568330 instance=ExtResource("tent")]
+transform = Transform3D(0.76604444, 0, -0.6427876, 0, 1, 0, 0.6427876, 0, 0.76604444, 127.4, 0, -89.6)
 
-[node name="RaiderBurned" parent="Places" instance=ExtResource("burned_cottage")]
-position = Vector3(131.60, 0, -77.00)
-rotation_degrees = Vector3(0, 15, 0)
+[node name="RaiderBarricade" parent="Places" unique_id=1948977472 instance=ExtResource("barricade")]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, 112, 0, -77)
 
-[node name="Watchtower" parent="Places" instance=ExtResource("watchtower")]
-position = Vector3(105.00, 0, 28.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="RaiderBurned" parent="Places" unique_id=1078315779 instance=ExtResource("burned_cottage")]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 131.6, 0, -77)
 
-[node name="TowerWall0" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(120.00, 0, 28.00)
-rotation_degrees = Vector3(0, 90, 0)
-scale = Vector3(1.45, 1.45, 1.45)
+[node name="Watchtower" parent="Places" unique_id=1395140571 instance=ExtResource("watchtower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 105, 0, 26)
 
-[node name="TowerWall1" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(115.60, 0, 17.39)
-rotation_degrees = Vector3(0, 135, 0)
-scale = Vector3(1.45, 1.45, 1.45)
+[node name="TowerWall0" parent="Places" unique_id=1203194291 instance=ExtResource("palisade")]
+transform = Transform3D(-6.338151e-08, 0, 1.45, 0, 1.45, 0, -1.45, 0, -6.338151e-08, 120, 0, 26)
 
-[node name="TowerWall3" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(94.39, 0, 17.39)
-rotation_degrees = Vector3(0, 225, 0)
-scale = Vector3(1.45, 1.45, 1.45)
+[node name="TowerWall1" parent="Places" unique_id=24964180 instance=ExtResource("palisade")]
+transform = Transform3D(-1.0253048, 0, 1.0253048, 0, 1.45, 0, -1.0253048, 0, -1.0253048, 115.6, 0, 15.39)
 
-[node name="TowerWall4" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(90.00, 0, 28.00)
-rotation_degrees = Vector3(0, 270, 0)
-scale = Vector3(1.45, 1.45, 1.45)
+[node name="TowerWall3" parent="Places" unique_id=216789848 instance=ExtResource("palisade")]
+transform = Transform3D(-1.0253047, 0, -1.0253046, 0, 1.45, 0, 1.0253046, 0, -1.0253047, 94.39, 0, 15.39)
 
-[node name="TowerWall5" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(94.39, 0, 38.60)
-rotation_degrees = Vector3(0, 315, 0)
-scale = Vector3(1.45, 1.45, 1.45)
+[node name="TowerWall4" parent="Places" unique_id=563030433 instance=ExtResource("palisade")]
+transform = Transform3D(1.7291077e-08, 0, -1.45, 0, 1.45, 0, 1.45, 0, 1.7291077e-08, 90, 0, 26)
 
-[node name="TowerWall7" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(115.60, 0, 38.60)
-rotation_degrees = Vector3(0, 405, 0)
-scale = Vector3(1.45, 1.45, 1.45)
+[node name="TowerWall5" parent="Places" unique_id=561465974 instance=ExtResource("palisade")]
+transform = Transform3D(1.0253044, 0, -1.0253048, 0, 1.45, 0, 1.0253048, 0, 1.0253044, 94.39, 0, 36.6)
 
-[node name="QuarryShrine" parent="Places" instance=ExtResource("shrine")]
-position = Vector3(-103.60, 0, -77.00)
-rotation_degrees = Vector3(0, 60, 0)
+[node name="TowerWall7" parent="Places" unique_id=1555457747 instance=ExtResource("palisade")]
+transform = Transform3D(1.0253048, 0, 1.0253048, 0, 1.45, 0, -1.0253048, 0, 1.0253048, 115.6, 0, 36.6)
+
+[node name="QuarryShrine" parent="Places" unique_id=330390683 instance=ExtResource("shrine")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -118, 0, -92)
 shrine_name = "Quarry Shrine"
 shrine_id = &"quarry"
-[node name="GulletMouth" parent="Places" instance=ExtResource("gullet_mouth")]
-position = Vector3(-112.00, 0, -84.00)
-rotation_degrees = Vector3(0, 45, 0)
+metadata/pad = Vector2(3, 3)
+metadata/pad_blend = 2.0
 
-[node name="GulletDoor" type="Node3D" parent="Places"]
-position = Vector3(-110.23, 0, -82.23)
-rotation_degrees = Vector3(0, 45, 0)
+[node name="GulletMouth" parent="Places" unique_id=884747160 instance=ExtResource("gullet_mouth")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -169, 0, -98)
+
+[node name="GulletDoor" type="Node3D" parent="Places" unique_id=1867100316]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -166.5, 0, -98)
 script = ExtResource("cavedoor")
 other = NodePath("../../Gullet/WayUp")
 arrive_offset = Vector3(0, 0, 2.5)
-beacon = true
 
-[node name="QuarryRock1" parent="Places" instance=ExtResource("rock")]
-position = Vector3(-122.50, 0, -119.00)
-rotation_degrees = Vector3(0, 20, 0)
-scale = Vector3(2.2, 2.2, 2.2)
+[node name="QuarryRock1" parent="Places" unique_id=1987928056 instance=ExtResource("rock")]
+transform = Transform3D(1.6914467, 0, 0.6156362, 0, 1.8, 0, -0.6156362, 0, 1.6914467, -160, 0, -90)
 
-[node name="QuarryRock2" parent="Places" instance=ExtResource("rock")]
-position = Vector3(-140.00, 0, -105.00)
-rotation_degrees = Vector3(0, 70, 0)
-scale = Vector3(1.8, 1.8, 1.8)
+[node name="QuarryRock2" parent="Places" unique_id=1703284714 instance=ExtResource("rock")]
+transform = Transform3D(0.51303023, 0, 1.409539, 0, 1.5, 0, -1.409539, 0, 0.51303023, -156, 0, -106)
 
-[node name="RoadCart1" parent="Places" instance=ExtResource("cart")]
-position = Vector3(6.30, 0, 64.40)
-rotation_degrees = Vector3(0, 20, 0)
+[node name="RoadCart1" parent="Places" unique_id=1951663912 instance=ExtResource("cart")]
+transform = Transform3D(-0.99619436, 0, 0.087155856, 0, 1, 0, -0.087155856, 0, -0.99619436, 15, 0, 64)
 
-[node name="RoadCart2" parent="Places" instance=ExtResource("cart")]
-position = Vector3(-4.90, 0, 29.40)
-rotation_degrees = Vector3(0, -15, 0)
+[node name="RoadCart2" parent="Places" unique_id=320972347 instance=ExtResource("cart")]
+transform = Transform3D(0.9659255, 0, -0.25881895, 0, 1, 0, 0.25881895, 0, 0.9659255, -9.5, 0, 28)
 
-[node name="RoadCart3" parent="Places" instance=ExtResource("cart")]
-position = Vector3(4.20, 0, -38.50)
-rotation_degrees = Vector3(0, 160, 0)
+[node name="RoadCart3" parent="Places" unique_id=873640164 instance=ExtResource("cart")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 12, 0, -30)
 
-[node name="RoadCart4" parent="Places" instance=ExtResource("cart")]
-position = Vector3(-21.00, 0, 82.60)
-rotation_degrees = Vector3(0, 70, 0)
+[node name="RoadCart4" parent="Places" unique_id=922760394 instance=ExtResource("cart")]
+transform = Transform3D(0.34202015, 0, 0.9396926, 0, 1, 0, -0.9396926, 0, 0.34202015, -29, 0, 116)
 
-[node name="ForkSign1" parent="Places" instance=ExtResource("signpost")]
-position = Vector3(-6.30, 0, 103.60)
-rotation_degrees = Vector3(0, -20, 0)
+[node name="ForkSign1" parent="Places" unique_id=131374577 instance=ExtResource("signpost")]
+transform = Transform3D(0.93969256, 0, -0.3420201, 0, 1, 0, 0.3420201, 0, 0.93969256, 9, 0, 107)
 
-[node name="ForkSign2" parent="Places" instance=ExtResource("signpost")]
-position = Vector3(-74.20, 0, -9.80)
-rotation_degrees = Vector3(0, 40, 0)
+[node name="ForkSign2" parent="Places" unique_id=1840816561 instance=ExtResource("signpost")]
+transform = Transform3D(0.7660442, 0, 0.6427874, 0, 1, 0, -0.6427874, 0, 0.7660442, -84, 0, 12)
 
-[node name="ForkSign3" parent="Places" instance=ExtResource("signpost")]
-position = Vector3(9.80, 0, 117.60)
-rotation_degrees = Vector3(0, -140, 0)
+[node name="ForkSign3" parent="Places" unique_id=708350472 instance=ExtResource("signpost")]
+transform = Transform3D(-0.76604444, 0, -0.64278764, 0, 1, 0, 0.64278764, 0, -0.76604444, 57, 0, 103)
 
-[node name="HamletGallows" parent="Places" instance=ExtResource("gallows")]
-position = Vector3(-54.60, 0, 70.00)
-rotation_degrees = Vector3(0, 60, 0)
+[node name="HamletGallows" parent="Places" unique_id=1040972967 instance=ExtResource("gallows")]
+transform = Transform3D(0.92050487, 0, 0.39073113, 0, 1, 0, -0.39073113, 0, 0.92050487, -76.6, 0, 73.5)
+metadata/pad = Vector2(3.6, 2.4)
+metadata/pad_blend = 2.0
 
-[node name="CheckpointGallows" parent="Places" instance=ExtResource("gallows")]
-position = Vector3(-15.40, 0, -70.00)
-rotation_degrees = Vector3(0, 100, 0)
+[node name="CheckpointGallows" parent="Places" unique_id=91730412 instance=ExtResource("gallows")]
+transform = Transform3D(-0.17364815, 0, 0.98480743, 0, 1, 0, -0.98480743, 0, -0.17364815, -12, 0, -97)
 
-[node name="FarmFence4" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-25.20, 0, 89.60)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="FarmFence4" parent="Places" unique_id=976207200 instance=ExtResource("fence")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -26, 0, 79.3)
 
-[node name="FarmFence5" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-29.40, 0, 89.60)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="FarmFence5" parent="Places" unique_id=834844641 instance=ExtResource("fence")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -38, 0, 73.1)
 
-[node name="FarmFence6" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-33.60, 0, 89.60)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="FarmFence6" parent="Places" unique_id=1029248745 instance=ExtResource("fence")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -38, 0, 79.3)
 
-[node name="FarmFence7" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-39.20, 0, 93.80)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="FarmFence7" parent="Places" unique_id=993538663 instance=ExtResource("fence")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -42, 0, 126)
 
-[node name="WoodsTentS" parent="Places" instance=ExtResource("tent")]
-position = Vector3(78.40, 0, 72.80)
-rotation_degrees = Vector3(0, 40, 0)
+[node name="WoodsTentS" parent="Places" unique_id=638159598 instance=ExtResource("tent")]
+transform = Transform3D(0.7660442, 0, 0.6427874, 0, 1, 0, -0.6427874, 0, 0.7660442, 90, 0, 90)
 
-[node name="WoodsCartS" parent="Places" instance=ExtResource("cart")]
-position = Vector3(85.40, 0, 78.40)
-rotation_degrees = Vector3(0, 120, 0)
+[node name="WoodsCartS" parent="Places" unique_id=195267370 instance=ExtResource("cart")]
+transform = Transform3D(-0.50000006, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, -0.50000006, 99, 0, 82)
 
-[node name="WoodsBarricadeM" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(70.00, 0, -4.20)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="WoodsBarricadeM" parent="Places" unique_id=1818721244 instance=ExtResource("barricade")]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, 58, 0, -50)
 
-[node name="WoodsTentM" parent="Places" instance=ExtResource("tent")]
-position = Vector3(75.60, 0, -11.20)
-rotation_degrees = Vector3(0, 200, 0)
+[node name="WoodsTentM" parent="Places" unique_id=847604060 instance=ExtResource("tent")]
+transform = Transform3D(-0.9396926, 0, -0.34202015, 0, 1, 0, 0.34202015, 0, -0.9396926, 68, 0, -60)
 
-[node name="WoodsTentN" parent="Places" instance=ExtResource("tent")]
-position = Vector3(89.60, 0, -44.80)
-rotation_degrees = Vector3(0, 150, 0)
+[node name="WoodsTentN" parent="Places" unique_id=1015405536 instance=ExtResource("tent")]
+transform = Transform3D(-0.8660254, 0, 0.50000006, 0, 1, 0, -0.50000006, 0, -0.8660254, 106, 0, -46)
 
-[node name="WoodsBarricadeN" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(84.00, 0, -40.60)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="WoodsBarricadeN" parent="Places" unique_id=362324554 instance=ExtResource("barricade")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, -47)
 
-[node name="FordBarricade" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(21.00, 0, 4.20)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="FordBarricade" parent="Places" unique_id=1770002578 instance=ExtResource("barricade")]
+transform = Transform3D(0.76604426, 0, 0.6427874, 0, 1, 0, -0.6427874, 0, 0.76604426, 34, 0, -29)
 
-[node name="FordTent" parent="Places" instance=ExtResource("tent")]
-position = Vector3(26.60, 0, -15.40)
-rotation_degrees = Vector3(0, 30, 0)
+[node name="FordTent" parent="Places" unique_id=477165494 instance=ExtResource("tent")]
+transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, 25, 0, -37)
 
-[node name="MillCart" parent="Places" instance=ExtResource("cart")]
-position = Vector3(-82.60, 0, -9.80)
-rotation_degrees = Vector3(0, 40, 0)
+[node name="MillCart" parent="Places" unique_id=303702451 instance=ExtResource("cart")]
+transform = Transform3D(0.93969256, 0, 0.3420201, 0, 1, 0, -0.3420201, 0, 0.93969256, -96, 0, 14)
 
-[node name="QuarryRock3" parent="Places" instance=ExtResource("rock")]
-position = Vector3(-112.00, 0, -64.40)
-rotation_degrees = Vector3(0, 140, 0)
-scale = Vector3(1.6, 1.6, 1.6)
+[node name="QuarryRock3" parent="Places" unique_id=1071207027 instance=ExtResource("rock")]
+transform = Transform3D(-0.91925335, 0, 0.7713452, 0, 1.2, 0, -0.7713452, 0, -0.91925335, -149, 0, -108)
 
-[node name="QuarryRock4" parent="Places" instance=ExtResource("rock")]
-position = Vector3(-133.00, 0, -89.60)
-rotation_degrees = Vector3(0, 10, 0)
-scale = Vector3(2.0, 2.0, 2.0)
+[node name="QuarryRock4" parent="Places" unique_id=2138668838 instance=ExtResource("rock")]
+transform = Transform3D(0.9848077, 0, 0.17364818, 0, 1, 0, -0.17364818, 0, 0.9848077, -146, 0, -90)
 
-[node name="QuarryRock5" parent="Places" instance=ExtResource("rock")]
-position = Vector3(-115.50, 0, -105.00)
-rotation_degrees = Vector3(0, 100, 0)
-scale = Vector3(1.4, 1.4, 1.4)
+[node name="QuarryRock5" parent="Places" unique_id=1746025515 instance=ExtResource("rock")]
+transform = Transform3D(-0.24310747, 0, 1.3787308, 0, 1.4, 0, -1.3787308, 0, -0.24310747, -131, 0, -86)
 
-[node name="QuarryTent" parent="Places" instance=ExtResource("tent")]
-position = Vector3(-112.00, 0, -58.80)
-rotation_degrees = Vector3(0, 80, 0)
+[node name="QuarryTent" parent="Places" unique_id=1656575664 instance=ExtResource("tent")]
+transform = Transform3D(0.17364818, 0, 0.98480743, 0, 1, 0, -0.98480743, 0, 0.17364818, -142, 0, -88)
 
-[node name="QuarryBarricade" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(-117.60, 0, -85.40)
-rotation_degrees = Vector3(0, 30, 0)
+[node name="QuarryBarricade" parent="Places" unique_id=1245508259 instance=ExtResource("barricade")]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, -135, 0, -86)
 
-[node name="TowerGate" type="StaticBody3D" parent="Places"]
-position = Vector3(105.00, 0, 43.00)
+[node name="TowerGate" type="StaticBody3D" parent="Places" unique_id=1785198357]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 105, 0, 41)
 script = ExtResource("gate")
 gate_id = &"watchtower_south"
 width = 11.6
 
-[node name="QuarryLadder" type="Node3D" parent="Places" node_paths=PackedStringArray("terrain")]
-position = Vector3(-121.10, 0, -112.00)
-rotation_degrees = Vector3(0, -90, 0)
+[node name="QuarryLadder" type="Node3D" parent="Places" unique_id=1875049630 node_paths=PackedStringArray("terrain")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -150, 0, -85.5)
 script = ExtResource("ladder")
 terrain = NodePath("../../Terrain")
-top_ground_point = Vector3(0.00, 0, -7.00)
+top_ground_point = Vector3(0, 0, -7)
 
-[node name="Highcrown" parent="." instance=ExtResource("highcrown")]
-position = Vector3(0.00, 0, -238.00)
+[node name="HobbSeat1" parent="Places" unique_id=1840494762 instance=ExtResource("logseat_scene")]
+transform = Transform3D(-0.08715577, 0, 0.9961947, 0, 1, 0, -0.9961947, 0, -0.08715577, -109.6, 0, 31.8)
 
-[node name="Woods" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
-script = ExtResource("scatter")
+[node name="HobbSeat2" parent="Places" unique_id=1632095476 instance=ExtResource("logseat_scene")]
+transform = Transform3D(0.25881907, 0, 0.9659258, 0, 1, 0, -0.9659258, 0, 0.25881907, -114.4, 0, 33.1)
+
+[node name="HobbSeat3" parent="Places" unique_id=420484646 instance=ExtResource("logseat_scene")]
+transform = Transform3D(0.9961947, 0, 0.08715574, 0, 1, 0, -0.08715574, 0, 0.9961947, -111.7, 0, 34.5)
+
+[node name="HobbCrate1" parent="Places" unique_id=1252387202 instance=ExtResource("crate_scene")]
+transform = Transform3D(0.9396926, 0, 0.34202012, 0, 1, 0, -0.34202012, 0, 0.9396926, -117.5, 0, 39.1)
+
+[node name="HobbCrate2" parent="Places" unique_id=718650027 instance=ExtResource("crate_scene")]
+transform = Transform3D(0.42261824, 0, 0.9063078, 0, 1, 0, -0.9063078, 0, 0.42261824, -116.3, 0, 40.2)
+
+[node name="HobbCrate3" parent="Places" unique_id=1580486091 instance=ExtResource("crate_scene")]
+transform = Transform3D(0.9848077, 0, 0.17364818, 0, 1, 0, -0.17364818, 0, 0.9848077, -105.9, 0, 40.7)
+
+[node name="HobbBarrel1" parent="Places" unique_id=465621615 instance=ExtResource("barrel_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -108.5, 0, 38)
+
+[node name="HobbBarrel2" parent="Places" unique_id=911414308 instance=ExtResource("barrel_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -107.6, 0, 38.9)
+
+[node name="HobbBarrel3" parent="Places" unique_id=71963894 instance=ExtResource("barrel_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -119.9, 0, 30.7)
+
+[node name="HobbHay1" parent="Places" unique_id=1741025207 instance=ExtResource("hay_scene")]
+transform = Transform3D(0.76604444, 0, 0.6427876, 0, 1, 0, -0.6427876, 0, 0.76604444, -107.1, 0, 34.3)
+
+[node name="HobbHay2" parent="Places" unique_id=472753842 instance=ExtResource("hay_scene")]
+transform = Transform3D(-0.34202012, 0, 0.9396926, 0, 1, 0, -0.9396926, 0, -0.34202012, -105.8, 0, 33.1)
+
+[node name="HobbTrophy" parent="Places" unique_id=994444015 instance=ExtResource("trophy_scene")]
+transform = Transform3D(0.90630776, 0, 0.42261827, 0, 1, 0, -0.42261827, 0, 0.90630776, -107, 0, 23)
+
+[node name="HobbLookout" parent="Places" unique_id=452333831 instance=ExtResource("lookout_scene")]
+transform = Transform3D(-0.9396926, 0, -0.34202015, 0, 1, 0, 0.34202015, 0, -0.9396926, -102, 0, 17)
+
+[node name="HobbCart" parent="Places" unique_id=1286361656 instance=ExtResource("cart")]
+transform = Transform3D(-4.3711374e-08, 0, 0.9999997, 0, 1, 0, -0.9999997, 0, -4.3711374e-08, -111, 0, 41.5)
+
+[node name="FordFire" parent="Places" unique_id=1134589058 instance=ExtResource("fire_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 0, -33)
+light_energy = 2.0
+
+[node name="FordSeat1" parent="Places" unique_id=536346587 instance=ExtResource("logseat_scene")]
+transform = Transform3D(-0.1736482, 0, 0.9848077, 0, 1, 0, -0.9848077, 0, -0.1736482, 27.1, 0, -31.7)
+
+[node name="FordSeat2" parent="Places" unique_id=886596126 instance=ExtResource("logseat_scene")]
+transform = Transform3D(0.9396926, 0, 0.34202012, 0, 1, 0, -0.34202012, 0, 0.9396926, 31.099998, 0, -34.3)
+
+[node name="FordCrate1" parent="Places" unique_id=1203237070 instance=ExtResource("crate_scene")]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 21.9, 0, -38.1)
+
+[node name="FordCrate2" parent="Places" unique_id=827397485 instance=ExtResource("crate_scene")]
+transform = Transform3D(0.34202015, 0, 0.9396926, 0, 1, 0, -0.9396926, 0, 0.34202015, 23, 0, -38.9)
+
+[node name="FordBarrel1" parent="Places" unique_id=1889988163 instance=ExtResource("barrel_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.7, 0, -38.7)
+
+[node name="FordTrophy" parent="Places" unique_id=1397707518 instance=ExtResource("trophy_scene")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, 41, 0, -22)
+
+[node name="RaiderFire" parent="Places" unique_id=629302447 instance=ExtResource("fire_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 123.5, 0, -80.5)
+
+[node name="RaiderSeat1" parent="Places" unique_id=1152796544 instance=ExtResource("logseat_scene")]
+transform = Transform3D(-0.1736482, 0, 0.9848077, 0, 1, 0, -0.9848077, 0, -0.1736482, 121.4, 0, -79)
+
+[node name="RaiderSeat2" parent="Places" unique_id=794246007 instance=ExtResource("logseat_scene")]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 125.6, 0, -82.6)
+
+[node name="RaiderCrate1" parent="Places" unique_id=1408824369 instance=ExtResource("crate_scene")]
+transform = Transform3D(0.90630776, 0, 0.42261827, 0, 1, 0, -0.42261827, 0, 0.90630776, 116, 0, -88.2)
+
+[node name="RaiderCrate2" parent="Places" unique_id=1092462617 instance=ExtResource("crate_scene")]
+transform = Transform3D(0.34202015, 0, 0.9396926, 0, 1, 0, -0.9396926, 0, 0.34202015, 115, 0, -87.2)
+
+[node name="RaiderBarrel1" parent="Places" unique_id=1385158950 instance=ExtResource("barrel_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 131, 0, -86)
+
+[node name="RaiderTrophy" parent="Places" unique_id=613789430 instance=ExtResource("trophy_scene")]
+transform = Transform3D(-0.9396926, 0, 0.3420202, 0, 1, 0, -0.3420202, 0, -0.9396926, 118, 0, -74.5)
+
+[node name="WoodsFireS" parent="Places" unique_id=1257447877 instance=ExtResource("fire_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 94, 0, 86)
+light_energy = 1.8
+
+[node name="WoodsFireM" parent="Places" unique_id=1363438633 instance=ExtResource("fire_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, -55)
+light_energy = 1.8
+
+[node name="WoodsFireN" parent="Places" unique_id=373193318 instance=ExtResource("fire_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 102, 0, -51)
+light_energy = 1.8
+
+[node name="WoodsSeatM" parent="Places" unique_id=1436247198 instance=ExtResource("logseat_scene")]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, 61.5, 0, -53.5)
+
+[node name="WoodsCrateN" parent="Places" unique_id=1320717021 instance=ExtResource("crate_scene")]
+transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, 105, 0, -55)
+
+[node name="CheckpointPaving" parent="Places" unique_id=1308055374 instance=ExtResource("cobble_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -112)
+
+[node name="CheckpointPaving2" parent="Places" unique_id=1283522013 instance=ExtResource("cobble_scene")]
+transform = Transform3D(0.8, 0, 0, 0, 1, 0, 0, 0, 0.8, 0, 0, -104)
+
+[node name="CrossroadsPaving" parent="Places" unique_id=2116453208 instance=ExtResource("cobble_scene")]
+transform = Transform3D(0.45, 0, 0, 0, 1, 0, 0, 0, 0.45, -9, 0, 116)
+
+[node name="VillageW" parent="Places" unique_id=77406470 instance=ExtResource("cottage")]
+transform = Transform3D(0.62932044, 0, 0.7771459, 0, 1, 0, -0.7771459, 0, 0.62932044, -24, 0, 96)
+metadata/pad = Vector2(7.5, 6.5)
+
+[node name="VillageE" parent="Places" unique_id=896168137 instance=ExtResource("cottage")]
+transform = Transform3D(0.57357645, 0, -0.81915206, 0, 1, 0, 0.81915206, 0, 0.57357645, 18, 0, 98)
+metadata/pad = Vector2(7.5, 6.5)
+
+[node name="VillageS" parent="Places" unique_id=139727073 instance=ExtResource("cottage")]
+transform = Transform3D(-0.6018151, 0, 0.7986355, 0, 1, 0, -0.7986355, 0, -0.6018151, -20, 0, 124)
+metadata/pad = Vector2(7.5, 6.5)
+
+[node name="Highcrown" parent="." unique_id=544538317 instance=ExtResource("highcrown")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -255)
+
+[node name="Woods" type="Node3D" parent="." unique_id=1451982409 node_paths=PackedStringArray("terrain")]
+script = ExtResource("43_5qe01")
 terrain = NodePath("../Terrain")
-scenes = Array[PackedScene]([ExtResource("tree_pine"), ExtResource("tree_pine"), ExtResource("tree_dead")])
-area = Rect2(31.50, -164.50, 136.50, 308.00)
-count = 320
+scenes = Array[PackedScene]([ExtResource("tree_pine"), ExtResource("tree_dead")])
+weights = PackedFloat32Array(5, 1)
+spacing = 5.5
 scatter_seed = 11
-min_spacing = 5.5
-avoid = PackedVector3Array(105.00, 28.00, 15.40, 123.20, -82.60, 11.20)
+keep_off_roads = 6.5
+scale_range = Vector2(0.8, 1.35)
+max_slope = 0.8
+beyond_edge = 40.0
 
-[node name="FarmTrees" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
-script = ExtResource("scatter")
-terrain = NodePath("../Terrain")
-scenes = Array[PackedScene]([ExtResource("tree_dead"), ExtResource("tree_pine")])
-area = Rect2(-164.50, -70.00, 157.50, 231.00)
-count = 110
-scatter_seed = 23
-min_spacing = 9.0
-avoid = PackedVector3Array(-59.50, 59.50, 14.00, -28.00, 98.00, 16.80, -105.00, 21.00, 14.00, -84.00, -21.00, 11.20, -75.60, -28.00, 5.60, 0.00, 117.60, 15.40)
-
-[node name="Rocks" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
-script = ExtResource("scatter")
+[node name="Rocks" type="Node3D" parent="." unique_id=1868252271 node_paths=PackedStringArray("terrain")]
+script = ExtResource("43_5qe01")
 terrain = NodePath("../Terrain")
 scenes = Array[PackedScene]([ExtResource("rock")])
-area = Rect2(-171.50, -171.50, 343.00, 343.00)
-count = 90
+weights = PackedFloat32Array()
+layer = "rocks"
+spacing = 7.0
 scatter_seed = 5
-min_spacing = 12.0
-scale_range = Vector2(0.6, 2.0)
-height_limits = Vector2(-20, 30)
+keep_off_roads = 4.5
+scale_range = Vector2(0.6, 2)
+max_slope = 2.0
+sink = 0.35
 
-[node name="Enemies" type="Node3D" parent="."]
+[node name="Enemies" type="Node3D" parent="." unique_id=988874421]
 
-[node name="EnemySpawner" type="MultiplayerSpawner" parent="."]
+[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=1410187664]
 _spawnable_scenes = PackedStringArray("res://game/enemies/marauder.tscn", "res://game/enemies/zealot.tscn", "res://game/enemies/hound.tscn", "res://game/enemies/hobb.tscn", "res://game/enemies/acolyte.tscn", "res://game/enemies/tallow.tscn")
 spawn_path = NodePath("../Enemies")
 
-[node name="SpawnDirector" type="Node" parent="." node_paths=PackedStringArray("enemies_root", "terrain")]
+[node name="SpawnDirector" type="Node" parent="." unique_id=225378565 node_paths=PackedStringArray("enemies_root", "terrain")]
 script = ExtResource("director")
 enemies_root = NodePath("../Enemies")
 terrain = NodePath("../Terrain")
 
-[node name="EnemySpawns" type="Node3D" parent="."]
+[node name="EnemySpawns" type="Node3D" parent="." unique_id=1033895226]
 
-[node name="RoadPatrol" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(1.40, 0, 77.00)
-rotation_degrees = Vector3(0, 180, 0)
+[node name="RoadPatrol" type="Marker3D" parent="EnemySpawns" unique_id=928961095]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 5, 0, 32)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_road")
 radius = 2.5
-min_players = 1
-patrol = PackedVector3Array(0, 0, 0, 0, 0, 50, -2, 0, 95)
+patrol = PackedVector3Array(0, 0, 0, 2, 0, 30, 1, 0, -22)
 
-[node name="Checkpoint" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(0.00, 0, -84.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="Checkpoint" type="Marker3D" parent="EnemySpawns" unique_id=1608220689]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -110)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_pair")
 radius = 2.5
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="CheckpointExtra" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(8.40, 0, -89.60)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="CheckpointExtra" type="Marker3D" parent="EnemySpawns" unique_id=1780423741]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -116)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_or_none")
 radius = 2.0
+patrol = PackedVector3Array()
 min_players = 3
 
-
-[node name="TitheBarn" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(19.60, 0, -56.00)
-rotation_degrees = Vector3(0, 270, 0)
+[node name="TitheBarn" type="Marker3D" parent="EnemySpawns" unique_id=1622778562]
+transform = Transform3D(1.1924881e-08, 0, -1, 0, 1, 0, 1, 0, 1.1924881e-08, 13, 0, -46)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="TitheBarnPatrol" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(14.00, 0, -42.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="TitheBarnPatrol" type="Marker3D" parent="EnemySpawns" unique_id=1481287175]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -28)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_or_none")
 radius = 2.0
-min_players = 1
-patrol = PackedVector3Array(0, 0, 0, 25, 0, -10, 10, 0, -40)
+patrol = PackedVector3Array(0, 0, 0, -4, 0, -20, -8, 0, -42)
 
-[node name="Farms" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-29.40, 0, 92.40)
-rotation_degrees = Vector3(0, 120, 0)
+[node name="Farms" type="Marker3D" parent="EnemySpawns" unique_id=1718851868]
+transform = Transform3D(-0.50000006, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, -0.50000006, -40, 0, 92)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="Hamlet" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-60.20, 0, 58.80)
-rotation_degrees = Vector3(0, 30, 0)
+[node name="Hamlet" type="Marker3D" parent="EnemySpawns" unique_id=346361844]
+transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, -72, 0, 60)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauder_pair")
-radius = 3.0
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="HamletExtra" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-53.20, 0, 49.00)
-rotation_degrees = Vector3(0, 200, 0)
+[node name="HamletExtra" type="Marker3D" parent="EnemySpawns" unique_id=351207468]
+transform = Transform3D(-0.9396926, 0, -0.34202015, 0, 1, 0, 0.34202015, 0, -0.9396926, -74, 0, 44)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
+patrol = PackedVector3Array()
 min_players = 3
 
-
-[node name="HamletEdge" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-77.00, 0, 42.00)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="HamletEdge" type="Marker3D" parent="EnemySpawns" unique_id=1772060400]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -90, 0, 58)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
-radius = 3.0
+patrol = PackedVector3Array()
 min_players = 6
 
-
-[node name="Mill" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-92.40, 0, -9.80)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="Mill" type="Marker3D" parent="EnemySpawns" unique_id=922816607]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -92, 0, 6)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="HobbCamp" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-105.70, 0, 21.00)
-rotation_degrees = Vector3(0, 60, 0)
+[node name="HobbCamp" type="Marker3D" parent="EnemySpawns" unique_id=1592126135]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, -112.2, 0, 30.5)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauder_pair")
-radius = 3.0
-min_players = 1
+patrol = PackedVector3Array()
 named_scene = ExtResource("hobb")
-named_chance = 0.05
 
-[node name="HobbCampBack" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-112.00, 0, 29.40)
-rotation_degrees = Vector3(0, 160, 0)
+[node name="HobbCampBack" type="Marker3D" parent="EnemySpawns" unique_id=24217921]
+transform = Transform3D(-0.9396926, 0, 0.3420202, 0, 1, 0, -0.3420202, 0, -0.9396926, -118.5, 0, 38.9)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
+patrol = PackedVector3Array()
 min_players = 3
 
-
-[node name="WoodsSouth" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(80.50, 0, 77.00)
-rotation_degrees = Vector3(0, 270, 0)
+[node name="WoodsSouth" type="Marker3D" parent="EnemySpawns" unique_id=1614037008]
+transform = Transform3D(1.1924881e-08, 0, -1, 0, 1, 0, 1, 0, 1.1924881e-08, 93, 0, 85)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
 radius = 3.5
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="WoodsMid" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(73.50, 0, -7.00)
-rotation_degrees = Vector3(0, 270, 0)
+[node name="WoodsMid" type="Marker3D" parent="EnemySpawns" unique_id=322495299]
+transform = Transform3D(1.1924881e-08, 0, -1, 0, 1, 0, 1, 0, 1.1924881e-08, 65, 0, -54)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_mixed")
-radius = 3.0
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="WoodsNorth" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(87.50, 0, -49.00)
-rotation_degrees = Vector3(0, 180, 0)
+[node name="WoodsNorth" type="Marker3D" parent="EnemySpawns" unique_id=727343991]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 101, 0, -50)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
 radius = 3.5
+patrol = PackedVector3Array()
 min_players = 3
 
-
-[node name="RaiderCamp" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(120.40, 0, -81.20)
-rotation_degrees = Vector3(0, 180, 0)
+[node name="RaiderCamp" type="Marker3D" parent="EnemySpawns" unique_id=1729815746]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 120.4, 0, -81.2)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauder_pair")
-radius = 3.0
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="RaiderCampBack" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(128.80, 0, -85.40)
-rotation_degrees = Vector3(0, 200, 0)
+[node name="RaiderCampBack" type="Marker3D" parent="EnemySpawns" unique_id=902675493]
+transform = Transform3D(-0.9396926, 0, -0.34202015, 0, 1, 0, 0.34202015, 0, -0.9396926, 128.8, 0, -85.4)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="RaiderCampExtra" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(113.40, 0, -89.60)
-rotation_degrees = Vector3(0, 150, 0)
+[node name="RaiderCampExtra" type="Marker3D" parent="EnemySpawns" unique_id=103660858]
+transform = Transform3D(-0.8660254, 0, 0.50000006, 0, 1, 0, -0.50000006, 0, -0.8660254, 113.4, 0, -89.6)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_mixed")
-radius = 3.0
+patrol = PackedVector3Array()
 min_players = 6
 
-
-[node name="TowerYard" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(102.20, 0, 25.20)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="TowerYard" type="Marker3D" parent="EnemySpawns" unique_id=578431121]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 99, 0, 30)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
-min_players = 1
 patrol = PackedVector3Array(0, 0, 0, 8, 0, 6, 0, 0, 10, -8, 0, 6)
 
-[node name="TowerOutside" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(105.00, 0, 44.80)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="TowerOutside" type="Marker3D" parent="EnemySpawns" unique_id=1933089742]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 105, 0, 47)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_or_none")
 radius = 2.0
+patrol = PackedVector3Array()
 min_players = 3
 
-
-[node name="QuarryRim" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-119.00, 0, -94.50)
-rotation_degrees = Vector3(0, 220, 0)
+[node name="QuarryRim" type="Marker3D" parent="EnemySpawns" unique_id=1218549898]
+transform = Transform3D(-0.7660445, 0, -0.6427876, 0, 1, 0, 0.6427876, 0, -0.7660445, -152, 0, -72)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_mixed")
-radius = 3.0
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="QuarryFloor" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-133.00, 0, -119.00)
-rotation_degrees = Vector3(0, 45, 0)
+[node name="QuarryFloor" type="Marker3D" parent="EnemySpawns" unique_id=88840569]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, -148, 0, -98)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauder_pair")
-radius = 3.0
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="QuarryDeep" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-143.50, 0, -129.50)
-rotation_degrees = Vector3(0, 45, 0)
+[node name="QuarryDeep" type="Marker3D" parent="EnemySpawns" unique_id=1371632727]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, -163, 0, -106)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
-radius = 3.0
+patrol = PackedVector3Array()
 min_players = 3
 
-
-[node name="BridgeGuard" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(8.40, 0, 9.80)
-rotation_degrees = Vector3(0, 90, 0)
+[node name="BridgeGuard" type="Marker3D" parent="EnemySpawns" unique_id=1358976890]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 10, 0, 14)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="RoadMid" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(4.20, 0, 29.40)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="RoadMid" type="Marker3D" parent="EnemySpawns" unique_id=1123673868]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 46)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_mixed")
-radius = 3.0
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="HamletRoad" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-42.00, 0, 84.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="HamletRoad" type="Marker3D" parent="EnemySpawns" unique_id=1032872837]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52, 0, 96)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="FordCamp" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(28.00, 0, -12.60)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="FordCamp" type="Marker3D" parent="EnemySpawns" unique_id=796002579]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, -32)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauder_pair")
-radius = 3.0
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="NorthRoad" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(2.80, 0, -28.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="NorthRoad" type="Marker3D" parent="EnemySpawns" unique_id=1326403961]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -62)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_or_none")
 radius = 2.0
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="MillRoad" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-70.00, 0, 9.80)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="MillRoad" type="Marker3D" parent="EnemySpawns" unique_id=717242548]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0, 30)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
-radius = 3.0
+patrol = PackedVector3Array()
 min_players = 3
 
-
-[node name="QuarryRoad" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-113.40, 0, -60.20)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="QuarryRoad" type="Marker3D" parent="EnemySpawns" unique_id=1059309929]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -116, 0, -62)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
 radius = 2.5
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="WoodsRoad" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(56.00, 0, 49.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="WoodsRoad" type="Marker3D" parent="EnemySpawns" unique_id=457060265]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 88)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
-radius = 3.0
-min_players = 1
+patrol = PackedVector3Array()
 
-
-[node name="FarmEdge" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-18.20, 0, 84.00)
-rotation_degrees = Vector3(0, 0, 0)
+[node name="FarmEdge" type="Marker3D" parent="EnemySpawns" unique_id=1825390672]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 0, 88)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_or_none")
 radius = 2.0
+patrol = PackedVector3Array()
 min_players = 3
 
+[node name="EdgeN" type="StaticBody3D" parent="." unique_id=429654591]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, -178.5)
 
-[node name="EdgeN" type="StaticBody3D" parent="."]
-position = Vector3(0.00, 20, -178.50)
-
-[node name="Shape" type="CollisionShape3D" parent="EdgeN"]
+[node name="Shape" type="CollisionShape3D" parent="EdgeN" unique_id=1151950086]
 shape = SubResource("edge_N")
 
-[node name="EdgeS" type="StaticBody3D" parent="."]
-position = Vector3(0.00, 20, 178.50)
+[node name="EdgeS" type="StaticBody3D" parent="." unique_id=118948459]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 178.5)
 
-[node name="Shape" type="CollisionShape3D" parent="EdgeS"]
+[node name="Shape" type="CollisionShape3D" parent="EdgeS" unique_id=1227626340]
 shape = SubResource("edge_S")
 
-[node name="EdgeW" type="StaticBody3D" parent="."]
-position = Vector3(-178.50, 20, 0.00)
+[node name="EdgeW" type="StaticBody3D" parent="." unique_id=2137569121]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, 20, 0)
 
-[node name="Shape" type="CollisionShape3D" parent="EdgeW"]
+[node name="Shape" type="CollisionShape3D" parent="EdgeW" unique_id=1151630457]
 shape = SubResource("edge_W")
 
-[node name="EdgeE" type="StaticBody3D" parent="."]
-position = Vector3(178.50, 20, 0.00)
+[node name="EdgeE" type="StaticBody3D" parent="." unique_id=449736446]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 178.5, 20, 0)
 
-[node name="Shape" type="CollisionShape3D" parent="EdgeE"]
+[node name="Shape" type="CollisionShape3D" parent="EdgeE" unique_id=1442975420]
 shape = SubResource("edge_E")
 
-
-# ---- Camps (environment pass): fires, seats, crates, barrels, hay, trophy poles, lookouts ----
-[node name="HobbFire" parent="Places" instance=ExtResource("fire_scene")]
-position = Vector3(-105.5, 0, 22.5)
-rotation_degrees = Vector3(0, 0, 0)
-
-[node name="HobbSeat1" parent="Places" instance=ExtResource("logseat_scene")]
-position = Vector3(-103.1, 0, 22.3)
-rotation_degrees = Vector3(0, 95, 0)
-
-[node name="HobbSeat2" parent="Places" instance=ExtResource("logseat_scene")]
-position = Vector3(-107.9, 0, 23.6)
-rotation_degrees = Vector3(0, 75, 0)
-
-[node name="HobbSeat3" parent="Places" instance=ExtResource("logseat_scene")]
-position = Vector3(-105.2, 0, 25.0)
-rotation_degrees = Vector3(0, 5, 0)
-
-[node name="HobbCrate1" parent="Places" instance=ExtResource("crate_scene")]
-position = Vector3(-111.0, 0, 29.6)
-rotation_degrees = Vector3(0, 20, 0)
-
-[node name="HobbCrate2" parent="Places" instance=ExtResource("crate_scene")]
-position = Vector3(-109.8, 0, 30.7)
-rotation_degrees = Vector3(0, 65, 0)
-
-[node name="HobbCrate3" parent="Places" instance=ExtResource("crate_scene")]
-position = Vector3(-99.4, 0, 31.2)
-rotation_degrees = Vector3(0, 10, 0)
-
-[node name="HobbBarrel1" parent="Places" instance=ExtResource("barrel_scene")]
-position = Vector3(-96.4, 0, 29.6)
-rotation_degrees = Vector3(0, 0, 0)
-
-[node name="HobbBarrel2" parent="Places" instance=ExtResource("barrel_scene")]
-position = Vector3(-95.5, 0, 28.4)
-rotation_degrees = Vector3(0, 0, 0)
-
-[node name="HobbBarrel3" parent="Places" instance=ExtResource("barrel_scene")]
-position = Vector3(-113.4, 0, 21.2)
-rotation_degrees = Vector3(0, 0, 0)
-
-[node name="HobbHay1" parent="Places" instance=ExtResource("hay_scene")]
-position = Vector3(-100.6, 0, 24.8)
-rotation_degrees = Vector3(0, 40, 0)
-
-[node name="HobbHay2" parent="Places" instance=ExtResource("hay_scene")]
-position = Vector3(-99.3, 0, 23.6)
-rotation_degrees = Vector3(0, 110, 0)
-
-[node name="HobbTrophy" parent="Places" instance=ExtResource("trophy_scene")]
-position = Vector3(-100.5, 0, 13.5)
-rotation_degrees = Vector3(0, 25, 0)
-
-[node name="HobbLookout" parent="Places" instance=ExtResource("lookout_scene")]
-position = Vector3(-95.5, 0, 7.5)
-rotation_degrees = Vector3(0, 200, 0)
-
-[node name="HobbCart" parent="Places" instance=ExtResource("cart")]
-position = Vector3(-112.5, 0, 34.5)
-rotation_degrees = Vector3(0, 40, 0)
-
-[node name="FordFire" parent="Places" instance=ExtResource("fire_scene")]
-position = Vector3(30.5, 0, -12.5)
-rotation_degrees = Vector3(0, 0, 0)
-light_energy = 2.0
-[node name="FordSeat1" parent="Places" instance=ExtResource("logseat_scene")]
-position = Vector3(28.6, 0, -11.2)
-rotation_degrees = Vector3(0, 100, 0)
-
-[node name="FordSeat2" parent="Places" instance=ExtResource("logseat_scene")]
-position = Vector3(32.6, 0, -13.8)
-rotation_degrees = Vector3(0, 20, 0)
-
-[node name="FordCrate1" parent="Places" instance=ExtResource("crate_scene")]
-position = Vector3(23.4, 0, -17.6)
-rotation_degrees = Vector3(0, 15, 0)
-
-[node name="FordCrate2" parent="Places" instance=ExtResource("crate_scene")]
-position = Vector3(24.5, 0, -18.4)
-rotation_degrees = Vector3(0, 70, 0)
-
-[node name="FordBarrel1" parent="Places" instance=ExtResource("barrel_scene")]
-position = Vector3(29.2, 0, -18.2)
-rotation_degrees = Vector3(0, 0, 0)
-
-[node name="FordTrophy" parent="Places" instance=ExtResource("trophy_scene")]
-position = Vector3(20.5, 0, -8.0)
-rotation_degrees = Vector3(0, -60, 0)
-
-[node name="RaiderFire" parent="Places" instance=ExtResource("fire_scene")]
-position = Vector3(123.5, 0, -80.5)
-rotation_degrees = Vector3(0, 0, 0)
-
-[node name="RaiderSeat1" parent="Places" instance=ExtResource("logseat_scene")]
-position = Vector3(121.4, 0, -79.0)
-rotation_degrees = Vector3(0, 100, 0)
-
-[node name="RaiderSeat2" parent="Places" instance=ExtResource("logseat_scene")]
-position = Vector3(125.6, 0, -82.6)
-rotation_degrees = Vector3(0, 15, 0)
-
-[node name="RaiderCrate1" parent="Places" instance=ExtResource("crate_scene")]
-position = Vector3(116.0, 0, -88.2)
-rotation_degrees = Vector3(0, 25, 0)
-
-[node name="RaiderCrate2" parent="Places" instance=ExtResource("crate_scene")]
-position = Vector3(115.0, 0, -87.2)
-rotation_degrees = Vector3(0, 70, 0)
-
-[node name="RaiderBarrel1" parent="Places" instance=ExtResource("barrel_scene")]
-position = Vector3(131.0, 0, -86.0)
-rotation_degrees = Vector3(0, 0, 0)
-
-[node name="RaiderTrophy" parent="Places" instance=ExtResource("trophy_scene")]
-position = Vector3(118.0, 0, -74.5)
-rotation_degrees = Vector3(0, 160, 0)
-
-[node name="WoodsFireS" parent="Places" instance=ExtResource("fire_scene")]
-position = Vector3(81.5, 0, 71.0)
-rotation_degrees = Vector3(0, 0, 0)
-light_energy = 1.8
-[node name="WoodsFireM" parent="Places" instance=ExtResource("fire_scene")]
-position = Vector3(78.5, 0, -9.5)
-rotation_degrees = Vector3(0, 0, 0)
-light_energy = 1.8
-[node name="WoodsFireN" parent="Places" instance=ExtResource("fire_scene")]
-position = Vector3(92.5, 0, -43.0)
-rotation_degrees = Vector3(0, 0, 0)
-light_energy = 1.8
-[node name="WoodsSeatM" parent="Places" instance=ExtResource("logseat_scene")]
-position = Vector3(76.8, 0, -8.4)
-rotation_degrees = Vector3(0, 60, 0)
-
-[node name="WoodsCrateN" parent="Places" instance=ExtResource("crate_scene")]
-position = Vector3(87.5, 0, -47.5)
-rotation_degrees = Vector3(0, 30, 0)
-
-
-[node name="Clutter" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
-script = ExtResource("scatter")
+[node name="Clutter" type="Node3D" parent="." unique_id=1828691494 node_paths=PackedStringArray("terrain")]
+script = ExtResource("43_5qe01")
 terrain = NodePath("../Terrain")
 scenes = Array[PackedScene]([ExtResource("stone_small"), ExtResource("stone_small"), ExtResource("stone_small"), ExtResource("log_fallen"), ExtResource("stump_scene")])
-area = Rect2(-168.00, -168.00, 336.00, 336.00)
-count = 300
+weights = PackedFloat32Array()
+layer = "clutter"
+spacing = 7.0
 scatter_seed = 41
-min_spacing = 3.0
 keep_off_roads = 3.2
-keep_off_river = 5.0
+keep_off_tracks = 1.5
 scale_range = Vector2(0.7, 1.5)
-height_limits = Vector2(-4, 12)
-avoid = PackedVector3Array(-105.50, 22.50, 12.00, 121.00, -83.00, 12.00, 27.00, -12.00, 8.00, 36.00, 122.00, 12.00, 3.00, 118.00, 14.00)
+sink = 0.05
 
-[node name="Grass" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+[node name="Grass" type="Node3D" parent="." unique_id=1687882452 node_paths=PackedStringArray("terrain")]
 script = ExtResource("grass_field")
 terrain = NodePath("../Terrain")
 
-[node name="CheckpointPaving" parent="Places" instance=ExtResource("cobble_scene")]
-position = Vector3(0, 0, -84)
-
-[node name="CheckpointPaving2" parent="Places" instance=ExtResource("cobble_scene")]
-position = Vector3(0, 0, -76)
-scale = Vector3(0.8, 1, 0.8)
-
-[node name="CrossroadsPaving" parent="Places" instance=ExtResource("cobble_scene")]
-position = Vector3(5, 0, 117)
-scale = Vector3(0.9, 1, 0.9)
-
-[node name="Vignette" type="CanvasLayer" parent="."]
+[node name="Vignette" type="CanvasLayer" parent="." unique_id=1423057407]
 layer = 0
 
-[node name="Rect" type="ColorRect" parent="Vignette"]
+[node name="Rect" type="ColorRect" parent="Vignette" unique_id=2038569710]
 material = ExtResource("vignette_mat")
 anchors_preset = 15
 anchor_right = 1.0
@@ -1028,7 +866,22 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TitheExtras" type="Node3D" parent="." node_paths=PackedStringArray("terrain", "sun")]
+[node name="TitheExtras" type="Node3D" parent="." unique_id=1734081294 node_paths=PackedStringArray("terrain", "sun")]
 script = ExtResource("tithe_extras")
 terrain = NodePath("../Terrain")
 sun = NodePath("../Sun")
+checkpoint_shift = -34.0
+
+[node name="UndergroundCull" type="Node" parent="." unique_id=1034587490]
+script = ExtResource("ucull")
+underground = Array[NodePath]([NodePath("../Gullet")])
+surface = Array[NodePath]([NodePath("../Woods"), NodePath("../Grass"), NodePath("../Clutter"), NodePath("../Rocks"), NodePath("../Highcrown"), NodePath("../StoneWalls"), NodePath("../Dressing")])
+
+[node name="StoneWalls" type="Node3D" parent="." unique_id=399762350 node_paths=PackedStringArray("terrain")]
+script = ExtResource("63_og1uf")
+terrain = NodePath("../Terrain")
+
+[node name="Dressing" type="Node3D" parent="." unique_id=666360650 node_paths=PackedStringArray("terrain")]
+script = ExtResource("64_17ghg")
+terrain = NodePath("../Terrain")
+dressing_script = ExtResource("65_a6ns4")

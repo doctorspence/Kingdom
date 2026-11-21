@@ -747,7 +747,7 @@ func _water_mult() -> float:
 		_terrain = get_tree().get_first_node_in_group(&"zone_terrain") as ZoneTerrain
 		if _terrain == null:
 			return 1.0
-	if global_position.y < _terrain.water_level() - 0.25:
+	if global_position.y < _terrain.water_level_at(global_position.x, global_position.z) - 0.25 and _terrain.river_distance(global_position.x, global_position.z) < 14.0:
 		return 0.55
 	return 1.0
 

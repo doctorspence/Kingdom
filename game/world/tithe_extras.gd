@@ -7,6 +7,8 @@ extends Node3D
 
 @export var terrain: ZoneTerrain
 @export var sun: DirectionalLight3D
+## Moves the checkpoint dressing along the road (it was built for the old checkpoint at z = -78).
+@export var checkpoint_shift := 0.0
 
 const CLOTH := preload("res://levels/common/materials/cloth_white.tres")
 const WOOD := preload("res://levels/common/materials/dark_wood.tres")
@@ -14,6 +16,7 @@ const IRON := preload("res://levels/common/materials/iron.tres")
 const PLANKS := preload("res://levels/common/materials/wood.tres")
 
 var _clouds: MeshInstance3D
+var _shift := 0.0
 var _cloud_mat: ShaderMaterial
 
 
@@ -65,12 +68,14 @@ func _box(parent: Node3D, pos: Vector3, size: Vector3, mat: Material, rot := Vec
 
 
 func _ground(x: float, z: float) -> float:
-	return terrain.height_at(x, z) if terrain else 0.0
+	return terrain.height_at(x, z + _shift) if terrain else 0.0
 
 
 func _checkpoint() -> void:
 	var root := Node3D.new()
 	root.name = "CheckpointDressing"
+	root.position.z = checkpoint_shift
+	_shift = checkpoint_shift
 	add_child(root)
 	var gold := StandardMaterial3D.new()
 	gold.albedo_color = Color(0.55, 0.43, 0.2)
@@ -90,8 +95,8 @@ func _checkpoint() -> void:
 			_box(root, Vector3(x - side * 0.73, y + 4.4, z), Vector3(0.04, 0.2, 0.9), gold)
 	# Market stalls on the west verge.
 	for i in 3:
-		var sx := -14.0
-		var sz := -58.0 - i * 7.5
+		var sx := -11.0
+		var sz := -64.0 - i * 6.5
 		_stall(root, Vector3(sx, _ground(sx, sz), sz), 90.0)
 	# A notice board by the road.
 	var nb := Vector3(7.5, _ground(7.5, -64.0), -64.0)
@@ -187,15 +192,21 @@ func _ferns() -> void:
 	while xforms.size() < 700 and tries < 8000:
 		tries += 1
 		var p := Vector2(rng.randf_range(-half, half), rng.randf_range(-half, half))
-		# Ferns like the shade: mostly the east and west woods.
-		if absf(p.x) < 30.0 and rng.randf() < 0.8:
+		# Ferns like the shade: the woods (or, without a forest map, the east and west).
+		var sculpted := terrain as SculptedTerrain
+		if sculpted and sculpted.land and sculpted.land.has_method("forest"):
+			if rng.randf() > 0.15 + 0.85 * float(sculpted.land.forest(p.x, p.y)):
+				continue
+			if sculpted.in_pad(p.x, p.y) > 0.05:
+				continue
+		elif absf(p.x) < 30.0 and rng.randf() < 0.8:
 			continue
 		if minf(terrain._distance_to_lines(terrain.roads, p), terrain._distance_to_lines(terrain.tracks, p) + 2.0) < 4.0:
 			continue
 		if terrain.river_distance(p.x, p.y) < 5.0:
 			continue
 		var h := terrain.height_at(p.x, p.y)
-		if h < -0.5 or h > 10.0:
+		if (terrain is SculptedTerrain and h < terrain.water_level_at(p.x, p.y) + 0.3) or (not (terrain is SculptedTerrain) and (h < -0.5 or h > 10.0)):
 			continue
 		for j in rng.randi_range(1, 3):
 			var q := p + Vector2(rng.randf_range(-1.5, 1.5), rng.randf_range(-1.5, 1.5))
@@ -222,7 +233,7 @@ func _puddles() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 909
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.05, 0.06, 0.07, 0.85)
+	mat.albedo_color = Color(0.03, 0.035, 0.04, 0.8)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.roughness = 0.04
 	mat.metallic = 0.2
@@ -243,9 +254,12 @@ func _puddles() -> void:
 			continue
 		if terrain.river_distance(p.x, p.y) < 6.0:
 			continue
-		var r := rng.randf_range(0.5, 1.4)
+		var h0 := terrain.height_at(p.x, p.y)
+		if absf(terrain.height_at(p.x + 1.5, p.y) - h0) + absf(terrain.height_at(p.x, p.y + 1.5) - h0) > 0.06:
+			continue  # puddles only lie where the road is level
+		var r := rng.randf_range(0.5, 1.2)
 		var b := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(r * rng.randf_range(1.0, 1.7), 1.0, r))
-		xforms.append(Transform3D(b, Vector3(p.x, terrain.height_at(p.x, p.y) + 0.035, p.y)))
+		xforms.append(Transform3D(b, Vector3(p.x, h0 + 0.012, p.y)))
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.mesh = mesh

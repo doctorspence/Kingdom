@@ -106,6 +106,11 @@ func water_level() -> float:
 	return hill_height * 1.3 - 0.9
 
 
+## The water surface near a point (constant here; sculpted zones vary it).
+func water_level_at(_x: float, _z: float) -> float:
+	return water_level()
+
+
 ## How far a point is from the river centerline (for wading).
 func river_distance(x: float, z: float) -> float:
 	return _distance_to_line(river, Vector2(x, z))

@@ -56,7 +56,7 @@ func _run() -> void:
 	_check("quarry ladder reaches the rim (%.1f m tall)" % ql.height, ql.height > 3.0)
 
 	# --- Wading -----------------------------------------------------------------------
-	var river_spot := Vector3(-28, 0, -5)
+	var river_spot := Vector3(-31, 0, 1)
 	await _go_to(Vector3(river_spot.x, terrain.height_at(river_spot.x, river_spot.z) + 0.2, river_spot.z))
 	Input.action_press("move_right")
 	await _seconds(1.0)
