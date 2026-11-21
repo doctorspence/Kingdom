@@ -2,6 +2,7 @@
 
 [ext_resource type="Material" path="res://levels/common/materials/plaster.tres" id="m_plaster"]
 [ext_resource type="Material" path="res://levels/common/materials/stone.tres" id="m_stone"]
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_beam"]
 [ext_resource type="Material" path="res://levels/common/materials/thatch.tres" id="m_thatch"]
 
 [node name="Cottage" type="Node3D"]
@@ -42,4 +43,120 @@ material = ExtResource("m_thatch")
 position = Vector3(2, 4, -1.2)
 size = Vector3(0.7, 2.5, 0.7)
 material = ExtResource("m_stone")
+
+
+[node name="Foundation" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.22, 0)
+size = Vector3(6.5, 0.5, 5.5)
+material = ExtResource("m_stone")
+
+[node name="PostFL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-3.02, 1.55, 2.52)
+size = Vector3(0.3, 3.1, 0.3)
+material = ExtResource("m_beam")
+
+[node name="PostFR" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.02, 1.55, 2.52)
+size = Vector3(0.3, 3.1, 0.3)
+material = ExtResource("m_beam")
+
+[node name="PostBL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-3.02, 1.55, -2.52)
+size = Vector3(0.3, 3.1, 0.3)
+material = ExtResource("m_beam")
+
+[node name="PostBR" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.02, 1.55, -2.52)
+size = Vector3(0.3, 3.1, 0.3)
+material = ExtResource("m_beam")
+
+[node name="SillFront" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.6, 2.52)
+size = Vector3(6.1, 0.2, 0.14)
+material = ExtResource("m_beam")
+
+[node name="PlateFront" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 2.95, 2.52)
+size = Vector3(6.1, 0.22, 0.14)
+material = ExtResource("m_beam")
+
+[node name="SillBack" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.6, -2.52)
+size = Vector3(6.1, 0.2, 0.14)
+material = ExtResource("m_beam")
+
+[node name="PlateBack" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 2.95, -2.52)
+size = Vector3(6.1, 0.22, 0.14)
+material = ExtResource("m_beam")
+
+[node name="SillSideR" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.02, 0.6, 0)
+size = Vector3(0.14, 0.2, 4.9)
+material = ExtResource("m_beam")
+
+[node name="PlateSideR" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.02, 2.95, 0)
+size = Vector3(0.14, 0.22, 4.9)
+material = ExtResource("m_beam")
+
+[node name="SillSideL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-3.02, 0.6, 0)
+size = Vector3(0.14, 0.2, 4.9)
+material = ExtResource("m_beam")
+
+[node name="PlateSideL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-3.02, 2.95, 0)
+size = Vector3(0.14, 0.22, 4.9)
+material = ExtResource("m_beam")
+
+[node name="BraceFL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-2.0, 1.75, 2.52)
+size = Vector3(0.14, 2.3, 0.12)
+material = ExtResource("m_beam")
+rotation_degrees = Vector3(0, 0, 38)
+[node name="BraceFR" type="CSGBox3D" parent="Shape"]
+position = Vector3(2.0, 1.75, 2.52)
+size = Vector3(0.14, 2.3, 0.12)
+material = ExtResource("m_beam")
+rotation_degrees = Vector3(0, 0, -38)
+[node name="BraceBL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-2.0, 1.75, -2.52)
+size = Vector3(0.14, 2.3, 0.12)
+material = ExtResource("m_beam")
+rotation_degrees = Vector3(0, 0, -38)
+[node name="BraceBR" type="CSGBox3D" parent="Shape"]
+position = Vector3(2.0, 1.75, -2.52)
+size = Vector3(0.14, 2.3, 0.12)
+material = ExtResource("m_beam")
+rotation_degrees = Vector3(0, 0, 38)
+[node name="DoorPostL" type="CSGBox3D" parent="Shape"]
+position = Vector3(-0.8, 1.12, 2.56)
+size = Vector3(0.18, 2.3, 0.22)
+material = ExtResource("m_beam")
+
+[node name="DoorPostR" type="CSGBox3D" parent="Shape"]
+position = Vector3(0.8, 1.12, 2.56)
+size = Vector3(0.18, 2.3, 0.22)
+material = ExtResource("m_beam")
+
+[node name="DoorLintel" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 2.32, 2.56)
+size = Vector3(1.8, 0.2, 0.22)
+material = ExtResource("m_beam")
+
+[node name="ShutterA" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.06, 1.6, -0.75)
+size = Vector3(0.1, 0.8, 0.45)
+material = ExtResource("m_beam")
+
+[node name="ShutterB" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.06, 1.6, 0.75)
+size = Vector3(0.1, 0.8, 0.45)
+material = ExtResource("m_beam")
+
+[node name="WindowSill" type="CSGBox3D" parent="Shape"]
+position = Vector3(3.06, 1.15, 0)
+size = Vector3(0.2, 0.1, 1.2)
+material = ExtResource("m_beam")
 
