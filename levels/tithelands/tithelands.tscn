@@ -26,6 +26,7 @@
 [ext_resource type="Material" path="res://levels/common/materials/terrain_pbr.tres" id="terrain_mat"]
 [ext_resource type="Script" path="res://game/world/ground_snap.gd" id="snap"]
 [ext_resource type="Script" path="res://game/world/scatter.gd" id="scatter"]
+[ext_resource type="Script" path="res://game/world/tithe_extras.gd" id="tithe_extras"]
 [ext_resource type="PackedScene" path="res://game/enemies/hobb.tscn" id="hobb"]
 [ext_resource type="Script" path="res://game/enemies/spawn_director.gd" id="director"]
 [ext_resource type="Script" path="res://game/enemies/spawn_point.gd" id="spawnpt"]
@@ -1026,3 +1027,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="TitheExtras" type="Node3D" parent="." node_paths=PackedStringArray("terrain", "sun")]
+script = ExtResource("tithe_extras")
+terrain = NodePath("../Terrain")
+sun = NodePath("../Sun")
