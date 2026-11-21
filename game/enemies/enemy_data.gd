@@ -90,3 +90,12 @@ extends Resource
 @export var boss_health_per_player := 0.8
 ## Flag set the first time it dies (opens shortcuts for good).
 @export var kill_flag := &""
+
+@export_group("Ranged and camps (Gullet)")
+## Archers: tries to stay between this distance and `attack_range` from you, backing off when you
+## close in (0 = a normal melee enemy). Archers don't count toward the 2-attackers rule.
+@export var keep_distance := 0.0
+## A shout also pulls in every enemy with the same family name (bandits, archers and captains).
+@export var call_family := &""
+## Hidden until a player passes within this many meters (the nook ambush); 0 = normal senses.
+@export var ambush_range := 0.0

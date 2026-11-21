@@ -13,6 +13,7 @@ func _ready() -> void:
 func _run() -> void:
 	await _items_and_loot()
 	await _eating()
+	await _enemies()
 	print("PASS: 0 problem(s)" if failures == 0 else "FAIL: %d problem(s)" % failures)
 	get_tree().quit(1 if failures > 0 else 0)
 
@@ -109,3 +110,74 @@ func _frames(n: int) -> void:
 
 func _seconds(s: float) -> void:
 	await _frames(ceili(s * Engine.physics_ticks_per_second))
+
+
+# --- Step 4: bandits, archers, captain --------------------------------------------------------
+func _spawn(scene_path: String, scene_root: Node, pos: Vector3, face_toward: Vector3) -> Enemy:
+	var e := (load(scene_path) as PackedScene).instantiate() as Enemy
+	e.position = pos
+	e.rotation.y = atan2(-(face_toward.x - pos.x), -(face_toward.z - pos.z))
+	scene_root.get_node("Enemies").add_child(e)
+	return e
+
+
+func _enemies() -> void:
+	var scene: Node = load("res://levels/sandbox/combat_test.tscn").instantiate()
+	get_tree().root.add_child(scene)
+	await _frames(30)
+	var player := get_tree().get_first_node_in_group(&"player") as Player
+	for e in get_tree().get_nodes_in_group(&"enemies"):
+		(e as Node3D).global_position = Vector3(90, 0, 90)
+	var p0 := player.global_position
+	for s in ["bandit_sword", "bandit_pick", "bandit_lookout", "bandit_archer", "bandit_archer_ambush", "bandit_captain"]:
+		var path := "res://game/enemies/%s.tscn" % s
+		var inst := (load(path) as PackedScene).instantiate() as Enemy
+		_check("scene loads: %s (%s, %.0f health)" % [s, inst.data.display_name, inst.data.max_health], inst.data != null and inst.data.loot_table != null)
+		inst.free()
+	var cap := load("res://data/enemies/enemy_bandit_captain.tres") as EnemyData
+	var unblock := false
+	for a in cap.attacks:
+		unblock = unblock or (a.unblockable and a.windup_speed_mult < 0.5)
+	_check("the Captain has a delayed unblockable overhead, blocks half the time and calls the camp", unblock and cap.block_chance == 0.5 and cap.caller and cap.call_family == &"bandits")
+
+	# The archer shoots from range, and the arrow can be dodged (it flies).
+	var arch := _spawn("res://game/enemies/bandit_archer.tscn", scene, p0 + Vector3(0, 0, -13), p0)
+	await _frames(5)
+	var hp := player.health
+	var shots := 0
+	var t := 0.0
+	var arrows_seen := 0
+	while t < 8.0 and player.health >= hp:
+		await _frames(6)
+		t += 6.0 / Engine.physics_ticks_per_second
+		arrows_seen = maxi(arrows_seen, get_tree().get_nodes_in_group(&"enemies").size() * 0 + _count_arrows(scene))
+	_check("the archer's arrow hits a standing player from range (%.0f -> %.0f after %.1f s, %d arrow seen)" % [hp, player.health, t, arrows_seen],
+			player.health < hp and arrows_seen >= 1)
+	_check("...and he keeps his distance (%.1f m)" % arch.global_position.distance_to(player.global_position), arch.global_position.distance_to(player.global_position) > 7.0)
+	# Close in on him: he backs off.
+	arch.global_position = p0 + Vector3(0, 0, -4.0)
+	arch.velocity = Vector3.ZERO
+	arch._cooldown = 5.0
+	await _seconds(1.6)
+	_check("when you close in, the archer backs away (%.1f m)" % arch.global_position.distance_to(player.global_position), arch.global_position.distance_to(player.global_position) > 5.5)
+	arch.queue_free()
+
+	# The Lookout's shout pulls in a bandit who hasn't seen you (and the archer in the same family).
+	var look := _spawn("res://game/enemies/bandit_lookout.tscn", scene, p0 + Vector3(-3, 0, -10), p0)
+	var pick := _spawn("res://game/enemies/bandit_pick.tscn", scene, p0 + Vector3(-8, 0, -22), p0 + Vector3(-8, 0, -40))
+	var bow := _spawn("res://game/enemies/bandit_archer.tscn", scene, p0 + Vector3(6, 0, -24), p0 + Vector3(6, 0, -40))
+	player.health = player.max_health()
+	await _seconds(0.6)
+	player.global_position = p0
+	await _seconds(2.5)
+	_check("the Lookout shouts and the whole camp joins in (pick %s, archer %s)" % [Enemy.State.keys()[pick.state], Enemy.State.keys()[bow.state]],
+			pick.state in [Enemy.State.CHASE, Enemy.State.ATTACK] and bow.state in [Enemy.State.CHASE, Enemy.State.ATTACK])
+	scene.queue_free()
+
+
+func _count_arrows(root: Node) -> int:
+	var n := 0
+	for c in root.get_node("Enemies").get_children():
+		if c is EnemyArrow:
+			n += 1
+	return n

@@ -72,6 +72,7 @@ var _taunt_time := 0.0
 var _threat_check := 0.0
 var _patrol_i := 0
 var _called := false
+var _shot := false  # this attack already loosed its arrow
 var _fury := false
 var _phase := 1
 var _fire_dropped := false
@@ -640,7 +641,7 @@ func _state_call(delta: float) -> void:
 	# Everyone of its kind nearby joins the fight.
 	for n in get_tree().get_nodes_in_group(&"enemies"):
 		var e := n as Enemy
-		if e and e != self and e.data.id == data.id and e.state in [State.IDLE, State.RETURN] \
+		if e and e != self and (e.data.id == data.id or (data.call_family != &"" and e.data.call_family == data.call_family)) and e.state in [State.IDLE, State.RETURN] \
 				and e.global_position.distance_to(global_position) <= data.call_range:
 			e._called = true  # one horn is enough
 			e.target = target
@@ -652,7 +653,7 @@ func _state_call(delta: float) -> void:
 func _attackers_on(p: Player) -> int:
 	var n := 0
 	for e in get_tree().get_nodes_in_group(&"enemies"):
-		if e != self and (e as Enemy).state == State.ATTACK and (e as Enemy).target == p:
+		if e != self and (e as Enemy).state == State.ATTACK and (e as Enemy).target == p and (e as Enemy).data.keep_distance <= 0.0:
 			n += 1
 	return n
 
@@ -682,7 +683,11 @@ func _state_chase(delta: float) -> void:
 	to.y = 0.0
 	var dist := to.length()
 	model.turn_toward(to, deg_to_rad(data.turn_speed) * delta)
-	if dist <= data.attack_range and _cooldown <= 0.0 and _facing_error(to) < 30.0 and _attackers_on(target) < MAX_ATTACKERS and not _ally_in_the_way(to):
+	var archer := data.keep_distance > 0.0
+	var can_swing := _attackers_on(target) < MAX_ATTACKERS or archer
+	if archer and dist < data.keep_distance and dist > 2.6 and _step_back(to, delta):
+		return
+	if dist <= data.attack_range and _cooldown <= 0.0 and _facing_error(to) < 30.0 and can_swing and not _ally_in_the_way(to) and (not archer or dist <= 2.6 or _can_see(target)):
 		_start_attack(dist)
 		return
 	if dist > data.attack_range * 0.9:
@@ -711,6 +716,16 @@ func _state_chase(delta: float) -> void:
 			_move(side * data.walk_speed * 0.4, delta)
 		model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
 
+
+## Archers: back away from a player who is too close. False when cornered (then they stab).
+func _step_back(to: Vector3, delta: float) -> bool:
+	var away := -to.normalized()
+	var ahead := PhysicsRayQueryParameters3D.create(global_position + Vector3.UP * 0.6, global_position + Vector3.UP * 0.6 + away * 1.2, 1)
+	if not get_world_3d().direct_space_state.intersect_ray(ahead).is_empty():
+		return false  # a wall behind us
+	_move(away * data.run_speed * 0.8, delta)
+	model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, false)
+	return true
 
 ## Enemies are solid and don't stand inside each other. Everyone chasing the same
 ## player is given an evenly spaced spot on a ring around them (kept close to where
@@ -818,6 +833,7 @@ func _start_attack(dist: float) -> void:
 ## Begin attack number `index` (also used by tests).
 func start_attack(index: int) -> void:
 	_telegraphed = false
+	_shot = false
 	_fire_dropped = false
 	_set_state(State.ATTACK)
 	_attack.start(_attacks()[index], model)
@@ -848,17 +864,63 @@ func _state_attack(delta: float) -> void:
 			_fire_dropped = true
 			var at := global_position + model.forward() * a.fire_ahead
 			_net_fire.rpc(at, a.fire_radius, a.fire_time)
-		for n in _attack.find_new_targets(self, model.forward(), &"player"):
-			var p := n as Player
-			if p.is_multiplayer_authority():
-				_on_hit_result(p.receive_hit(make_hit(index)))
-			else:
-				p._net_enemy_hit.rpc_id(p.get_multiplayer_authority(), get_path(), index, global_position)
-			if state != State.ATTACK:
-				return
+		if a.projectile_speed > 0.0:
+			if not _shot:
+				_shot = true
+				_shoot(a, index)
+		else:
+			for n in _attack.find_new_targets(self, model.forward(), &"player"):
+				var p := n as Player
+				if p.is_multiplayer_authority():
+					_on_hit_result(p.receive_hit(make_hit(index)))
+				else:
+					p._net_enemy_hit.rpc_id(p.get_multiplayer_authority(), get_path(), index, global_position)
+				if state != State.ATTACK:
+					return
 	if _attack.done():
 		_cooldown = randf_range(data.attack_cooldown_min, data.attack_cooldown_max) * (0.6 if _fury else 1.0)
 		_set_state(State.CHASE)
+
+
+## Archers: loose an arrow at where the target is now (it flies, so a roll or a sidestep beats it).
+func _shoot(a: AttackData, index: int) -> void:
+	if target == null:
+		return
+	var from := global_position + Vector3.UP * 1.45 * data.scale + model.forward() * 0.5
+	var aim := target.global_position + Vector3.UP * 1.1
+	var dir := (aim - from).normalized()
+	_spawn_arrow(from, dir, a.projectile_speed, a.projectile_range, true, index)
+	_net_arrow.rpc(from, dir, a.projectile_speed, a.projectile_range)
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_arrow(from: Vector3, dir: Vector3, speed: float, reach: float) -> void:
+	_spawn_arrow(from, dir, speed, reach, false, 0)
+
+
+func _spawn_arrow(from: Vector3, dir: Vector3, speed: float, reach: float, damaging: bool, index: int) -> void:
+	var arrow := EnemyArrow.new()
+	arrow.shooter = self
+	arrow.direction = dir
+	arrow.speed = speed
+	arrow.max_range = reach
+	arrow.damaging = damaging
+	arrow.attack_index = index
+	get_parent().add_child(arrow)
+	arrow.global_position = from
+	Audio.sfx(&"swing_dash", from)
+
+
+## Host: our arrow reached a player. Same path as a melee hit (their machine decides, favoring the dodger).
+func arrow_hit_player(p: Player, index: int, origin: Vector3) -> void:
+	if state == State.DEAD:
+		return
+	if p.is_multiplayer_authority():
+		var hit := make_hit(index)
+		hit.origin = origin
+		p.receive_hit(hit)
+	else:
+		p._net_enemy_hit.rpc_id(p.get_multiplayer_authority(), get_path(), index, origin)
 
 
 @rpc("authority", "call_remote", "unreliable")
@@ -946,6 +1008,8 @@ func _find_player() -> Player:
 			continue  # a boss waits for you to step into his arena
 		var to := p.global_position - global_position
 		var d := to.length()
+		if data.ambush_range > 0.0 and state == State.IDLE and d > data.ambush_range:
+			continue  # lying in wait: only wakes when you are right on top of him
 		var loud := p.is_sprinting or p.state == Player.State.ATTACK or p.state == Player.State.ROLL
 		var hears := d <= data.hearing_range * (2.0 if loud else 1.0)
 		var in_cone := d <= data.sight_range * sight_mult * sight_scale \
