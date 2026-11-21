@@ -9,7 +9,9 @@ A dark fantasy co-op action RPG for PC, built with **Godot 4.7.2**.
 ## Play
 Press **F5** (or the ▶ button at the top right of the editor). Close the game window, or press **F8** in the editor, to stop.
 
-The game starts at the **main menu**. Make your character (name, class, body, color), type a **World** name (each world keeps its own time, opened shortcuts and death piles), then **Host game** (also how you play alone). You start at the Crossroads in the Tithelands. In the game: **I** opens your inventory, **M** the map, **E** at a shrine opens Rest / Travel / Bank, **E** at Old Wenna or the Soul Broker opens their shop. Your character and world save automatically. Testing shortcuts: **Page Up** = gain a level, **Page Down** = back to level 1, **T** = talents, **F5** = skip 3 hours, **F6** = rain on/off. Press **F1** in the game to see all controls, **Esc** for the menu.
+**To enter the dungeon:** the **Gullet** is an underground cave. Walk to the Quarry Shrine (northwest of the map) and find the amber light beam beside it, then press **E** at the stone arch ("Descend into the Gullet"). It also shows as an orange dot on the map (**M**). The boss, Brother Tallow, is behind the fog gate at the far end.
+
+The game starts at the **main menu**. Make your character (name, class, body, color), type a **World** name (each world keeps its own time, opened shortcuts and death piles), then **Host game** (also how you play alone). You start at the Crossroads in the Tithelands. In the game: attack types (all weapons): light, heavy (hold to charge), **running** attacks (while sprinting), **rolling** attacks (right after a roll), **jump** light/heavy (attack in the air), **plunging** attack (attack while falling from high up), **guard counter** (attack with your guard up) and **backstep** attack. A quick sideways mouse flick lets go of a lock-on. **I** opens your inventory, **M** the map, **E** at a shrine opens Rest / Travel / Bank, **E** at Old Wenna or the Soul Broker opens their shop. Your character and world save automatically. Testing shortcuts: **Page Up** = gain a level, **Page Down** = back to level 1, **T** = talents, **F5** = skip 3 hours, **F6** = rain on/off. Press **F1** in the game to see all controls, **Esc** for the menu.
 
 ## Play with friends
 - **Same house (same Wi-Fi/router):** you click **Host game**. The menu shows your address (like `192.168.1.20`). Friends type it under *Host's address* and click **Join game**.
@@ -30,7 +32,7 @@ I run these before handing you a build. You can too (PowerShell, in this folder)
 ```
 & "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/run.gd -- combat_check
 ```
-(Swap `combat_check` for `movement_check`, `class_check`, `loot_check`, `death_check`, `enemy_check` or `zone_check` to run the others.) Each ends with PASS or FAIL.
+(Swap `combat_check` for `movement_check`, `class_check`, `loot_check`, `death_check`, `enemy_check`, `zone_check`, `boss_check` (the Gullet and the boss) or `moves_check` (extra attacks, lock-on flick, enemy spacing) to run the others.) Each ends with PASS or FAIL.
 
 The 3-player network check starts three copies of the game and prints what each one saw:
 ```
@@ -46,6 +48,8 @@ Weapons, shields and enemies are in `data/weapons/`, `data/shields/` and `data/e
 | `SPEC.md` | Your original brief |
 | `DESIGN.md` | The full game design + technical plan |
 | `TODO.md` | Phase-by-phase checklist (what's done, what's next, what to test) |
+| `HANDOFF.md` | Where we are right now, and how to resume in a new session or account |
+| `CLASS_PLAN.md` | Plan for the Martial / Vanguard / Mystic classes, nine subclasses and the three factions (not built yet) |
 | `ART_NEEDS.md` | Art & audio shopping list |
 | `assets/` | Art and sound. Every file is logged in `assets/CREDITS.md` |
 | `data/` | Game numbers you can edit: classes, items, enemies, loot tables |

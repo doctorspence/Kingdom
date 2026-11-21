@@ -112,6 +112,16 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Candle Acolytes | Robed fanatics | Humanoid + outfits | | ⬜ |
 | **Music** | Boss track (2 phases) | OpenGameArt (CC0) | | ⬜ |
 | **Sounds** | Cave drips, echoes, flail chains, fire whoosh, monk chanting | Freesound | | ⬜ |
+| Cave entrance | Stone arch at the quarry rim with a light beacon (now a gray-box arch plus an amber light beam) | Kit pieces + custom | ⭐ concept | 🟨 gray-box |
+| Gullet interior | Carved gray-box rooms and corridors with candle lights, now built in code | Cave kit above | ⭐ textures | 🟨 gray-box |
+| Burning ground | Fire patch decal and flames for phase 2 (now a glowing disc and light) | Particles + decal | | 🟨 disc |
+
+## Planned: classes and factions (see CLASS_PLAN.md)
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| Class icons | Martial, Vanguard, Mystic and the nine subclasses | AI art | ⭐⭐ | ⬜ |
+| Faction banners and looks | White Knights (noble, disciplined, medieval), Dark Ages (darker, unsettling, ritual), Outcasts (mismatched, travel-worn) | AI concept art | ⭐⭐ | ⬜ |
+| Subclass weapons | Daggers, throwing knives, crossbows, tower shields, warhammers, ritual charms and more | Kit pieces + custom | ⭐ | ⬜ |
 
 ## Later
 Camp structures and raid enemies · dwarves and elves · high-tier armor (spikes, skulls, chains, banners) · dismemberment pieces · world bosses.

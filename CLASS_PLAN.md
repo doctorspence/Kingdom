@@ -2,6 +2,8 @@
 
 *Planning notes only. Nothing in this file is built yet. Written 2026-11-21 from your class/subclass/faction brief and a read of the current code.*
 
+> **Status (2026-11-21): planned only, nothing built.** Next step is Priority 1 (section 3). The five questions in section 4 are still open, and none of them block Priority 1. The live classes are still Bulwark, Lamplighter and Headsman (DESIGN.md section 6).
+
 ## 1. What you asked for (kept so nothing is lost)
 
 ### Primary classes (chosen at level 1, creator)

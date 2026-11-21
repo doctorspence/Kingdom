@@ -46,6 +46,8 @@
 ## 2. World, tone & lore
 *All names are placeholders. Rename anything.*
 
+> **Planned lore update (not built yet; see `CLASS_PLAN.md`).** Three major groups: the **White Knights** (claim to keep order, really want control; publicly condemn forbidden magic while secretly using it), the **Dark Ages** (embrace forbidden magic as the next step of civilization; blood, ritual and sacrifice) and the **Outcasts** (mercenaries, exiles, survivors who refuse both; the natural starting point for player characters). Faction ties are lore only and never restrict a class or subclass. The bullets below are the current, shorter version.
+
 - **The land.** A grounded medieval kingdom: mud, stone, rain, plague pits, tithe barns. It starts low fantasy (humans only, magic rare and doubtful) and gets darker and stranger the deeper you go. Dwarves, elves and open sorcery come later.
 - **The White Knights.** A zealous holy order of brainwashed try-hards. Bleached tabards, tarnished gold and endless rules. They "cleanse" villages and tax what's left. They hold the castle city of **Highcrown**.
 - **The Dark Ages.** Straight evil: raiders, cultists and warlords who burn things because burning is the point. Rust, black iron, trophies.
@@ -163,7 +165,7 @@ The weapon data holds these as optional `jump_light`, `jump_heavy`, `plunge`, `g
 
 ### 5.7 Targeting
 - **Soft target (default)**: when you attack, your character turns toward the best enemy within ~4 m in the direction you're pushing (or facing). No camera lock.
-- **Lock-on toggle**: the camera and your facing follow one enemy and you strafe around it. Switch targets with the mouse wheel or a stick flick. It breaks beyond ~25 m or after ~2 s out of sight. Elites and bosses get a bigger lock marker.
+- **Lock-on toggle**: the camera and your facing follow one enemy and you strafe around it. Switch targets with the mouse wheel or a stick flick. **A quick sideways mouse flick (about 260 px within 0.2 s) lets go of the lock.** It breaks beyond ~25 m or after ~2 s out of sight. Elites and bosses get a bigger lock marker.
 
 ### 5.8 Healing & flasks
 - Everyone carries **4 flasks** *(start)*. Each heals 40% of max health. Drinking takes ~1.2 s and slows you to a walk, and you can be hit mid-drink.
@@ -203,6 +205,8 @@ Meters drain on their own if you stop taking that kind of hit. Enemies suffer th
 
 ## 6. Classes
 Three fixed classes at launch. **Names and kits are my suggestions; rename freely.** Each class has a hotbar of 6 abilities on cooldowns, unlocked at levels 1, 3, 6, 10, 15 and 20, plus one class resource. Costs and cooldowns are *(start)*.
+
+> **Planned overhaul (not built yet; see `CLASS_PLAN.md`).** These three become the primary classes **Martial** (Headsman), **Vanguard** (Bulwark) and **Mystic** (Lamplighter), each with three subclasses chosen at level 10 (nine in all). Levels 1-9 have no subclass abilities. Until that work starts, the three classes below are the live ones.
 
 ### 6.1 Bulwark: the tank
 *A deserter from three different shield walls who outlived every one of them.* Starts with a sword, a medium shield and chain armor. Wants Strength, Vitality and Armor.
@@ -281,6 +285,8 @@ Bonus rolls (section 9) can also add: crit chance, poise, stamina regen, bleed/p
 - **Taking turns**: at most 2 enemies attack the same player at once while the others circle and threaten. Fights stay readable and deliberate.
 - **Telegraphs**: wind-ups of 0.4–1.2 s, readable poses, sound cues, and white/red glints (section 5.4). Some attacks are **delayed** to punish panic-rolling.
 
+- **Bodies are solid.** Enemies collide with each other. Everyone chasing the same player takes an evenly spaced spot on a ring around them, and an enemy with a friend in the way waits for a gap instead of swinging.
+
 ### 8.2 Encounter types
 **Patrols** walk routes. **Packs** hunt together. **Ambushes** wait hidden and trigger when you pass. **Callers** summon nearby groups unless you silence them first.
 
@@ -298,6 +304,7 @@ Bonus rolls (section 9) can also add: crit chance, poise, stamina regen, bleed/p
 ### 8.5 Bosses
 - Arenas behind **fog gates**. Bosses have **phases**, **telegraphed** attacks, a boss health bar, a stance-break mechanic and unique loot.
 - Bosses respawn on rest. The first kill unlocks shortcuts and doors for good.
+- **Built (Phase 9):** a boss waits until you step inside his arena. His poise is huge: breaking it makes him kneel for 3 s, open to a riposte, and each parry chips 90 poise. He picks his target only as an attack begins (taunts take effect at his next attack). Health is x(1 + 0.8 per extra player in the arena), counted when the fight starts. The fog gate turns solid while he fights. His first kill sets the `gullet_boss_killed` world flag.
 - World bosses come later.
 
 ### 8.6 First roster
@@ -371,6 +378,8 @@ The countryside outside Highcrown: about 5–10 minutes across on foot.
 
 ### 11.2 The Gullet (cave dungeon)
 A winding cave under the quarry, wet stone and old bones, getting more candle-lit the deeper you go. Ends at Brother Tallow's chapel behind a fog gate. A shortcut opens after the first kill so the next run is faster. Tuned for 3 players, scaled for 1–10.
+
+**Built (Phase 9, graybox):** the cave is built underground beneath the quarry and entered by a door (E, "Descend into the Gullet") beside the Quarry Shrine, marked by an amber light beam and an always-visible map dot. Rooms: entrance hall, bone gallery, cistern, shrine alcove (the Gullet Shrine), fog gate, chapel. Dark and candle-lit; your belt lantern lights underground. Brother Tallow has two phases (phase 2 under 50%: faster, calls Candle Acolytes, burning ground, fire slam). A long corridor from the chapel back to the entrance hall opens after his first kill. He drops 2-3 items plus the unique Tallow Crown.
 
 ### 11.3 Shrines (checkpoints)
 Rest to heal, refill flasks, respawn enemies and set your respawn point. Also: **bank**, **fast travel** to other shrines you've found, talents and respec, Soul Broker.

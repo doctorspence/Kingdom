@@ -6,6 +6,8 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 
 **First milestone: 3 friends can clear one zone and one dungeon.**
 
+> **Where we are (2026-11-21):** Phases 1-9 are built (gray-block pass) and all automated checks pass. Waiting on **your playtest**: the Tithelands, the Gullet and Brother Tallow, and the 3-friends milestone. You said movement and combat now feel good. **Next up:** the class overhaul in [`CLASS_PLAN.md`](CLASS_PLAN.md), starting at Priority 1 (planned only, nothing built). See [`HANDOFF.md`](HANDOFF.md) for how to resume.
+
 ---
 
 ## Phase 1: Setup ✅
@@ -123,6 +125,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Explore the whole zone with friends; find the shortcut; hunt Hobb; play through a night (F5 skips 3 hours, F6 toggles rain)
 
 ## Phase 9: The Gullet (cave dungeon and boss) ✅ gray-block pass (waiting for your test)
+- [x] Entrance moved to flat ground beside the Quarry Shrine with an amber light beam and an always-visible map dot (the first spot was buried on a steep pit wall); the quarry pit is now shallower and gentler so you can walk out
 - [x] The Gullet (`levels/tithelands/props/gullet.tscn`, carved by `game/world/gullet.gd`): built underground beneath the quarry. Enter by the **Descend into the Gullet** door at the cave mouth (E); climb back out at the entrance hall. Entrance hall, bone gallery, cistern, shrine alcove, then the fog gate and Brother Tallow's chapel. Dark and candle-lit; your belt lantern lights underground
 - [x] Fourth shrine, the **Gullet Shrine** (rest, travel, bank), 38 m from the boss so he comes back when you rest
 - [x] Fog gate: walk through the mist (E) to enter; it turns solid while he fights and opens when he dies or the fight ends. He only wakes once you step inside his arena
@@ -135,6 +138,14 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] Tune for 3 players (needs real playtesting: boss health, damage, acolyte counts)
 - [ ] Later: real cave art, a more winding layout, a boss track, candle-wax visuals on the boss
 - [ ] 🧪 **Milestone: 3 friends clear the zone and the dungeon** (use the Descend door at the quarry cave mouth)
+
+## After Phase 9: feel and combat corrections ✅ (you said it feels good)
+- [x] Enemies are solid and spread evenly around the player; an enemy with a friend in the way waits instead of swinging
+- [x] Nioh 2-style movement: run 6.8, sprint 9.6, lock-on strafe 5.0, much snappier acceleration and stopping; legs cycle faster with longer strides
+- [x] Elden Ring-style extra attacks for every weapon: jump light/heavy, plunging attack, guard counter, running heavy, rolling heavy, backstep attack (plus the existing light, heavy, running and rolling)
+- [x] A quick sideways mouse flick lets go of the lock-on
+- [x] `tests/moves_check.gd` (extra attacks, lock-on flick, enemy spacing) added; every check passes, including the 3-player run
+- [ ] 🧪 Try the new attacks and enemy spacing against a group of enemies, with a friend
 
 ---
 
