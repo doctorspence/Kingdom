@@ -72,6 +72,8 @@ sky_mode = 1
 
 [node name="Terrain" type="Node3D" parent="."]
 script = ExtResource("terrain")
+zone_id = &"tithelands"
+zone_name = "The Tithelands"
 river_depth = 1.1
 pit_sharpness = 1.3
 mounds = PackedVector4Array(150, 40, 45, 11, -190, -165, 55, -14, -185, -160, 22, -10, 80, -170, 50, 5)

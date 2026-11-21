@@ -19,6 +19,9 @@ const MENU_SCENE := "res://game/ui/main_menu.tscn"
 const WORLD_SCENE := "res://levels/tithelands/tithelands.tscn"
 ## The world to load (automated checks use the small arena).
 var world_scene := WORLD_SCENE
+## The name of the world being played (the host's world save). Explored maps and
+## found shrines are kept per world.
+var world_name := "World"
 const SETTINGS_PATH := "user://settings.cfg"
 
 var mode := Mode.OFFLINE

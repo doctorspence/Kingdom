@@ -8,6 +8,10 @@ extends Node3D
 ##
 ## Coordinates are meters, x = east, z = south (north is -z).
 
+## Permanent ID of this zone (saves remember what you explored here). Never change it.
+@export var zone_id := &"zone"
+## Shown at the top of the map.
+@export var zone_name := "Unknown lands"
 @export var size := 520.0:
 	set(v):
 		size = v
@@ -228,3 +232,27 @@ func _distance_to_line(line: PackedVector2Array, p: Vector2) -> float:
 	for i in line.size() - 1:
 		best = minf(best, p.distance_to(Geometry2D.get_closest_point_to_segment(p, line[i], line[i + 1])))
 	return best
+
+
+## A top-down picture of the ground for the map screen (one pixel = size / px meters).
+## Hills are shaded so the shape of the land reads; the river is drawn in.
+func map_image(px := 256) -> Image:
+	var img := Image.create(px, px, false, Image.FORMAT_RGB8)
+	var step := size / px
+	var half := size * 0.5
+	for j in px:
+		for i in px:
+			var x := -half + (i + 0.5) * step
+			var z := -half + (j + 0.5) * step
+			var h := height_at(x, z)
+			var dx := height_at(x + step, z) - h
+			var dz := height_at(x, z + step) - h
+			var slope := Vector2(dx, dz).length() / step
+			var c := _ground_color(Vector3(x, h, z), slope)
+			if _distance_to_line(river, Vector2(x, z)) < river_width * 0.5:
+				c = Color(0.2, 0.26, 0.3)
+			# Light from the north-west.
+			var shade := clampf(1.0 + (-dx - dz) * 0.35, 0.55, 1.45)
+			c = Color(c.r * shade, c.g * shade, c.b * shade).lightened(0.12)
+			img.set_pixel(i, j, c)
+	return img

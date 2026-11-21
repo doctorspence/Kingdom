@@ -67,6 +67,7 @@ var _shop_panel: ShopPanel
 var _bank_panel: BankPanel
 var _shrine_menu: PanelContainer
 var _shrine_source: Node
+var _map_panel: MapPanel
 var _roll_box: VBoxContainer
 var _money_label: Label
 var _ui_was_open := false
@@ -84,6 +85,7 @@ func _ready() -> void:
 	player.died.connect(_on_died)
 	player.respawned.connect(_on_respawned)
 	player.menu_requested.connect(_on_menu_requested)
+	player.shrine_discovered.connect(_on_shrine_discovered)
 	Loot.roll_offered.connect(_on_roll_offered)
 	Loot.roll_closed.connect(_on_roll_closed)
 	player.leveled_up.connect(_on_leveled_up)
@@ -119,6 +121,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_close_panels()
 		if not was_open:
 			_inventory_panel.open(player)
+	elif event.is_action_pressed("map") and not Net.typing and player:
+		var map_was_open := _map_panel.visible
+		_close_panels()
+		if not map_was_open and player.zone():
+			_map_panel.open(player)
 	elif event.is_action_pressed("debug_help"):
 		_help_label.visible = not _help_label.visible
 		_hint_label.visible = false
@@ -245,6 +252,15 @@ func _on_resource_changed(current: float, maximum: float) -> void:
 		_resource_label.text = "%s  %d" % [c.resource_label if c else "", roundi(current)]
 
 
+## A big message in the middle of the screen for a few seconds.
+func show_banner(text: String, seconds := 4.0) -> void:
+	if _map_panel.visible:
+		_map_panel.say(text.replace("\n", "  "))
+		return
+	_banner.text = text
+	_banner_time = seconds
+
+
 func _on_leveled_up(new_level: int) -> void:
 	var text := "Level %d" % new_level
 	for a in player.stats.class_data.abilities:
@@ -260,7 +276,7 @@ func _on_leveled_up(new_level: int) -> void:
 
 func _any_panel_open() -> bool:
 	return _inventory_panel.visible or _shop_panel.visible or _bank_panel.visible \
-			or _shrine_menu.visible or _talents.visible
+			or _shrine_menu.visible or _talents.visible or _map_panel.visible
 
 
 func _close_panels() -> void:
@@ -268,6 +284,7 @@ func _close_panels() -> void:
 	_shop_panel.close()
 	_bank_panel.close()
 	_shrine_menu.visible = false
+	_map_panel.close()
 	if _talents.visible:
 		_talents.toggle()
 
@@ -287,6 +304,27 @@ func _shrine_rest() -> void:
 	if _shrine_source and is_instance_valid(_shrine_source):
 		_shrine_source.call(&"rest", player)
 	_close_panels()
+
+
+func _shrine_travel() -> void:
+	_close_panels()
+	if player.zone() == null:
+		show_banner("No map here")
+		return
+	_map_panel.open(player, true)
+
+
+func _on_travel_chosen(shrine: Shrine) -> void:
+	var why := player.travel_to(shrine)
+	if why != "":
+		show_banner(why)
+		return
+	_close_panels()
+	show_banner(shrine.shrine_name)
+
+
+func _on_shrine_discovered(shrine_name: String) -> void:
+	show_banner("Shrine found: %s\nRest at any shrine to travel here" % shrine_name)
 
 
 func _shrine_bank() -> void:
@@ -617,12 +655,12 @@ func _build() -> void:
 	root.add_child(_bank_panel)
 
 	_shrine_menu = PanelContainer.new()
-	_place(_shrine_menu, Control.PRESET_CENTER, Rect2(-150, -100, 300, 200))
+	_place(_shrine_menu, Control.PRESET_CENTER, Rect2(-150, -125, 300, 250))
 	_shrine_menu.visible = false
 	var shrine_box := VBoxContainer.new()
 	shrine_box.add_theme_constant_override("separation", 10)
 	_shrine_menu.add_child(shrine_box)
-	for entry in [["Rest", _shrine_rest], ["Bank", _shrine_bank], ["Close", _close_panels]]:
+	for entry in [["Rest", _shrine_rest], ["Travel", _shrine_travel], ["Bank", _shrine_bank], ["Close", _close_panels]]:
 		var b := Button.new()
 		b.name = entry[0]
 		b.text = entry[0]
@@ -630,6 +668,11 @@ func _build() -> void:
 		b.pressed.connect(entry[1])
 		shrine_box.add_child(b)
 	root.add_child(_shrine_menu)
+
+	_map_panel = MapPanel.new()
+	_place(_map_panel, Control.PRESET_CENTER, Rect2(-440, -350, 880, 700))
+	_map_panel.travel_chosen.connect(_on_travel_chosen)
+	root.add_child(_map_panel)
 
 	_roll_box = VBoxContainer.new()
 	_place(_roll_box, Control.PRESET_CENTER_RIGHT, Rect2(-400, -200, 360, 400))

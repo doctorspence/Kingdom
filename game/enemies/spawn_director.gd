@@ -30,7 +30,11 @@ func populate(everything := false) -> void:
 		var sp := n as SpawnPoint
 		if sp == null or sp.table == null:
 			continue
-		sp.spawned = sp.spawned.filter(func(e: Node) -> bool: return is_instance_valid(e) and not e.is_queued_for_deletion())
+		var alive: Array[Node] = []
+		for e in sp.spawned:
+			if is_instance_valid(e) and not e.is_queued_for_deletion():
+				alive.append(e)
+		sp.spawned = alive
 		if not everything and not _can_reset(sp, players):
 			continue
 		for e in sp.spawned:

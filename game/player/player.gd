@@ -31,6 +31,8 @@ signal died
 signal respawned
 ## A shrine, merchant or similar wants a menu opened (the HUD shows it).
 signal menu_requested(kind: StringName, source: Node)
+## You found a shrine for the first time (in this world).
+signal shrine_discovered(shrine_name: String)
 
 enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, CAST, CLIMB, STAGGER, GUARD_BREAK, DOWNED, DEAD }
 
@@ -49,6 +51,10 @@ const AUTOSAVE_INTERVAL := 300.0
 const TEST_EXTRA_LOADS := [0.0, 0.3, 0.6, 1.0]
 ## The legendary "cheat death" effect can only save you this often (seconds).
 const CHEAT_DEATH_COOLDOWN := 120.0
+## The map clears this far around you as you explore (meters).
+const EXPLORE_RADIUS := 45.0
+## You find a shrine when you come this close to it.
+const SHRINE_FIND_RANGE := 14.0
 
 @export var tuning: PlayerTuning = preload("res://data/balance/player_tuning.tres")
 ## Used when no class was picked (e.g. running a test map straight from the editor).
@@ -59,6 +65,8 @@ const CHEAT_DEATH_COOLDOWN := 120.0
 var weapon: WeaponData
 ## Everything you carry: gear, backpack, bank, gold, souls.
 var inventory := Inventory.new()
+## Your explored map, found shrines and last shrine, per world (saved).
+var exploration := Exploration.new()
 var shield: ShieldData
 var stats: CharacterStats
 var effects := Effects.new()
@@ -191,6 +199,11 @@ func _ready() -> void:
 			save_character()
 		add_to_group(&"local_player")
 		get_tree().create_timer(AUTOSAVE_INTERVAL, false).timeout.connect(_autosave)
+		var explore_timer := Timer.new()
+		explore_timer.wait_time = 0.5
+		explore_timer.autostart = true
+		explore_timer.timeout.connect(_explore)
+		add_child(explore_timer)
 		camera_rig.activate()
 		_face_spawn_direction()
 		if not multiplayer.is_server():
@@ -200,6 +213,7 @@ func _ready() -> void:
 			_request_placement.rpc_id(1)
 		else:
 			_write_net_state()
+			_start_at_last_shrine.call_deferred()
 	else:
 		_set_class(Classes.by_id(net_class) if net_class != &"" else default_class)
 		_become_proxy()
@@ -286,6 +300,7 @@ func _net_place(where: Vector3, yaw: float) -> void:
 	_placed = true
 	visible = true
 	_write_net_state()
+	_start_at_last_shrine()
 
 
 ## Someone else's character on this machine: no camera, no input, just mirroring.
@@ -473,7 +488,10 @@ func freeze(duration: float) -> void:
 
 
 ## Rest at a shrine: full health and flasks, cures statuses, sets your respawn point.
-func rest_at(spawn_point: Transform3D) -> void:
+func rest_at(spawn_point: Transform3D, shrine_id := &"") -> void:
+	if shrine_id != &"" and world_key() != "":
+		exploration.discover_shrine(world_key(), shrine_id)
+		exploration.set_last_shrine(world_key(), shrine_id)
 	_spawn = spawn_point
 	_downs = 0
 	health = max_health()
@@ -751,6 +769,81 @@ func drop_item(uid: String) -> void:
 		Loot.drop_item(it, global_position + model.forward() * 1.0)
 
 
+# --- Exploring: map, shrines, travel -----------------------------------------------
+
+## The zone you're in (null on test maps without one).
+func zone() -> ZoneTerrain:
+	return get_tree().get_first_node_in_group(&"zone_terrain") as ZoneTerrain
+
+
+## Where your exploration is filed: "<world>/<zone>" ("" without a zone).
+func world_key() -> String:
+	var z := zone()
+	return "%s/%s" % [Net.world_name, z.zone_id] if z else ""
+
+
+## Every half second: clear the map around you, and notice shrines you come near.
+func _explore() -> void:
+	var z := zone()
+	if z == null or not _placed or state == State.DEAD:
+		return
+	var key := world_key()
+	exploration.reveal(key, global_position, EXPLORE_RADIUS, z.size)
+	for n in get_tree().get_nodes_in_group(&"interactables"):
+		var s := n as Shrine
+		if s and s.global_position.distance_to(global_position) < SHRINE_FIND_RANGE \
+				and exploration.discover_shrine(key, s.shrine_id):
+			shrine_discovered.emit(s.shrine_name)
+
+
+## The shrines you've found in this zone (nodes), in the order you found them.
+func found_shrines() -> Array[Shrine]:
+	var out: Array[Shrine] = []
+	var key := world_key()
+	if key == "":
+		return out
+	for id in exploration.found_shrines(key):
+		var s := Shrine.by_id(get_tree(), StringName(id))
+		if s:
+			out.append(s)
+	return out
+
+
+## Fast travel to a shrine you've found. Returns "" or why you can't.
+func travel_to(shrine: Shrine) -> String:
+	if not is_multiplayer_authority():
+		return "Not yours"
+	if state == State.DEAD or state == State.DOWNED:
+		return "You can't travel now"
+	if not exploration.found_shrines(world_key()).has(String(shrine.shrine_id)):
+		return "You haven't found that shrine"
+	if Shrine.enemies_near(get_tree(), global_position):
+		return "Can't travel: enemies nearby"
+	_spawn = shrine.spawn_transform()
+	global_position = _spawn.origin
+	velocity = Vector3.ZERO
+	targeting.clear()
+	_set_state(State.MOVE)
+	_face_spawn_direction()
+	_write_net_state()
+	return ""
+
+
+## Coming back into a world: start at the last shrine you rested at there.
+func _start_at_last_shrine() -> void:
+	var key := world_key()
+	if key == "":
+		return
+	var s := Shrine.by_id(get_tree(), StringName(exploration.last_shrine(key)))
+	if s == null:
+		return
+	_spawn = s.spawn_transform()
+	global_position = _spawn.origin
+	velocity = Vector3.ZERO
+	_face_spawn_direction()
+	_write_net_state()
+
+
 func save_character() -> void:
 	if not is_multiplayer_authority() or stats == null or not Net.save_settings_enabled:
 		return
@@ -763,6 +856,7 @@ func save_character() -> void:
 		"xp": stats.xp,
 		"talents": stats.talents.map(func(t: StringName) -> String: return String(t)),
 		"inventory": inventory.to_dict(),
+		"worlds": exploration.to_dict(),
 	})
 
 
@@ -771,6 +865,7 @@ func _load_character(data: Dictionary) -> void:
 	net_body = int(data.get("body", 0))
 	net_color = int(data.get("color", 0))
 	inventory.load_dict(data.get("inventory", {}))
+	exploration.load_dict(data.get("worlds", {}))
 	_set_class(Classes.by_id(net_class))
 	stats.level = int(data.get("level", 1))
 	stats.xp = int(data.get("xp", 0))
@@ -785,6 +880,11 @@ func _autosave() -> void:
 	save_character()
 	if is_inside_tree():
 		get_tree().create_timer(AUTOSAVE_INTERVAL, false).timeout.connect(_autosave)
+		var explore_timer := Timer.new()
+		explore_timer.wait_time = 0.5
+		explore_timer.autostart = true
+		explore_timer.timeout.connect(_explore)
+		add_child(explore_timer)
 
 
 func _exit_tree() -> void:

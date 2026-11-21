@@ -95,6 +95,39 @@ func _run() -> void:
 	await _frames(5)
 	_check("Hobb the Unhanged can appear at his camp", camp.spawned.size() == 1 and (camp.spawned[0] as Enemy).data.named)
 
+	# --- Exploring: shrines, map fog, fast travel --------------------------------------
+	for e in zone.get_node("Enemies").get_children():
+		e.remove_from_group(&"enemies")
+		e.queue_free()
+	var key := player.world_key()
+	await _seconds(0.7)
+	_check("you find the Crossroads Shrine at the start", player.exploration.found_shrines(key).has("crossroads"))
+	_check("the map clears around you, not far away", player.exploration.revealed_at(key, Vector3(0, 0, 172), terrain.size)
+			and not player.exploration.revealed_at(key, Vector3(-200, 0, -180), terrain.size))
+	var quarry := Shrine.by_id(get_tree(), &"quarry")
+	var crossroads := Shrine.by_id(get_tree(), &"crossroads")
+	_check("you can't travel to a shrine you haven't found", player.travel_to(quarry) != "")
+	await _go_to(quarry.global_position + Vector3(4, 0, 4))
+	await _seconds(0.7)
+	_check("walking up to the Quarry Shrine finds it", player.exploration.found_shrines(key).has("quarry"))
+	var why := player.travel_to(crossroads)
+	await _frames(5)
+	_check("travel back to the Crossroads (%s)" % (why if why != "" else "ok"),
+			why == "" and player.global_position.distance_to(crossroads.spawn_transform().origin) < 1.5)
+	quarry.rest(player)
+	_check("resting remembers your last shrine", player.exploration.last_shrine(key) == "quarry")
+	var copy := Exploration.new()
+	copy.load_dict(JSON.parse_string(JSON.stringify(player.exploration.to_dict())))
+	_check("explored map and shrines survive a save (%.1f%% explored)" % (copy.revealed_fraction(key) * 100.0),
+			copy.revealed_fraction(key) > 0.01 and is_equal_approx(copy.revealed_fraction(key), player.exploration.revealed_fraction(key))
+			and copy.found_shrines(key) == player.exploration.found_shrines(key) and copy.last_shrine(key) == "quarry")
+	var hud := zone.get_node("Hud")
+	var map: MapPanel = hud.get(&"_map_panel")
+	map.open(player, true)
+	await _frames(3)
+	_check("the map opens, with every found shrine to travel to", map.visible and map.find_children("*", "Button", true, false).size() == player.found_shrines().size())
+	map.close()
+
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)
 
