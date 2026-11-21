@@ -47,6 +47,7 @@ func _physics_process(delta: float) -> void:
 			me = get_tree().get_first_node_in_group(&"local_player") as Player
 			enemy = get_tree().current_scene.get_node("Enemies/Marauder") as Enemy
 			print("RESULT %s players=%d" % [role, players.size()])
+			_add_camp()
 			if role == "host":
 				print("RESULT host enemy_max_health=%d" % enemy.max_health)
 		return
@@ -57,7 +58,8 @@ func _physics_process(delta: float) -> void:
 	var a := _player_named("Alda")
 
 	if role == "host":
-		_host_keep_enemy_still(b)
+		if t < 40.0:
+			_host_keep_enemy_still(b)
 		_at(1.0, func() -> void:
 			(get_tree().current_scene.get_node("Enemies/Marauder2") as Node3D).global_position = Vector3(60, 0, 60))
 		_at(5.0, func() -> void: print("RESULT host enemy_health_after_A_hit=%d" % enemy.health))
@@ -121,9 +123,24 @@ func _physics_process(delta: float) -> void:
 			me.inventory.gold = 77
 			me._die())
 		_at(35.5, func() -> void: print("RESULT b gold_back_after_alda_recovered=%s (gold %d)" % [str(me.inventory.gold == 77), me.inventory.gold]))
-	_at(40.0, func() -> void:
-		print("RESULT %s chat_seen=%s" % [role, str(_chat_seen)])
-		get_tree().quit(0))
+	_at(40.0, func() -> void: print("RESULT %s chat_seen=%s" % [role, str(_chat_seen)]))
+
+	# --- The camp: claimed by the host, raided, seen by everyone --------------------------
+	if role == "host":
+		_at(41.0, func() -> void:
+			me.inventory.gold = 300
+			print("RESULT host camp_claim=%s" % ("ok" if camp.claim(me) == "" else "refused")))
+		_at(43.0, func() -> void: camp.raids.start_raid(3))
+		_at(50.0, func() -> void: camp.raids.end_raid(&"fled"))
+	_at(42.5, func() -> void: print("RESULT %s camp_claimed=%s" % [role, str(camp.is_claimed())]))
+	_at(47.0, func() -> void:
+		print("RESULT %s raid_active=%s raiders_seen=%d strength=%d messages=%d" % [role, str(camp.raids.active), _raiders_seen(), int(camp.raids.strength), _camp_messages]))
+	_at(52.0, func() -> void:
+		print("RESULT %s raid_over=%s raiders_left=%d" % [role, str(not camp.raids.active), _raiders_seen()])
+		if role != "host":
+			get_tree().quit(0))
+	# The host stays a little longer, so the others never lose their world mid-check.
+	_at(56.0, func() -> void: get_tree().quit(0))
 
 
 ## Run `action` once, the first frame after `time` seconds.
@@ -176,3 +193,37 @@ func _tap(action: StringName) -> void:
 	r.action = action
 	r.pressed = false
 	Input.parse_input_event.call_deferred(r)
+
+
+var camp: Camp
+var _camp_messages := 0
+
+
+## A camp in the test arena, and a spawner so raiders appear for everyone (the
+## real zone has both already).
+func _add_camp() -> void:
+	var scene := get_tree().current_scene
+	var spawner := MultiplayerSpawner.new()
+	spawner.name = "RaidSpawner"
+	scene.add_child(spawner)
+	spawner.spawn_path = NodePath("../Enemies")
+	for kind in ["marauder", "zealot", "hound"]:
+		spawner.add_spawnable_scene("res://game/enemies/%s.tscn" % kind)
+	var shrine: Node3D = (load("res://game/world/shrine.tscn") as PackedScene).instantiate()
+	shrine.set_script(load("res://game/world/camp.gd"))
+	shrine.set(&"shrine_name", "Camp Hearth")
+	shrine.set(&"shrine_id", &"camp")
+	shrine.name = "Camp"  # the same name on every machine, like in the real level
+	scene.add_child(shrine)
+	shrine.global_position = Vector3(0, 0, -60)
+	camp = shrine as Camp
+	camp.raids.enemies_root = scene.get_node("Enemies")
+	camp.raids.message.connect(func(_t: String) -> void: _camp_messages += 1)
+
+
+func _raiders_seen() -> int:
+	var n := 0
+	for e in get_tree().get_nodes_in_group(&"enemies"):
+		if String(e.name).begins_with("Raider_") and (e as Enemy).state != Enemy.State.DEAD:
+			n += 1
+	return n

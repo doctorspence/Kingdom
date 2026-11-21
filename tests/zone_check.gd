@@ -23,7 +23,7 @@ func _run() -> void:
 	terrain = zone.get_node("Terrain")
 	_check("you start at the Crossroads, on the ground", player.global_position.distance_to(Vector3(0, player.global_position.y, 120.4)) < 8.0
 			and absf(player.global_position.y - terrain.height_at(player.global_position.x, player.global_position.z)) < 1.0)
-	_check("4 shrines (3 on the surface, one in the Gullet)", get_tree().get_nodes_in_group(&"interactables").filter(func(n: Node) -> bool: return n is Shrine).size() == 4)
+	_check("5 shrines (3 on the surface, the camp hearth, one in the Gullet)", get_tree().get_nodes_in_group(&"interactables").filter(func(n: Node) -> bool: return n is Shrine).size() == 5 and get_tree().get_first_node_in_group(&"camp") != null)
 	await _seconds(0.5)
 	_check("you stand on the ground (no falling through)", player.is_on_floor())
 
@@ -171,6 +171,22 @@ func _run() -> void:
 	_check("loading a world reopens its shortcuts", WorldState.get_flag(&"opened_watchtower_south") == true)
 	_check("...brings back its time of day", absf(dn.time - 0.42) < 0.01)
 	_check("...and its death piles, with their gold", Loot.pile_count() == 1 and int((Loot.piles()[0] as Node).get(&"gold")) == 77)
+
+	# --- The camp in the real zone: raiders start inside the walls, on dry land ----------------
+	var hearth_camp := get_tree().get_first_node_in_group(&"camp") as Camp
+	var spots_ok := true
+	var worst := ""
+	if hearth_camp:
+		for bearing in range(0, 360, 30):
+			hearth_camp.raids.bearing = bearing
+			for i in 3:
+				var p := hearth_camp.raids._find_spot()
+				var half := terrain.size * 0.5 - 8.0
+				var wet := terrain.height_at(p.x, p.z) < terrain.water_level() + 0.2
+				if absf(p.x) > half or absf(p.z) > half or wet:
+					spots_ok = false
+					worst = "%.0f, %.0f at bearing %d" % [p.x, p.z, bearing]
+	_check("raiders never start outside the walls or in the river (%s)" % worst, hearth_camp != null and spots_ok)
 
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)

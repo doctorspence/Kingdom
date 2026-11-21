@@ -29,6 +29,9 @@ const POISE_PER_EXTRA_PLAYER := 0.25
 const MAX_ATTACKERS := 2
 ## Night makes everyone harder to see (set by the day/night cycle).
 static var sight_mult := 1.0
+## This enemy sees farther or shorter than normal (camp Watchfires level 3
+## shorten raiders' sight).
+var sight_scale := 1.0
 
 @export var data: EnemyData
 ## Optional patrol route (world points). Empty = stand guard.
@@ -945,7 +948,7 @@ func _find_player() -> Player:
 		var d := to.length()
 		var loud := p.is_sprinting or p.state == Player.State.ATTACK or p.state == Player.State.ROLL
 		var hears := d <= data.hearing_range * (2.0 if loud else 1.0)
-		var in_cone := d <= data.sight_range * sight_mult \
+		var in_cone := d <= data.sight_range * sight_mult * sight_scale \
 				and rad_to_deg(model.forward().angle_to(Vector3(to.x, 0, to.z))) <= data.sight_angle * 0.5
 		if (hears or in_cone) and d < best_d and _can_see(p):
 			best_d = d

@@ -67,7 +67,7 @@ func _ready() -> void:
 	side.add_theme_constant_override("separation", 8)
 	row.add_child(side)
 	var legend := Label.new()
-	legend.text = "◆ shrine you found\n▲ you\n● party\n\nThe fog lifts as you explore."
+	legend.text = "◆ shrine you found\n▲ you\n● party\n● raiders (camp Watchfires II)\n\nThe fog lifts as you explore."
 	side.add_child(legend)
 	_travel_buttons = VBoxContainer.new()
 	_travel_buttons.add_theme_constant_override("separation", 6)
@@ -165,6 +165,13 @@ func _draw_markers(c: Control) -> void:
 			c.draw_circle(q, 7.0, Color(0, 0, 0, 0.85))
 			c.draw_circle(q, 5.0, Color(1.0, 0.45, 0.15))
 			c.draw_string(font, q + Vector2(10, 5), "The Gullet (cave)", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1.0, 0.7, 0.45))
+	# Watchfires level 2: raiders show on the map while the camp is raided.
+	var camp := get_tree().get_first_node_in_group(&"camp") as Camp
+	if camp and camp.raids and camp.raids.active and camp.level(&"watch") >= 2:
+		for n in get_tree().get_nodes_in_group(&"enemies"):
+			var raider := n as Enemy
+			if raider and String(raider.name).begins_with("Raider_") and raider.state != Enemy.State.DEAD:
+				c.draw_circle(_to_map(raider.global_position), 4.0, Color(0.9, 0.15, 0.1))
 	for n in get_tree().get_nodes_in_group(&"player"):
 		var other := n as Player
 		if other == null or other == player:

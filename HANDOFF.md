@@ -39,11 +39,14 @@ All the sounds and music are in (321+ CC0 files in `assets/audio/`, credited in 
 ## Phase 12 (settings and key rebinding): built
 Menu > Settings (main menu and Esc menu) has Audio, Gameplay, Display and Controls tabs; you can rebind all keyboard and mouse actions. Saved in `settings.cfg`.
 
+## Phase 13 (camp and night raids): built
+The Camp Hearth is east of the Crossroads shrine. Claim it (100 gold), upgrade it from the hearth menu, and defend it when raiders come at night. F7 starts a raid now, F5 skips ahead 3 hours. Design in DESIGN.md 11.5 (all numbers are my first guesses).
+
 ## Next up
 Listen-test the audio and playtest the nine abilities (🧪 in TODO.md). Subclasses (Phase 11) are paused at your request: the framework and Warrior, Guardian and Cleric are built; the other six are "Coming later". Your decisions so far: subclass is re-pickable in future; names Martial / Vanguard / Mystic are for now.
 
 ## Things to know
-- **Checks:** run any check with `--headless --script res://tests/run.gd -- <name>` (see README.md). Current checks: movement, combat, class, loot, death, enemy, zone, boss, moves, audio, sound, subclass, prefs; plus the 3-player check `tests/run_net_check.ps1`. All pass as of this update.
+- **Checks:** run any check with `--headless --script res://tests/run.gd -- <name>` (see README.md). Current checks: movement, combat, class, loot, death, enemy, zone, boss, moves, audio, sound, subclass, prefs, camp; plus the 3-player check `tests/run_net_check.ps1`. All pass as of this update.
 - **Godot and git paths:** there are no PATH shortcuts. Godot is in `%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\` (use the `_console.exe` for output). Git is `C:\Program Files\Git\cmd\git.exe`.
 - **Never run test copies on port 31415** (that is your live game). Checks use 31499.
 - **The class and loot checks** depend on `two_handed = true` being present in `data/weapons/weapon_executioner_greatsword.tres` and `weapon_lantern_staff.tres`. The Godot editor dropped that line once when it re-saved them; it was restored by hand. If those checks fail on "two-handed", look there.

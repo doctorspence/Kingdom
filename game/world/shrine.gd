@@ -23,6 +23,11 @@ func _ready() -> void:
 	_base_energy = _light.light_energy
 
 
+## Can it be used right now? (A camp hearth is cold until claimed or relit.)
+func is_active() -> bool:
+	return true
+
+
 func get_interact_text() -> String:
 	return "Use the %s (rest, travel, bank)" % shrine_name
 
@@ -34,6 +39,8 @@ func interact(player: Node3D) -> void:
 ## Rest here: heal, refill flasks, save, bring back enemies, restock merchants.
 ## Returns "" or why you can't rest.
 func rest(player: Node3D) -> String:
+	if not is_active():
+		return "The hearth is cold"
 	if enemies_near(get_tree(), global_position):
 		CombatFx.word(global_position + Vector3.UP * 2.6, "Can't rest: enemies nearby")
 		return "Can't rest: enemies nearby"

@@ -123,5 +123,13 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Faction banners and looks | White Knights (noble, disciplined, medieval), Dark Ages (darker, unsettling, ritual), Outcasts (mismatched, travel-worn) | AI concept art | ⭐⭐ | ⬜ |
 | Subclass weapons | Daggers, throwing knives, crossbows, tower shields, warhammers, ritual charms and more | Kit pieces + custom | ⭐ | ⬜ |
 
+## Camp and raids (Phase 13, gray-box now)
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| Camp props | Fire pit and hearth, palisade stakes and gate, watch-fire torches, crates and barrels, a banner (all boxes and posts now) | Kenney or Quaternius medieval kits, plus custom | ⭐ | 🟨 gray-box |
+| Raid chest | The reward drops as ordinary item beams; a real chest model would be nicer | Kit piece | | ⬜ |
+| Raider look | Raiders reuse the Marauder, Zealot and Hound; a captain model for later | Existing + AI | ⭐⭐ | ⬜ |
+| Sounds | A real war horn, palisade creaks, fire crackle at the hearth, a victory sting | Freesound (CC0) | | ⬜ |
+
 ## Later
 Camp structures and raid enemies · dwarves and elves · high-tier armor (spikes, skulls, chains, banners) · dismemberment pieces · world bosses.

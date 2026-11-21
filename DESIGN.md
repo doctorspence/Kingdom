@@ -397,8 +397,22 @@ Rest to heal, refill flasks, respawn enemies and set your respawn point. Also: *
 - **Day/night cycle**: about 48 real minutes per day (32 day, 16 night) *(start, a server setting)*. Nights are very dark and more dangerous; you carry a belt lantern.
 - **Weather**: mostly overcast and foggy, with rain showers on and off.
 
-### 11.5 Later
-An upgradeable camp that enemies raid at night (after the first milestone), quests and public quests, more zones and an open world, world bosses, New Game+.
+### 11.5 The Camp and night raids *(my first design: tell me and I'll change any of it)*
+A place that is yours, that the Dark Ages and the White Knights' stragglers try to take at night.
+
+- **The site.** One camp per world, a few steps east of the Crossroads. It starts as a cold fire pit. Anyone can **claim** it for 100 gold. Claiming is shared by everyone in the world and saved with the world.
+- **The hearth.** A claimed camp has a hearth that works like a shrine: rest, bank, travel and respawn there. Its menu also has a **Camp** button for upgrades.
+- **Upgrades** (gold, bought at the hearth, saved with the world, three levels each: 150 / 400 / 900):
+  - **Palisade**: wooden stakes ring the camp (real walls enemies can't walk through). Each level makes raiders drain the camp's strength 25% slower.
+  - **Watchfires**: torches around the camp. Level 1: the horn warns you earlier and a banner names the direction raiders come from. Level 2: raiders show on the map. Level 3: the camp is lit all night and raiders lose sight range near it.
+  - **Stores**: crates and barrels, and a better reward when you win a raid (more items, better rarity).
+- **Raids.** When night falls, a claimed camp may be raided (the first night after claiming: always; after that 60%). It only happens if a player is within 120 m, so being away is never punished. A raid is a group of Dark Ages marauders, White Knight zealots and gaunt hounds (3 to start, more with more players, more as the camp is upgraded) that appears 70 to 90 m away, blows a horn and marches to the camp. They are ordinary enemies: they fight whoever they meet.
+- **Camp strength.** Every raider within 12 m of the hearth drains the camp's strength (starts at 100%). At 0 the camp is **overrun**: the raiders melt away, the hearth goes cold (no resting there) until someone relights it for 50 gold. Nothing else is lost.
+- **Winning.** Kill every raider before dawn: strength refills, a **raid chest** of loot appears at the hearth (gold, souls, 1 to 3 items; better with Stores), and the camp counts a win. If dawn comes with raiders still alive, they slink off and there is no reward.
+- **Multiplayer.** The host runs raids. Everyone sees the same camp, upgrades and raid status.
+
+### 11.6 Later
+Quests and public quests, more zones and an open world, world bosses, New Game+.
 
 ---
 

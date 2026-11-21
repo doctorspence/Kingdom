@@ -29,7 +29,7 @@ TEST KEYS
 F2: debug info (invincibility shows as a blue tint)
 F3: change equip load (light / medium / heavy / overloaded)
 F4: reset to start, full health
-F5: skip ahead 3 hours (host)    F6: rain on/off (host)
+F5: skip ahead 3 hours (host)    F6: rain on/off (host)    F7: start a camp raid now (host)
 H: enemy health bars on/off    N: damage numbers on/off
 Page Up: gain a level    Page Down: back to level 1"""
 
@@ -72,6 +72,9 @@ var _shrine_source: Node
 var _map_panel: MapPanel
 var _subclass_panel: SubclassPanel
 var _settings_panel: SettingsPanel
+var _camp_panel: CampPanel
+var _camp_button: Button
+var _camp: Camp
 var _path_button: Button
 var _roll_box: VBoxContainer
 var _money_label: Label
@@ -131,6 +134,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		_close_panels()
 		if not map_was_open and player.zone():
 			_map_panel.open(player)
+	elif event.is_action_pressed("debug_raid") and multiplayer.is_server():
+		var c := get_tree().get_first_node_in_group(&"camp") as Camp
+		if c == null:
+			show_banner("No camp here")
+		elif not c.is_active():
+			show_banner("Claim and light the camp first")
+		elif c.raids.active:
+			show_banner("A raid is already on")
+		else:
+			c.raids.start_raid()
 	elif (event.is_action_pressed("debug_time") or event.is_action_pressed("debug_rain")) and multiplayer.is_server():
 		var dn := get_tree().get_first_node_in_group(&"day_night") as DayNight
 		if dn:
@@ -293,7 +306,7 @@ func _on_leveled_up(new_level: int) -> void:
 
 func _any_panel_open() -> bool:
 	return _inventory_panel.visible or _shop_panel.visible or _bank_panel.visible \
-			or _shrine_menu.visible or _talents.visible or _map_panel.visible or _subclass_panel.visible or _settings_panel.visible
+			or _shrine_menu.visible or _talents.visible or _map_panel.visible or _subclass_panel.visible or _settings_panel.visible or _camp_panel.visible
 
 
 func _close_panels() -> void:
@@ -303,6 +316,7 @@ func _close_panels() -> void:
 	_shrine_menu.visible = false
 	_map_panel.close()
 	_subclass_panel.close_panel()
+	_camp_panel.close_panel()
 	_settings_panel.close_panel()  # (Esc leaves settings and the menu together)
 	_menu.visible = false
 	if _talents.visible:
@@ -315,10 +329,18 @@ func _on_menu_requested(kind: StringName, source: Node) -> void:
 		&"shrine":
 			_shrine_source = source
 			_path_button.visible = player.stats.can_choose_subclass()
+			_camp_button.visible = source is Camp
 			_shrine_menu.visible = true
 			(_shrine_menu.find_child("Rest", true, false) as Button).grab_focus()
 		&"shop":
 			_shop_panel.open(player, source as Vendor)
+
+
+func _shrine_camp() -> void:
+	var camp := _shrine_source as Camp
+	_close_panels()
+	if camp:
+		_camp_panel.open(player, camp)
 
 
 func _shrine_path() -> void:
@@ -482,6 +504,7 @@ func _draw_marker() -> void:
 	_marker.draw_circle(center, 2.5, Color(0, 0, 0, 0.5))
 	_marker.draw_circle(center, 1.5, Color(1, 1, 1, 0.7))
 	_draw_boss_bar()
+	_draw_raid_status()
 	# Enemy health bars (once hurt or targeted).
 	if CombatFx.show_enemy_health_bars:
 		for n in get_tree().get_nodes_in_group(&"enemies"):
@@ -515,6 +538,32 @@ func _draw_marker() -> void:
 	var pos := cam.unproject_position(point)
 	_marker.draw_circle(pos, 7.0, Color(0, 0, 0, 0.6))
 	_marker.draw_circle(pos, 4.5, Color(0.95, 0.9, 0.8, 0.95))
+
+
+## The camp: raid messages, and a strength bar at the top while a raid is on.
+func _draw_raid_status() -> void:
+	if _camp == null or not is_instance_valid(_camp):
+		_camp = get_tree().get_first_node_in_group(&"camp") as Camp
+		if _camp and _camp.raids:
+			_camp.raids.message.connect(func(text: String) -> void: show_banner(text, 6.0))
+		return
+	var raids := _camp.raids
+	if raids == null or not raids.active:
+		return
+	if _camp.global_position.distance_to(player.global_position) > 160.0:
+		return
+	var size := _marker.size
+	var w := minf(size.x * 0.34, 480.0)
+	var r := Rect2(Vector2((size.x - w) * 0.5, 64.0), Vector2(w, 10))
+	var strength := clampf(raids.strength / 100.0, 0.0, 1.0)
+	_marker.draw_rect(r.grow(2.0), Color(0, 0, 0, 0.85))
+	_marker.draw_rect(r, Color(0.1, 0.1, 0.07))
+	_marker.draw_rect(Rect2(r.position, Vector2(w * strength, r.size.y)), Color(0.85, 0.65, 0.2).lerp(Color(0.8, 0.15, 0.1), 1.0 - strength))
+	var font: Font = ThemeDB.fallback_font
+	var label := "The camp is raided: %d raider%s left" % [raids.raiders_left(), "" if raids.raiders_left() == 1 else "s"]
+	var tw: float = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+	_marker.draw_string(font, Vector2((size.x - tw) * 0.5 + 1, r.position.y - 6 + 1), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0, 0, 0, 0.9))
+	_marker.draw_string(font, Vector2((size.x - tw) * 0.5, r.position.y - 6), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.93, 0.8, 0.55))
 
 
 ## The boss bar at the bottom of the screen while a boss is fighting you.
@@ -716,15 +765,19 @@ func _build() -> void:
 	root.add_child(_bank_panel)
 
 	_shrine_menu = PanelContainer.new()
-	_place(_shrine_menu, Control.PRESET_CENTER, Rect2(-150, -150, 300, 300))
+	_place(_shrine_menu, Control.PRESET_CENTER, Rect2(-150, -180, 300, 360))
 	_shrine_menu.visible = false
 	var shrine_box := VBoxContainer.new()
 	shrine_box.add_theme_constant_override("separation", 10)
 	_shrine_menu.add_child(shrine_box)
-	for entry in [["Rest", _shrine_rest], ["Travel", _shrine_travel], ["Bank", _shrine_bank], ["Path", _shrine_path], ["Close", _close_panels]]:
+	for entry in [["Rest", _shrine_rest], ["Travel", _shrine_travel], ["Bank", _shrine_bank], ["Camp", _shrine_camp], ["Path", _shrine_path], ["Close", _close_panels]]:
 		var b := Button.new()
 		b.name = entry[0]
 		b.text = "Choose your path" if entry[0] == "Path" else entry[0]
+		if entry[0] == "Camp":
+			_camp_button = b
+			b.text = "Camp upgrades"
+			b.visible = false
 		if entry[0] == "Path":
 			_path_button = b
 			b.visible = false
@@ -751,6 +804,11 @@ func _build() -> void:
 	_place(_talents, Control.PRESET_CENTER, Rect2(-400, -260, 800, 520))
 	root.add_child(_talents)
 
+	_camp_panel = CampPanel.new()
+	_place(_camp_panel, Control.PRESET_CENTER, Rect2(-330, -250, 660, 500))
+	_camp_panel.closed.connect(func() -> void: _shrine_menu.visible = true)
+	root.add_child(_camp_panel)
+
 	_settings_panel = SettingsPanel.new()
 	_place(_settings_panel, Control.PRESET_CENTER, Rect2(-380, -330, 760, 660))
 	_settings_panel.closed.connect(func() -> void:
@@ -765,7 +823,7 @@ func _build() -> void:
 	root.add_child(_subclass_panel)
 
 	# Panels rustle open and shut (a book for the inventory, talents and map).
-	for panel: Control in [_inventory_panel, _shop_panel, _bank_panel, _shrine_menu, _menu, _talents, _map_panel, _subclass_panel, _settings_panel]:
+	for panel: Control in [_inventory_panel, _shop_panel, _bank_panel, _shrine_menu, _menu, _talents, _map_panel, _subclass_panel, _settings_panel, _camp_panel]:
 		panel.visibility_changed.connect(func() -> void:
 			if is_inside_tree():
 				Audio.sfx(&"ui_open" if panel.visible else &"ui_close"))

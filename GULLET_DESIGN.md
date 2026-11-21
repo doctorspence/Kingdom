@@ -13,7 +13,7 @@ The matching floor plan with legend and enemy positions is the "The Gullet: Dung
 | Role | The first dungeon, in the Tithelands (zone 1). Level 3 to 5. |
 | Length | About 10 minutes for a clean run, with fighting and no deaths. |
 | Shape | Tight, slightly winding corridors that open into bigger fight rooms, plus two large two-story areas. |
-| Shrine | Directly before the boss fight. |
+| Shrine | **Halfway** through, in a side alcove off the Bandit Camp's south wall (the 5-minute mark). Resting there respawns the dungeon and the boss. |
 | Story | An abandoned quarry occupied by desperate outlaws, who dug into a sealed passage and found a black stone. Travelers vanish on the forest road. Full text lives in the designer's brief (`THE GULLET` attachment). |
 | Factions | The boss is **not** a Dark Ages member. He is an ordinary man changed by the stone, which shows forbidden power existed before either faction claimed it. |
 | Boss name | To be decided. The brief's "Quarryman" is being replaced. Suggested: The Foreman (ties to the ledger). |
@@ -21,6 +21,8 @@ The matching floor plan with legend and enemy positions is the "The Gullet: Dung
 | Healing | Flasks stay the main heal. Food and potions are small extra heals (start values: bread 10%, cooked meat 20%, health potion 25% of max health; a flask is 40%). Eating takes about 1.5 s and you can be hit mid-bite. |
 | Gear tiers | Bronze and iron are Common (white). Steel is Uncommon (green). Chase items are Rare (blue) or Epic (purple). |
 | New weapon types | Iron dagger = a fast sword-type weapon. Steel pickaxe = a mace or axe type with mining flavor. |
+| Group loot | Shared need/greed stays for everything, including the rare drops. No personal rolls. |
+| Replay | The dungeon is meant to be run again and again for the rare drops. Hazards are learnable, never random. No bad-luck protection for now. |
 | Currency | "Gold" is renamed **coins** everywhere. Souls stay as the second currency and drop as a small automatic amount on top of the tables below. The rename touches code, data, saves and docs and is **not done yet**; do it after the dungeon design is finished. |
 
 ---
@@ -32,11 +34,12 @@ The matching floor plan with legend and enemy positions is the "The Gullet: Dung
 | 1 | Entrance Yard | Small yard at the quarry mouth: broken barricades, carts, smoke through cracks in the rock | 1:00 |
 | 2 | Old Tunnels | Tight winding corridors with wooden supports. Side nook for the ambush. Secret wall to the hidden chest | 2:00 |
 | 3 | Bandit Camp | Large **two-story** room: ground floor around a campfire, upper scaffold walkway along the north side. West stairs, east ladder, rope bridge east to the Excavation | 2:00 |
-| 4 | The Excavation | Large open **two-story** room: broken-through wall, scaffolding, the strange stone formation, black mineral veins. North gallery and west gallery above, ladder at the gallery's east end | 2:00 |
-| 5 | Shrine | Small quiet alcove just before the boss. Rest, bank, travel | 0:30 |
-| 6 | Deep Chamber | Larger chamber with unnaturally smooth walls, the exposed black stone, and the boss. Reached through a fog gate | 2:30 |
+| 4 | Shrine | Small quiet alcove off the camp's south wall. Rest, bank, travel. A side stop, not on the main route | 0:30 |
+| 5 | The Excavation | Large open **two-story** room: broken-through wall, scaffolding, the strange stone formation, black mineral veins. North gallery and west gallery above, ladder at the gallery's east end. The Captain guards the exit | 2:00 |
+| 6 | Deep Chamber | Long approach corridor and a fog gate, then a larger chamber with unnaturally smooth walls, the exposed black stone, and the boss | 2:30 |
 
-- **Shortcut:** after the first boss kill, a corridor opens from the Deep Chamber back to the Entrance Yard (closed until then).
+- **Shortcuts:** after the first boss kill, a corridor opens from the Deep Chamber back to the Entrance Yard (closed until then). A **barricade** in the Old Tunnels is lifted from the far (camp) side and gives a short path from the long hall straight to the camp, skipping the western loop (the second patrol pair and the hidden chest route).
+- **Farming loop:** from the halfway shrine, a boss attempt is about 5 minutes (Excavation, approach, boss). A full run from the entrance is about 10.
 - **Route options:** the camp's upper walkway links over the rope bridge to the Excavation's north and west galleries, so players can skip part of the ground fight at the cost of facing archers.
 
 ---
@@ -53,13 +56,23 @@ Rules from `DESIGN.md` still apply: at most 2 enemies attack one player at a tim
 | | #6, #7 Bandit patrol pair at the second bend | Short patrol. The secret wall to the hidden chest is just past them | Patrol timing, optional reward |
 | 3 Bandit Camp | #8 to #11 Bandits around the fire | **#8 is a caller:** he shouts when he sees you and pulls in the whole camp, archers included | Choosing an approach |
 | | #12, #13 Bandit Archers on the upper walkway | Shoot down on the ground floor. Reached by the west stairs or the east ladder | Verticality, archers as the priority target |
+| | Powder barrels | By the fire and the east wall: hit one and it explodes, hurting bandits and you | Using the environment |
 | | Extra at 3+ players | One more Bandit near the bedrolls | Group scaling |
-| 4 The Excavation | #14 to #16 Bandits around the black stone | Dig and talk until they notice you | Handling a group of three |
+| 5 The Excavation | #14 to #16 Bandits around the black stone | Dig and talk until they notice you | Handling a group of three |
 | | #17 Bandit Captain | Guards the exit toward the shrine. Calls nearby bandits when the fight starts. See section 4 | The mid-dungeon elite |
 | | #18, #19 Bandit Archers on the north gallery | Overlook the whole room. Arriving by rope bridge puts you above them | Using the upper route |
+| | Powder barrels | By the west wall and the south corner | Using the environment |
 | | Extra at 3+ players | One more Bandit near the west wall | Group scaling |
-| 5 Shrine | none | Safe | n/a |
+| 4 Shrine | none | Safe | n/a |
 | 6 Deep Chamber | The boss, alone | No adds. See section 6 | The final test |
+
+### Replayability and hazards (approved)
+- **Powder barrels:** blasting powder barrels in the camp and the Excavation. Hitting one (with a swing or an arrow) makes an area explosion. Learnable and skillful, never random.
+- **Barricade shortcut** in the Old Tunnels (see section 2).
+- **Run variety through spawn tables:** the camp and the Excavation roll weighted tables each reset, so group sizes shift a little (for example a fifth bandit or an extra archer). Players cannot memorize it.
+- **Named rare Bandit:** about 5% chance at a spawn point (uses the existing named-rare setting), carrying a chase item at a better rate than the boss. Marked on the map near the camp's crates. Name and drop TBD.
+- **Hidden chest** refills each time you rest.
+- **Skipped on purpose:** collapsing floors and rotten planks (they would end runs by luck).
 
 **Totals:** 19 enemies plus the boss: 13 Bandits (#1 to #4, #6 to #11, #14 to #16), 5 Archers (#5, #12, #13, #18, #19) and 1 Captain (#17). With 3 or more players, two extra Bandits appear (one in the camp, one in the Excavation).
 
@@ -99,6 +112,7 @@ OSRS style: a simple table with coins, food, potions, a few gear drops, and one 
 | Drop | Chance |
 |---|---|
 | Coins (30 to 75) | 100% |
+| Boss's unique weapon | 1/200 |
 | Health potion | 40% |
 | Cooked meat x2 | 25% |
 | Iron sword | 15% |
@@ -125,7 +139,7 @@ Guaranteed: coins (100 to 200), health potion x2.
 | Steel sword | 5% |
 | Blackstone amulet | 1% |
 
-Notes: this OSRS-style table replaces the general "boss drops 2 to 3 items with a guaranteed Rare" rule from `DESIGN.md` section 9.1 for the Gullet. Whether the existing loot code can roll "1/128" style odds still needs checking.
+Notes: the Captain's small unique-weapon chance makes the whole route matter, not just the boss. A named rare Bandit adds another chance (rate TBD). Rare drops are shared through normal need/greed. Expected effort at 1/128 from the boss alone: about 11 hours of 5-minute loops from the halfway shrine, or about 21 hours of full 10-minute runs. This OSRS-style table replaces the general "boss drops 2 to 3 items with a guaranteed Rare" rule from `DESIGN.md` section 9.1 for the Gullet. Whether the existing loot code can roll "1/128" style odds still needs checking.
 
 ---
 
@@ -147,6 +161,7 @@ From the brief, to be reworked in the boss step: a large weathered man in scaven
 ## 8. What is missing and needs building
 
 - **Enemy archers.** Enemies cannot shoot yet. The arrow code (`arrow.gd`) belongs to the player, and enemy attacks only swing. We need an enemy ranged attack plus keep-distance behavior. `AttackData` already has `projectile_speed` and `projectile_range`.
+- **Powder barrels.** A new object that explodes when hit by a swing or an arrow and damages everyone nearby. Not in the code yet.
 - **Ambush trigger.** I found no ambush mechanic in the files read, only sight and hearing. The nook archer can use a short sight/hearing range plus idle until then.
 - **New level layout.** The cave is carved by `game/world/gullet.gd` and the scene `levels/tithelands/props/gullet.tscn`. The new two-story rooms, rope bridge and shortcut need rebuilding there.
 - **New weapon types** (iron dagger, steel pickaxe), the Blackstone amulet and the boss's unique weapon need data files.
@@ -158,9 +173,9 @@ From the brief, to be reworked in the boss step: a large weathered man in scaven
 ## 9. Still to design (in this order)
 
 1. ~~Purpose and fantasy~~ done
-2. ~~Layout and flow~~ done
-3. ~~Encounters~~ done (this draft)
-4. Hazards and set pieces (traps, environmental dangers, secrets)
+2. ~~Layout and flow~~ done (shrine moved to halfway)
+3. ~~Encounters~~ done
+4. ~~Hazards and set pieces~~ done in broad strokes (barrels, barricade shortcut, spawn variety, named rare); details at build time
 5. The boss (name, moves, phases, arena)
 6. Loot: confirm the tables above against the code, set souls and XP
 7. Atmosphere and audio (lighting, ambience, boss track)

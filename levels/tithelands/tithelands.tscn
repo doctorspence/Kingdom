@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://game/net/game_session.gd" id="session"]
 [ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="hud"]
 [ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="shrine"]
+[ext_resource type="Script" path="res://game/world/camp.gd" id="camp_script"]
 [ext_resource type="Script" path="res://game/world/vendor.gd" id="vendor"]
 [ext_resource type="Resource" path="res://data/vendors/vendor_old_wenna.tres" id="wenna"]
 [ext_resource type="Resource" path="res://data/vendors/vendor_soul_broker.tres" id="broker"]
@@ -140,6 +141,13 @@ position = Vector3(6.30, 0, 114.80)
 rotation_degrees = Vector3(0, 200, 0)
 shrine_name = "Crossroads Shrine"
 shrine_id = &"crossroads"
+[node name="Camp" parent="Places" instance=ExtResource("shrine")]
+position = Vector3(36.00, 0, 122.00)
+rotation_degrees = Vector3(0, 90, 0)
+script = ExtResource("camp_script")
+shrine_name = "Camp Hearth"
+shrine_id = &"camp"
+
 [node name="Gallows" parent="Places" instance=ExtResource("gallows")]
 position = Vector3(-7.70, 0, 119.00)
 rotation_degrees = Vector3(0, -15, 0)

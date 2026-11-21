@@ -841,7 +841,7 @@ func _explore() -> void:
 	exploration.reveal(key, global_position, EXPLORE_RADIUS, z.size)
 	for n in get_tree().get_nodes_in_group(&"interactables"):
 		var s := n as Shrine
-		if s and s.global_position.distance_to(global_position) < SHRINE_FIND_RANGE \
+		if s and s.is_active() and s.global_position.distance_to(global_position) < SHRINE_FIND_RANGE \
 				and exploration.discover_shrine(key, s.shrine_id):
 			shrine_discovered.emit(s.shrine_name)
 

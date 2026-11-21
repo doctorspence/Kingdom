@@ -174,6 +174,15 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Open Settings, rebind a few keys, quit and restart to see that they stuck; try fullscreen and sensitivity
 - [ ] Later: gamepad rebinding, brightness, resolution scale, accessibility (text size, colorblind-safe rarity), the F1 help text following your bindings
 
+## Phase 13: The camp and night raids ✅ (built; waiting for your test; design in DESIGN.md 11.5)
+- [x] 1. The camp: a cold fire pit east of the Crossroads (36, 122) that anyone can claim for 100 gold (`game/world/camp.gd`, a Shrine with a different script, so it also rests, banks, travels and respawns). It goes cold when overrun and is relit for 50 gold. State is world flags, so it is shared and saved with the world
+- [x] 2. Upgrades at 150 / 400 / 900 gold per level (Palisade, Watchfires, Stores) from a **Camp upgrades** button in the hearth menu (`game/ui/camp_panel.gd`); the camp visibly grows: solid stake posts, torch poles with lights, crates
+- [x] 3. Raids (`game/world/camp_raids.gd`, host only): at dusk (the first night always, then 60%) if a player is within 120 m, 3+ raiders (marauders, zealots, hounds; more with more players and better upgrades) appear 70-90 m out and march to the camp. Raiders near the hearth drain its strength; 0 = overrun (hearth cold); all dead = won; dawn = they leave
+- [x] 4. A raid chest of spoils at the hearth (better with Stores; shared gold, souls, XP, need/greed), a strength bar and raider count at the top of the screen, a horn at the start, win and loss sounds, raiders on the map at Watchfires II, the direction named at Watchfires I, shorter raider sight at Watchfires III. **F7** starts a raid now (host)
+- [x] 5. `tests/camp_check.gd` (46 checks) passes; the 3-player check now also covers claiming and a raid seen by everyone
+- [ ] 🧪 Claim the camp (you need 100 gold; Hobb and the roads give it), upgrade it, press F5 to skip to night or F7 to raid now, and defend it, alone and with a friend; tell me if raids are too easy, too hard or too long
+- [ ] Later: raiders that attack the palisade itself, repairable damage, camp NPCs and a camp vendor, camp level shown on the map, more raid types (a captain, a siege), raids on other zones' camps
+
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
 - Quests and public quests
