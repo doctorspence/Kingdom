@@ -137,6 +137,8 @@ func _ready() -> void:
 	_build_room_glow()
 	_build_rails()
 	_build_scaffolds()
+	_build_atmosphere()
+	_build_falls()
 	_build_props()
 	_build_river()
 	_build_lights()
@@ -956,3 +958,102 @@ func _floor_material() -> StandardMaterial3D:
 	m.uv1_scale = Vector3(0.55, 0.55, 0.55)
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	return m
+
+
+# ---- Atmosphere: ground fog, hazy light shafts, waterfalls ---------------------
+
+func _fog_volume(shape: int, pos: Vector3, size: Vector3, albedo: Color, density: float, emission := Color.BLACK) -> void:
+	var fv := FogVolume.new()
+	fv.shape = shape
+	fv.size = size
+	fv.position = pos
+	var fm := FogMaterial.new()
+	fm.albedo = albedo
+	fm.density = density
+	fm.emission = emission
+	fm.height_falloff = 0.0
+	fv.material = fm
+	add_child(fv)
+
+
+## Low cool mist over the floors of the big rooms and a soft haze inside every light shaft.
+func _build_atmosphere() -> void:
+	for c in CARVES:
+		var w: float = c[2] - c[0]
+		var d: float = c[3] - c[1]
+		if minf(w, d) < 8.0:
+			continue
+		_fog_volume(RenderingServer.FOG_VOLUME_SHAPE_BOX, Vector3((c[0] + c[2]) * 0.5, 1.0, (c[1] + c[3]) * 0.5),
+				Vector3(w, 2.0, d), Color(0.55, 0.65, 0.8), 0.012)
+	for s in SHAFTS:
+		_fog_volume(RenderingServer.FOG_VOLUME_SHAPE_CYLINDER, Vector3(s[0], s[3] * 0.5, s[1]),
+				Vector3(s[2] * 3.2, s[3], s[2] * 3.2), Color(0.5, 0.7, 1.0), 0.07, Color(0.0, 0.01, 0.02))
+
+
+## Waterfalls spilling from clefts in the Excavation's south wall into the river,
+## each with a splash pool, rolling mist and a cold glow.
+func _build_falls() -> void:
+	var noise := FastNoiseLite.new()
+	noise.frequency = 0.04
+	noise.fractal_octaves = 3
+	var tex := NoiseTexture2D.new()
+	tex.noise = noise
+	tex.width = 256
+	tex.height = 256
+	tex.seamless = true
+	tex.color_ramp = Gradient.new()
+	tex.color_ramp.colors = PackedColorArray([Color(0.35, 0.55, 0.65, 0.15), Color(0.95, 1.0, 1.0, 0.85)])
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = tex
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.uv1_scale = Vector3(1.0, 0.12, 1.0)
+	mat.emission_enabled = true
+	mat.emission = Color(0.1, 0.25, 0.35)
+	var tw := create_tween().set_loops()
+	tw.tween_property(mat, "uv1_offset:y", 1.0, 2.2).from(0.0)
+	for x in [38.0, 48.0, 57.0]:
+		var top := 9.5
+		var wallz := 3.9
+		var sheet := MeshInstance3D.new()
+		var qm := QuadMesh.new()
+		qm.size = Vector2(1.5 if x != 48.0 else 2.4, top)
+		qm.material = mat
+		sheet.mesh = qm
+		sheet.position = Vector3(x, top * 0.5, wallz)
+		sheet.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(sheet)
+		# A dark rock lip the water pours over.
+		var lip := MeshInstance3D.new()
+		var lm := SphereMesh.new()
+		lm.radial_segments = 6
+		lm.rings = 3
+		lm.material = _chunk()
+		lip.mesh = lm
+		lip.scale = Vector3(1.6, 0.7, 1.1)
+		lip.position = Vector3(x, top, wallz + 0.4)
+		add_child(lip)
+		var pool := MeshInstance3D.new()
+		var pm := CylinderMesh.new()
+		pm.top_radius = 1.9
+		pm.bottom_radius = 1.9
+		pm.height = 0.08
+		pm.radial_segments = 14
+		var pmat := StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.2, 0.32, 0.4, 0.75)
+		pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		pmat.roughness = 0.1
+		pmat.metallic = 0.3
+		pm.material = pmat
+		pool.mesh = pm
+		pool.position = Vector3(x, 0.1, wallz - 0.9)
+		add_child(pool)
+		_fog_volume(RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID, Vector3(x, 1.4, wallz - 1.0),
+				Vector3(5.0, 2.6, 4.0), Color(0.8, 0.9, 1.0), 0.12)
+		var glow := OmniLight3D.new()
+		glow.position = Vector3(x, 2.0, wallz - 1.2)
+		glow.light_color = Color(0.4, 0.75, 1.0)
+		glow.light_energy = 1.4
+		glow.omni_range = 11.0
+		add_child(glow)
