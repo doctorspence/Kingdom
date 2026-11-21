@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_woodcutters_axe.tres" id="2_ref"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_woodcutters_axe"
+display_name = "Woodcutter's Axe"
+flavor = "It has split more than wood."
+slot = 10
+grid_size = Vector2i(1, 3)
+weight = 5.0
+value = 22
+icon_color = Color(0.5, 0.35, 0.25, 1)
+armor = 0.0
+stats = {}
+weapon = ExtResource("2_ref")

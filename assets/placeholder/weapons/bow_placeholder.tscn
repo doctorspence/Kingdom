@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="Mat_wood"]
+albedo_color = Color(0.3, 0.2, 0.11, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Mat_string"]
+albedo_color = Color(0.8, 0.78, 0.7, 1)
+
+[sub_resource type="TorusMesh" id="Mesh_limb"]
+material = SubResource("Mat_wood")
+inner_radius = 0.6
+outer_radius = 0.63
+rings = 24
+ring_segments = 4
+
+[sub_resource type="BoxMesh" id="Mesh_string"]
+material = SubResource("Mat_string")
+size = Vector3(0.006, 1.05, 0.006)
+
+[node name="BowPlaceholder" type="Node3D"]
+
+[node name="Limb" type="MeshInstance3D" parent="."]
+position = Vector3(-0.42, 0, 0)
+rotation_degrees = Vector3(90, 0, 0)
+scale = Vector3(1, 1, 0.9)
+mesh = SubResource("Mesh_limb")
+
+[node name="String" type="MeshInstance3D" parent="."]
+position = Vector3(0.12, 0, 0)
+mesh = SubResource("Mesh_string")
+
+[node name="Tip" type="Marker3D" parent="."]

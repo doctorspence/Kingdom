@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_hobbs_noose"
+display_name = "Hobb's Noose"
+flavor = "They hanged him twice. He kept the rope."
+slot = 8
+grid_size = Vector2i(1, 1)
+weight = 0.3
+value = 200
+icon_color = Color(0.6, 0.45, 0.25, 1)
+armor = 0.0
+stats = {"vitality": 3}
+min_rarity = 4
+legendary_mods = {"cheat_death": 1.0}
+legendary_text = "Once every 2 minutes, a blow that would kill you leaves you standing at 1 health."

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_hunting_bow.tres" id="2_ref"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_hunting_bow"
+display_name = "Hunting Bow"
+flavor = "Arrows come cheap. Aim does not."
+slot = 12
+grid_size = Vector2i(2, 3)
+weight = 3.0
+value = 30
+icon_color = Color(0.45, 0.32, 0.2, 1)
+armor = 0.0
+stats = {}
+weapon = ExtResource("2_ref")

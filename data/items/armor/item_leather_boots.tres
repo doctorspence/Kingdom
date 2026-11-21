@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_leather_boots"
+display_name = "Leather Boots"
+slot = 6
+grid_size = Vector2i(2, 2)
+weight = 1.0
+value = 8
+icon_color = Color(0.4, 0.3, 0.2, 1)
+armor = 2.0
+stats = {"agility": 1}

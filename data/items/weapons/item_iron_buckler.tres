@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Resource" path="res://data/shields/shield_buckler.tres" id="2_ref"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_iron_buckler"
+display_name = "Iron Buckler"
+flavor = "For those who would rather not be hit at all."
+slot = 11
+grid_size = Vector2i(2, 2)
+weight = 3.0
+value = 22
+icon_color = Color(0.5, 0.5, 0.52, 1)
+armor = 0.0
+stats = {}
+shield = ExtResource("2_ref")

@@ -1,0 +1,141 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/weapon_data.gd" id="1_weapon"]
+[ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
+[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/spear_placeholder.tscn" id="3_visual"]
+
+[sub_resource type="Resource" id="Attack_light1"]
+script = ExtResource("2_attack")
+display_name = "Light 1 (thrust)"
+anim = &"Punch_Jab"
+anim_speed = 1.0
+hit_start = 0.18
+hit_end = 0.3
+chain_time = 0.4
+cancel_time = 0.42
+end_time = 0.75
+damage_mult = 1.0
+poise_mult = 0.9
+stamina_cost = 13.0
+hit_stop = 0.05
+reach = 3.1
+arc_degrees = 40.0
+lunge_distance = 0.4
+lunge_start = 0.1
+lunge_end = 0.25
+
+[sub_resource type="Resource" id="Attack_light2"]
+script = ExtResource("2_attack")
+display_name = "Light 2 (thrust)"
+anim = &"Punch_Cross"
+anim_speed = 1.1
+hit_start = 0.25
+hit_end = 0.38
+chain_time = 0.45
+cancel_time = 0.5
+end_time = 0.85
+damage_mult = 1.05
+poise_mult = 0.9
+stamina_cost = 13.0
+hit_stop = 0.05
+reach = 3.1
+arc_degrees = 40.0
+lunge_distance = 0.4
+lunge_start = 0.15
+lunge_end = 0.3
+
+[sub_resource type="Resource" id="Attack_heavy"]
+script = ExtResource("2_attack")
+display_name = "Heavy (lunging thrust)"
+anim = &"ual2/Sword_Dash"
+anim_speed = 0.95
+hit_start = 0.25
+hit_end = 0.4
+chain_time = 0.9
+cancel_time = 0.85
+end_time = 1.0
+damage_mult = 1.8
+poise_mult = 2.0
+stamina_cost = 24.0
+hit_stop = 0.09
+reach = 3.4
+arc_degrees = 40.0
+lunge_distance = 1.8
+lunge_start = 0.1
+lunge_end = 0.4
+windup_until = 0.12
+
+[sub_resource type="Resource" id="Attack_running"]
+script = ExtResource("2_attack")
+display_name = "Running thrust"
+anim = &"ual2/Sword_Dash"
+anim_speed = 1.15
+hit_start = 0.03
+hit_end = 0.38
+chain_time = 0.8
+cancel_time = 0.75
+end_time = 0.9
+damage_mult = 1.3
+poise_mult = 1.5
+stamina_cost = 16.0
+hit_stop = 0.07
+reach = 3.2
+arc_degrees = 40.0
+lunge_distance = 2.2
+lunge_start = 0.0
+lunge_end = 0.35
+
+[sub_resource type="Resource" id="Attack_rolling"]
+script = ExtResource("2_attack")
+display_name = "Rolling thrust"
+anim = &"Punch_Jab"
+anim_speed = 1.0
+hit_start = 0.18
+hit_end = 0.3
+chain_time = 0.4
+cancel_time = 0.42
+end_time = 0.75
+damage_mult = 0.9
+poise_mult = 0.9
+stamina_cost = 12.0
+hit_stop = 0.05
+reach = 3.1
+arc_degrees = 40.0
+lunge_distance = 1.0
+lunge_start = 0.0
+lunge_end = 0.25
+
+[sub_resource type="Resource" id="Attack_riposte"]
+script = ExtResource("2_attack")
+display_name = "Riposte"
+anim = &"ual2/Sword_Regular_C"
+anim_speed = 1.0
+hit_start = 0.56
+hit_end = 0.72
+chain_time = 9.0
+cancel_time = 1.4
+end_time = 1.5
+damage_mult = 3.0
+poise_mult = 5.0
+stamina_cost = 0.0
+hit_stop = 0.15
+reach = 2.6
+arc_degrees = 90.0
+lunge_distance = 0.0
+lunge_start = 0.0
+lunge_end = 0.0
+
+[resource]
+script = ExtResource("1_weapon")
+id = &"weapon_boar_spear"
+display_name = "Boar Spear"
+visual_scene = ExtResource("3_visual")
+damage = 20.0
+poise_damage = 10.0
+scaling_strength = 0.3
+scaling_agility = 0.7
+light_combo = Array[ExtResource("2_attack")]([SubResource("Attack_light1"), SubResource("Attack_light2")])
+heavy = SubResource("Attack_heavy")
+running_attack = SubResource("Attack_running")
+rolling_attack = SubResource("Attack_rolling")
+riposte = SubResource("Attack_riposte")

@@ -51,6 +51,11 @@ extends Resource
 @export var lunge_start := 0.0
 @export var lunge_end := 0.3
 
+@export_group("Ranged (bows)")
+## If above 0, this attack shoots an arrow at hit_start instead of swinging.
+@export var projectile_speed := 0.0
+@export var projectile_range := 40.0
+
 @export_group("Rules")
 ## A timed block can parry it (white glint on enemies).
 @export var parryable := true

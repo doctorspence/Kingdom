@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ShieldData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/shield_data.gd" id="1_shield"]
+[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/buckler_placeholder.tscn" id="2_visual"]
+
+[resource]
+script = ExtResource("1_shield")
+id = &"shield_buckler"
+display_name = "Iron Buckler"
+visual_scene = ExtResource("2_visual")
+block_reduction = 0.8
+stamina_per_damage = 0.8
+parry_window = 0.25

@@ -13,6 +13,8 @@ var level := 1
 var xp := 0
 ## Talent ids picked.
 var talents: Array[StringName] = []
+## Equipped gear adds stats, armor and legendary effects (set by the player).
+var gear: Inventory
 
 
 func _init(c: ClassData) -> void:
@@ -22,23 +24,23 @@ func _init(c: ClassData) -> void:
 # --- Stats --------------------------------------------------------------------
 
 func strength() -> float:
-	return class_data.strength + class_data.strength_per_level * (level - 1)
+	return class_data.strength + class_data.strength_per_level * (level - 1) + _gear("strength")
 
 
 func agility() -> float:
-	return class_data.agility + class_data.agility_per_level * (level - 1)
+	return class_data.agility + class_data.agility_per_level * (level - 1) + _gear("agility")
 
 
 func intellect() -> float:
-	return class_data.intellect + class_data.intellect_per_level * (level - 1)
+	return class_data.intellect + class_data.intellect_per_level * (level - 1) + _gear("intellect")
 
 
 func vitality() -> float:
-	return class_data.vitality + class_data.vitality_per_level * (level - 1)
+	return class_data.vitality + class_data.vitality_per_level * (level - 1) + _gear("vitality")
 
 
 func armor() -> float:
-	return class_data.armor + class_data.armor_per_level * (level - 1) + mod_add("armor_add")
+	return class_data.armor + class_data.armor_per_level * (level - 1) + mod_add("armor_add") + (gear.armor_total() if gear else 0.0)
 
 
 func max_health() -> float:
@@ -63,7 +65,7 @@ func damage_bonus(weapon: WeaponData) -> float:
 
 
 func crit_chance(weapon: WeaponData) -> float:
-	return weapon.crit_chance + agility() * 0.0005 + mod_add("crit_chance_add")
+	return weapon.crit_chance + agility() * 0.0005 + mod_add("crit_chance_add") + _gear("crit_chance")
 
 
 ## Healing and ability power scale with Intellect.
@@ -162,3 +164,8 @@ func reset_talents() -> void:
 
 func ability_unlocked(a: AbilityData) -> bool:
 	return level >= a.unlock_level
+
+
+## A stat from worn gear (base stats + bonus rolls).
+func _gear(stat_name: String) -> float:
+	return gear.stat_total(stat_name) if gear else 0.0

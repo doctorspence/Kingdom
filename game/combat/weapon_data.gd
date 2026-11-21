@@ -18,6 +18,11 @@ extends Resource
 @export var scaling_intellect := 0.0
 ## Two-handed weapons can't be used with a shield.
 @export var two_handed := false
+## Status buildup on every hit (axes: bleed).
+@export var status := Effects.Status.NONE
+@export var status_amount := 0.0
+## Ignores this share of the target's armor (maces).
+@export_range(0.0, 1.0) var armor_pierce := 0.0
 
 @export_group("Moveset")
 ## Light attack combo, in order. The last one loops back to the first.
