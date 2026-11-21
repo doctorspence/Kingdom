@@ -416,17 +416,19 @@ func _build_room_glow() -> void:
 # noise, so walls, ceilings and floors become lumpy and jagged. The pushed mesh is
 # also the walkable collision. The flat rock stays behind it, so there are no holes.
 
-const ROUGH_EDGE := 1.5
+const ROUGH_EDGE := 1.2
 
 var _noise_a := FastNoiseLite.new()
 var _noise_b := FastNoiseLite.new()
-
+var _noise_l := FastNoiseLite.new()
 
 func _rough_at(p: Vector3) -> float:
-	var a := 1.0 - absf(_noise_a.get_noise_3dv(p))
-	a = a * a
-	var b := 0.5 + 0.5 * _noise_b.get_noise_3dv(p)
-	return clampf(0.7 * a + 0.3 * b, 0.0, 1.0)
+	# Three scales: wide flowing hollows and swells, medium fractured ridges, small grit.
+	var big := _noise_l.get_noise_3dv(p)
+	var ridge := 1.0 - absf(_noise_a.get_noise_3dv(p))
+	ridge = ridge * ridge * 1.4 - 0.5
+	var grit := _noise_b.get_noise_3dv(p)
+	return clampf(0.75 * big + 0.45 * ridge + 0.2 * grit, -1.0, 1.0)
 
 
 func _roughen(combiner: CSGCombiner3D) -> void:
@@ -436,9 +438,12 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 	if baked == null or baked.get_surface_count() == 0:
 		return
 	_noise_a.seed = 7
-	_noise_a.frequency = 0.38
+	_noise_a.frequency = 0.26
+	_noise_l.seed = 3
+	_noise_l.frequency = 0.085
 	_noise_b.seed = 19
-	_noise_b.frequency = 1.7
+	_noise_b.frequency = 0.9
+	var wood_mesh := ArrayMesh.new()
 	var rock_verts := PackedVector3Array()
 	var rock_norms := PackedVector3Array()
 	var collide := PackedVector3Array()
@@ -449,6 +454,9 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 		var idx = arr[Mesh.ARRAY_INDEX]
 		var m := baked.surface_get_material(s)
 		var is_stone := m != null and m.resource_path == STONE
+		if not is_stone:
+			wood_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+			wood_mesh.surface_set_material(wood_mesh.get_surface_count() - 1, m)
 		var count: int = idx.size() if idx != null and idx.size() > 0 else vs.size()
 		var i := 0
 		while i + 2 < count:
@@ -466,7 +474,7 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 				continue
 			var n := ns[ia]
 			var sign_ := 1.0 if (b - a).cross(c - a).dot(n) >= 0.0 else -1.0
-			var amp := 0.2 if n.y > 0.7 else (0.9 if n.y < -0.7 else 0.95)
+			var amp := 0.22 if n.y > 0.7 else 2.3
 			_subdivide(a, b, c, n, sign_, amp, rock_verts, rock_norms, collide, 0)
 	var raw_v := rock_verts
 	var raw_n := rock_norms
@@ -493,6 +501,11 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 	body.add_child(cs)
 	add_child(body)
 	combiner.use_collision = false
+	combiner.visible = false
+	if wood_mesh.get_surface_count() > 0:
+		var wmi := MeshInstance3D.new()
+		wmi.mesh = wood_mesh
+		add_child(wmi)
 
 
 func _on_outer_shell(a: Vector3, b: Vector3, c: Vector3) -> bool:
@@ -506,7 +519,10 @@ func _on_outer_shell(a: Vector3, b: Vector3, c: Vector3) -> bool:
 
 
 func _push(p: Vector3, n: Vector3, amp: float) -> Vector3:
-	return p + n * (amp * _rough_at(p))
+	var v := _rough_at(p)
+	if absf(n.y) > 0.8 and amp < 0.5:
+		return p + n * (amp * (v * 0.6 if v > 0.0 else v * 0.2))
+	return p + n * (amp * (v * 0.4 if v > 0.0 else v * 0.65))
 
 
 func _subdivide(a: Vector3, b: Vector3, c: Vector3, n: Vector3, sign_: float, amp: float,
@@ -548,21 +564,30 @@ func _finish_rough(raw_v: PackedVector3Array, raw_n: PackedVector3Array, out_v: 
 	for i in raw_v.size():
 		var k := _vkey(raw_v[i])
 		sums[k] = sums.get(k, Vector3.ZERO) + raw_n[i]
-		amps[k] = minf(amps.get(k, 99.0), _raw_amp[i / 3])
+		amps[k] = maxf(amps.get(k, 0.0), _raw_amp[i / 3])
 	var moved := {}
 	for i in raw_v.size():
 		var k := _vkey(raw_v[i])
 		if not moved.has(k):
 			var nn: Vector3 = (sums[k] as Vector3).normalized()
 			moved[k] = _push(raw_v[i], nn, amps[k])
+	var smooth := {}
+	var tri_n := PackedVector3Array()
 	for t in raw_v.size() / 3:
 		var pa: Vector3 = moved[_vkey(raw_v[t * 3])]
 		var pb: Vector3 = moved[_vkey(raw_v[t * 3 + 1])]
 		var pc: Vector3 = moved[_vkey(raw_v[t * 3 + 2])]
-		var fn := (pb - pa).cross(pc - pa).normalized() * _raw_sign[t]
-		for p in [pa, pb, pc]:
+		var fn := (pb - pa).cross(pc - pa) * _raw_sign[t]
+		tri_n.append(fn)
+		for j in 3:
+			var k := _vkey(raw_v[t * 3 + j])
+			smooth[k] = smooth.get(k, Vector3.ZERO) + fn
+	for t in raw_v.size() / 3:
+		for j in 3:
+			var k := _vkey(raw_v[t * 3 + j])
+			var p: Vector3 = moved[k]
 			out_v.append(p)
-			out_n.append(fn)
+			out_n.append((smooth[k] as Vector3).normalized())
 			collide.append(p)
 
 
