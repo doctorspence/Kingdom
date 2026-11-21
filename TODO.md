@@ -66,7 +66,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 3 game windows on one PC, then a real test with friends over the internet
 - [ ] Later: show ping in the debug info; a "kick player" option for the host
 
-## Phase 5: Classes ✅ (waiting for your test)
+## Phase 5: Classes ✅
 - [x] Character creator in the main menu: name, class (with role, story, passive, abilities), body (broad/slender), color; remembered
 - [x] Bulwark (Resolve), Lamplighter (Oil), Headsman (Tally notches): 6 abilities each with cooldowns, costs and unlock levels (1/3/6/10/15/20); hotbar 1-6 or hold LT + face buttons
 - [x] New weapons: Executioner's Greatsword, Lantern-Staff (2-handed, own movesets, stat scaling)
@@ -82,16 +82,20 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] Later: bosses switch targets only at telegraphs (Phase 9, with the boss); characters and levels are saved in Phase 6
 - [ ] Later: real ability icons (your AI art), real casting animations
 
-## Phase 6: Loot
-- [ ] Item data: weapons by type, armor by slot, jewelry; rarity colors; item level
-- [ ] Random bonus rolls (Rare and up)
-- [ ] Loot tables (enemies, elites, named rares, bosses)
-- [ ] Grid inventory and paperdoll; gear changes stats and equip load
-- [ ] Remaining weapon movesets: axe, mace, greatsword, spear, bow, staff
-- [ ] Need/Greed rolls; drop items to trade
-- [ ] Gold and souls; vendor (buy, sell, buy back); Soul Broker; bank at shrines
-- [ ] Character save/load; characters move between worlds
-- [ ] 🧪 Farm the test map, roll for loot with a friend, quit and reload your character
+## Phase 6: Loot ✅ (waiting for your test)
+- [x] 32 base items in `data/items/` (7 weapons, 3 shields, 15 armor pieces, jewelry, consumables, the legendary Hobb's Noose); rarity colors; item level; Rare+ random bonus rolls (`data/balance/loot.tres`)
+- [x] Loot tables (`data/loot/`): drop chance, item count, item level, rarity weights, gold, souls; named-unique and guaranteed-rarity support for Phase 8–9
+- [x] Grid backpack (10×6, items take shapes, consumables stack) and equipment: 10 armor/jewelry slots + two weapon sets (X / D-pad right swaps)
+- [x] Gear changes stats, armor, poise, speed, stamina regen, status resistance and equip load (roll speed); weapon bonuses add bleed/poison/frost on hit
+- [x] New weapons: Woodcutter's Axe (bleeds), Flanged Mace (ignores 30% armor), Boar Spear (long thrusts), Hunting Bow (arrows; hold to draw); Kite Shield, Iron Buckler
+- [x] Drops glow on the ground (beam by rarity); pick up with E; drop items for friends from the inventory
+- [x] Need / Greed / Pass rolls for Uncommon+ with 2+ players nearby (30 s); winner's drop is reserved; gold, souls and XP shared in full
+- [x] Old Wenna (gold: buy consumables and gear, sell, buy back) and the Soul Broker (Rare+ gear for souls; new stock when you rest)
+- [x] Shrine menu: Rest / Bank. Bank 12×4, more rows for gold, safe and saved with your character
+- [x] Characters saved on your PC (`%APPDATA%Godotpp_userdataKingdomaracters`): class, level, XP, talents, gear, backpack, bank, gold, souls. Autosave every 5 min, on rest, level-up and leaving. Continue a saved character from the main menu
+- [x] Automated `tests/loot_check.gd`: all 23 pass; 3-player check now also covers loot rolls and pickup
+- [ ] 🧪 Farm the arena, roll for loot with a friend, quit and reload your character
+- [ ] Later: move items around inside the backpack by hand; drops don't show for players who join after they fell; real item icons
 
 ## Phase 7: Death system
 - [ ] Keep your 3 most valuable items; drop everything else as a glowing pile

@@ -14,6 +14,8 @@ var t := 0.0
 var _done := {}
 var _chat_seen := false
 var _min_stamina := 999.0
+var _bag := 0
+var _gold := 0
 
 
 func _ready() -> void:
@@ -28,7 +30,11 @@ func _ready() -> void:
 		Net.host_game()
 	else:
 		Net.join_game("127.0.0.1")
-	get_tree().create_timer(60.0).timeout.connect(func() -> void:
+	Loot.roll_offered.connect(func(id: int, _item: ItemInstance, _s: float) -> void:
+		var choice: int = {"host": Loot.Choice.PASS, "a": Loot.Choice.NEED, "b": Loot.Choice.GREED}[role]
+		print("RESULT %s roll_offered=true" % role)
+		Loot.choose(id, choice))
+	get_tree().create_timer(70.0).timeout.connect(func() -> void:
 		print("RESULT %s timeout=true" % role)
 		get_tree().quit(3))
 
@@ -61,6 +67,17 @@ func _physics_process(delta: float) -> void:
 		_at(14.5, func() -> void: _host_force_attack_on(b))
 		_at(17.0, func() -> void: print("RESULT host sees_B_state=%s" % Player.State.keys()[b.state]))
 		_at(22.0, func() -> void: print("RESULT host sees_B_state_after_revive=%s" % Player.State.keys()[b.state]))
+		_at(25.0, func() -> void:
+			var rich: LootTable = (load("res://data/loot/loot_marauder.tres") as LootTable).duplicate()
+			rich.drop_chance = 1.0
+			rich.item_count = Vector2i(1, 1)
+			rich.guaranteed_min_rarity = ItemInstance.Rarity.RARE
+			enemy.data = enemy.data.duplicate()
+			enemy.data.loot_table = rich
+			enemy.global_position = Vector3(3, 0, -3)
+			enemy.health = 0.0
+			enemy._die())
+		_at(31.0, func() -> void: print("RESULT host drops_after_pickup=%d" % Loot.drop_count()))
 	if role != "host":
 		_at(0.5, func() -> void: print("RESULT %s starts_at_spawn=%s health=%d" % [role, str(me.global_position.z > 10.0), me.health]))
 	if role == "a":
@@ -73,6 +90,12 @@ func _physics_process(delta: float) -> void:
 		_at(21.5, func() -> void: Input.action_release("interact"))
 		_at(22.0, func() -> void: print("RESULT a flasks_after_revive=%d" % me.flasks))
 		_at(23.0, func() -> void: Net.send_chat("hello from A"))
+		_at(29.5, func() -> void:
+			_bag = me.inventory.backpack.items.size()
+			_gold = me.inventory.gold
+			for d in Loot.drops():
+				d.call(&"interact", me))
+		_at(30.5, func() -> void: print("RESULT a got_won_item=%s got_gold=%s" % [str(me.inventory.backpack.items.size() == _bag + 1), str(me.inventory.gold > 0)]))
 	elif role == "b":
 		_at(1.0, func() -> void: _place(me, Vector3(6, 0.05, 0), Vector3.FORWARD))
 		_at(9.0, func() -> void: print("RESULT b own_health_after_hit=%d" % me.health))
@@ -83,7 +106,12 @@ func _physics_process(delta: float) -> void:
 		_at(14.0, func() -> void: me.health = 1.0)
 		_at(17.0, func() -> void: print("RESULT b state=%s" % Player.State.keys()[me.state]))
 		_at(22.0, func() -> void: print("RESULT b state_after_revive=%s health=%d" % [Player.State.keys()[me.state], me.health]))
-	_at(26.0, func() -> void:
+		_at(28.5, func() -> void:
+			_bag = me.inventory.backpack.items.size()
+			for d in Loot.drops():
+				d.call(&"interact", me))
+		_at(29.4, func() -> void: print("RESULT b took_alda_item=%s got_gold=%s" % [str(me.inventory.backpack.items.size() > _bag), str(me.inventory.gold > 0)]))
+	_at(36.0, func() -> void:
 		print("RESULT %s chat_seen=%s" % [role, str(_chat_seen)])
 		get_tree().quit(0))
 

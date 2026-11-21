@@ -11,6 +11,9 @@ signal connection_failed(reason: String)
 enum Mode { OFFLINE, HOST, JOIN }
 
 const PORT := 31415
+## The port actually used (automated checks use a different one so they never
+## touch a game you have running).
+var port := PORT
 const MAX_PLAYERS := 10
 const MENU_SCENE := "res://game/ui/main_menu.tscn"
 const WORLD_SCENE := "res://levels/sandbox/combat_test.tscn"
@@ -64,7 +67,7 @@ func _ready() -> void:
 ## Host a game (also used for playing alone).
 func host_game() -> Error:
 	var peer := ENetMultiplayerPeer.new()
-	var err := peer.create_server(PORT, MAX_PLAYERS - 1)
+	var err := peer.create_server(port, MAX_PLAYERS - 1)
 	if err != OK:
 		return err
 	multiplayer.multiplayer_peer = peer
@@ -86,7 +89,7 @@ func join_game(address: String) -> void:
 ## Called by the world once it has loaded, when joining.
 func start_connection() -> void:
 	var peer := ENetMultiplayerPeer.new()
-	var err := peer.create_client(join_address, PORT)
+	var err := peer.create_client(join_address, port)
 	if err != OK:
 		_fail("Could not start connecting (%s)." % error_string(err))
 		return
@@ -183,7 +186,7 @@ func _on_peer_disconnected(id: int) -> void:
 
 
 func _on_connection_failed() -> void:
-	_fail("Could not reach %s. Check the address, and that the host's port %d (UDP) is open." % [join_address, PORT])
+	_fail("Could not reach %s. Check the address, and that the host's port %d (UDP) is open." % [join_address, port])
 
 
 func _on_server_disconnected() -> void:

@@ -11,6 +11,10 @@ var _class_buttons: Array[Button] = []
 var _body_buttons: Array[Button] = []
 var _color_buttons: Array[Button] = []
 
+var _saved_list: OptionButton
+## The typed name belongs to a saved character (its class can't change).
+var _existing := false
+
 var _class_id := &"class_bulwark"
 var _body := 0
 var _color := 0
@@ -72,6 +76,17 @@ func _show_error(text: String) -> void:
 
 
 func _refresh() -> void:
+	# A saved character keeps its class, body and color.
+	var saved := SaveSystem.load_character(_clean_name()) if SaveSystem.exists(_clean_name()) else {}
+	_existing = not saved.is_empty()
+	if _existing:
+		_class_id = StringName(saved.get("class", _class_id))
+		_body = int(saved.get("body", _body))
+		_color = int(saved.get("color", _color))
+	for b in _class_buttons + _body_buttons + _color_buttons:
+		b.disabled = _existing
+	if is_instance_valid(_host_button):
+		_host_button.text = ("Continue as %s  (host or play alone)" % _clean_name()) if _existing else "Host game  (or play alone)"
 	for b in _class_buttons:
 		b.button_pressed = b.get_meta("id") == _class_id
 	for i in _body_buttons.size():
@@ -117,7 +132,26 @@ func _build() -> void:
 	_name_edit = LineEdit.new()
 	_name_edit.text = Net.player_name
 	_name_edit.max_length = 20
+	_name_edit.text_changed.connect(func(_t: String) -> void: _refresh())
 	left.add_child(_name_edit)
+
+	# Saved characters: pick one to continue it.
+	left.add_child(_label("Or continue a saved character"))
+	_saved_list = OptionButton.new()
+	_saved_list.add_item("— new character —")
+	for c in SaveSystem.list_characters():
+		var cls := Classes.by_id(StringName(c.get("class", "")))
+		_saved_list.add_item("%s — %s, level %d" % [c.get("name", "?"), cls.display_name, int(c.get("level", 1))])
+		_saved_list.set_item_metadata(_saved_list.item_count - 1, c)
+	_saved_list.item_selected.connect(func(index: int) -> void:
+		var c: Variant = _saved_list.get_item_metadata(index)
+		if c is Dictionary:
+			_name_edit.text = c.get("name", "")
+			_class_id = StringName(c.get("class", _class_id))
+			_body = int(c.get("body", 0))
+			_color = int(c.get("color", 0))
+		_refresh())
+	left.add_child(_saved_list)
 
 	left.add_child(_label("Class"))
 	var class_row := HBoxContainer.new()

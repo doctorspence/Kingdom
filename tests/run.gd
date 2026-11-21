@@ -16,6 +16,7 @@ func _start() -> void:
 	# ...and must not use your saved character choice.
 	root.get_node("Net").set(&"character", {})
 	root.get_node("Net").set(&"player_name", "Tester")
+	root.get_node("Net").set(&"port", 31499)
 	var args := OS.get_cmdline_user_args()
 	var check_name := args[0] if args.size() > 0 else "movement_check"
 	var script: GDScript = load("res://tests/%s.gd" % check_name)

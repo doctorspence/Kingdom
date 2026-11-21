@@ -9,7 +9,7 @@ A dark fantasy co-op action RPG for PC, built with **Godot 4.7.2**.
 ## Play
 Press **F5** (or the ▶ button at the top right of the editor). Close the game window, or press **F8** in the editor, to stop.
 
-The game starts at the **main menu**. Make your character (name, class, body, color), then **Host game** (also how you play alone). Testing shortcuts in game: **Page Up** = gain a level (to try later abilities), **Page Down** = back to level 1, **T** = talents. It loads the combat test map. In the game, press **F1** to see the controls, **Esc** for the menu.
+The game starts at the **main menu**. Make your character (name, class, body, color), then **Host game** (also how you play alone). In the game: **I** opens your inventory, **E** at the shrine opens Rest / Bank, **E** at Old Wenna or the Soul Broker opens their shop. Your character saves automatically; pick it again from the main menu next time. Testing shortcuts: **Page Up** = gain a level (to try later abilities), **Page Down** = back to level 1, **T** = talents. It loads the combat test map. In the game, press **F1** to see the controls, **Esc** for the menu.
 
 ## Play with friends
 - **Same house (same Wi-Fi/router):** you click **Host game**. The menu shows your address (like `192.168.1.20`). Friends type it under *Host's address* and click **Join game**.
