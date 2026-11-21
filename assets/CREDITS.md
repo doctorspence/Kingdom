@@ -7,5 +7,20 @@ Every downloaded or generated asset goes here, so we always know where things ca
 | Universal Animation Library (Standard): male mannequin + 43 animations (stand-in) | `assets/characters/mannequin/UAL1_Standard.glb` | https://quaternius.itch.io/universal-animation-library | Quaternius | CC0 1.0 | 2026-11-20 |
 | Universal Animation Library 2 (Standard): 43 more animations (sword, block, shield) | `assets/characters/mannequin/UAL2_Standard.glb` | https://quaternius.itch.io/universal-animation-library-2 | Quaternius | CC0 1.0 | 2026-11-20 |
 | Female mannequin (from UAL2 Standard; same skeleton) | `assets/characters/mannequin/Mannequin_F.glb` | https://quaternius.itch.io/universal-animation-library-2 | Quaternius | CC0 1.0 | 2026-11-20 |
+| RPG Audio (50 sounds: footsteps, cloth, doors, blades, chains, books) | `assets/audio/sfx/kenney_rpg/` | https://opengameart.org/content/50-rpg-sound-effects (also kenney.nl/assets/rpg-audio) | Kenney Vleugels | CC0 1.0 | 2026-11-21 |
+| 20 Sword Sound Effects (attacks and clashes) | `assets/audio/sfx/swords/` | https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes | StarNinjas | CC0 1.0 | 2026-11-21 |
+| 3 Melee Sounds | `assets/audio/sfx/melee/` | https://opengameart.org/content/3-melee-sounds | qubodup, edited by remaxim | CC0 1.0 | 2026-11-21 |
+| Swishes Sound Pack | `assets/audio/sfx/swishes/` | https://opengameart.org/content/swishes-sound-pack | artisticdude | CC0 1.0 | 2026-11-21 |
+| 75 CC0 breaking / falling / hit SFX | `assets/audio/sfx/hits/` | https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx | rubberduck | CC0 1.0 | 2026-11-21 |
+| 80 CC0 RPG SFX | `assets/audio/sfx/rpg80/` | https://opengameart.org/content/80-cc0-rpg-sfx | rubberduck | CC0 1.0 | 2026-11-21 |
+| 80 CC0 creature SFX | `assets/audio/sfx/creatures/` | https://opengameart.org/content/80-cc0-creature-sfx | rubberduck | CC0 1.0 | 2026-11-21 |
+| Dark Rainy Night (rain ambience) | `assets/audio/ambience/Dark_Rainy_Night.ogg` | https://opengameart.org/content/rain-and-thunders | kindland | CC0 1.0 | 2026-11-21 |
+| Crow caw | `assets/audio/ambience/crow_caw.wav` | https://opengameart.org/content/crow-caw | zeroisnotnull | CC0 1.0 | 2026-11-21 |
+| Forest Ambience | `assets/audio/ambience/Forest_Ambience.mp3` | https://opengameart.org/content/forest-ambience | TinyWorlds | CC0 1.0 | 2026-11-21 |
+| Dungeon Ambience | `assets/audio/ambience/dungeon002.ogg` | https://opengameart.org/content/dungeon-ambience | yd | CC0 1.0 | 2026-11-21 |
+| Dark Cavern Ambient (2 loops) | `assets/audio/ambience/dark_cavern_ambient_00*.ogg` | https://opengameart.org/content/dark-cavern-ambient | Paul Wortmann | CC0 1.0 | 2026-11-21 |
+| Dark Forest Theme | `assets/audio/music/GameMusic_ForestTheme_24.mp3` | https://opengameart.org/content/dark-forest-theme | cynicmusic | CC0 1.0 | 2026-11-21 |
+| Fantasy: Lament for a Warrior's Soul | `assets/audio/music/Lament_for_a_Warriors_Soul.mp3` | https://opengameart.org/content/fantasy-lament-for-a-warriors-soul | RandomMind | CC0 1.0 | 2026-11-21 |
+| Epic Boss Battle (seamless loop; stand-in boss track, 21 MB WAV, should be compressed later) | `assets/audio/music/Juhani_Junkala_-_Epic_Boss_Battle_Seamlessly_Looping.wav` | https://opengameart.org/content/boss-battle-music | Juhani Junkala (SubspaceAudio) | CC0 1.0 | 2026-11-21 |
 
 **License rules**: CC0 for art and sound packs; OFL is OK for fonts (credit the author). AI-generated art you make: note the tool used.

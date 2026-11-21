@@ -149,6 +149,19 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 
 ---
 
+## Phase 10: Audio (in progress, step 2 next)
+- [x] 1. Sounds downloaded (you approved 2026-11-21): 321 CC0 files in `assets/audio/` (sfx, ambience, music), all logged in `assets/CREDITS.md`. Got from OpenGameArt because Kenney's site blocks scripted downloads. Not yet found: wind loop, hound howl is in the creature pack, no dedicated horn, cave/boss music are stand-ins
+- [ ] 2. Audio setup: buses Master, Music, Effects, Ambience, Interface; volume sliders in settings, remembered
+- [ ] 3. Combat sounds: swings, hits, blocks, parries, rolls, footsteps, grunts, flask, and the nine class abilities
+- [ ] 4. Loot and interface sounds, a distinct sound per rarity (Legendary special), shrine rest, death
+- [ ] 5. Tithelands music and ambience: wind, rain, crows, day and night differences, shrine hum
+- [ ] 6. The Gullet's cave ambience and Brother Tallow's boss track (two phases)
+- [ ] 7. Enemy sounds (horn, howl, roars), multiplayer check (friends hear each other), re-export the build
+- [ ] 🧪 Walk the zone and fight with sound on; tell me what's too loud, repetitive or missing
+
+## Phase 11: Subclasses and factions (not started)
+- [ ] Follows `CLASS_PLAN.md` from Priority 1: data types, saves and network, the level 10 choice screen (re-pickable in future), first subclass abilities (Guardian, Warrior, Cleric), faction lore, then the harder subclasses
+
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
 - Quests and public quests
