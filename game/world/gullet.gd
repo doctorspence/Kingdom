@@ -370,7 +370,7 @@ func _build_stairs_and_ladders() -> void:
 	stairs.rise = 0.2
 	stairs.tread = 0.36
 	stairs.width = 3.4
-	stairs.material = load(WOOD)
+	stairs.material = _wood_pick()
 	stairs.position = Vector3(-10.5, 0.0, -6.0)
 	stairs.rotation_degrees = Vector3(0, 90, 0)
 	add_child(stairs)
@@ -541,7 +541,13 @@ func _build_backing(bv: PackedVector3Array, bn: PackedVector3Array) -> void:
 	arrays[Mesh.ARRAY_NORMAL] = on
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	mesh.surface_set_material(0, load(STONE))
+	var fill := StandardMaterial3D.new()
+	fill.albedo_color = Color(0.2, 0.15, 0.11)
+	fill.emission_enabled = true
+	fill.emission = Color(0.2, 0.145, 0.1)
+	fill.emission_energy_multiplier = 1.0
+	fill.roughness = 1.0
+	mesh.surface_set_material(0, fill)
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
