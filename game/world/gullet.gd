@@ -140,6 +140,7 @@ func _ready() -> void:
 	_build_atmosphere()
 	_build_falls()
 	_build_camp()
+	_build_dig_dressing()
 	_build_props()
 	_build_river()
 	_build_lights()
@@ -201,7 +202,6 @@ func _build_props() -> void:
 	for p in [[620, 440], [640, 455], [690, 500]]:
 		_box(px(p[0], p[1]), Vector3(0.8, 0.12, 2.0), cloth, 0.4, false)
 	# Excavation: an ore cart and the black stone formations (shard crystals).
-	_box(px(1300, 400), Vector3(2.2, 1.0, 1.3), Color.WHITE, 0.5, true, true)
 	_shards(px(1090, 380), 0.8, 11)
 	_shards(px(1340, 420), 0.7, 23)
 	# Deep chamber: the exposed black stone in the south wall, and rubble.
@@ -1072,126 +1072,111 @@ func _mesh_at(mesh: Mesh, pos: Vector3, rot := Vector3.ZERO, scl := Vector3.ONE)
 	return mi
 
 
+
+const HIDEOUT := "res://assets/hideout/"
+
+
+## Instance a baked hideout asset (e.g. "Camp_Equipment/tent_small"). Props are walk-through
+## unless solid, so they can never trap a player or block an enemy.
+func _asset(path: String, pos: Vector3, rot_y := 0.0, solid := false, scl := 1.0) -> Node3D:
+	var ps := load(HIDEOUT + path + ".scn") as PackedScene
+	if ps == null:
+		push_warning("Gullet: missing asset " + path)
+		return null
+	var n := ps.instantiate() as Node3D
+	n.position = pos
+	n.rotation.y = rot_y
+	n.scale = Vector3.ONE * scl
+	if not solid:
+		var col := n.get_node_or_null("Collision")
+		if col:
+			col.queue_free()
+	add_child(n)
+	return n
+
+
 func _build_camp() -> void:
 	var fire := px(765, 400)
-	var bark: Material = load("res://levels/common/materials/bark.tres")
-	var canvas: Material = load("res://levels/common/materials/canvas.tres")
 	var cloth_red: Material = (load("res://levels/common/materials/cloth_red.tres") as Material).duplicate()
 	if cloth_red is BaseMaterial3D:
 		(cloth_red as BaseMaterial3D).cull_mode = BaseMaterial3D.CULL_DISABLED
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 77
-	# Firepit: ring of stones, ash, and three logs.
-	for i in 14:
-		var a := TAU * i / 14.0
-		_rock_chunk(fire + Vector3(cos(a) * 1.25, 0.2, sin(a) * 1.25), 0.38)
-	var ash := CylinderMesh.new()
-	ash.top_radius = 1.1
-	ash.bottom_radius = 1.1
-	ash.height = 0.04
-	var ash_mat := StandardMaterial3D.new()
-	ash_mat.albedo_color = Color(0.06, 0.055, 0.05)
-	ash_mat.roughness = 1.0
-	ash.material = ash_mat
-	_mesh_at(ash, fire + Vector3(0, 0.14, 0))
-	for i in 3:
-		var a := TAU * i / 3.0 + 0.4
-		var log_ := _timber(fire + Vector3(cos(a) * 0.5, 0.3, sin(a) * 0.5), 1.4, 0.2, 0.2, 0)
-		log_.rotation.y = -a
-		log_.rotation.z = 0.15
-	# Log seats around the fire.
+	# Central fire with log seats and stools around it.
+	_asset("Camp_Equipment/campfire_communal", fire)
 	for i in 5:
 		var a := TAU * (i + 0.5) / 5.0
-		var seat := CylinderMesh.new()
-		seat.top_radius = 0.28
-		seat.bottom_radius = 0.3
-		seat.height = 0.45
-		seat.radial_segments = 8
-		seat.material = bark
-		_mesh_at(seat, fire + Vector3(cos(a) * 3.0, 0.24, sin(a) * 3.0), Vector3(rng.randf_range(-0.1, 0.1), 0, rng.randf_range(-0.1, 0.1)))
-	# Cooking tripod with a hanging iron pot, beside the fire.
-	var tri := fire + Vector3(2.6, 0, 1.2)
-	for i in 3:
-		var a := TAU * i / 3.0
-		_timber_between(tri + Vector3(cos(a) * 0.8, 0.05, sin(a) * 0.8), tri + Vector3(0, 1.9, 0), 0.09)
-	var pot := SphereMesh.new()
-	pot.radius = 0.3
-	pot.height = 0.5
-	pot.material = _iron()
-	_mesh_at(pot, tri + Vector3(0, 0.75, 0))
-	var chain := CylinderMesh.new()
-	chain.top_radius = 0.015
-	chain.bottom_radius = 0.015
-	chain.height = 0.9
-	chain.material = _iron()
-	_mesh_at(chain, tri + Vector3(0, 1.4, 0))
-	var coals := OmniLight3D.new()
-	coals.position = tri + Vector3(0, 0.3, 0)
-	coals.light_color = Color(1.0, 0.45, 0.15)
-	coals.light_energy = 1.2
-	coals.omni_range = 4.0
-	add_child(coals)
-	# A table with a lantern and cups, and stools.
+		_asset("Camp_Equipment/stool_%d" % (i % 3), fire + Vector3(cos(a) * 3.0, 0, sin(a) * 3.0), rng.randf() * TAU)
+	_asset("Camp_Equipment/tripod_pot", fire + Vector3(2.6, 0, 1.2))
+	_asset("Camp_Equipment/meat_rack", fire + Vector3(-3.6, 0, -2.2), 0.5)
+	# Table with a lantern, utensils and stools.
 	var tbl := Vector3(-1.0, 0, -9.5)
-	_timber(tbl + Vector3(0, 0.95, 0), 2.6, 0.1, 1.1, 0)
-	for sx in [-1.1, 1.1]:
-		for sz in [-0.4, 0.4]:
-			_timber(tbl + Vector3(sx, 0.47, sz), 0.94, 0.12, 0.12, 1)
-	for i in 3:
-		var cup := CylinderMesh.new()
-		cup.top_radius = 0.07
-		cup.bottom_radius = 0.055
-		cup.height = 0.11
-		cup.material = _iron()
-		_mesh_at(cup, tbl + Vector3(rng.randf_range(-0.9, 0.9), 1.06, rng.randf_range(-0.3, 0.3)))
-	for sx in [-0.9, 0.2, 1.1]:
-		_timber(tbl + Vector3(sx, 0.3, 1.3), 0.6, 0.35, 0.35, 1)
+	_asset("Camp_Equipment/table_slab", tbl, 0.0, true)
+	_asset("Camp_Equipment/utensils", tbl + Vector3(-0.5, 0.95, 0.1))
+	_asset("Lighting_Props/lantern", tbl + Vector3(0.6, 0.95, 0.0))
+	_asset("Camp_Equipment/chair_0", tbl + Vector3(-0.6, 0, 1.3), PI)
+	_asset("Camp_Equipment/stool_1", tbl + Vector3(0.9, 0, 1.3), 0.4)
+	_asset("Camp_Equipment/chair_2", tbl + Vector3(2.4, 0, 0.6), -1.2)
 	_torch(tbl + Vector3(1.3, 1.3, -0.2), 2.0)
-	# Weapon rack with leaning spears.
-	var rack := Vector3(-11.5, 0, -12.5)
-	for sx in [-0.9, 0.9]:
-		_timber(rack + Vector3(sx, 0.75, 0), 1.5, 0.12, 0.12, 1)
-	_timber(rack + Vector3(0, 1.3, 0), 2.0, 0.1, 0.1, 0)
-	_timber(rack + Vector3(0, 0.6, 0), 2.0, 0.1, 0.1, 0)
-	for i in 5:
-		var spear := _timber(rack + Vector3(-0.7 + i * 0.35, 0.95, 0.1), 2.2, 0.05, 0.05, 1)
-		spear.rotation_degrees.x = rng.randf_range(4, 9)
-		_iron_box(rack + Vector3(-0.7 + i * 0.35, 2.05, 0.1 + 0.07), Vector3(0.07, 0.25, 0.03))
-	# Lean-to tents along the south wall.
-	for t in [[-3.0, 6.4, 0.2], [11.0, 6.6, -0.15], [21.0, 5.2, 0.35]]:
-		var tent := PrismMesh.new()
-		tent.size = Vector3(3.4, 2.1, 3.0)
-		tent.material = canvas
-		_mesh_at(tent, Vector3(t[0], 1.05, t[1]), Vector3(0, t[2], 0))
-		var roll := CylinderMesh.new()
-		roll.top_radius = 0.22
-		roll.bottom_radius = 0.22
-		roll.height = 1.7
-		roll.material = canvas
-		_mesh_at(roll, Vector3(t[0] + 2.2, 0.22, t[1] - 1.8), Vector3(0, 0, PI * 0.5), Vector3.ONE)
-	# Sacks and stacked crates.
+	# Weapon rack against the north wall.
+	_asset("Environmental_Props/weapon_rack", Vector3(-11.5, 0, -13.1))
+	# Lean-to tents along the south wall, each with a bed and a personal area.
+	for t in [[-3.0, 6.0, 0.2], [11.0, 6.2, -0.15], [21.0, 4.8, 0.35]]:
+		_asset("Camp_Equipment/tent_small", Vector3(t[0], 0, t[1]), PI + t[2], true)
+		_asset("Camp_Equipment/bedding_%s" % ["rolled", "open", "straw"][rng.randi() % 3], Vector3(t[0] + 2.4, 0, t[1] - 1.8), rng.randf() * TAU)
+	_asset("Camp_Equipment/personal_area", Vector3(-8.0, 0, 5.0), 0.3)
+	# Storage clusters: barrels, crates, sacks.
+	var cl := 0
 	for p in [Vector3(24.5, 0, -9.5), Vector3(-9.5, 0, 3.5), Vector3(17, 0, 7)]:
-		for i in 4:
-			var sack := SphereMesh.new()
-			sack.radius = 0.38
-			sack.height = 0.7
-			sack.material = canvas
-			_mesh_at(sack, p + Vector3(rng.randf_range(-0.7, 0.7), 0.28, rng.randf_range(-0.7, 0.7)), Vector3(0, rng.randf() * TAU, 0), Vector3(1, 0.85, 1.1))
-		_box(p + Vector3(1.1, 0, 0.9), Vector3(0.9, 0.8, 0.9), Color.WHITE, rng.randf() * 3.0, true, true)
-		_box(p + Vector3(1.15, 0.8, 0.9), Vector3(0.7, 0.6, 0.7), Color.WHITE, rng.randf() * 3.0, false, true)
+		cl += 1
+		_asset("Storage_Containers/barrel_stack", p, rng.randf() * TAU, true)
+		_asset("Storage_Containers/sack_grain", p + Vector3(1.6, 0, 0.5), rng.randf() * TAU)
+		_asset("Storage_Containers/crate_large", p + Vector3(1.0, 0, 1.6), rng.randf() * 3.0, true)
+		_asset("Storage_Containers/crate_small", p + Vector3(1.1, 0.9, 1.5), rng.randf() * 3.0)
+		_asset("Storage_Containers/barrel_%s" % ["water", "grain", "broken"][cl - 1], p + Vector3(-1.2, 0, 0.9), 0.0, true)
+	_asset("Storage_Containers/chest_closed", Vector3(-11.0, 0, -6.0), 1.2, true)
+	_asset("Storage_Containers/mining_box_tools", Vector3(24.0, 0, 2.0), 0.4)
+	_asset("Mining_Equipment/pickaxe", Vector3(-9.0, 0.0, 2.6), 1.0)
+	_asset("Mining_Equipment/shovel", Vector3(23.2, 0.0, -8.3), 2.0)
+	# Braziers and standing torches (they carry their own flickering lights).
+	for p in [Vector3(-12.5, 0, -2.5), Vector3(26.0, 0, -4.0)]:
+		_asset("Lighting_Props/brazier", p)
 	# Red banners hanging from the upper walkway.
 	for x in [-6.0, 3.0, 12.0, 21.0]:
 		var banner := QuadMesh.new()
 		banner.size = Vector2(1.3, 2.4)
 		banner.material = cloth_red
 		_mesh_at(banner, Vector3(x, 2.7, -12.95))
-	# Floor litter: broken planks, rubble, bones.
-	for i in 45:
-		var pos := Vector3(rng.randf_range(-12.0, 25.5), 0.15, rng.randf_range(-12.0, 7.5))
-		if Vector2(pos.x - fire.x, pos.z - fire.z).length() < 1.6:
+	# Floor litter.
+	for i in 22:
+		var pos := Vector3(rng.randf_range(-12.0, 25.5), 0.0, rng.randf_range(-12.0, 7.5))
+		if Vector2(pos.x - fire.x, pos.z - fire.z).length() < 2.0:
 			continue
 		if i % 3 == 0:
-			var plank := _timber(pos, rng.randf_range(0.6, 1.6), 0.05, 0.22, 0)
-			plank.rotation.y = rng.randf() * TAU
+			_asset("Mining_Equipment/rubble_small", pos, rng.randf() * TAU)
+		elif i % 3 == 1:
+			_asset("Mining_Equipment/broken_tools", pos, rng.randf() * TAU)
 		else:
-			_rock_chunk(pos, rng.randf_range(0.12, 0.35))
+			_rock_chunk(pos + Vector3(0, 0.15, 0), rng.randf_range(0.12, 0.3))
+
+
+## Mining gear in the Excavation: carts on a track, a winch, frames, ore and rubble.
+func _build_dig_dressing() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 91
+	for i in 4:
+		_asset("Mining_Equipment/track_2m", Vector3(54.0 + i * 2.0, 0, -4.0))
+	_asset("Mining_Equipment/mine_cart_loaded", Vector3(57.0, 0, -4.0), 0.0, true)
+	_asset("Mining_Equipment/mine_cart_empty", Vector3(61.0, 0, -4.0), PI, true)
+	_asset("Mining_Equipment/wheelbarrow_loaded", Vector3(66.0, 0, 1.0), 0.8)
+	_asset("Mining_Equipment/winch", Vector3(40.0, 0, -9.5), 0.3, true)
+	_asset("Mining_Equipment/ore_pile", Vector3(65.0, 0, -9.0), 0.4)
+	_asset("Mining_Equipment/rope_coil", Vector3(41.5, 0, -8.0), 1.0)
+	_asset("Mining_Equipment/support_frame", Vector3(44.0, 0, 4.0))
+	_asset("Mining_Equipment/support_frame_broken", Vector3(62.0, 0, 4.0))
+	for p in [Vector3(38.0, 0, -11.0), Vector3(66.0, 0, -11.5), Vector3(36.0, 0, 3.0), Vector3(68.0, 0, 3.0)]:
+		_asset("Mining_Equipment/rubble_large", p, rng.randf() * TAU)
+	_asset("Storage_Containers/barrel_stack", Vector3(68.0, 0, -6.0), 0.3, true)
+	_asset("Storage_Containers/crate_large", Vector3(37.0, 0, -6.0), 0.2, true)
+	_asset("Lighting_Props/brazier", Vector3(52.0, 0, -9.0))
+	_asset("Lighting_Props/brazier", Vector3(64.0, 0, 0.0))
