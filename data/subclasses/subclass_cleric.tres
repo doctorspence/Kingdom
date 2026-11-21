@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SubclassData" format=3]
+[gd_resource type="Resource" script_class="SubclassData" format=3 uid="uid://d3dumwgp14lsi"]
 
-[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+[ext_resource type="Script" uid="uid://b1ikjb7nm4ne5" path="res://game/classes/subclass_data.gd" id="1_sub"]
 [ext_resource type="Script" uid="uid://dheyovpsv8en8" path="res://game/classes/ability_data.gd" id="2_ability"]
 
 [sub_resource type="Resource" id="A_snuff"]
@@ -15,7 +15,6 @@ cost = 20.0
 icon_color = Color(0.6, 0.62, 0.66, 1)
 cast_anim = &"ual2/OverhandThrow"
 cast_time = 0.35
-lock_time = 0.6
 radius = 3.5
 ability_range = 15.0
 duration = 4.0
@@ -34,8 +33,6 @@ cast_anim = &"Spell_Simple_Shoot"
 cast_time = 0.25
 lock_time = 0.5
 power = 60.0
-radius = 3.0
-ability_range = 20.0
 duration = 1.5
 
 [sub_resource type="Resource" id="A_pyre"]

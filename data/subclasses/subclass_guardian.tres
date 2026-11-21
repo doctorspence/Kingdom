@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SubclassData" format=3]
+[gd_resource type="Resource" script_class="SubclassData" format=3 uid="uid://d3mury80mf6gj"]
 
-[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+[ext_resource type="Script" uid="uid://b1ikjb7nm4ne5" path="res://game/classes/subclass_data.gd" id="1_sub"]
 [ext_resource type="Script" uid="uid://dheyovpsv8en8" path="res://game/classes/ability_data.gd" id="2_ability"]
 
 [sub_resource type="Resource" id="A_bellow"]
@@ -14,7 +14,6 @@ cooldown = 30.0
 cost = 30.0
 icon_color = Color(0.8, 0.6, 0.25, 1)
 cast_anim = &"Spell_Simple_Enter"
-cast_time = 0.3
 lock_time = 0.8
 radius = 8.0
 duration = 4.0
@@ -33,7 +32,6 @@ icon_color = Color(0.4, 0.45, 0.55, 1)
 needs_shield = true
 cast_anim = &"ual2/Idle_Shield"
 cast_time = 0.0
-duration = 5.0
 value = 0.5
 
 [sub_resource type="Resource" id="A_unbroken"]
@@ -65,8 +63,8 @@ abilities = Array[ExtResource("2_ability")]([SubResource("A_bellow"), SubResourc
 passive_name = "Wall of One"
 passive_description = "Blocking costs another 10% less stamina, and +10 armor."
 passive_mods = {
-"block_stamina_mult": 0.9,
-"armor_add": 10.0
+"armor_add": 10.0,
+"block_stamina_mult": 0.9
 }
 planned_abilities = "Bodyguard (cover the ally your target was attacking), tower-shield stances, counter-bashes."
 available = true

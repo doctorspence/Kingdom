@@ -36,8 +36,6 @@ cooldown = 8.0
 cost = 25.0
 icon_color = Color(0.5, 0.85, 0.5, 1)
 cast_anim = &"Spell_Simple_Enter"
-cast_time = 0.3
-lock_time = 0.6
 power = 40.0
 ability_range = 12.0
 

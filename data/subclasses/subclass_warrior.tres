@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SubclassData" format=3]
+[gd_resource type="Resource" script_class="SubclassData" format=3 uid="uid://cewaqbhuekrha"]
 
-[ext_resource type="Script" path="res://game/classes/subclass_data.gd" id="1_sub"]
+[ext_resource type="Script" uid="uid://b1ikjb7nm4ne5" path="res://game/classes/subclass_data.gd" id="1_sub"]
 [ext_resource type="Script" uid="uid://dheyovpsv8en8" path="res://game/classes/ability_data.gd" id="2_ability"]
 [ext_resource type="Script" uid="uid://c7ne42mtltp52" path="res://game/combat/attack_data.gd" id="4_attack"]
 
@@ -66,7 +66,6 @@ duration = 12.0
 script = ExtResource("1_sub")
 id = &"subclass_warrior"
 display_name = "Warrior"
-primary_class = &"class_headsman"
 tagline = "The Weaponmaster"
 identity = "Heavy physical damage and weapon combos. The Warrior learns one weapon the way other people learn a grudge, and then another, and then both at once. Parries, counters and blows that end arguments."
 weapon_specialties = "Greatswords, axes, longswords, dual weapons"
@@ -79,6 +78,5 @@ passive_mods = {
 }
 planned_abilities = "Dual-weapon stances, counter-strikes after a parry, weapon-specific finishers."
 available = true
-faction = &"faction_outcasts"
 initiation_title = "A Trial of Arms"
 initiation_story = "Beat a formidable opponent, in a ring or on a road. Nobody keeps score except the loser, who usually can't."

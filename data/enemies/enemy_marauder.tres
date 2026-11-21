@@ -1,15 +1,13 @@
-[gd_resource type="Resource" script_class="EnemyData" format=3]
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://dxkmq6kgibjb6"]
 
-[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
-[ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
+[ext_resource type="Script" uid="uid://b8jqp5schkco6" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
+[ext_resource type="Script" uid="uid://c7ne42mtltp52" path="res://game/combat/attack_data.gd" id="2_attack"]
 [ext_resource type="PackedScene" path="res://assets/placeholder/weapons/axe_placeholder.tscn" id="3_axe"]
 [ext_resource type="Resource" path="res://data/loot/loot_marauder.tres" id="4_loot"]
 
 [sub_resource type="Resource" id="Attack_sweep"]
 script = ExtResource("2_attack")
 display_name = "Sweep (parryable)"
-status = 1
-status_amount = 20.0
 anim = &"ual2/Sword_Regular_B"
 recovery_anim = &"ual2/Sword_Regular_B_Rec"
 anim_speed = 0.45
@@ -19,17 +17,18 @@ hit_start = 0.17
 hit_end = 0.31
 end_time = 1.13
 track_until = 0.14
+extra_hits = null
 telegraph_time = 0.03
 base_damage = 24.0
 base_poise_damage = 18.0
+status = 1
+status_amount = 20.0
 hit_stop = 0.07
 reach = 2.7
 arc_degrees = 160.0
 lunge_distance = 0.6
 lunge_start = 0.1
-lunge_end = 0.3
 weight = 2.0
-max_use_distance = 3.0
 
 [sub_resource type="Resource" id="Attack_overhead"]
 script = ExtResource("2_attack")
@@ -42,6 +41,7 @@ hit_start = 0.36
 hit_end = 0.48
 end_time = 1.2
 track_until = 0.32
+extra_hits = null
 telegraph_time = 0.2
 base_damage = 32.0
 base_poise_damage = 30.0
@@ -65,7 +65,7 @@ hit_start = 0.36
 hit_end = 0.56
 end_time = 1.15
 track_until = 0.3
-telegraph_time = 0.0
+extra_hits = null
 base_damage = 42.0
 base_poise_damage = 50.0
 hit_stop = 0.12
@@ -76,7 +76,6 @@ lunge_start = 0.3
 lunge_end = 0.5
 parryable = false
 unblockable = true
-max_use_distance = 3.0
 
 [resource]
 script = ExtResource("1_enemy")
@@ -84,7 +83,6 @@ id = &"enemy_dark_ages_marauder"
 display_name = "Dark Ages Marauder"
 max_health = 200.0
 level = 4
-armor = 20.0
 xp = 120
 loot_table = ExtResource("4_loot")
 poise = 45.0
