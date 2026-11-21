@@ -140,6 +140,7 @@ func _ready() -> void:
 		combiner.add_child(hole)
 	add_child(combiner)
 
+	_roughen(combiner)
 	_build_cave_detail(mat)
 	_build_shafts()
 	_build_room_glow()
@@ -294,7 +295,7 @@ func _build_cave_detail(mat: Material) -> void:
 					1: pos = Vector3(c[0] + w * t, 0, c[3]); out = Vector3(0, 0, 1)
 					2: pos = Vector3(c[0], 0, c[1] + d * t); out = Vector3(-1, 0, 0)
 					_: pos = Vector3(c[2], 0, c[1] + d * t); out = Vector3(1, 0, 0)
-				for k in 2:
+				for k in 0:
 					var rock := MeshInstance3D.new()
 					var sm := SphereMesh.new()
 					sm.radial_segments = 6
@@ -405,3 +406,123 @@ func _build_room_glow() -> void:
 		l.light_energy = 1.8
 		l.omni_range = clampf(maxf(c[2] - c[0], c[3] - c[1]) * 0.7, 9.0, 30.0)
 		add_child(l)
+
+
+# ---- Rough cave surface -------------------------------------------------------
+# The carved rock is made of big flat boxes. After it is built, its stone faces are
+# chopped into small triangles and pushed (toward the inside of the room only) by
+# noise, so walls, ceilings and floors become lumpy and jagged. The pushed mesh is
+# also the walkable collision. The flat rock stays behind it, so there are no holes.
+
+const ROUGH_EDGE := 2.0
+
+var _noise_a := FastNoiseLite.new()
+var _noise_b := FastNoiseLite.new()
+
+
+func _rough_at(p: Vector3) -> float:
+	var a := 1.0 - absf(_noise_a.get_noise_3dv(p))
+	var b := 1.0 - absf(_noise_b.get_noise_3dv(p))
+	return clampf(0.7 * a * a + 0.3 * b, 0.0, 1.0)
+
+
+func _roughen(combiner: CSGCombiner3D) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var baked: ArrayMesh = combiner.bake_static_mesh()
+	if baked == null or baked.get_surface_count() == 0:
+		return
+	_noise_a.seed = 7
+	_noise_a.frequency = 0.42
+	_noise_b.seed = 19
+	_noise_b.frequency = 1.4
+	var rock_verts := PackedVector3Array()
+	var rock_norms := PackedVector3Array()
+	var collide := PackedVector3Array()
+	for s in baked.get_surface_count():
+		var arr := baked.surface_get_arrays(s)
+		var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+		var ns: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+		var idx = arr[Mesh.ARRAY_INDEX]
+		var m := baked.surface_get_material(s)
+		var is_stone := m != null and m.resource_path == STONE
+		var count: int = idx.size() if idx != null and idx.size() > 0 else vs.size()
+		var i := 0
+		while i + 2 < count:
+			var ia: int = idx[i] if idx != null and idx.size() > 0 else i
+			var ib: int = idx[i + 1] if idx != null and idx.size() > 0 else i + 1
+			var ic: int = idx[i + 2] if idx != null and idx.size() > 0 else i + 2
+			i += 3
+			var a := vs[ia]
+			var b := vs[ib]
+			var c := vs[ic]
+			if not is_stone:
+				collide.append_array(PackedVector3Array([a, b, c]))
+				continue
+			if _on_outer_shell(a, b, c):
+				continue
+			var n := ns[ia]
+			var sign_ := 1.0 if (b - a).cross(c - a).dot(n) >= 0.0 else -1.0
+			var amp := 0.14 if n.y > 0.7 else (0.8 if n.y < -0.7 else 0.75)
+			_subdivide(a, b, c, n, sign_, amp, rock_verts, rock_norms, collide, 0)
+	if rock_verts.is_empty():
+		return
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = rock_verts
+	arrays[Mesh.ARRAY_NORMAL] = rock_norms
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	mesh.surface_set_material(0, load(STONE))
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	add_child(mi)
+	var body := StaticBody3D.new()
+	var cs := CollisionShape3D.new()
+	var shape := ConcavePolygonShape3D.new()
+	shape.set_faces(collide)
+	cs.shape = shape
+	body.add_child(cs)
+	add_child(body)
+	combiner.use_collision = false
+
+
+func _on_outer_shell(a: Vector3, b: Vector3, c: Vector3) -> bool:
+	for axis in 3:
+		var lim: float = [ROCK[3] * 0.5, ROCK[1] + ROCK[4] * 0.5, ROCK[5] * 0.5][axis]
+		var lo: float = [-ROCK[3] * 0.5, ROCK[1] - ROCK[4] * 0.5, -ROCK[5] * 0.5][axis]
+		if (absf(a[axis] - lim) < 0.01 and absf(b[axis] - lim) < 0.01 and absf(c[axis] - lim) < 0.01) \
+				or (absf(a[axis] - lo) < 0.01 and absf(b[axis] - lo) < 0.01 and absf(c[axis] - lo) < 0.01):
+			return true
+	return false
+
+
+func _push(p: Vector3, n: Vector3, amp: float) -> Vector3:
+	return p + n * (amp * _rough_at(p))
+
+
+func _subdivide(a: Vector3, b: Vector3, c: Vector3, n: Vector3, sign_: float, amp: float,
+		out_v: PackedVector3Array, out_n: PackedVector3Array, collide: PackedVector3Array, depth: int) -> void:
+	var longest := maxf(a.distance_squared_to(b), maxf(b.distance_squared_to(c), c.distance_squared_to(a)))
+	if longest > ROUGH_EDGE * ROUGH_EDGE and depth < 7:
+		var ab := (a + b) * 0.5
+		var bc := (b + c) * 0.5
+		var ca := (c + a) * 0.5
+		_subdivide(a, ab, ca, n, sign_, amp, out_v, out_n, collide, depth + 1)
+		_subdivide(ab, b, bc, n, sign_, amp, out_v, out_n, collide, depth + 1)
+		_subdivide(ca, bc, c, n, sign_, amp, out_v, out_n, collide, depth + 1)
+		_subdivide(ab, bc, ca, n, sign_, amp, out_v, out_n, collide, depth + 1)
+		return
+	var pa := _push(a, n, amp)
+	var pb := _push(b, n, amp)
+	var pc := _push(c, n, amp)
+	var fn := (pb - pa).cross(pc - pa).normalized() * sign_
+	out_v.append(pa)
+	out_v.append(pb)
+	out_v.append(pc)
+	out_n.append(fn)
+	out_n.append(fn)
+	out_n.append(fn)
+	collide.append(pa)
+	collide.append(pb)
+	collide.append(pc)
