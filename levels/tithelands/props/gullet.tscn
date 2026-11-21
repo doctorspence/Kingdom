@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://game/world/cave_door.gd" id="7_door"]
 [ext_resource type="Script" path="res://game/world/powder_barrel.gd" id="8_barrel"]
 [ext_resource type="Resource" path="res://data/spawns/spawn_g_sword.tres" id="t_sword"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_harl.tres" id="t_harl"]
 [ext_resource type="Resource" path="res://data/spawns/spawn_g_pick.tres" id="t_pick"]
 [ext_resource type="Resource" path="res://data/spawns/spawn_g_lookout.tres" id="t_lookout"]
 [ext_resource type="Resource" path="res://data/spawns/spawn_g_archer.tres" id="t_archer"]
@@ -268,3 +269,12 @@ rotation_degrees = Vector3(0, -90, 0)
 script = ExtResource("10_chest")
 table = ExtResource("t_chest")
 chest_name = "hidden chest"
+
+[node name="Harl" type="Marker3D" parent="Spawns"]
+position = Vector3(31, 0.1, 31)
+rotation_degrees = Vector3(0, -90, 0)
+script = ExtResource("3_sp")
+table = ExtResource("t_harl")
+radius = 0.0
+reset_distance = 14.0
+snap_to_terrain = false

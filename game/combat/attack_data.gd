@@ -79,3 +79,9 @@ extends Resource
 @export var fire_radius := 0.0
 @export var fire_ahead := 2.5
 @export var fire_time := 8.0
+
+@export_group("Boss moves")
+## Enemy only: not used closer than this (a cone fired from a distance).
+@export var min_use_distance := 0.0
+## Enemy only: this move deals no damage but charges the next attack (Corrupted Grip). A broken stance cancels it.
+@export var grip := false

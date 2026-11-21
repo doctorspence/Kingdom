@@ -99,3 +99,10 @@ extends Resource
 @export var call_family := &""
 ## Hidden until a player passes within this many meters (the nook ambush); 0 = normal senses.
 @export var ambush_range := 0.0
+
+@export_group("Boss extras (Harl)")
+## Text shown when phase 2 begins, and the body tint after it.
+@export var phase2_text := "Ablaze!"
+@export var phase2_tint := Color(1.0, 0.55, 0.25)
+## The next attack after a "grip" attack hits this much harder.
+@export var grip_damage_mult := 1.5

@@ -73,6 +73,8 @@ var _threat_check := 0.0
 var _patrol_i := 0
 var _called := false
 var _shot := false  # this attack already loosed its arrow
+var _grip_ready := false   # a Corrupted Grip is charged: the next attack hits harder
+var _grip_active := false  # the attack in progress is the charged one
 var _fury := false
 var _phase := 1
 var _fire_dropped := false
@@ -129,6 +131,8 @@ func _reset() -> void:
 	_taunt_time = 0.0
 	_called = false
 	_fury = false
+	_grip_ready = false
+	_grip_active = false
 	_phase = 1
 	net_engaged = false
 	_set_engaged(false)
@@ -469,6 +473,8 @@ func make_hit(attack_index: int) -> HitInfo:
 	hit.attack = a
 	hit.origin = global_position
 	hit.damage = a.base_damage * (1.3 if _fury else 1.0) * effects.product("damage_dealt")
+	if _grip_active:
+		hit.damage *= data.grip_damage_mult
 	hit.status = a.status
 	hit.status_amount = a.status_amount
 	hit.poise_damage = a.base_poise_damage
@@ -587,10 +593,10 @@ func _mirror(delta: float) -> void:
 	state = net_state as State
 	if net_phase == 2 and not _tinted:
 		_tinted = true
-		model.set_tint(Color(1.0, 0.55, 0.25))
+		model.set_tint(data.phase2_tint)
 	collision_layer = 0 if state == State.DEAD else 4
 	if net_overlay != model.overlay_kind():
-		model.set_overlay(net_overlay, Color(1.0, 0.1, 0.05, 0.35))
+		model.set_overlay(net_overlay, Color(0.35, 0.1, 0.55, 0.4) if net_overlay == "grip" else Color(1.0, 0.1, 0.05, 0.35))
 
 
 func _set_state(s: State) -> void:
@@ -815,7 +821,7 @@ func _start_attack(dist: float) -> void:
 	var choices: Array[AttackData] = []
 	var total := 0.0
 	for a in _attacks():
-		if dist <= a.max_use_distance:
+		if dist <= a.max_use_distance and dist >= a.min_use_distance and not (a.grip and _grip_ready):
 			choices.append(a)
 			total += a.weight
 	if choices.is_empty():
@@ -834,6 +840,10 @@ func _start_attack(dist: float) -> void:
 func start_attack(index: int) -> void:
 	_telegraphed = false
 	_shot = false
+	var chosen: AttackData = _attacks()[index]
+	_grip_active = _grip_ready and not chosen.grip
+	if _grip_active:
+		_grip_ready = false
 	_fire_dropped = false
 	_set_state(State.ATTACK)
 	_attack.start(_attacks()[index], model)
@@ -878,6 +888,12 @@ func _state_attack(delta: float) -> void:
 				if state != State.ATTACK:
 					return
 	if _attack.done():
+		if a.grip:
+			_grip_ready = true
+			model.set_overlay("grip", Color(0.35, 0.1, 0.55, 0.4))
+		elif _grip_active:
+			_grip_active = false
+			model.set_overlay("")
 		_cooldown = randf_range(data.attack_cooldown_min, data.attack_cooldown_max) * (0.6 if _fury else 1.0)
 		_set_state(State.CHASE)
 
@@ -1124,6 +1140,11 @@ func _boss_parried() -> void:
 func _stance_break() -> void:
 	if state in [State.PARRIED, State.RIPOSTED, State.CALL, State.DEAD]:
 		return
+	if _grip_ready or _grip_active:
+		_grip_ready = false
+		_grip_active = false
+		_status_fx("Grip broken!", 0.0)
+		_net_status_fx.rpc("Grip broken!", 0.0)
 	_set_state(State.PARRIED)
 	model.set_overlay("")
 	model.play_fitted(CharacterModel.ANIM_GUARD_BREAK, data.stance_time, 0.05)
@@ -1138,13 +1159,14 @@ func _start_phase2() -> void:
 	model.set_overlay("")
 	model.face_instantly(model.forward())
 	model.play(data.call_anim, 0.15, 1.0, true)
-	_status_fx("Ablaze!", 0.0)
-	_net_status_fx.rpc("Ablaze!", 0.0)
+	_status_fx(data.phase2_text, 0.0)
+	_net_status_fx.rpc(data.phase2_text, 0.0)
 
 
 func _finish_roar() -> void:
 	_roaring = false
 	effects.add_mod(&"phase2", 99999.0, {"move": data.phase2_speed_mult})
+	model.set_tint(data.phase2_tint)
 	if data.adds_scene and get_parent():
 		var n := data.adds_count + _party_size - 1
 		for i in n:

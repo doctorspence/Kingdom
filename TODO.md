@@ -235,7 +235,7 @@ Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces th
 - [x] 5. Powder barrels
 - [x] 6. Level layout (six areas, two two-story rooms, a small river through both, rope bridge, barricade, secret wall, fog gate, shortcut)
 - [x] 7. Populate: 19 enemies, patrols, caller, 3+ player extras, spawn tables, named rare, ambush, hidden chest, halfway shrine
-- [ ] 8. Boss: Harl the Delver
+- [x] 8. Boss: Harl the Delver
 - [ ] 9. Retire the old Gullet (Tallow kept, saves migrate)
 - [ ] 10. Atmosphere and audio
 - [ ] 11. Tests, 3-player check, friends build, handoff
