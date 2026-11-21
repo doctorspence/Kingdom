@@ -316,6 +316,42 @@ func attach_to_hand(item: Node3D, side: String) -> void:
 	item.rotation_degrees = Vector3(90.0, 0.0, 0.0)
 
 
+# --- Worn armor ----------------------------------------------------------------
+
+var _armor := {}  # slot key ("head", "chest", "legs", ...) -> Array[MeshInstance3D]
+
+
+## Wear armor in a slot (null takes it off). The armor scene holds skinned meshes built on this
+## skeleton (assets/equipment); they are copied onto it so they move with every animation.
+func set_armor(slot: String, scene: PackedScene) -> void:
+	for old in _armor.get(slot, []):
+		if is_instance_valid(old):
+			old.queue_free()
+	_armor.erase(slot)
+	if scene == null or _skeleton == null:
+		return
+	var made: Array = []
+	var inst: Node = scene.instantiate()
+	for mi in inst.find_children("*", "MeshInstance3D", true, false):
+		var src := mi as MeshInstance3D
+		var n := MeshInstance3D.new()
+		n.name = "Armor_" + slot
+		n.mesh = src.mesh
+		n.skin = src.skin
+		_skeleton.add_child(n)
+		n.skeleton = NodePath("..")
+		made.append(n)
+	inst.free()
+	_armor[slot] = made
+	if _overlay_kind != "":
+		for n in made:
+			n.material_overlay = _overlay
+
+
+func armor_in(slot: String) -> bool:
+	return _armor.has(slot)
+
+
 # --- Tints --------------------------------------------------------------------
 
 ## Show a colored see-through tint over the whole body. kind = "" turns it off.
@@ -327,6 +363,10 @@ func set_overlay(kind: String, color := Color.WHITE) -> void:
 	_overlay.albedo_color = color
 	for m in _meshes:
 		m.material_overlay = _overlay if kind != "" else null
+	for slot in _armor:
+		for n in _armor[slot]:
+			if is_instance_valid(n):
+				n.material_overlay = _overlay if kind != "" else null
 
 
 func overlay_kind() -> String:

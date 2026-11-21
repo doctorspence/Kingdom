@@ -144,6 +144,7 @@ func _ready() -> void:
 	_build_props()
 	_build_cave_assets()
 	_light_stairs()
+	_build_realism()
 	_build_river()
 	_build_lights()
 	_build_stairs_and_ladders()
@@ -492,14 +493,16 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = rock_verts
 	arrays[Mesh.ARRAY_NORMAL] = rock_norms
+	arrays[Mesh.ARRAY_COLOR] = _tint_colors(rock_verts, false)
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	mesh.surface_set_material(0, load(STONE))
+	mesh.surface_set_material(0, _rock_material())
 	if not _floor_v.is_empty():
 		var farr := []
 		farr.resize(Mesh.ARRAY_MAX)
 		farr[Mesh.ARRAY_VERTEX] = _floor_v
 		farr[Mesh.ARRAY_NORMAL] = _floor_n
+		farr[Mesh.ARRAY_COLOR] = _tint_colors(_floor_v, true)
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, farr)
 		mesh.surface_set_material(1, _floor_material())
 	var mi := MeshInstance3D.new()
@@ -1028,10 +1031,11 @@ func _floor_material() -> StandardMaterial3D:
 	m.albedo_color = Color(0.85, 0.76, 0.68)
 	m.normal_enabled = true
 	m.normal_texture = load("res://assets/textures/scree/normal.jpg")
-	m.normal_scale = 1.6
+	m.normal_scale = 1.0
 	m.roughness_texture = load("res://assets/textures/scree/rough.jpg")
 	m.uv1_triplanar = true
-	m.uv1_scale = Vector3(0.55, 0.55, 0.55)
+	m.uv1_scale = Vector3(0.36, 0.36, 0.36)
+	m.vertex_color_use_as_albedo = true
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	return m
 
@@ -1454,3 +1458,87 @@ func _conform_split(tv: PackedVector3Array, tn: PackedVector3Array, tamp: Packed
 			_raw_amp.append(tamp[t])
 			_raw_sign.append(sg)
 	print("Gullet rock: %d triangles, %d fell back" % [out_v.size() / 3, bad])
+
+
+# ---- Realism: weathering tints, stalactites, puddles, dust ---------------------
+
+var _tint_noise := FastNoiseLite.new()
+
+
+func _rock_material() -> Material:
+	var m := (load(STONE) as StandardMaterial3D).duplicate() as StandardMaterial3D
+	m.vertex_color_use_as_albedo = true
+	return m
+
+
+## Per-vertex weathering: damp dark rock near the floor, mineral banding up the walls,
+## soot on ceilings, and large soft patches of dirt and wet ground on the floor.
+func _tint_colors(verts: PackedVector3Array, is_floor: bool) -> PackedColorArray:
+	_tint_noise.seed = 41
+	_tint_noise.frequency = 0.07
+	var out := PackedColorArray()
+	out.resize(verts.size())
+	for i in verts.size():
+		var p := verts[i]
+		var n := _tint_noise.get_noise_3dv(p * (1.0 if is_floor else 0.8))
+		var c: Color
+		if is_floor:
+			var v := 0.82 + 0.3 * n
+			var wet := clampf((-n - 0.15) * 2.5, 0.0, 1.0)
+			v *= 1.0 - 0.38 * wet
+			c = Color(v, v * 0.97, v * (0.93 + 0.05 * wet))
+		else:
+			var band := sin(p.y * 2.1 + n * 5.0) * 0.06
+			var v := 0.92 + 0.22 * n + band
+			var damp := clampf(1.0 - p.y / 1.4, 0.0, 1.0)
+			v *= 1.0 - 0.35 * damp
+			if p.y > 3.5:
+				v *= 0.86  # soot toward the ceiling
+			c = Color(v * (1.0 - 0.06 * damp), v, v * (1.0 + 0.04 * damp))
+		out[i] = c
+	return out
+
+
+func _dust(pos: Vector3, extents: Vector3, amount: int) -> void:
+	var gp := GPUParticles3D.new()
+	gp.amount = amount
+	gp.lifetime = 9.0
+	gp.preprocess = 9.0
+	gp.position = pos
+	gp.visibility_aabb = AABB(-extents - Vector3.ONE, extents * 2.0 + Vector3.ONE * 2.0)
+	gp.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var pm := ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = extents
+	pm.gravity = Vector3(0.0, -0.01, 0.0)
+	pm.direction = Vector3(0.3, -0.2, 0.1)
+	pm.spread = 180.0
+	pm.initial_velocity_min = 0.03
+	pm.initial_velocity_max = 0.14
+	pm.turbulence_enabled = true
+	pm.turbulence_noise_strength = 0.25
+	gp.process_material = pm
+	var q := QuadMesh.new()
+	q.size = Vector2(0.022, 0.022)
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	mat.albedo_color = Color(0.8, 0.88, 1.0, 0.35)
+	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	q.material = mat
+	gp.draw_pass_1 = q
+	add_child(gp)
+
+
+func _build_realism() -> void:
+	# Stalactites hanging from the high ceilings.
+	for s in [[-8.0, 9.9, -12.0], [8.0, 9.9, -14.0], [20.0, 9.9, 4.0], [-9.0, 9.9, 3.0], [40.0, 10.9, -4.0], [55.0, 10.9, -14.0],
+			[64.0, 10.9, -2.0], [12.0, 8.9, 28.0], [22.0, 8.9, 37.0], [42.0, 8.9, 29.0], [55.0, 8.9, 38.0], [-55.0, 5.9, 19.0], [-47.0, 5.9, 31.0]]:
+		_asset("Cave_Geometry/stalactites", Vector3(s[0], s[1], s[2]), randf() * TAU)
+	# A few damp puddles.
+	for p in [[-48.0, 20.0], [-33.0, 22.0], [12.0, -9.0], [26.0, 2.0], [45.0, -12.0], [20.0, 30.0], [50.0, 37.0]]:
+		_asset("Cave_Geometry/water_pool", Vector3(p[0], 0.0, p[1]), randf() * TAU, false, 0.8)
+	# Dust drifting in every shaft of daylight.
+	for sh in SHAFTS:
+		_dust(Vector3(sh[0], sh[3] * 0.5, sh[1]), Vector3(sh[2] * 0.8, sh[3] * 0.5, sh[2] * 0.8), 90)

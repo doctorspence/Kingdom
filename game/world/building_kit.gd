@@ -177,7 +177,8 @@ static func sheet(c: Ctx, mat: Material, pts: PackedVector3Array, uvs: PackedVec
 			nr[a + 1] += g1
 			nr[a + nu + 1] += g1 + g2
 			nr[a + nu] += g2
-			vote += (g1 + g2).dot(out)
+			if j == 0:
+				vote += (g1 + g2).dot(out)
 	var s := -1.0 if vote < 0.0 else 1.0
 	for k in nr.size():
 		nr[k] = nr[k].normalized() * s
@@ -692,7 +693,7 @@ static func _burned_frame(c: Ctx, hx: float, hz: float, y0: float, plate: float,
 	c.mb.cyl(c.m.charred, Vector3(-hx + 0.3, 1.6, r.randf_range(-0.5, 0.5)), Vector3(hx - 0.5, 0.2, r.randf_range(-0.8, 0.8)), 0.13, 0.12, 7, 0.12)
 	for i in 3:
 		var p := Vector3(r.randf_range(-hx + 1.0, hx - 1.0), 0.1, r.randf_range(-hz + 0.9, hz - 0.9))
-		c.mb.blob(c.m.ash, p, Vector3(r.randf_range(0.7, 1.2), r.randf_range(0.22, 0.4), r.randf_range(0.6, 1.0)), r.randi(), 0.35, 1.2, 6, 10, Basis(), false, 0.0)
+		c.mb.blob(c.m.ash, p, Vector3(r.randf_range(0.7, 1.2), r.randf_range(0.22, 0.4), r.randf_range(0.6, 1.0)), r.randi(), 0.35, 1.2, 6, 10, Basis(), false, 0.2)
 		for j in 5:
 			var q := p + Vector3(r.randf_range(-0.8, 0.8), 0.2, r.randf_range(-0.6, 0.6))
 			c.mb.box(c.m.charred, q, Vector3(r.randf_range(0.5, 1.4), 0.05, r.randf_range(0.12, 0.22)), Basis(Vector3.UP, r.randf() * TAU) * Basis(Vector3.FORWARD, r.randf_range(-0.3, 0.3)), 0.02)
