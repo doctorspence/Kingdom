@@ -10,8 +10,15 @@
 | 2. New land and layout | **Built.** Everything moved to the section 5 plan by `tools/relayout_tithelands.gd` (re-runnable). The audit shows no floating, buried or road-blocking buildings, and every door faces its road or yard. `zone_check` and `camp_check` pass. |
 | Lighting baseline | **Done** (brighter overcast day: sky, exposure, contrast, saturation, fog, sun). |
 | Performance | The underground Gullet was drawn through the ground from the whole zone (20 million of the 23 million triangles at the spawn). `game/world/underground_cull.gd` shows it only underground: 23M → 3M triangles, 7,600 → 2,800 draw calls at the spawn. Grass is the next cost to look at. |
-| 3. Walls, fields, dressing | **In progress.** Dry-stone walls (`game/world/stone_walls.gd`), ploughed and pasture fields, and set dressing from the hideout library (`levels/tithelands/tithelands_dressing.gd`). |
+| 3. Walls, fields, dressing | **Built.** Dry-stone walls stone by stone with coping and piers along the south road, round five fields and the walled tithe yard (`game/world/stone_walls.gd`); ridge-and-furrow ploughland and pasture; set dressing from the hideout library telling each site's story (`levels/tithelands/tithelands_dressing.gd`). |
+| 4. Nature | **Built.** 13 scanned CC0 models from Poly Haven (shrubs, ferns, nettles, weeds, mossy boulders, stumps, fallen trunks, rock outcrops bedded into steep ground), drawn in batches by `game/world/plant_scatter.gd`. Firs rebuilt fuller; a new broadleaf tree (oak-like, leaf-cluster cards); firs on the heights, broadleaf in the lowland and by the river. |
+| 5. Building kit | **Not started.** The cottages, barn, mill, burned houses, tents and watchtower are still the old simple models. This is now the biggest gap to the reference screenshots. |
+| 6. Lighting polish | Baseline done; night, rain and dusk not yet re-checked against the new look. |
 | Reserved sites | Ruined chapel at (−48, 160) and old barrow at (150, −140): level ground, kept clear of trees and rocks, nothing built. |
+
+**Known issues:** the camera can pass into tree foliage (it only collides with trunks); grass is the largest remaining frame cost; the mill has no visible weir or mill race yet (you wade across at the weir); the terrain takes about 4 s to build when the zone loads.
+
+**How to change the zone now:** landform, river, roads, fields, walls, forest and plant densities are in `levels/tithelands/tithelands_land.gd`; props by site in `levels/tithelands/tithelands_dressing.gd`; building and spawn positions in `tools/relayout_tithelands.gd` (run it, it re-saves the scene). Check with `tools/zone1_audit.gd` and `tools/zone1_overview.gd`.
 
 **Quality target:** the detail level of your three reference screenshots (dry-stone walls built from individual stones, cobbles you can count, thick varied grass, real leafy trees, readable color), the Elden Ring brief for composition, landmarks and discovery, and our own grounded medieval dark fantasy look (muted color, weathered materials, no glowing magic).
 

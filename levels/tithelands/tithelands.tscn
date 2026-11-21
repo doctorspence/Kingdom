@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://game/world/set_dressing.gd" id="64_17ghg"]
 [ext_resource type="Script" path="res://levels/tithelands/tithelands_dressing.gd" id="65_a6ns4"]
 [ext_resource type="Script" path="res://game/world/plant_scatter.gd" id="66_17ghg"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_oak.tscn" id="67_a6ns4"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/barrel.tscn" id="barrel_scene"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/barricade.tscn" id="barricade"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/bridge_broken.tscn" id="bridge_broken"]
@@ -247,7 +248,7 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 24, 
 metadata/pad = Vector2(11.5, 17)
 
 [node name="Bridge" parent="Places" unique_id=136842769 instance=ExtResource("bridge_broken")]
-transform = Transform3D(0.9848073, 0, -0.1736481, 0, 1, 0, 0.1736481, 0, 0.9848073, 0, 0, 2)
+transform = Transform3D(0.98480725, 0, -0.17364809, 0, 1, 0, 0.17364809, 0, 0.98480725, 0, 0, 2)
 metadata/y_offset = 0.4
 
 [node name="Mill" parent="Places" unique_id=645152034 instance=ExtResource("mill")]
@@ -333,7 +334,7 @@ transform = Transform3D(1.6914467, 0, 0.6156362, 0, 1.8, 0, -0.6156362, 0, 1.691
 transform = Transform3D(0.51303023, 0, 1.409539, 0, 1.5, 0, -1.409539, 0, 0.51303023, -156, 0, -106)
 
 [node name="RoadCart1" parent="Places" unique_id=1951663912 instance=ExtResource("cart")]
-transform = Transform3D(-0.99619424, 0, 0.08715584, 0, 1, 0, -0.08715584, 0, -0.99619424, 15, 0, 64)
+transform = Transform3D(-0.9961942, 0, 0.087155834, 0, 1, 0, -0.087155834, 0, -0.9961942, 15, 0, 64)
 
 [node name="RoadCart2" parent="Places" unique_id=320972347 instance=ExtResource("cart")]
 transform = Transform3D(0.9659255, 0, -0.25881895, 0, 1, 0, 0.25881895, 0, 0.9659255, -9.5, 0, 28)
@@ -359,7 +360,7 @@ metadata/pad = Vector2(3.6, 2.4)
 metadata/pad_blend = 2.0
 
 [node name="CheckpointGallows" parent="Places" unique_id=91730412 instance=ExtResource("gallows")]
-transform = Transform3D(-0.17364812, 0, 0.9848073, 0, 1, 0, -0.9848073, 0, -0.17364812, -12, 0, -97)
+transform = Transform3D(-0.1736481, 0, 0.98480725, 0, 1, 0, -0.98480725, 0, -0.1736481, -12, 0, -97)
 
 [node name="FarmFence4" parent="Places" unique_id=976207200 instance=ExtResource("fence")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -26, 0, 79.3)
@@ -410,7 +411,7 @@ transform = Transform3D(0.9848077, 0, 0.17364818, 0, 1, 0, -0.17364818, 0, 0.984
 transform = Transform3D(-0.24310747, 0, 1.3787308, 0, 1.4, 0, -1.3787308, 0, -0.24310747, -131, 0, -86)
 
 [node name="QuarryTent" parent="Places" unique_id=1656575664 instance=ExtResource("tent")]
-transform = Transform3D(0.17364815, 0, 0.9848073, 0, 1, 0, -0.9848073, 0, 0.17364815, -142, 0, -88)
+transform = Transform3D(0.17364813, 0, 0.98480725, 0, 1, 0, -0.98480725, 0, 0.17364813, -142, 0, -88)
 
 [node name="QuarryBarricade" parent="Places" unique_id=1245508259 instance=ExtResource("barricade")]
 transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, -135, 0, -86)
@@ -559,6 +560,7 @@ script = ExtResource("43_5qe01")
 terrain = NodePath("../Terrain")
 scenes = Array[PackedScene]([ExtResource("tree_pine"), ExtResource("tree_dead")])
 weights = PackedFloat32Array(5, 1)
+layer = "conifers"
 spacing = 5.5
 scatter_seed = 11
 keep_off_roads = 6.5
@@ -879,7 +881,7 @@ code_ferns = false
 [node name="UndergroundCull" type="Node" parent="." unique_id=1034587490]
 script = ExtResource("ucull")
 underground = Array[NodePath]([NodePath("../Gullet")])
-surface = Array[NodePath]([NodePath("../Woods"), NodePath("../Grass"), NodePath("../Clutter"), NodePath("../Rocks"), NodePath("../Highcrown"), NodePath("../StoneWalls"), NodePath("../Dressing"), NodePath("../Shrubs"), NodePath("../Ferns"), NodePath("../Weeds"), NodePath("../Boulders"), NodePath("../CliffFaces"), NodePath("../Deadwood")])
+surface = Array[NodePath]([NodePath("../Woods"), NodePath("../Oaks"), NodePath("../Grass"), NodePath("../Clutter"), NodePath("../Rocks"), NodePath("../Highcrown"), NodePath("../StoneWalls"), NodePath("../Dressing"), NodePath("../Shrubs"), NodePath("../Ferns"), NodePath("../Weeds"), NodePath("../Boulders"), NodePath("../CliffFaces"), NodePath("../Deadwood")])
 
 [node name="StoneWalls" type="Node3D" parent="." unique_id=399762350 node_paths=PackedStringArray("terrain")]
 script = ExtResource("63_og1uf")
@@ -956,3 +958,18 @@ spacing = 8.0
 scatter_seed = 156
 scale_range = Vector2(0.8, 1.2)
 collide = true
+
+[node name="Oaks" type="Node3D" parent="." unique_id=1025144486 node_paths=PackedStringArray("terrain")]
+script = ExtResource("43_5qe01")
+terrain = NodePath("../Terrain")
+scenes = Array[PackedScene]([ExtResource("67_a6ns4")])
+weights = PackedFloat32Array()
+layer = "broadleaf"
+spacing = 7.0
+scatter_seed = 77
+keep_off_roads = 7.0
+keep_off_tracks = 3.5
+scale_range = Vector2(0.85, 1.25)
+max_slope = 0.7
+beyond_edge = 40.0
+leaf_shadows = true

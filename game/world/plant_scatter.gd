@@ -42,6 +42,8 @@ func _ready() -> void:
 func _build() -> void:
 	if terrain == null:
 		return
+	if not collide and DisplayServer.get_name() == "headless":
+		return  # only looks: keep automated checks fast
 	terrain.height_at(0, 0)
 	var land: Object = terrain.land
 	if land == null or not land.has_method(layer):

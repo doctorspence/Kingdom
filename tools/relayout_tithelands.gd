@@ -202,6 +202,25 @@ func _initialize() -> void:
 	woods.set("scale_range", Vector2(0.8, 1.35))
 	woods.set("beyond_edge", 40.0)
 	woods.set("max_slope", 0.8)
+	woods.set("layer", "conifers")
+	var oaks := root.get_node_or_null("Oaks") as Node3D
+	if oaks == null:
+		oaks = Node3D.new()
+		oaks.name = "Oaks"
+		oaks.set_script(fs)
+		root.add_child(oaks)
+		oaks.owner = root
+	oaks.set("terrain", terrain)
+	oaks.set("scenes", [load("res://levels/tithelands/props/tree_oak.tscn")] as Array[PackedScene])
+	oaks.set("layer", "broadleaf")
+	oaks.set("spacing", 7.0)
+	oaks.set("scatter_seed", 77)
+	oaks.set("keep_off_roads", 7.0)
+	oaks.set("keep_off_tracks", 3.5)
+	oaks.set("scale_range", Vector2(0.85, 1.25))
+	oaks.set("beyond_edge", 40.0)
+	oaks.set("max_slope", 0.7)
+	oaks.set("leaf_shadows", true)
 	var farm := root.get_node_or_null("FarmTrees")
 	if farm:
 		root.remove_child(farm)
@@ -282,7 +301,7 @@ func _initialize() -> void:
 	var cull := root.get_node_or_null("UndergroundCull")
 	if cull:
 		var surf: Array[NodePath] = []
-		for n in ["Woods", "Grass", "Clutter", "Rocks", "Highcrown", "StoneWalls", "Dressing", "Shrubs", "Ferns", "Weeds", "Boulders", "CliffFaces", "Deadwood"]:
+		for n in ["Woods", "Oaks", "Grass", "Clutter", "Rocks", "Highcrown", "StoneWalls", "Dressing", "Shrubs", "Ferns", "Weeds", "Boulders", "CliffFaces", "Deadwood"]:
 			surf.append(NodePath("../" + n))
 		cull.set("surface", surf)
 	# --- the rest ---

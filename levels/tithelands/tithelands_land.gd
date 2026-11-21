@@ -264,3 +264,23 @@ func cliffs(_x: float, _z: float) -> float:
 ## Fallen wood: in the woods.
 func deadwood(x: float, z: float) -> float:
 	return 0.04 + 0.35 * forest(x, z)
+
+
+## How much of the woods here is fir rather than broadleaf (0..1).
+func conifer_share(x: float, z: float) -> float:
+	var c := 0.45
+	c = maxf(c, 0.9 * (1.0 - smoothstep(scarp_x(z) - 14.0, scarp_x(z) - 4.0, x)))  # on the scarp
+	c = maxf(c, 0.85 * smoothstep(0.2, 0.5, _g(x, z, -44.0, -124.0, 34.0) + _g(x, z, 46.0, -118.0, 36.0)))  # gap hills
+	c = maxf(c, 0.7 * smoothstep(150.0, 170.0, z))  # the south ridge crest
+	var dr := absf(z - river_z(x))
+	c *= 0.35 + 0.65 * smoothstep(8.0, 30.0, dr)  # alders and willows by the water
+	return clampf(c, 0.0, 1.0)
+
+
+func conifers(x: float, z: float) -> float:
+	return forest(x, z) * conifer_share(x, z)
+
+
+## Broadleaf trees: the rest of the woods, plus lone trees in the fields and hedgerows.
+func broadleaf(x: float, z: float) -> float:
+	return forest(x, z) * (1.0 - conifer_share(x, z)) + 0.012

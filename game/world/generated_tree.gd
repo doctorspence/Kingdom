@@ -5,7 +5,7 @@ extends StaticBody3D
 ## where it stands, so the woods vary but cost almost nothing. Real bark
 ## texture; the fir's needles use a dark moss texture.
 
-@export_enum("pine", "dead") var kind := "pine"
+@export_enum("pine", "dead", "oak") var kind := "pine"
 
 const BARK := preload("res://levels/common/materials/bark.tres")
 const NEEDLES := preload("res://levels/common/materials/leaves.tres")
@@ -50,8 +50,12 @@ static func _variant(tree_kind: String, index: int) -> Array:
 	if not _cache.has(key):
 		var rng := RandomNumberGenerator.new()
 		rng.seed = 9000 + index * 77 + (0 if tree_kind == "pine" else 500)
-		var full := _make_pine(rng) if tree_kind == "pine" else _make_dead(rng)
-		_cache[key] = _split(full)
+		if tree_kind == "oak":
+			rng.seed = 13000 + index * 91
+			_cache[key] = _make_oak(rng)
+		else:
+			var full := _make_pine(rng) if tree_kind == "pine" else _make_dead(rng)
+			_cache[key] = _split(full)
 	return _cache[key]
 
 
@@ -93,7 +97,7 @@ static func _make_pine(rng: RandomNumberGenerator) -> ArrayMesh:
 	for k in tiers:
 		var t := float(k) / tiers
 		var y0 := 1.9 + t * (height - 3.2)
-		var reach := lerpf(1.5, 0.3, pow(t, 0.8)) * rng.randf_range(0.9, 1.1)
+		var reach := lerpf(0.95, 0.22, pow(t, 0.8)) * rng.randf_range(0.9, 1.1)
 		var center := Vector3(lean.x * (y0 / height) * (y0 / height), 0.0, lean.y * (y0 / height) * (y0 / height))
 		_tier(core, rng, center, y0, reach, rng.randf_range(1.8, 2.3))
 	# The branches: whorls of drooping needle fans, long at the bottom, short at the top.
@@ -102,14 +106,19 @@ static func _make_pine(rng: RandomNumberGenerator) -> ArrayMesh:
 		var t := float(k) / (whorls - 1)
 		var y := 1.4 + t * (height - 2.2)
 		var reach := lerpf(2.9, 0.45, pow(t, 0.85)) * rng.randf_range(0.9, 1.12)
-		var count := roundi(lerpf(9.0, 5.0, t))
+		var count := roundi(lerpf(12.0, 6.0, t))
 		var offset := rng.randf() * TAU
 		var center := Vector3(lean.x * (y / height) * (y / height), y, lean.y * (y / height) * (y / height))
 		for i in count:
 			var a := offset + TAU * i / count + rng.randf_range(-0.25, 0.25)
 			var dir := Vector3(cos(a), 0.0, sin(a))
 			var length := reach * rng.randf_range(0.85, 1.15)
-			_fan(fans, center + dir * 0.12 + Vector3.UP * rng.randf_range(-0.15, 0.15), dir, length, length * rng.randf_range(0.32, 0.42), length * lerpf(0.5, 0.25, t), rng)
+			var at := center + dir * 0.12 + Vector3.UP * rng.randf_range(-0.15, 0.15)
+			var fw := length * rng.randf_range(0.36, 0.48)
+			var dr := length * lerpf(0.5, 0.25, t)
+			# Two strips crossed at an angle, so the branch has volume seen from the side too.
+			_fan(fans, at, dir, length, fw, dr, rng, 0.55)
+			_fan(fans, at + Vector3.DOWN * 0.08, dir, length * 0.92, fw * 0.9, dr, rng, -0.55)
 	# The leader at the very top.
 	for i in 5:
 		var a := TAU * i / 5.0 + rng.randf()
@@ -126,8 +135,8 @@ static func _make_pine(rng: RandomNumberGenerator) -> ArrayMesh:
 
 
 ## One branch: a tapering strip bending down toward its tip, textured with needles.
-static func _fan(st: SurfaceTool, base: Vector3, dir: Vector3, length: float, width: float, droop: float, rng: RandomNumberGenerator) -> void:
-	var side := Vector3.UP.cross(dir).normalized()
+static func _fan(st: SurfaceTool, base: Vector3, dir: Vector3, length: float, width: float, droop: float, rng: RandomNumberGenerator, roll := 0.0) -> void:
+	var side := Vector3.UP.cross(dir).normalized().rotated(dir, roll)
 	var rows := 4
 	var left: Array[Vector3] = []
 	var right: Array[Vector3] = []
@@ -253,6 +262,137 @@ static func _make_dead(rng: RandomNumberGenerator) -> ArrayMesh:
 	bark.set_material(BARK)
 	bark.commit(mesh)
 	return mesh
+
+
+# --- The oak (broadleaf) ------------------------------------------------------------------
+## A short, thick trunk that forks into spreading limbs; leaves are clusters of
+## crossed cards with a leaf texture drawn in code. Returns [bark mesh, leaf mesh].
+
+static func _make_oak(rng: RandomNumberGenerator) -> Array:
+	var bark := SurfaceTool.new()
+	bark.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var trunk_h := rng.randf_range(2.6, 3.8)
+	var lean := Vector2(rng.randf_range(-0.3, 0.3), rng.randf_range(-0.3, 0.3))
+	var points := PackedVector3Array()
+	var radii := PackedFloat32Array()
+	for i in 6:
+		var t := float(i) / 5.0
+		points.append(Vector3(lean.x * t, t * trunk_h, lean.y * t))
+		radii.append(lerpf(0.62, 0.36, sqrt(t)) if i > 0 else 0.78)  # root flare
+	_tube(bark, points, radii, 9)
+	var top := points[points.size() - 1]
+	var clusters: Array = []  # [center, radius]
+	var limbs := rng.randi_range(4, 6)
+	var off := rng.randf() * TAU
+	for l in limbs:
+		var a := off + TAU * l / limbs + rng.randf_range(-0.3, 0.3)
+		var dir := Vector3(cos(a) * 0.78, rng.randf_range(0.5, 0.8), sin(a) * 0.78).normalized()
+		_oak_branch(bark, rng, top + Vector3.DOWN * rng.randf_range(0.0, 0.6), dir, rng.randf_range(3.0, 4.4), 0.3, 0, clusters)
+	clusters.append([top + Vector3.UP * 2.6, 2.6])
+	bark.generate_normals()
+	bark.set_material(BARK)
+	var leaves := SurfaceTool.new()
+	leaves.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var crown := Vector3.ZERO
+	for c in clusters:
+		crown += c[0]
+	crown /= clusters.size()
+	for c in clusters:
+		var center: Vector3 = c[0]
+		var r: float = c[1]
+		var cards := int(r * r * 5.0) + 6
+		for k in cards:
+			var u := Vector3(rng.randf_range(-1, 1), rng.randf_range(-0.7, 1), rng.randf_range(-1, 1)).normalized()
+			var p := center + u * r * rng.randf_range(0.45, 1.0)
+			var n := Vector3(rng.randf_range(-1, 1), rng.randf_range(-1, 1), rng.randf_range(-1, 1)).normalized()
+			var s1 := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
+			var s2 := n.cross(s1).normalized()
+			var size := rng.randf_range(1.2, 1.8)
+			var light_n := ((p - crown).normalized() + Vector3.UP * 0.6).normalized()  # soft, rounded canopy lighting
+			var tint := Color(1, 1, 1).lerp(Color(0.8, 0.86, 0.7), rng.randf())
+			var corners := [p - s1 * size * 0.5 - s2 * size * 0.5, p + s1 * size * 0.5 - s2 * size * 0.5,
+					p + s1 * size * 0.5 + s2 * size * 0.5, p - s1 * size * 0.5 + s2 * size * 0.5]
+			var uvs := [Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0)]
+			for idx in [0, 1, 2, 0, 2, 3]:
+				leaves.set_normal(light_n)
+				leaves.set_color(tint)
+				leaves.set_uv(uvs[idx])
+				leaves.add_vertex(corners[idx])
+	leaves.set_material(_leaf_material())
+	return [bark.commit(), leaves.commit()]
+
+
+static func _oak_branch(st: SurfaceTool, rng: RandomNumberGenerator, start: Vector3, dir: Vector3, length: float, radius: float, depth: int, clusters: Array) -> void:
+	var pts := PackedVector3Array()
+	var rad := PackedFloat32Array()
+	var pos := start
+	var d := dir
+	for s in 5:
+		pts.append(pos)
+		rad.append(lerpf(radius, radius * 0.45, float(s) / 4.0))
+		d = (d + Vector3(rng.randf_range(-0.25, 0.25), rng.randf_range(-0.12, 0.08), rng.randf_range(-0.25, 0.25))).normalized()
+		pos += d * length / 4.0
+	_tube(st, pts, rad, 6 if depth == 0 else 5)
+	var end := pts[pts.size() - 1]
+	if depth >= 1:
+		clusters.append([end + Vector3.UP * 0.4, rng.randf_range(1.6, 2.3)])
+		return
+	for k in rng.randi_range(2, 3):
+		var nd := (d + Vector3(rng.randf_range(-0.7, 0.7), rng.randf_range(0.0, 0.5), rng.randf_range(-0.7, 0.7))).normalized()
+		_oak_branch(st, rng, end, nd, length * rng.randf_range(0.55, 0.75), radius * 0.5, depth + 1, clusters)
+	clusters.append([pts[2] + Vector3.UP * 0.8, rng.randf_range(1.3, 1.8)])
+
+
+static var _leaf_mat: StandardMaterial3D
+
+
+## A cluster of small oval leaves on a see-through card, drawn once.
+static func _leaf_material() -> StandardMaterial3D:
+	if _leaf_mat:
+		return _leaf_mat
+	var w := 256
+	var img := Image.create(w, w, true, Image.FORMAT_RGBA8)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 404
+	for i in 230:
+		# Denser toward the middle so the card edge never shows as a square.
+		var ang := rng.randf() * TAU
+		var dist := pow(rng.randf(), 0.7) * w * 0.4
+		var cx := w * 0.5 + cos(ang) * dist
+		var cy := w * 0.5 + sin(ang) * dist
+		var length := rng.randf_range(10.0, 17.0)
+		var width := length * rng.randf_range(0.42, 0.55)
+		var rot := rng.randf() * TAU
+		var shade := rng.randf()
+		var col := Color(0.11, 0.17, 0.06).lerp(Color(0.3, 0.38, 0.13), shade)
+		if rng.randf() < 0.12:
+			col = col.lerp(Color(0.42, 0.38, 0.14), 0.4)  # an odd yellowing leaf
+		var cr := cos(rot)
+		var sr := sin(rot)
+		for py in range(int(cy - length), int(cy + length) + 1):
+			for px in range(int(cx - length), int(cx + length) + 1):
+				if px < 0 or py < 0 or px >= w or py >= w:
+					continue
+				var dx := px - cx
+				var dy := py - cy
+				var lx := dx * cr + dy * sr
+				var ly := -dx * sr + dy * cr
+				var e := (lx * lx) / (length * length) + (ly * ly) / (width * width)
+				if e <= 1.0:
+					var edge := 1.0 - e * 0.35 + (0.08 if absf(ly) < 0.8 else 0.0)  # a lighter middle vein
+					img.set_pixel(px, py, Color(col.r * edge, col.g * edge, col.b * edge, 1.0))
+	img.generate_mipmaps()
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = ImageTexture.create_from_image(img)
+	mat.vertex_color_use_as_albedo = true
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	mat.alpha_scissor_threshold = 0.45
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.roughness = 0.95
+	mat.metallic_specular = 0.15
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	_leaf_mat = mat
+	return mat
 
 
 # --- Shared pieces ---------------------------------------------------------------------------

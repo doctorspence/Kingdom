@@ -29,6 +29,8 @@ extends Node3D
 @export var beyond_edge := 0.0
 ## Sink into the ground (meters), so rocks and logs look bedded in.
 @export var sink := 0.1
+## Let leaves and needles cast shadows too (costs more; good for broadleaf trees).
+@export var leaf_shadows := false
 @export var rebuild := false:
 	set(v):
 		_scatter()
@@ -165,6 +167,6 @@ func _build_trees() -> void:
 				mm.set_instance_transform(i, xfs[i])
 			var mmi := MultiMeshInstance3D.new()
 			mmi.multimesh = mm
-			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if pi == 0 else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if (pi == 0 or leaf_shadows) else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			mmi.visibility_range_end = GeneratedTree.SEEN_FROM + patch * 0.7
 			add_child(mmi)
