@@ -193,7 +193,8 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] **Water**: a dark river shader with drifting ripples and a cold sheen (`levels/common/water.gdshader`)
 - [x] **The Gullet** gets cave rock texture through the shared `dark_stone` material (and the cave is no longer buried in fog)
 - [ ] 🧪 Walk the zone and tell me what feels wrong: too dark, too foggy, a camp in a silly place, trees too spiky
-- [ ] Later: grass tufts and ferns, a proper mill/watchtower/Highcrown pass, cobbles and market props at the checkpoint, banners, rain streaks and puddles, a day-time sky with clouds, LODs for distant trees
+- [x] **Buildings pass**: stake palisades (pointed logs and rails), a timber-framed mill with a spoked water wheel and loft hoist, a crenellated watchtower with arrow slits, a barred shortcut gate, muted textured thatch, cobbled paving at the crossroads and checkpoint
+- [ ] Later: Highcrown itself, banners and market props at the checkpoint, ferns, puddles, a daytime sky with clouds, LODs for distant trees
 
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
@@ -236,6 +237,6 @@ Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces th
 - [x] 6. Level layout (six areas, two two-story rooms, a small river through both, rope bridge, barricade, secret wall, fog gate, shortcut)
 - [x] 7. Populate: 19 enemies, patrols, caller, 3+ player extras, spawn tables, named rare, ambush, hidden chest, halfway shrine
 - [x] 8. Boss: Harl the Delver
-- [ ] 9. Retire the old Gullet (Tallow kept, saves migrate)
-- [ ] 10. Atmosphere and audio
+- [x] 9. Retire the old Gullet (Tallow kept, saves migrate)
+- [x] 10. Atmosphere: torch and fire light, campfire, deep gloom (the existing cave sound bed and boss track play; quarry-specific audio later)
 - [ ] 11. Tests, 3-player check, friends build, handoff
