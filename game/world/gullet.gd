@@ -156,14 +156,14 @@ func _build_rails() -> void:
 		box.size = Vector3(7.2, 1.0, 0.1)
 		cs.shape = box
 		rail.add_child(cs)
-		var mi := MeshInstance3D.new()
-		var bm := BoxMesh.new()
-		bm.size = Vector3(7.2, 0.06, 0.06)
-		mi.mesh = bm
-		mi.position.y = 0.45
-		rail.add_child(mi)
 		rail.position = Vector3(29.0, 4.5, z)
 		add_child(rail)
+		# Posts every 1.2 m with a wooden top rail and a rope rail below it.
+		for k in 7:
+			_timber(Vector3(25.6 + k * 1.2, 4.55, z), 1.1, 0.1, 0.1, 1)
+		_timber(Vector3(29.0, 5.08, z), 7.2, 0.07, 0.1, 0)
+		var rope := _timber(Vector3(29.0, 4.55, z), 7.2, 0.035, 0.035, 0)
+		rope.material_override = _rope()
 
 
 func _box(pos: Vector3, size: Vector3, color: Color, rot_y := 0.0, solid := true, wooden := false) -> Node3D:
@@ -435,6 +435,8 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 	var rock_verts := PackedVector3Array()
 	var rock_norms := PackedVector3Array()
 	var collide := PackedVector3Array()
+	var back_v := PackedVector3Array()
+	var back_n := PackedVector3Array()
 	for s in baked.get_surface_count():
 		var arr := baked.surface_get_arrays(s)
 		var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
@@ -462,6 +464,9 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 				continue
 			var n := ns[ia]
 			var sign_ := 1.0 if (b - a).cross(c - a).dot(n) >= 0.0 else -1.0
+			if not (_in_pillar(a) and _in_pillar(b) and _in_pillar(c)):
+				back_v.append_array(PackedVector3Array([a, b, c]))
+				back_n.append_array(PackedVector3Array([ns[ia], ns[ib], ns[ic]]))
 			var amp := 0.22 if n.y > 0.7 else 2.3
 			_subdivide(a, b, c, n, sign_, amp, rock_verts, rock_norms, collide, 0)
 	var raw_v := rock_verts
@@ -488,6 +493,7 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	add_child(mi)
+	_build_backing(back_v, back_n)
 	var body := StaticBody3D.new()
 	var cs := CollisionShape3D.new()
 	var shape := ConcavePolygonShape3D.new()
@@ -501,6 +507,43 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 		var wmi := MeshInstance3D.new()
 		wmi.mesh = wood_mesh
 		add_child(wmi)
+
+
+func _in_pillar(p: Vector3) -> bool:
+	for pl in PILLARS:
+		var v := px(pl[0], pl[1])
+		if absf(p.x - v.x) < 1.05 and absf(p.z - v.z) < 1.05 and p.y < 9.05:
+			return true
+	return false
+
+
+## The flat rock, pushed 1.5 m back behind the carved surface (floors 0.5 m down), so any
+## crack between displaced triangles at corners and wall/floor seams shows rock, not void.
+func _build_backing(bv: PackedVector3Array, bn: PackedVector3Array) -> void:
+	var sums := {}
+	for i in bv.size():
+		var k := _vkey(bv[i])
+		sums[k] = sums.get(k, Vector3.ZERO) + bn[i]
+	var ov := PackedVector3Array()
+	var on := PackedVector3Array()
+	for i in bv.size():
+		var nn: Vector3 = (sums[_vkey(bv[i])] as Vector3).normalized()
+		var off := 0.5 if nn.y > 0.75 else 1.5
+		ov.append(bv[i] - nn * off)
+		on.append(bn[i])
+	if ov.is_empty():
+		return
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = ov
+	arrays[Mesh.ARRAY_NORMAL] = on
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	mesh.surface_set_material(0, load(STONE))
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
 
 
 func _on_outer_shell(a: Vector3, b: Vector3, c: Vector3) -> bool:
@@ -806,8 +849,20 @@ func _deck_pt(d: Array, along_x: bool, u: float, v: float, y: float) -> Vector3:
 	return Vector3(d[0] + u, y, d[1] + v) if along_x else Vector3(d[0] + v, y, d[1] + u)
 
 
+## True where a point sits over a different deck than deck `di` (rails must not cross walkways).
+func _in_other_deck(di: int, p: Vector3) -> bool:
+	for j in DECKS.size():
+		if j == di:
+			continue
+		var o: Array = DECKS[j]
+		if p.x > o[0] - 0.2 and p.x < o[2] + 0.2 and p.z > o[1] - 0.2 and p.z < o[3] + 0.2:
+			return true
+	return false
+
+
 func _build_scaffolds() -> void:
-	for d in DECKS:
+	for di in DECKS.size():
+		var d: Array = DECKS[di]
 		var w: float = d[2] - d[0]
 		var dd: float = d[3] - d[1]
 		if maxf(w, dd) < 8.0:
@@ -828,10 +883,12 @@ func _build_scaffolds() -> void:
 			for si in 2:
 				var v: float = sides[si]
 				var inward := 0.2 if si == 0 else -0.2
-				var upright := _timber(_deck_pt(d, along_x, u, v, (top + 1.15) * 0.5), top + 1.15, 0.3, 0.3, 1)
-				upright.rotation_degrees.x = randf_range(-0.8, 0.8)
-				_rope_ring(_deck_pt(d, along_x, u, v, top - 0.62), 0.2)
-				_rope_ring(_deck_pt(d, along_x, u, v, top + 0.58), 0.2)
+				var over := _in_other_deck(di, _deck_pt(d, along_x, u, v, top))
+				if not over:
+					var upright := _timber(_deck_pt(d, along_x, u, v, (top + 1.15) * 0.5), top + 1.15, 0.3, 0.3, 1)
+					upright.rotation_degrees.x = randf_range(-0.8, 0.8)
+					_rope_ring(_deck_pt(d, along_x, u, v, top - 0.62), 0.2)
+					_rope_ring(_deck_pt(d, along_x, u, v, top + 0.58), 0.2)
 				# Diagonal bracing, alternating direction bay to bay.
 				if i < n:
 					var ua := u
@@ -844,14 +901,14 @@ func _build_scaffolds() -> void:
 					_timber_between(low, high, 0.17)
 					# Hand rails between uprights (skipped where stairs and ladders arrive).
 					var mid := _deck_pt(d, along_x, u + step * 0.5, v, top)
-					var open := true
+					var open := not _in_other_deck(di, mid)
 					for g in SCAFFOLD_GAPS:
 						if Vector2(mid.x, mid.z).distance_to(g) < 2.9:
 							open = false
 					if open:
 						_timber(_deck_pt(d, along_x, u + step * 0.5, v, top + 1.05), step, 0.12, 0.14, along)
 						_timber(_deck_pt(d, along_x, u + step * 0.5, v, top + 0.55), step, 0.1, 0.12, along)
-				if i % 3 == 1 and si == 1:
+				if i % 3 == 1 and si == 1 and not over:
 					var lp := _deck_pt(d, along_x, u, v + inward * 1.4, top + 0.95)
 					_iron_box(lp, Vector3(0.2, 0.3, 0.2))
 					var glow := MeshInstance3D.new()
@@ -1127,19 +1184,19 @@ func _build_camp() -> void:
 	_asset("Camp_Equipment/personal_area", Vector3(-8.0, 0, 5.0), 0.3)
 	# Storage clusters: barrels, crates, sacks.
 	var cl := 0
-	for p in [Vector3(24.5, 0, -9.5), Vector3(-9.5, 0, 3.5), Vector3(17, 0, 7)]:
+	for p in [Vector3(24.5, 0, -9.5), Vector3(-9.5, 0, 3.5), Vector3(25.0, 0, 6.3)]:
 		cl += 1
 		_asset("Storage_Containers/barrel_stack", p, rng.randf() * TAU, true)
 		_asset("Storage_Containers/sack_grain", p + Vector3(1.6, 0, 0.5), rng.randf() * TAU)
 		_asset("Storage_Containers/crate_large", p + Vector3(1.0, 0, 1.6), rng.randf() * 3.0, true)
 		_asset("Storage_Containers/crate_small", p + Vector3(1.1, 0.9, 1.5), rng.randf() * 3.0)
 		_asset("Storage_Containers/barrel_%s" % ["water", "grain", "broken"][cl - 1], p + Vector3(-1.2, 0, 0.9), 0.0, true)
-	_asset("Storage_Containers/chest_closed", Vector3(-11.0, 0, -6.0), 1.2, true)
+	_asset("Storage_Containers/chest_closed", Vector3(-13.2, 0, 6.8), 1.2, true)
 	_asset("Storage_Containers/mining_box_tools", Vector3(24.0, 0, 2.0), 0.4)
 	_asset("Mining_Equipment/pickaxe", Vector3(-9.0, 0.0, 2.6), 1.0)
 	_asset("Mining_Equipment/shovel", Vector3(23.2, 0.0, -8.3), 2.0)
 	# Braziers and standing torches (they carry their own flickering lights).
-	for p in [Vector3(-12.5, 0, -2.5), Vector3(26.0, 0, -4.0)]:
+	for p in [Vector3(-12.6, 0, -0.6), Vector3(25.8, 0, -7.0)]:
 		_asset("Lighting_Props/brazier", p)
 	# Red banners hanging from the upper walkway.
 	for x in [-6.0, 3.0, 12.0, 21.0]:

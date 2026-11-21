@@ -37,7 +37,7 @@ func _run() -> void:
 	cam.queue_free()
 	sun.queue_free()
 	for spot in [["yard", Vector3(-55, 0.3, 25), -90.0], ["tunnel", Vector3(-36, 0.3, 25), -90.0], ["camp", Vector3(-10, 0.3, -4), -90.0], ["camp2", Vector3(20, 0.3, 4), 90.0], ["camp_up", Vector3(0, 4.4, -16), 90.0],
-			["dig", Vector3(34, 0.3, 0), -90.0], ["falls", Vector3(47, 0.3, -6), 180.0], ["falls2", Vector3(47, 0.3, -6), 0.0], ["chamber", Vector3(49, 0.3, 26), 0.0]]:
+			["dig", Vector3(34, 0.3, 0), -90.0], ["bridge", Vector3(26.2, 4.4, -15.9), -90.0], ["gallery", Vector3(40, 4.4, -24.5), 0.0], ["gallery2", Vector3(34.5, 4.4, -24.5), 90.0], ["falls", Vector3(47, 0.3, -6), 180.0], ["falls2", Vector3(47, 0.3, -6), 0.0], ["chamber", Vector3(49, 0.3, 26), 0.0]]:
 		player.global_position = g.global_position + spot[1]
 		player.velocity = Vector3.ZERO
 		player.reset_physics_interpolation()
