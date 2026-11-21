@@ -81,6 +81,10 @@ func mod_mult(key: String) -> float:
 	for t in _picked():
 		if t.mods.has(key):
 			v *= float(t.mods[key])
+	if gear:
+		var lm := gear.legendary_mods()
+		if lm.has(key):
+			v *= float(lm[key])
 	return v
 
 
@@ -90,6 +94,8 @@ func mod_add(key: String) -> float:
 	for t in _picked():
 		if t.mods.has(key):
 			v += float(t.mods[key])
+	if gear:
+		v += float(gear.legendary_mods().get(key, 0.0))
 	return v
 
 

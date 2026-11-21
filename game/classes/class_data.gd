@@ -14,6 +14,8 @@ enum ResourceKind { RESOLVE, OIL, TALLY }
 @export_group("Gear")
 @export var weapon: WeaponData
 @export var shield: ShieldData
+## Gear a new character starts with (equipped).
+@export var starting_items: Array[ItemData] = []
 
 @export_group("Resource")
 @export var resource_kind := ResourceKind.RESOLVE

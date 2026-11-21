@@ -1,11 +1,16 @@
 [gd_resource type="Resource" script_class="ClassData" format=3]
 
 [ext_resource type="Script" path="res://game/classes/class_data.gd" id="1_class"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="9_item"]
 [ext_resource type="Script" path="res://game/classes/ability_data.gd" id="2_ability"]
 [ext_resource type="Script" path="res://game/classes/talent_data.gd" id="3_talent"]
 [ext_resource type="Script" path="res://game/combat/attack_data.gd" id="4_attack"]
 [ext_resource type="Resource" path="res://data/weapons/weapon_rusty_sword.tres" id="5_weapon"]
 [ext_resource type="Resource" path="res://data/shields/shield_round_wood.tres" id="6_shield"]
+
+[ext_resource type="Resource" path="res://data/items/weapons/item_rusty_sword.tres" id="50_start"]
+[ext_resource type="Resource" path="res://data/items/weapons/item_round_shield.tres" id="51_start"]
+[ext_resource type="Resource" path="res://data/items/armor/item_rusty_hauberk.tres" id="52_start"]
 
 [sub_resource type="Resource" id="A_challenge"]
 script = ExtResource("2_ability")
@@ -241,5 +246,6 @@ armor_per_level = 2.0
 passive_name = "Shield-Born"
 passive_description = "+25% poise, blocking costs 20% less stamina, attacks make 2.5× threat. Resolve builds as you block and take hits."
 passive_mods = {"block_stamina_mult": 0.8, "poise_mult": 1.25, "threat_mult": 2.5}
+starting_items = Array[ExtResource("9_item")]([ExtResource("50_start"), ExtResource("51_start"), ExtResource("52_start")])
 abilities = Array[ExtResource("2_ability")]([SubResource("A_challenge"), SubResource("A_bash"), SubResource("A_charge"), SubResource("A_bellow"), SubResource("A_hold"), SubResource("A_unbroken")])
 talents = Array[ExtResource("3_talent")]([SubResource("T_spiked"), SubResource("T_hide"), SubResource("T_lungs"), SubResource("T_long_challenge"), SubResource("T_stubborn"), SubResource("T_rampart"), SubResource("T_bulldozer"), SubResource("T_echo"), SubResource("T_last_stand"), SubResource("T_iron_wall"), SubResource("T_grudge"), SubResource("T_mastery")])

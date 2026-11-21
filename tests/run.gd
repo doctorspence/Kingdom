@@ -13,6 +13,9 @@ func _initialize() -> void:
 func _start() -> void:
 	# Checks must not change your saved name or join address.
 	root.get_node("Net").set(&"save_settings_enabled", false)
+	# ...and must not use your saved character choice.
+	root.get_node("Net").set(&"character", {})
+	root.get_node("Net").set(&"player_name", "Tester")
 	var args := OS.get_cmdline_user_args()
 	var check_name := args[0] if args.size() > 0 else "movement_check"
 	var script: GDScript = load("res://tests/%s.gd" % check_name)

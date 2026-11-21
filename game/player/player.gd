@@ -34,9 +34,16 @@ enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, CAST, STAGGER, GUARD_BREAK
 const RESPAWN_DELAY := 3.0
 ## Below this height you've fallen out of the world.
 const KILL_HEIGHT := -60.0
-## Test equip loads that F3 cycles through (gear weight ÷ capacity).
-const TEST_LOADS := [0.2, 0.5, 0.9, 1.2]
+
 const INTERACT_RANGE := 2.2
+const FISTS: WeaponData = preload("res://data/weapons/weapon_fists.tres")
+const ARROW_SCRIPT := preload("res://game/items/arrow.gd")
+## Your character is saved this often (seconds), and when you rest, level up or leave.
+const AUTOSAVE_INTERVAL := 300.0
+## Debug weights F3 adds on top of your gear (share of capacity).
+const TEST_EXTRA_LOADS := [0.0, 0.3, 0.6, 1.0]
+## The legendary "cheat death" effect can only save you this often (seconds).
+const CHEAT_DEATH_COOLDOWN := 120.0
 
 @export var tuning: PlayerTuning = preload("res://data/balance/player_tuning.tres")
 ## Used when no class was picked (e.g. running a test map straight from the editor).
@@ -45,6 +52,8 @@ const INTERACT_RANGE := 2.2
 @export var equip_load := 0.2
 
 var weapon: WeaponData
+## Everything you carry: gear, backpack, bank, gold, souls.
+var inventory := Inventory.new()
 var shield: ShieldData
 var stats: CharacterStats
 var effects := Effects.new()
@@ -101,6 +110,10 @@ var _downs := 0
 var _bleed := 0.0
 var _revive_target: Player
 var _revive_progress := 0.0
+# Gear
+var _debug_load := 0.0
+var _cheat_death_cd := 0.0
+var _arrow_fired := false
 
 ## Shared with everyone (see the Sync node in player.tscn).
 var net_pos := Vector3.ZERO
@@ -116,6 +129,9 @@ var net_class := &""
 var net_body := 0
 var net_color := 0
 var net_level := 1
+## Item IDs in your hands (so friends see your weapon and shield).
+var net_main := &""
+var net_off := &""
 var spawn_yaw := 0.0
 var player_name := ""
 
@@ -155,8 +171,15 @@ func _ready() -> void:
 		net_class = choice.get("class", default_class.id)
 		net_body = choice.get("body", 0)
 		net_color = choice.get("color", 0)
-		_set_class(Classes.by_id(net_class))
+		var saved := SaveSystem.load_character(Net.player_name) if Net.save_settings_enabled else {}
+		if not saved.is_empty():
+			_load_character(saved)
+		else:
+			_set_class(Classes.by_id(net_class))
+			_give_starting_gear()
+			save_character()
 		add_to_group(&"local_player")
+		get_tree().create_timer(AUTOSAVE_INTERVAL, false).timeout.connect(_autosave)
 		camera_rig.activate()
 		_face_spawn_direction()
 		if not multiplayer.is_server():
@@ -174,9 +197,11 @@ func _ready() -> void:
 ## Set up class, stats and gear (also used when a proxy learns its class).
 func _set_class(c: ClassData) -> void:
 	stats = CharacterStats.new(c)
+	stats.gear = inventory
 	stats.leveled_up.connect(_on_leveled_up)
-	weapon = c.weapon
-	shield = c.shield
+	if not inventory.changed.is_connected(_on_gear_changed):
+		inventory.changed.connect(_on_gear_changed)
+	_refresh_gear()
 	health = max_health()
 	stamina = max_stamina()
 	flasks = tuning.flask_count
@@ -185,8 +210,43 @@ func _set_class(c: ClassData) -> void:
 	_apply_look()
 
 
+## A brand-new character: equip the class's starting gear.
+func _give_starting_gear() -> void:
+	inventory.load_dict({})
+	for base in stats.class_data.starting_items:
+		var it := ItemInstance.make(base, 1, ItemInstance.Rarity.COMMON)
+		inventory.backpack.add(it)
+		inventory.equip(it.uid)
+	_refresh_gear()
+	health = max_health()
+
+
+## Which weapon and shield are in your hands, how heavy you are, what others see.
+func _refresh_gear() -> void:
+	if is_multiplayer_authority():
+		var main := inventory.main_hand()
+		var off := inventory.off_hand()
+		net_main = main.base.id if main and main.base.weapon else &""
+		net_off = off.base.id if off and off.base.shield else &""
+	var main_item := ItemDB.get_item(net_main) if net_main != &"" else null
+	var off_item := ItemDB.get_item(net_off) if net_off != &"" else null
+	weapon = main_item.weapon if main_item and main_item.weapon else FISTS
+	shield = off_item.shield if off_item and off_item.shield and not weapon.two_handed else null
+	if stats:
+		equip_load = inventory.equipped_weight() / (60.0 + 0.5 * stats.strength()) + _debug_load
+
+
+func _on_gear_changed() -> void:
+	_refresh_gear()
+	_apply_look()
+	if stats:
+		health = minf(health, max_health())
+		health_changed.emit(health, max_health())
+		stamina_changed.emit(stamina, max_stamina())
+
+
 func _apply_look() -> void:
-	var key := "%s/%d/%d" % [stats.class_data.id, net_body, net_color]
+	var key := "%s/%d/%d/%s/%s" % [stats.class_data.id, net_body, net_color, net_main, net_off]
 	if key == _shown_look:
 		return
 	_shown_look = key
@@ -248,7 +308,7 @@ func max_stamina() -> float:
 
 
 func max_poise() -> float:
-	return tuning.poise * (stats.mod_mult("poise_mult") if stats else 1.0)
+	return tuning.poise * (stats.mod_mult("poise_mult") if stats else 1.0) + inventory.stat_total("poise")
 
 
 func level() -> int:
@@ -372,6 +432,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 
 
 func _apply_status(status: Effects.Status, amount: float) -> void:
+	amount *= 1.0 - clampf(inventory.stat_total("status_resist"), 0.0, 0.8)
 	var triggered := effects.add_buildup(status, amount)
 	var head := global_position + Vector3.UP * 2.0
 	match triggered:
@@ -413,6 +474,7 @@ func rest_at(spawn_point: Transform3D) -> void:
 	stamina_changed.emit(stamina, max_stamina())
 	flasks_changed.emit(flasks, tuning.flask_count)
 
+	save_character()
 
 func respawn() -> void:
 	global_position = _spawn.origin
@@ -537,6 +599,7 @@ func _receive_xp(amount: int) -> void:
 
 
 func _on_leveled_up(new_level: int) -> void:
+	save_character.call_deferred()
 	# Keep the same share of health; new maximums apply at once.
 	health = minf(max_health(), health + max_health() * 0.25)
 	stamina = max_stamina()
@@ -554,6 +617,108 @@ func set_level(new_level: int) -> void:
 	health_changed.emit(health, max_health())
 	stamina_changed.emit(stamina, max_stamina())
 	leveled_up.emit(stats.level)
+
+
+# --- Money, items, saving ---------------------------------------------------------
+
+## Gold and souls from a kill (the host sends these to everyone nearby).
+func gain_money(gold_amount: int, souls_amount: int) -> void:
+	if is_multiplayer_authority():
+		_receive_money(gold_amount, souls_amount)
+	else:
+		_net_money.rpc_id(get_multiplayer_authority(), gold_amount, souls_amount)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_money(gold_amount: int, souls_amount: int) -> void:
+	if multiplayer.get_remote_sender_id() == 1:
+		_receive_money(gold_amount, souls_amount)
+
+
+func _receive_money(gold_amount: int, souls_amount: int) -> void:
+	inventory.add_money(gold_amount, souls_amount)
+	if gold_amount > 0 or souls_amount > 0:
+		CombatFx.word(global_position + Vector3.UP * 2.0, "+%d gold  +%d souls" % [gold_amount, souls_amount])
+
+
+## Put a found item in the backpack. Returns false if there's no room.
+func receive_item(item: ItemInstance) -> bool:
+	if not inventory.add_item(item):
+		CombatFx.word(global_position + Vector3.UP * 2.0, "Backpack full")
+		return false
+	CombatFx.word(global_position + Vector3.UP * 2.0, item.display_name())
+	return true
+
+
+## Use a consumable from the backpack (antidote, draught, bandage).
+func use_item(uid: String) -> String:
+	var it: ItemInstance = inventory.backpack.items.get(uid)
+	if it == null or it.base.use_effect == &"":
+		return "Can't be used"
+	if state == State.DEAD or state == State.DOWNED:
+		return "Not now"
+	match it.base.use_effect:
+		&"cure_poison":
+			effects.poison_left = 0.0
+			effects.buildup[Effects.Status.POISON] = 0.0
+		&"cure_frost":
+			effects.frost_left = 0.0
+			effects.buildup[Effects.Status.FROST] = 0.0
+		&"heal":
+			_receive_heal(it.base.use_amount, player_name)
+	it.count -= 1
+	if it.count <= 0:
+		inventory.remove_item(uid)
+	else:
+		inventory.changed.emit()
+	return ""
+
+
+## Drop an item from the backpack onto the ground (friends can pick it up).
+func drop_item(uid: String) -> void:
+	var it := inventory.remove_item(uid)
+	if it:
+		Loot.drop_item(it, global_position + model.forward() * 1.0)
+
+
+func save_character() -> void:
+	if not is_multiplayer_authority() or stats == null or not Net.save_settings_enabled:
+		return
+	SaveSystem.save_character({
+		"name": Net.player_name,
+		"class": String(stats.class_data.id),
+		"body": net_body,
+		"color": net_color,
+		"level": stats.level,
+		"xp": stats.xp,
+		"talents": stats.talents.map(func(t: StringName) -> String: return String(t)),
+		"inventory": inventory.to_dict(),
+	})
+
+
+func _load_character(data: Dictionary) -> void:
+	net_class = StringName(data.get("class", default_class.id))
+	net_body = int(data.get("body", 0))
+	net_color = int(data.get("color", 0))
+	inventory.load_dict(data.get("inventory", {}))
+	_set_class(Classes.by_id(net_class))
+	stats.level = int(data.get("level", 1))
+	stats.xp = int(data.get("xp", 0))
+	for t in data.get("talents", []):
+		stats.talents.append(StringName(t))
+	_refresh_gear()
+	health = max_health()
+	stamina = max_stamina()
+
+
+func _autosave() -> void:
+	save_character()
+	if is_inside_tree():
+		get_tree().create_timer(AUTOSAVE_INTERVAL, false).timeout.connect(_autosave)
+
+
+func _exit_tree() -> void:
+	save_character()
 
 
 # --- Abilities: used by AbilityCaster -------------------------------------------
@@ -712,9 +877,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("lock_on"):
 		if state != State.DEAD and not targeting.toggle():
 			camera_rig.recenter(model.forward())
+	elif event.is_action_pressed("swap_weapons"):
+		if state == State.MOVE:
+			inventory.swap_weapon_set()
+			CombatFx.word(global_position + Vector3.UP * 2.2, "Weapon set %d" % inventory.active_set)
 	elif event.is_action_pressed("debug_equip_load"):
-		var i := TEST_LOADS.find(equip_load)
-		equip_load = TEST_LOADS[(i + 1) % TEST_LOADS.size()]
+		var i := TEST_EXTRA_LOADS.find(_debug_load)
+		_debug_load = TEST_EXTRA_LOADS[(i + 1) % TEST_EXTRA_LOADS.size()]
+		_refresh_gear()
 	elif event.is_action_pressed("debug_reset"):
 		respawn()
 	elif event.is_action_pressed("debug_level_up"):
@@ -809,6 +979,7 @@ func _write_net_state() -> void:
 func _proxy_update(delta: float) -> void:
 	if net_class != &"" and (stats == null or stats.class_data.id != net_class):
 		_set_class(Classes.by_id(net_class))
+	_refresh_gear()
 	_apply_look()
 	if global_position.distance_to(net_pos) > 4.0:
 		global_position = net_pos
@@ -839,6 +1010,7 @@ func _authority_update(delta: float) -> void:
 	_state_time += delta
 	_since_roll += delta
 	_iframe_timer = maxf(0.0, _iframe_timer - delta)
+	_cheat_death_cd = maxf(0.0, _cheat_death_cd - delta)
 	_poise_timer -= delta
 	if _poise_timer <= 0.0:
 		_poise = max_poise()
@@ -961,7 +1133,7 @@ func _state_move(delta: float) -> void:
 		speed = tuning.walk_speed
 	elif locked:
 		speed = tuning.lock_on_speed
-	speed *= effects.move_mult()
+	speed *= effects.move_mult() * (1.0 + inventory.stat_total("move_speed"))
 
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var target_velocity := Vector3.ZERO
@@ -1049,6 +1221,7 @@ func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
 	if a != weapon.riposte:
 		_is_riposte = false
 	is_sprinting = false
+	_arrow_fired = false
 	_set_state(State.ATTACK)
 	_attack.start(a, model)
 
@@ -1093,8 +1266,13 @@ func _state_attack(delta: float) -> void:
 	move_and_slide()
 
 	if _attack.in_hit_window():
-		for target in _attack.find_new_targets(self, model.forward(), &"hittable"):
-			_land_hit(target)
+		if a.projectile_speed > 0.0:
+			if not _arrow_fired:
+				_arrow_fired = true
+				_fire_arrow(a)
+		else:
+			for target in _attack.find_new_targets(self, model.forward(), &"hittable"):
+				_land_hit(target)
 
 	# What comes next: chain, cancel or finish.
 	if _attack.past(a.chain_time) and _has_buffered(&"light") and not _is_riposte \
@@ -1131,16 +1309,71 @@ func _finish_attack() -> void:
 	_set_state(State.MOVE)
 
 
-func _land_hit(target: Node3D) -> void:
-	var a := _attack.attack
+## Bows: shoot an arrow at the locked target, the enemy ahead, or the center dot.
+func _fire_arrow(a: AttackData) -> void:
+	var from := global_position + Vector3.UP * 1.45 + model.forward() * 0.5
+	var aim: Vector3
+	var t := forward_target(a.projectile_range)
+	if t:
+		aim = t.call(&"get_lock_point")
+	else:
+		var cam := camera_rig.camera
+		var q := PhysicsRayQueryParameters3D.create(cam.global_position,
+				cam.global_position - cam.global_transform.basis.z * a.projectile_range, 1 | 4)
+		q.exclude = [get_rid()]
+		var hit := get_world_3d().direct_space_state.intersect_ray(q)
+		aim = hit.position if hit else cam.global_position - cam.global_transform.basis.z * a.projectile_range
+	var dir := (aim - from).normalized()
+	model.face_instantly(dir)
+	var arrow: Node3D = ARROW_SCRIPT.new()
+	arrow.set(&"shooter", self)
+	arrow.set(&"attack", a)
+	arrow.set(&"charge", _charge)
+	arrow.set(&"direction", dir)
+	arrow.set(&"speed", a.projectile_speed)
+	arrow.set(&"max_range", a.projectile_range)
+	CombatFx.world().add_child(arrow)
+	arrow.global_position = from
+	if Net.is_online():
+		_net_arrow.rpc(from, dir, a.projectile_speed, a.projectile_range)
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_arrow(from: Vector3, dir: Vector3, arrow_speed: float, arrow_range: float) -> void:
+	var arrow: Node3D = ARROW_SCRIPT.new()
+	arrow.set(&"direction", dir)
+	arrow.set(&"speed", arrow_speed)
+	arrow.set(&"max_range", arrow_range)
+	CombatFx.world().add_child(arrow)
+	arrow.global_position = from
+
+
+## An arrow you shot reached something.
+func arrow_hit(target: Node3D, a: AttackData, charge: float) -> void:
+	_land_hit(target, a, charge)
+
+
+func _land_hit(target: Node3D, a: AttackData = null, charge := -1.0) -> void:
+	if a == null:
+		a = _attack.attack
+	if charge < 0.0:
+		charge = _charge
 	var hit := make_hit(0.0, weapon.poise_damage * a.poise_mult)
+	# On-hit status from the weapon (axes bleed) and from gear bonus rolls.
+	hit.status = weapon.status
+	hit.status_amount = weapon.status_amount
+	for kind in [["bleed_on_hit", Effects.Status.BLEED], ["poison_on_hit", Effects.Status.POISON], ["frost_on_hit", Effects.Status.FROST]]:
+		var amount := inventory.stat_total(kind[0])
+		if amount > 0.0 and (hit.status == Effects.Status.NONE or hit.status == kind[1]):
+			hit.status = kind[1]
+			hit.status_amount += amount
 	hit.attack = a
 	hit.is_riposte = _is_riposte
 	var dmg := weapon_damage() * a.damage_mult
 	if a == weapon.heavy:
 		dmg *= stats.mod_mult("heavy_damage_mult")
-	if _charging or _charge > 0.0:
-		dmg *= 1.0 + weapon.heavy_charge_bonus * clampf(_charge / weapon.heavy_charge_time, 0.0, 1.0)
+	if charge > 0.0:
+		dmg *= 1.0 + weapon.heavy_charge_bonus * clampf(charge / weapon.heavy_charge_time, 0.0, 1.0)
 	var guaranteed := effects.any("guaranteed_crit")
 	hit.is_crit = _is_riposte or guaranteed or randf() < stats.crit_chance(weapon)
 	if guaranteed:
@@ -1151,7 +1384,7 @@ func _land_hit(target: Node3D) -> void:
 	if target.has_method("is_bleeding") and target.call(&"is_bleeding"):
 		dmg *= stats.mod_mult("bleeding_target_damage_mult")
 	if target.has_method("armor"):
-		dmg *= 1.0 - HitInfo.armor_reduction(float(target.call(&"armor")), level())
+		dmg *= 1.0 - HitInfo.armor_reduction(float(target.call(&"armor")) * (1.0 - weapon.armor_pierce), level())
 	hit.damage = dmg
 	hit.hit_stop = 0.15 if hit.is_crit else a.hit_stop
 	if _ability_strike and a == _ability_strike.attack:
@@ -1234,6 +1467,10 @@ func _apply_damage(amount: float) -> void:
 	health = maxf(0.0, health - amount)
 	if health <= 0.0 and effects.any("min_health"):
 		health = 1.0  # Unbroken
+	elif health <= 0.0 and stats.mod_add("cheat_death") > 0.0 and _cheat_death_cd <= 0.0:
+		health = 1.0  # a legendary saved you
+		_cheat_death_cd = CHEAT_DEATH_COOLDOWN
+		CombatFx.word(global_position + Vector3.UP * 2.2, "Not today")
 	health_changed.emit(health, max_health())
 	if health <= 0.0:
 		if _someone_else_standing():
@@ -1562,7 +1799,7 @@ func _update_stamina(delta: float) -> void:
 		_regen_cooldown -= delta
 	elif stamina < max_stamina():
 		var rate := tuning.stamina_regen * (tuning.block_regen_mult if is_blocking else 1.0) \
-				* effects.stamina_regen_mult() * stats.mod_mult("stamina_regen_mult")
+				* effects.stamina_regen_mult() * stats.mod_mult("stamina_regen_mult") * (1.0 + inventory.stat_total("stamina_regen"))
 		stamina = minf(max_stamina(), stamina + rate * delta)
 		stamina_changed.emit(stamina, max_stamina())
 	if _sprint_locked and stamina >= tuning.sprint_restart_stamina:

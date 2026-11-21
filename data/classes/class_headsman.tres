@@ -1,10 +1,15 @@
 [gd_resource type="Resource" script_class="ClassData" format=3]
 
 [ext_resource type="Script" path="res://game/classes/class_data.gd" id="1_class"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="9_item"]
 [ext_resource type="Script" path="res://game/classes/ability_data.gd" id="2_ability"]
 [ext_resource type="Script" path="res://game/classes/talent_data.gd" id="3_talent"]
 [ext_resource type="Script" path="res://game/combat/attack_data.gd" id="4_attack"]
 [ext_resource type="Resource" path="res://data/weapons/weapon_executioner_greatsword.tres" id="5_weapon"]
+
+[ext_resource type="Resource" path="res://data/items/weapons/item_executioners_greatsword.tres" id="50_start"]
+[ext_resource type="Resource" path="res://data/items/armor/item_leather_hood.tres" id="51_start"]
+[ext_resource type="Resource" path="res://data/items/armor/item_leather_breeches.tres" id="52_start"]
 
 [sub_resource type="Resource" id="Strike_hamstring"]
 script = ExtResource("4_attack")
@@ -263,5 +268,6 @@ armor_per_level = 1.2
 passive_name = "Practiced Hand"
 passive_description = "+10% damage to bleeding targets. Ripostes carve 3 notches. Each hit carves a notch (heavy hits and crits carve 2); notches fade 8 s after you stop hitting."
 passive_mods = {"bleeding_target_damage_mult": 1.1}
+starting_items = Array[ExtResource("9_item")]([ExtResource("50_start"), ExtResource("51_start"), ExtResource("52_start")])
 abilities = Array[ExtResource("2_ability")]([SubResource("A_hamstring"), SubResource("A_behead"), SubResource("A_lunge"), SubResource("A_cleave"), SubResource("A_feint"), SubResource("A_mist")])
 talents = Array[ExtResource("3_talent")]([SubResource("T_deep_cut"), SubResource("T_sharp"), SubResource("T_reach"), SubResource("T_heavy"), SubResource("T_clean_cut"), SubResource("T_butcher"), SubResource("T_grim"), SubResource("T_patient"), SubResource("T_tide"), SubResource("T_vanish"), SubResource("T_executioner"), SubResource("T_bloodletter")])

@@ -3,7 +3,7 @@ extends Node
 ## Runs at start-up (autoload "ItemDB").
 
 const ITEMS_DIR := "res://data/items"
-const BALANCE: LootBalance = preload("res://data/balance/loot.tres")
+var balance: LootBalance = load("res://data/balance/loot.tres")
 
 var _items := {}  # id -> ItemData
 
@@ -70,8 +70,8 @@ func make_item(base: ItemData, ilvl: int, rarity: int, rng: RandomNumberGenerato
 		it.rarity = ItemInstance.Rarity.COMMON
 		return it
 	var pool := PackedStringArray()
-	for k in BALANCE.bonus_ranges:
-		if k in BALANCE.weapon_only and base.weapon == null:
+	for k in balance.bonus_ranges:
+		if k in balance.weapon_only and base.weapon == null:
 			continue
 		pool.append(k)
 	for i in ItemInstance.BONUS_COUNT[it.rarity]:
@@ -79,10 +79,10 @@ func make_item(base: ItemData, ilvl: int, rarity: int, rng: RandomNumberGenerato
 			break
 		var k := pool[rng.randi() % pool.size()]
 		pool.remove_at(pool.find(k))
-		var r: Vector2 = BALANCE.bonus_ranges[k]
+		var r: Vector2 = balance.bonus_ranges[k]
 		var v := rng.randf_range(r.x, r.y)
-		if not (k in BALANCE.flat_bonuses):
-			v *= 1.0 + BALANCE.per_ilvl * (ilvl - 1)
+		if not (k in balance.flat_bonuses):
+			v *= 1.0 + balance.per_ilvl * (ilvl - 1)
 			v = roundf(v)
 		it.bonuses[k] = v
 	return it
@@ -98,7 +98,7 @@ func _pick_base(table: LootTable, rng: RandomNumberGenerator) -> ItemData:
 
 ## Pick a category (weapon / shield / armor / jewelry), then items of it.
 func _general_pool(rng: RandomNumberGenerator) -> Array:
-	var weights := BALANCE.category_weights
+	var weights := balance.category_weights
 	var total := 0.0
 	for w in weights:
 		total += w

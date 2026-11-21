@@ -187,6 +187,7 @@ func _run() -> void:
 ## Fresh player of a class and level facing a fresh, passive Marauder 2 m away.
 func _setup(class_id: String, lvl: int) -> void:
 	player._set_class(Classes.by_id(StringName(class_id)))
+	player._give_starting_gear()
 	player.set_level(lvl)
 	player.caster.refill()
 	player.effects.clear_all()

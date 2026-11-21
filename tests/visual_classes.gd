@@ -55,6 +55,7 @@ func _setup(class_id: String, body: int, color: int) -> void:
 	player.net_body = body
 	player.net_color = color
 	player._set_class(Classes.by_id(StringName(class_id)))
+	player._give_starting_gear()
 	player.set_level(20)
 	player.caster.refill()
 	player.respawn()

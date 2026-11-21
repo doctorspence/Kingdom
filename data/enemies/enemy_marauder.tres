@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
 [ext_resource type="PackedScene" path="res://assets/placeholder/weapons/axe_placeholder.tscn" id="3_axe"]
+[ext_resource type="Resource" path="res://data/loot/loot_marauder.tres" id="4_loot"]
 
 [sub_resource type="Resource" id="Attack_sweep"]
 script = ExtResource("2_attack")
@@ -83,6 +84,7 @@ max_health = 200.0
 level = 4
 armor = 20.0
 xp = 120
+loot_table = ExtResource("4_loot")
 poise = 45.0
 attack_cooldown_min = 0.8
 attack_cooldown_max = 1.8

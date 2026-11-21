@@ -1,9 +1,14 @@
 [gd_resource type="Resource" script_class="ClassData" format=3]
 
 [ext_resource type="Script" path="res://game/classes/class_data.gd" id="1_class"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="9_item"]
 [ext_resource type="Script" path="res://game/classes/ability_data.gd" id="2_ability"]
 [ext_resource type="Script" path="res://game/classes/talent_data.gd" id="3_talent"]
 [ext_resource type="Resource" path="res://data/weapons/weapon_lantern_staff.tres" id="5_weapon"]
+
+[ext_resource type="Resource" path="res://data/items/weapons/item_lantern_staff.tres" id="50_start"]
+[ext_resource type="Resource" path="res://data/items/armor/item_padded_robe.tres" id="51_start"]
+[ext_resource type="Resource" path="res://data/items/armor/item_padded_cowl.tres" id="52_start"]
 
 [sub_resource type="Resource" id="A_kindle"]
 script = ExtResource("2_ability")
@@ -229,5 +234,6 @@ armor_per_level = 0.8
 passive_name = "Keeper of the Flame"
 passive_description = "Revives take half as long. Healing grows with Intellect. Your heals work at 50% on yourself. Oil trickles back, faster when you land hits."
 passive_mods = {"revive_time_mult": 0.5, "self_heal_mult": 0.5}
+starting_items = Array[ExtResource("9_item")]([ExtResource("50_start"), ExtResource("51_start"), ExtResource("52_start")])
 abilities = Array[ExtResource("2_ability")]([SubResource("A_kindle"), SubResource("A_vigil"), SubResource("A_snuff"), SubResource("A_flare"), SubResource("A_beacon"), SubResource("A_pyre")])
 talents = Array[ExtResource("3_talent")]([SubResource("T_wick"), SubResource("T_bright"), SubResource("T_reservoir"), SubResource("T_steady"), SubResource("T_tallow"), SubResource("T_oil"), SubResource("T_clean_air"), SubResource("T_blinding"), SubResource("T_quick_beacon"), SubResource("T_warmth"), SubResource("T_self"), SubResource("T_rain")])

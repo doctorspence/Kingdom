@@ -649,12 +649,8 @@ func _die() -> void:
 	model.set_overlay("")
 	model.play_death()
 	died.emit()
-	# Everyone in the party nearby gets the full XP (DESIGN.md 6.4).
-	var share_range := CharacterStats.PROGRESSION.xp_share_range
-	for n in get_tree().get_nodes_in_group(&"player"):
-		var p := n as Player
-		if p and not p.is_dead() and p.global_position.distance_to(global_position) <= share_range:
-			p.gain_xp(data.xp)
+	# Loot, gold, souls and XP for everyone nearby (DESIGN.md 6.4 and 9).
+	Loot.enemy_died(self, data.loot_table, data.xp)
 
 
 # --- Helpers ------------------------------------------------------------------
