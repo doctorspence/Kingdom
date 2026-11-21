@@ -91,6 +91,7 @@ func _float_text(where: Vector3, text: String, color: Color, size: int) -> void:
 
 ## A spurt of blood droplets at `where`, flying roughly along `direction`.
 func blood(where: Vector3, direction: Vector3, amount := 1.0) -> void:
+	Audio.sfx(&"hit_crit" if amount > 1.2 else &"hit_flesh", where)
 	if gore == 0:
 		return
 	var count := int((18 if gore == 2 else 8) * amount)
@@ -130,6 +131,7 @@ func _splat(where: Vector3, size: float) -> void:
 
 ## Metal sparks for blocks and parries.
 func sparks(where: Vector3, direction: Vector3, big := false) -> void:
+	Audio.sfx(&"clang_parry" if big else &"clang_block", where)
 	_burst(where, direction, 26 if big else 12, _spark_mesh, 3.0, 7.0, 0.35, Vector3(0, -6, 0))
 	var light := OmniLight3D.new()
 	light.light_color = Color(1.0, 0.75, 0.4)

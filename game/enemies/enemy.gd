@@ -93,6 +93,8 @@ func _ready() -> void:
 	global_basis = Basis.IDENTITY
 	model.face_instantly(-_spawn.basis.z)
 	model.scale = Vector3.ONE * data.scale
+	if model.audio:
+		model.audio.voice = &"boss" if data.boss else (&"beast" if "hound" in String(data.id) else &"human")
 	if data.weapon_scene:
 		_weapon = data.weapon_scene.instantiate()
 		model.attach_to_hand(_weapon, "r")

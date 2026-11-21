@@ -38,6 +38,7 @@ func _ready() -> void:
 	_mesh.rotation_degrees.x = 90.0  # on edge, like a thrown plate
 	add_child(_mesh)
 	_start = global_position
+	(func() -> void: Audio.sfx(&"throw", global_position)).call_deferred()
 
 
 func _physics_process(delta: float) -> void:
@@ -74,6 +75,7 @@ func _strike_things() -> void:
 
 
 func _finish() -> void:
+	Audio.sfx(&"shield_clack", global_position)
 	if owned and is_instance_valid(caster):
 		caster.shield_returned()
 	queue_free()

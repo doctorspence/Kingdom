@@ -37,6 +37,91 @@ func _ready() -> void:
 		_apply(g)
 
 
+# --- Playing sound effects ---------------------------------------------------------
+
+## Same cue again within this many seconds is skipped (stops a pile-up of one sound).
+const MIN_REPEAT := 0.045
+## Most one-shot sounds playing at once.
+const MAX_VOICES := 28
+## Sounds farther than this from the listener are not played.
+const HEARING_RANGE := 45.0
+
+var _cache := {}
+var _last_played := {}
+var _last_file := {}
+var _voices := 0
+## Counts what was played (the automated checks read this).
+var played_count := 0
+
+
+## Play a sound cue (see SfxLibrary). With `where` it comes from that spot in the
+## world and gets quieter with distance; without it, it plays flat (menus).
+## `db` adjusts the volume for this one play. Returns true if it played.
+func sfx(cue: StringName, where := Vector3.INF, db := 0.0) -> bool:
+	var data := SfxLibrary.cue(cue)
+	if data.is_empty():
+		return false
+	var now := Time.get_ticks_msec() / 1000.0
+	if now - float(_last_played.get(cue, -9.0)) < MIN_REPEAT or _voices >= MAX_VOICES:
+		return false
+	var files: Array = data["files"]
+	if files.is_empty():
+		return false
+	var path: String = files[randi() % files.size()]
+	if files.size() > 1 and path == _last_file.get(cue, ""):
+		path = files[randi() % files.size()]
+	var stream := _load(path)
+	if stream == null:
+		return false
+	var pitch: Vector2 = data["pitch"]
+	var volume: float = float(data["db"]) + db
+	var scene := get_tree().current_scene
+	var player: Node
+	if where != Vector3.INF and scene is Node3D:
+		var cam := get_viewport().get_camera_3d()
+		if cam and cam.global_position.distance_to(where) > HEARING_RANGE:
+			return false
+		var p3 := AudioStreamPlayer3D.new()
+		p3.stream = stream
+		p3.bus = data["bus"]
+		p3.volume_db = volume
+		p3.pitch_scale = randf_range(pitch.x, pitch.y)
+		p3.max_distance = HEARING_RANGE
+		p3.unit_size = 7.0
+		scene.add_child(p3)
+		p3.global_position = where
+		player = p3
+	else:
+		var p2 := AudioStreamPlayer.new()
+		p2.stream = stream
+		p2.bus = data["bus"]
+		p2.volume_db = volume
+		p2.pitch_scale = randf_range(pitch.x, pitch.y)
+		add_child(p2)
+		player = p2
+	_last_played[cue] = now
+	_last_file[cue] = path
+	_voices += 1
+	played_count += 1
+	var released := [false]
+	var release := func() -> void:
+		if not released[0]:
+			released[0] = true
+			_voices -= 1
+	player.finished.connect(func() -> void:
+		release.call()
+		player.queue_free())
+	player.tree_exited.connect(release)  # the scene changed under it
+	player.call(&"play")
+	return true
+
+
+func _load(path: String) -> AudioStream:
+	if not _cache.has(path):
+		_cache[path] = load(path) if ResourceLoader.exists(path) else null
+	return _cache[path]
+
+
 func get_volume(group: StringName) -> float:
 	return volumes.get(group, 1.0)
 

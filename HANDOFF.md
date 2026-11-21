@@ -37,7 +37,7 @@ Headsman / Bulwark / Lamplighter are now **Martial / Vanguard / Mystic** (names 
 Playtest the new abilities (🧪 in TODO.md). Then, when you want it, the subclass work in `CLASS_PLAN.md` (Priority 1 onward). Your decisions so far: subclass is re-pickable in future; names Martial / Vanguard / Mystic are for now.
 
 ## Things to know
-- **Checks:** run any check with `--headless --script res://tests/run.gd -- <name>` (see README.md). Current checks: movement, combat, class, loot, death, enemy, zone, boss, moves; plus the 3-player check `tests/run_net_check.ps1`. All pass as of this update.
+- **Checks:** run any check with `--headless --script res://tests/run.gd -- <name>` (see README.md). Current checks: movement, combat, class, loot, death, enemy, zone, boss, moves, audio, sound; plus the 3-player check `tests/run_net_check.ps1`. All pass as of this update.
 - **Godot and git paths:** there are no PATH shortcuts. Godot is in `%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\` (use the `_console.exe` for output). Git is `C:\Program Files\Git\cmd\git.exe`.
 - **Never run test copies on port 31415** (that is your live game). Checks use 31499.
 - **The class and loot checks** depend on `two_handed = true` being present in `data/weapons/weapon_executioner_greatsword.tres` and `weapon_lantern_staff.tres`. The Godot editor dropped that line once when it re-saved them; it was restored by hand. If those checks fail on "two-handed", look there.

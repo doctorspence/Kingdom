@@ -275,12 +275,12 @@ func cast_effect(a: AbilityData) -> void:
 			_buff(p, &"battle_fury", a.duration + stats().mod_add("battle_fury_duration_add"),
 					{"damage_dealt": 1.0 + a.value + stats().mod_add("battle_fury_damage_add"),
 					"attack_speed": 1.0 + a.power, "label": "Battle Fury"})
-			_visual(&"bellow", p.global_position, 2.0, 0.4)
+			_visual(&"bellow", p.global_position, 2.0, 0.4, &"fury")
 		AbilityData.Kind.IRON_RESOLVE:
 			_buff(p, &"iron_resolve", a.duration + stats().mod_add("iron_resolve_duration_add"),
 					{"damage_taken": 1.0 - clampf(a.value + stats().mod_add("iron_resolve_reduction_add"), 0.0, 0.8),
 					"poise_taken": 1.0 - a.power, "label": "Iron Resolve"})
-			_visual(&"bellow", p.global_position, 2.0, 0.4)
+			_visual(&"bellow", p.global_position, 2.0, 0.4, &"resolve")
 		AbilityData.Kind.SHIELD_THROW:
 			_throw_shield(a)
 		AbilityData.Kind.ARCANE_BOLT:
@@ -294,6 +294,7 @@ func cast_effect(a: AbilityData) -> void:
 						{"damage_dealt": 1.0 - a.power, "damage_taken": 1.0 + a.value + stats().mod_add("hex_vuln_add"), "label": "Hexed"})
 				CombatFx.word(victim.global_position + Vector3.UP * 2.6, "Hexed!")
 				CombatFx.burst_visual(&"flare", victim.global_position + Vector3.UP * 1.3, 1.2, 0.35)
+				Audio.sfx(&"hex", victim.global_position + Vector3.UP * 1.3)
 			else:
 				CombatFx.word(p.global_position + Vector3.UP * 2.2, "No target")
 
@@ -376,9 +377,11 @@ func _area(area_kind: StringName, where: Vector3, radius: float, duration: float
 	_net_area.rpc(area_kind, where, radius, duration)
 
 
-func _visual(visual_kind: StringName, where: Vector3, radius: float, duration: float) -> void:
+func _visual(visual_kind: StringName, where: Vector3, radius: float, duration: float, cue := &"") -> void:
 	CombatFx.burst_visual(visual_kind, where, radius, duration)
-	_net_visual.rpc(visual_kind, where, radius, duration)
+	if cue != &"":
+		Audio.sfx(cue, where)
+	_net_visual.rpc(visual_kind, where, radius, duration, cue)
 
 
 func _enemies_near(where: Vector3, radius: float) -> Array[Node3D]:
@@ -491,10 +494,10 @@ func _mend(a: AbilityData) -> void:
 			best = ally
 	if best:
 		heal_player(best, amount)
-		_visual(&"ember_burst", best.global_position + Vector3.UP * 0.2, 1.2, 0.5)
+		_visual(&"ember_burst", best.global_position + Vector3.UP * 0.2, 1.2, 0.5, &"mend")
 	else:
 		p.heal_from(amount, p.player_name)  # no self-heal penalty for Mend
-		_visual(&"ember_burst", p.global_position + Vector3.UP * 0.2, 1.2, 0.5)
+		_visual(&"ember_burst", p.global_position + Vector3.UP * 0.2, 1.2, 0.5, &"mend")
 
 
 # --- What other players see -------------------------------------------------------
@@ -542,5 +545,7 @@ func _net_area(area_kind: StringName, where: Vector3, radius: float, duration: f
 
 
 @rpc("authority", "call_remote", "unreliable")
-func _net_visual(visual_kind: StringName, where: Vector3, radius: float, duration: float) -> void:
+func _net_visual(visual_kind: StringName, where: Vector3, radius: float, duration: float, cue := &"") -> void:
 	CombatFx.burst_visual(visual_kind, where, radius, duration)
+	if cue != &"":
+		Audio.sfx(cue, where)

@@ -10,6 +10,13 @@ extends Node3D
 const EXTRA_LIBRARIES := {
 	&"ual2": "res://assets/characters/mannequin/UAL2_Standard.glb",
 }
+## An animation just started (or restarted) here, on this machine's copy of the
+## character. Sounds listen to this, so every player hears every character.
+signal anim_started(anim_name: StringName)
+
+## Makes this character's footsteps, swings and voice (see CharacterAudio).
+var audio: CharacterAudio
+
 ## Animations that should loop but don't in the source files.
 const FORCE_LOOP := [&"Sword_Idle", &"ual2/ClimbUp_1m"]
 
@@ -74,6 +81,9 @@ func _ready() -> void:
 	_overlay = StandardMaterial3D.new()
 	_overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	audio = CharacterAudio.new()
+	audio.name = "CharacterAudio"
+	add_child(audio)
 	play(idle_anim, 0.0)
 
 
@@ -146,6 +156,7 @@ func play_roll_backward(duration: float) -> void:
 	_anim.speed_scale = anim_length(ANIM_ROLL) * roll_anim_portion / duration
 	_anim.play_backwards(ANIM_ROLL, 0.06)
 	play_count += 1
+	anim_started.emit(ANIM_ROLL)
 
 
 func play_jump() -> void:
@@ -177,10 +188,12 @@ func play(anim_name: StringName, blend := 0.15, speed := 1.0, restart := false) 
 		if restart:
 			_anim.seek(0.0, true)
 			play_count += 1
+			anim_started.emit(anim_name)
 		return
 	_current = anim_name
 	_anim.play(anim_name, blend)
 	play_count += 1
+	anim_started.emit(anim_name)
 
 
 ## Counts every animation start, so other players' screens can copy them.
@@ -199,6 +212,7 @@ func mirror(anim_name: StringName, speed: float, count: int) -> void:
 			_current = anim_name
 			_anim.play(anim_name, 0.1)
 			_anim.seek(0.0, true)
+			anim_started.emit(anim_name)
 	if _anim:
 		_anim.speed_scale = speed
 

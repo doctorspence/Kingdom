@@ -39,6 +39,8 @@ func _ready() -> void:
 	light.light_energy = 0.8
 	light.omni_range = 2.5
 	add_child(light)
+	# Plays on every machine that sees the bolt (after it has been placed).
+	(func() -> void: Audio.sfx(&"bolt", global_position)).call_deferred()
 
 
 func _physics_process(delta: float) -> void:
