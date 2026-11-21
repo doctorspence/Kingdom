@@ -36,15 +36,19 @@ Headsman / Bulwark / Lamplighter are now **Martial / Vanguard / Mystic** (names 
 ## Phase 10 (audio): built
 All the sounds and music are in (321+ CC0 files in `assets/audio/`, credited in `assets/CREDITS.md`): combat, abilities, loot, menus, zone ambience, music, and Tallow's boss track. Volume sliders are under **Volume** in the main and Esc menus. I could not listen, so cues were chosen by file name: you need to play with sound on and tell me what is wrong (cues are in `game/audio/sfx_library.gd`). The friends build (`build/Kingdom-windows.zip`, 66 MB) was re-exported with sound.
 
+## Phase 12 (settings and key rebinding): built
+Menu > Settings (main menu and Esc menu) has Audio, Gameplay, Display and Controls tabs; you can rebind all keyboard and mouse actions. Saved in `settings.cfg`.
+
 ## Next up
 Listen-test the audio and playtest the nine abilities (🧪 in TODO.md). Subclasses (Phase 11) are paused at your request: the framework and Warrior, Guardian and Cleric are built; the other six are "Coming later". Your decisions so far: subclass is re-pickable in future; names Martial / Vanguard / Mystic are for now.
 
 ## Things to know
-- **Checks:** run any check with `--headless --script res://tests/run.gd -- <name>` (see README.md). Current checks: movement, combat, class, loot, death, enemy, zone, boss, moves, audio, sound, subclass; plus the 3-player check `tests/run_net_check.ps1`. All pass as of this update.
+- **Checks:** run any check with `--headless --script res://tests/run.gd -- <name>` (see README.md). Current checks: movement, combat, class, loot, death, enemy, zone, boss, moves, audio, sound, subclass, prefs; plus the 3-player check `tests/run_net_check.ps1`. All pass as of this update.
 - **Godot and git paths:** there are no PATH shortcuts. Godot is in `%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\` (use the `_console.exe` for output). Git is `C:\Program Files\Git\cmd\git.exe`.
 - **Never run test copies on port 31415** (that is your live game). Checks use 31499.
 - **The class and loot checks** depend on `two_handed = true` being present in `data/weapons/weapon_executioner_greatsword.tres` and `weapon_lantern_staff.tres`. The Godot editor dropped that line once when it re-saved them; it was restored by hand. If those checks fail on "two-handed", look there.
 - **Your editor tuning** (class and weapon files, `overcast_env.tres`, `look_test.tscn`) is committed (commit "Editor tuning").
+- **Run checks one at a time, never at the same time as the 3-player check** (they share port 31499 and the timing checks fail under load).
 - **Flaky checks:** `combat_check` ("charged heavy hits harder", a random crit) and `moves_check` ("guard counter", timing) each fail about 1 run in 10; rerun before suspecting a real bug.
 - **Commits** use the neutral local identity "Kingdom Dev"; the commit history lets you roll back any step.
 - **The `build/` zip** for friends was re-exported after Phase 10 (audio). Re-export again after later changes (README.md, "Play with friends"); `Godot_console.exe --headless --path . --export-release "Windows" build/windows/Kingdom.exe`, then zip `build/windows`.

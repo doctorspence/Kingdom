@@ -166,6 +166,14 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] First three paths playable: Warrior (Cleave, Feint, Red Mist), Guardian (Rallying Bellow, Hold the Line, Unbroken), Cleric (Snuff, Beacon, Pyre). The other six show "Coming later" and cannot be chosen. `tests/subclass_check.gd` passes
 - [ ] Paused: Paladin (auras), Mage, Rogue, Ranger, Warlock, Warden (summons); initiation trials (need quests); per-subclass talents and visuals
 
+## Phase 12: Settings menu and key rebinding ✅ (built; waiting for your test)
+- [x] `Prefs` autoload (`game/core/prefs.gd`): gameplay options, camera, display and your key bindings, all saved in `settings.cfg`
+- [x] A **Settings** screen from the main menu and the Esc menu (replaces the Volume button) with four tabs: **Audio** (the five sliders), **Gameplay** (damage numbers, enemy health bars, gore Off/Low/High, camera sensitivity, invert Y), **Display** (fullscreen, vsync), **Controls**
+- [x] **Rebinding** for 26 keyboard and mouse actions: click an action, press a key or mouse button (Esc cancels); if another action already used it the two swap, so nothing is left unbound; gamepad buttons stay as designed; Reset button; changed bindings show in blue. The hotbar and the interact prompt show your real keys
+- [x] `tests/prefs_check.gd` passes (22 checks); all other checks and the 3-player check still pass
+- [ ] 🧪 Open Settings, rebind a few keys, quit and restart to see that they stuck; try fullscreen and sensitivity
+- [ ] Later: gamepad rebinding, brightness, resolution scale, accessibility (text size, colorblind-safe rarity), the F1 help text following your bindings
+
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
 - Quests and public quests

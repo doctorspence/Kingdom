@@ -246,10 +246,14 @@ func _build() -> void:
 	right.add_child(_address_edit)
 	right.add_child(_button("Join game", _on_join))
 	right.add_child(_spacer(10))
-	var sliders := AudioSettings.new()
-	sliders.visible = false
-	right.add_child(_button("Volume", func() -> void: sliders.visible = not sliders.visible))
-	right.add_child(sliders)
+	var settings := SettingsPanel.new()
+	settings.set_anchors_preset(Control.PRESET_CENTER)
+	settings.offset_left = -380
+	settings.offset_right = 380
+	settings.offset_top = -330
+	settings.offset_bottom = 330
+	right.add_child(_button("Settings", func() -> void: settings.open()))
+	add_child(settings)  # on top of the whole menu
 	right.add_child(_button("Quit", func() -> void: get_tree().quit()))
 
 	_status = _label("")

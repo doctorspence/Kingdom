@@ -53,8 +53,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		if not _is_locked():
-			yaw -= event.relative.x * mouse_sensitivity
-			pitch -= event.relative.y * mouse_sensitivity * (-1.0 if invert_y else 1.0)
+			yaw -= event.relative.x * mouse_sensitivity * Prefs.look_sensitivity
+			pitch -= event.relative.y * mouse_sensitivity * Prefs.look_sensitivity * (-1.0 if invert_y != Prefs.invert_y else 1.0)
 			_recenter_yaw = NAN
 
 
@@ -75,8 +75,8 @@ func _process(delta: float) -> void:
 	if not _is_locked():
 		var look := Input.get_vector("look_left", "look_right", "look_up", "look_down")
 		if look.length_squared() > 0.0:
-			yaw -= look.x * stick_sensitivity * delta
-			pitch -= look.y * stick_sensitivity * 0.7 * delta * (-1.0 if invert_y else 1.0)
+			yaw -= look.x * stick_sensitivity * Prefs.look_sensitivity * delta
+			pitch -= look.y * stick_sensitivity * Prefs.look_sensitivity * 0.7 * delta * (-1.0 if invert_y != Prefs.invert_y else 1.0)
 			_recenter_yaw = NAN
 
 	var pivot := follow.get_global_transform_interpolated().origin + Vector3.UP * pivot_height

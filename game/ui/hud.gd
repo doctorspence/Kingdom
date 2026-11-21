@@ -23,6 +23,7 @@ Abilities: 1-6 / hold LT + A, B, X, Y, RB, RT
 Talents: T / D-pad left    Inventory: I / View    Swap weapon set: X / D-pad right
 Thrown abilities land where the center dot points
 Chat: Enter        Menu (leave game): Esc
+(These are the default keys; change them in Menu > Settings > Controls)
 
 TEST KEYS
 F2: debug info (invincibility shows as a blue tint)
@@ -70,6 +71,7 @@ var _shrine_menu: PanelContainer
 var _shrine_source: Node
 var _map_panel: MapPanel
 var _subclass_panel: SubclassPanel
+var _settings_panel: SettingsPanel
 var _path_button: Button
 var _roll_box: VBoxContainer
 var _money_label: Label
@@ -146,8 +148,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			player.show_debug = _debug_label.visible
 	elif event.is_action_pressed("toggle_health_bars"):
 		CombatFx.show_enemy_health_bars = not CombatFx.show_enemy_health_bars
+		Prefs.save()
 	elif event.is_action_pressed("toggle_damage_numbers"):
 		CombatFx.show_damage_numbers = not CombatFx.show_damage_numbers
+		Prefs.save()
 
 
 func _process(delta: float) -> void:
@@ -204,7 +208,7 @@ func _update_prompt() -> void:
 		else:
 			var thing := player.nearest_interactable()
 			if thing:
-				text = "[E]  %s" % thing.call(&"get_interact_text")
+				text = "[%s]  %s" % [Prefs.binding_text(&"interact"), thing.call(&"get_interact_text")]
 	_prompt_label.visible = text != ""
 	_prompt_label.text = text
 
@@ -289,7 +293,7 @@ func _on_leveled_up(new_level: int) -> void:
 
 func _any_panel_open() -> bool:
 	return _inventory_panel.visible or _shop_panel.visible or _bank_panel.visible \
-			or _shrine_menu.visible or _talents.visible or _map_panel.visible or _subclass_panel.visible
+			or _shrine_menu.visible or _talents.visible or _map_panel.visible or _subclass_panel.visible or _settings_panel.visible
 
 
 func _close_panels() -> void:
@@ -299,6 +303,8 @@ func _close_panels() -> void:
 	_shrine_menu.visible = false
 	_map_panel.close()
 	_subclass_panel.close_panel()
+	_settings_panel.close_panel()  # (Esc leaves settings and the menu together)
+	_menu.visible = false
 	if _talents.visible:
 		_talents.toggle()
 
@@ -671,7 +677,7 @@ func _build() -> void:
 	root.add_child(_death_label)
 
 	_menu = PanelContainer.new()
-	_place(_menu, Control.PRESET_CENTER, Rect2(-200, -170, 400, 340))
+	_place(_menu, Control.PRESET_CENTER, Rect2(-180, -100, 360, 200))
 	_menu.visible = false
 	var menu_box := VBoxContainer.new()
 	menu_box.add_theme_constant_override("separation", 12)
@@ -684,14 +690,14 @@ func _build() -> void:
 		_menu.visible = false
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED)
 	menu_box.add_child(resume)
-	var volume := Button.new()
-	volume.text = "Volume"
-	volume.custom_minimum_size = Vector2(0, 44)
-	var sliders := AudioSettings.new()
-	sliders.visible = false
-	volume.pressed.connect(func() -> void: sliders.visible = not sliders.visible)
-	menu_box.add_child(volume)
-	menu_box.add_child(sliders)
+	var settings := Button.new()
+	settings.name = "Settings"
+	settings.text = "Settings"
+	settings.custom_minimum_size = Vector2(0, 44)
+	settings.pressed.connect(func() -> void:
+		_menu.visible = false
+		_settings_panel.open())
+	menu_box.add_child(settings)
 	var leave := Button.new()
 	leave.text = "Leave game" if Net.mode != Net.Mode.HOST else "Close game (everyone leaves)"
 	leave.custom_minimum_size = Vector2(0, 44)
@@ -745,6 +751,13 @@ func _build() -> void:
 	_place(_talents, Control.PRESET_CENTER, Rect2(-400, -260, 800, 520))
 	root.add_child(_talents)
 
+	_settings_panel = SettingsPanel.new()
+	_place(_settings_panel, Control.PRESET_CENTER, Rect2(-380, -330, 760, 660))
+	_settings_panel.closed.connect(func() -> void:
+		_menu.visible = true
+		(_menu.find_child("Resume", true, false) as Button).grab_focus())
+	root.add_child(_settings_panel)
+
 	_subclass_panel = SubclassPanel.new()
 	_place(_subclass_panel, Control.PRESET_CENTER, Rect2(-600, -340, 1200, 680))
 	_subclass_panel.chosen.connect(func(_id: StringName) -> void:
@@ -752,7 +765,7 @@ func _build() -> void:
 	root.add_child(_subclass_panel)
 
 	# Panels rustle open and shut (a book for the inventory, talents and map).
-	for panel: Control in [_inventory_panel, _shop_panel, _bank_panel, _shrine_menu, _menu, _talents, _map_panel, _subclass_panel]:
+	for panel: Control in [_inventory_panel, _shop_panel, _bank_panel, _shrine_menu, _menu, _talents, _map_panel, _subclass_panel, _settings_panel]:
 		panel.visibility_changed.connect(func() -> void:
 			if is_inside_tree():
 				Audio.sfx(&"ui_open" if panel.visible else &"ui_close"))

@@ -39,7 +39,7 @@ func _run() -> void:
 	var menu: Node = load("res://game/ui/main_menu.tscn").instantiate()
 	add_child(menu)
 	await get_tree().process_frame
-	_check("main menu builds with a Volume button", menu.find_children("*", "Button", true, false).any(func(b: Node) -> bool: return (b as Button).text == "Volume"))
+	_check("main menu builds with a Settings button", menu.find_children("*", "Button", true, false).any(func(b: Node) -> bool: return (b as Button).text == "Settings"))
 
 	Audio.set_volume(&"Music", before)
 

@@ -55,7 +55,7 @@ func _draw() -> void:
 			var frac := clampf(cd / maxf(full, 0.01), 0.0, 1.0)
 			draw_rect(Rect2(r.position, Vector2(SLOT, SLOT * frac)), Color(0, 0, 0, 0.65))
 			draw_string(font, r.position + Vector2(18, 58), str(ceili(cd)), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1, 1, 1))
-		draw_string(font, r.position + Vector2(4, 14), KEYS[i], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.95, 0.9, 0.8))
+		draw_string(font, r.position + Vector2(4, 14), Prefs.binding_text(StringName("ability_%d" % (i + 1))), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.95, 0.9, 0.8))
 		if a.cost > 0.0 and unlocked:
 			draw_string(font, r.position + Vector2(SLOT - 22, 14), str(roundi(a.cost)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.9, 0.8, 0.5))
 		draw_string(font, r.position + Vector2(0, SLOT + 16), a.display_name, HORIZONTAL_ALIGNMENT_LEFT, SLOT + GAP, 11, Color(0.85, 0.82, 0.75))
