@@ -108,17 +108,6 @@ func _ready() -> void:
 		slab.size = Vector3(d[2] - d[0], 0.4, d[3] - d[1])
 		slab.material = wood
 		combiner.add_child(slab)
-		# Posts under the long walkways.
-		if d[2] - d[0] > 8.0 and d[3] - d[1] > 2.0:
-			var x: float = d[0] + 1.0
-			while x < d[2]:
-				for z in [d[1] + 0.3, d[3] - 0.3]:
-					var post := CSGBox3D.new()
-					post.position = Vector3(x, d[4] * 0.5 - 0.2, z)
-					post.size = Vector3(0.35, d[4] - 0.4, 0.35)
-					post.material = wood
-					combiner.add_child(post)
-				x += 6.0
 	# Deep chamber pillars.
 	for p in PILLARS:
 		var v := px(p[0], p[1])
@@ -147,6 +136,7 @@ func _ready() -> void:
 	_build_excavation_light()
 	_build_room_glow()
 	_build_rails()
+	_build_scaffolds()
 	_build_props()
 	_build_river()
 	_build_lights()
@@ -172,7 +162,7 @@ func _build_rails() -> void:
 		add_child(rail)
 
 
-func _box(pos: Vector3, size: Vector3, color: Color, rot_y := 0.0, solid := true) -> Node3D:
+func _box(pos: Vector3, size: Vector3, color: Color, rot_y := 0.0, solid := true, wooden := false) -> Node3D:
 	var body: Node3D = StaticBody3D.new() if solid else Node3D.new()
 	var mi := MeshInstance3D.new()
 	var bm := BoxMesh.new()
@@ -180,7 +170,7 @@ func _box(pos: Vector3, size: Vector3, color: Color, rot_y := 0.0, solid := true
 	var m := StandardMaterial3D.new()
 	m.albedo_color = color
 	m.roughness = 0.95
-	bm.material = m
+	bm.material = _wood_pick() if wooden else m
 	mi.mesh = bm
 	body.add_child(mi)
 	if solid:
@@ -197,31 +187,26 @@ func _box(pos: Vector3, size: Vector3, color: Color, rot_y := 0.0, solid := true
 
 ## Crates, carts, bedrolls and the black stone: graybox set dressing.
 func _build_props() -> void:
-	var crate := Color(0.42, 0.3, 0.17)
 	var cloth := Color(0.3, 0.26, 0.2)
 	# Entrance yard: broken barricade, carts.
-	_box(px(160, 600), Vector3(2.4, 1.1, 0.5), crate, 0.3)
-	_box(px(200, 700), Vector3(1.8, 0.9, 1.2), crate, 0.8)
-	_box(px(240, 650), Vector3(2.0, 1.0, 1.4), Color(0.3, 0.24, 0.16), 0.0)
+	_box(px(160, 600), Vector3(2.4, 1.1, 0.5), Color.WHITE, 0.3, true, true)
+	_box(px(200, 700), Vector3(1.8, 0.9, 1.2), Color.WHITE, 0.8, true, true)
+	_box(px(240, 650), Vector3(2.0, 1.0, 1.4), Color.WHITE, 0.0, true, true)
 	# Camp: crates by the walls, bedrolls.
 	for p in [[600, 500], [620, 505], [610, 480], [930, 500], [945, 480], [660, 255]]:
-		_box(px(p[0], p[1]), Vector3(1.0, 0.9, 1.0), crate, randf() * 3.0)
+		_box(px(p[0], p[1]), Vector3(1.0, 0.9, 1.0), Color.WHITE, randf() * 3.0, true, true)
 	for p in [[620, 440], [640, 455], [690, 500]]:
 		_box(px(p[0], p[1]), Vector3(0.8, 0.12, 2.0), cloth, 0.4, false)
-	# Excavation: scaffolding, ore carts, the black stone formation.
-	_box(px(1060, 300), Vector3(0.3, 4.0, 0.3), Color(0.35, 0.26, 0.15))
-	_box(px(1060, 360), Vector3(0.3, 4.0, 0.3), Color(0.35, 0.26, 0.15))
-	_box(px(1300, 400), Vector3(2.2, 1.0, 1.3), Color(0.3, 0.24, 0.16), 0.5)
-	var black := Color(0.05, 0.05, 0.07)
-	_box(px(1090, 380), Vector3(1.6, 3.2, 1.6), black, 0.5)
-	_box(px(1104, 390), Vector3(1.0, 2.0, 1.0), black, 0.9)
-	_box(px(1340, 420), Vector3(1.8, 2.8, 1.4), black, 0.2)
-	_box(px(1325, 436), Vector3(1.0, 1.6, 1.0), black, 1.1)
+	# Excavation: an ore cart and the black stone formations (shard crystals).
+	_box(px(1300, 400), Vector3(2.2, 1.0, 1.3), Color.WHITE, 0.5, true, true)
+	_shards(px(1090, 380), 0.8, 11)
+	_shards(px(1340, 420), 0.7, 23)
 	# Deep chamber: the exposed black stone in the south wall, and rubble.
-	_box(px(1000, 825), Vector3(5.0, 5.0, 1.5), black, 0.0)
-	_box(px(1010, 815), Vector3(2.2, 3.0, 1.0), black, 0.4)
+	_shards(px(1000, 820), 1.6, 5)
 	for p in [[830, 720], [900, 780], [1130, 770], [1150, 700], [990, 700]]:
-		_box(px(p[0], p[1]), Vector3(1.4, 0.8, 1.2), Color(0.18, 0.16, 0.14), randf() * 3.0)
+		var c := px(p[0], p[1])
+		for k in 7:
+			_rock_chunk(c + Vector3(randf_range(-1.2, 1.2), 0.2, randf_range(-1.2, 1.2)), randf_range(0.25, 0.7))
 
 
 ## Blue daylight pouring through each ceiling hole: a spotlight, a faint glowing
@@ -490,6 +475,13 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	mesh.surface_set_material(0, load(STONE))
+	if not _floor_v.is_empty():
+		var farr := []
+		farr.resize(Mesh.ARRAY_MAX)
+		farr[Mesh.ARRAY_VERTEX] = _floor_v
+		farr[Mesh.ARRAY_NORMAL] = _floor_n
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, farr)
+		mesh.surface_set_material(1, _floor_material())
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	add_child(mi)
@@ -586,16 +578,162 @@ func _finish_rough(raw_v: PackedVector3Array, raw_n: PackedVector3Array, out_v: 
 		for j in 3:
 			var k := _vkey(raw_v[t * 3 + j])
 			var p: Vector3 = moved[k]
-			out_v.append(p)
-			out_n.append((smooth[k] as Vector3).normalized())
+			var sn: Vector3 = (smooth[k] as Vector3).normalized()
+			if raw_n[t * 3].y > 0.7:
+				_floor_v.append(p)
+				_floor_n.append(sn)
+			else:
+				out_v.append(p)
+				out_n.append(sn)
 			collide.append(p)
 
 
-## Mine timbers: a post on each side and a heavy crossbeam every few meters inside the
-## narrow tunnels (decoration only, nothing to bump into).
+# ---- Timber, scaffolding and set dressing --------------------------------------
+# Every timber piece is a long box lying along its length, so the wood grain always
+# runs the long way: up and down on posts, along the span on beams and boards.
+
+var _wood_variants: Array[StandardMaterial3D] = []
+var _rope_mat: StandardMaterial3D
+var _iron_mat: StandardMaterial3D
+var _chunk_mat: StandardMaterial3D
+
+
+func _wood_pick() -> StandardMaterial3D:
+	if _wood_variants.is_empty():
+		var base := load(WOOD) as StandardMaterial3D
+		for tint in [Color(1.15, 0.95, 0.78), Color(0.95, 0.8, 0.66), Color(1.3, 1.05, 0.85),
+				Color(0.8, 0.7, 0.6), Color(1.05, 0.9, 0.8)]:
+			var m := base.duplicate() as StandardMaterial3D
+			m.albedo_color = tint
+			m.uv1_scale = Vector3(0.9, 0.9, 0.9)
+			_wood_variants.append(m)
+	return _wood_variants[randi() % _wood_variants.size()]
+
+
+func _iron() -> StandardMaterial3D:
+	if _iron_mat == null:
+		_iron_mat = StandardMaterial3D.new()
+		_iron_mat.albedo_color = Color(0.12, 0.11, 0.1)
+		_iron_mat.metallic = 0.7
+		_iron_mat.roughness = 0.55
+	return _iron_mat
+
+
+func _rope() -> StandardMaterial3D:
+	if _rope_mat == null:
+		_rope_mat = StandardMaterial3D.new()
+		_rope_mat.albedo_color = Color(0.4, 0.31, 0.19)
+		_rope_mat.roughness = 1.0
+	return _rope_mat
+
+
+func _chunk() -> StandardMaterial3D:
+	if _chunk_mat == null:
+		_chunk_mat = (load(STONE) as StandardMaterial3D).duplicate() as StandardMaterial3D
+		_chunk_mat.albedo_color = Color(0.7, 0.64, 0.58)
+		_chunk_mat.uv1_scale = Vector3(1.4, 1.4, 1.4)
+	return _chunk_mat
+
+
+## axis: 0 = runs along x, 1 = runs up, 2 = runs along z. length is along that axis.
+func _timber(pos: Vector3, length: float, t1: float, t2: float, axis: int) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(length, t1, t2)
+	bm.material = _wood_pick()
+	mi.mesh = bm
+	if axis == 1:
+		mi.rotation_degrees.z = 90.0
+	elif axis == 2:
+		mi.rotation_degrees.y = 90.0
+	mi.position = pos
+	add_child(mi)
+	return mi
+
+
+func _timber_between(a: Vector3, b: Vector3, t: float) -> void:
+	var dir := b - a
+	var mi := _timber((a + b) * 0.5, dir.length(), t, t, 0)
+	mi.basis = Basis(Quaternion(Vector3.RIGHT, dir.normalized()))
+
+
+func _rope_ring(pos: Vector3, radius: float) -> void:
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = radius
+	cm.bottom_radius = radius
+	cm.height = 0.1
+	cm.radial_segments = 8
+	cm.material = _rope()
+	mi.mesh = cm
+	mi.position = pos
+	add_child(mi)
+
+
+func _iron_box(pos: Vector3, size: Vector3) -> void:
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size
+	bm.material = _iron()
+	mi.mesh = bm
+	mi.position = pos
+	add_child(mi)
+
+
+## A wall torch: iron bracket, wrapped head, small flame and a flickering light.
+func _torch(pos: Vector3, energy := 3.2) -> void:
+	_iron_box(pos - Vector3(0, 0.35, 0), Vector3(0.05, 0.55, 0.05))
+	var head := MeshInstance3D.new()
+	var hm := CylinderMesh.new()
+	hm.top_radius = 0.08
+	hm.bottom_radius = 0.05
+	hm.height = 0.26
+	hm.radial_segments = 8
+	hm.material = _rope()
+	head.mesh = hm
+	head.position = pos
+	add_child(head)
+	var flame := MeshInstance3D.new()
+	var fm := SphereMesh.new()
+	fm.radius = 0.07
+	fm.height = 0.3
+	var fmat := StandardMaterial3D.new()
+	fmat.albedo_color = Color(1.0, 0.75, 0.35)
+	fmat.emission_enabled = true
+	fmat.emission = Color(1.0, 0.55, 0.15)
+	fmat.emission_energy_multiplier = 2.5
+	fm.material = fmat
+	flame.mesh = fm
+	flame.position = pos + Vector3(0, 0.24, 0)
+	add_child(flame)
+	var light := OmniLight3D.new()
+	light.position = pos + Vector3(0, 0.3, 0)
+	light.light_color = Color(1.0, 0.6, 0.28)
+	light.light_energy = energy
+	light.omni_range = 10.0
+	add_child(light)
+	var tw := light.create_tween().set_loops()
+	tw.tween_property(light, "light_energy", energy * 1.2, randf_range(0.1, 0.22))
+	tw.tween_property(light, "light_energy", energy * 0.8, randf_range(0.1, 0.22))
+
+
+func _rock_chunk(pos: Vector3, size: float) -> void:
+	var mi := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radial_segments = 6
+	sm.rings = 3
+	sm.material = _chunk()
+	mi.mesh = sm
+	mi.scale = Vector3(size * randf_range(0.8, 1.5), size * randf_range(0.5, 0.9), size * randf_range(0.8, 1.4))
+	mi.rotation = Vector3(randf() * 0.5, randf() * TAU, randf() * 0.5)
+	mi.position = pos
+	add_child(mi)
+
+
+## Mine timbers: a post on each side with a heavy iron-banded crossbeam and corner
+## braces every few meters inside the narrow tunnels, plus torches, boards and rubble.
+## Decoration only: nothing to bump into.
 func _build_timbers() -> void:
-	var wood := (load(WOOD) as StandardMaterial3D).duplicate() as StandardMaterial3D
-	wood.albedo_color = Color(1.25, 1.0, 0.8)
 	var skip := [Vector2(-18, 5.4), Vector2(5.8, 30), Vector2(-45, 4.0), Vector2(49, 22.6)]
 	for c in CARVES:
 		var y0: float = c[5] if c.size() > 5 else 0.0
@@ -608,9 +746,11 @@ func _build_timbers() -> void:
 		var length := w if along_x else d
 		var span := d if along_x else w
 		var t := 2.0
+		var index := 0
 		while t < length - 1.0:
 			var p := Vector2(c[0] + t, (c[1] + c[3]) * 0.5) if along_x else Vector2((c[0] + c[2]) * 0.5, c[1] + t)
 			t += 4.5
+			index += 1
 			var inside := 0
 			for o in CARVES:
 				if p.x > o[0] - 1.0 and p.x < o[2] + 1.0 and p.y > o[1] - 1.0 and p.y < o[3] + 1.0:
@@ -621,79 +761,170 @@ func _build_timbers() -> void:
 					near_gate = true
 			if inside != 1 or near_gate:
 				continue
+			# tp(): a point in this tunnel. across = sideways, along = down the tunnel.
+			var tp := func(across: float, y: float, along: float = 0.0) -> Vector3:
+				return Vector3(p.x + along, y, p.y + across) if along_x else Vector3(p.x + across, y, p.y + along)
 			for side in [-1.0, 1.0]:
-				var post := MeshInstance3D.new()
-				var pm := BoxMesh.new()
-				pm.size = Vector3(0.45, h - 0.3, 0.45) if along_x else Vector3(0.45, h - 0.3, 0.45)
-				pm.material = wood
-				post.mesh = pm
 				var off: float = side * (span * 0.5 - 0.3)
-				post.position = Vector3(p.x, y0 + (h - 0.3) * 0.5, p.y + off) if along_x else Vector3(p.x + off, y0 + (h - 0.3) * 0.5, p.y)
-				post.rotation_degrees = Vector3(randf_range(-2, 2), 0, randf_range(-2, 2))
-				add_child(post)
-			var beam := MeshInstance3D.new()
-			var bm := BoxMesh.new()
-			bm.size = Vector3(0.5, 0.4, span - 0.1) if along_x else Vector3(span - 0.1, 0.4, 0.5)
-			bm.material = wood
-			beam.mesh = bm
-			beam.position = Vector3(p.x, y0 + h - 0.55, p.y)
-			add_child(beam)
-			# Warm torch on every other frame, plank floor and rubble around it.
-			if int(t / 4.5) % 2 == 0:
-				var tp := Vector3(p.x, y0 + 2.0, p.y)
-				var off2: float = (span * 0.5 - 0.75)
-				if along_x:
-					tp.z += off2
-				else:
-					tp.x += off2
-				var flame := MeshInstance3D.new()
-				var fm := SphereMesh.new()
-				fm.radius = 0.12
-				fm.height = 0.3
-				var fmat := StandardMaterial3D.new()
-				fmat.albedo_color = Color(1.0, 0.7, 0.3)
-				fmat.emission_enabled = true
-				fmat.emission = Color(1.0, 0.6, 0.2)
-				fmat.emission_energy_multiplier = 4.0
-				fm.material = fmat
-				flame.mesh = fm
-				flame.position = tp
-				add_child(flame)
-				var handle := MeshInstance3D.new()
-				var hm := BoxMesh.new()
-				hm.size = Vector3(0.08, 0.6, 0.08)
-				hm.material = wood
-				handle.mesh = hm
-				handle.position = tp - Vector3(0, 0.4, 0)
-				add_child(handle)
-				var tl := OmniLight3D.new()
-				tl.position = tp + Vector3(0, 0.2, 0)
-				tl.light_color = Color(1.0, 0.62, 0.3)
-				tl.light_energy = 3.2
-				tl.omni_range = 10.0
-				add_child(tl)
-			var planks := MeshInstance3D.new()
-			var plm := BoxMesh.new()
-			plm.size = Vector3(3.4, 0.07, span * 0.55) if along_x else Vector3(span * 0.55, 0.07, 3.4)
-			plm.material = wood
-			planks.mesh = plm
-			planks.position = Vector3(p.x, y0 + 0.2, p.y)
-			add_child(planks)
-			for k in 4:
-				var rock := MeshInstance3D.new()
-				var rm := BoxMesh.new()
-				rm.size = Vector3(randf_range(0.3, 0.8), randf_range(0.15, 0.4), randf_range(0.3, 0.7))
-				var rmat := StandardMaterial3D.new()
-				rmat.albedo_color = Color(0.38, 0.3, 0.24)
-				rmat.roughness = 0.95
-				rm.material = rmat
-				rock.mesh = rm
+				var post := _timber(tp.call(off, y0 + (h - 0.3) * 0.5), h - 0.3, 0.42, 0.42, 1)
+				post.rotation_degrees.x = randf_range(-1.5, 1.5)
+				_rope_ring(tp.call(off, y0 + 1.1), 0.27)
+				# Corner brace from the post up to the beam.
+				_timber_between(tp.call(off, y0 + h - 1.5), tp.call(off - side * 0.95, y0 + h - 0.62), 0.16)
+			var across_axis := 2 if along_x else 0
+			_timber(tp.call(0.0, y0 + h - 0.55), span - 0.1, 0.4, 0.5, across_axis)
+			for k in [-0.28, 0.28]:
+				var band_pos: Vector3 = tp.call(span * k, y0 + h - 0.55)
+				_iron_box(band_pos, Vector3(0.1, 0.44, 0.54) if along_x else Vector3(0.54, 0.44, 0.1))
+			if index % 2 == 1:
+				var tside := 1.0 if randf() < 0.5 else -1.0
+				_torch(tp.call(tside * (span * 0.5 - 0.75), y0 + 2.0))
+			# Boards along the tunnel floor, some missing, some skewed.
+			var board_count := int(span * 0.55 / 0.32)
+			for i in board_count:
+				if randf() < 0.18:
+					continue
+				var across := (i - board_count * 0.5) * 0.32
+				var b := _timber(tp.call(across, y0 + 0.2, randf_range(-0.3, 0.3)), randf_range(2.4, 3.6), 0.05, 0.28,
+						0 if along_x else 2)
+				b.rotation.y += randf_range(-0.04, 0.04)
+			for k in 5:
 				var side2 := 1.0 if randf() < 0.5 else -1.0
-				var sp := side2 * (span * 0.5 - randf_range(0.7, 1.3))
-				var al := randf_range(-2.0, 2.0)
-				rock.position = Vector3(p.x + al, y0 + 0.15, p.y + sp) if along_x else Vector3(p.x + sp, y0 + 0.15, p.y + al)
-				rock.rotation = Vector3(randf(), randf() * TAU, randf())
-				add_child(rock)
+				_rock_chunk(tp.call(side2 * (span * 0.5 - randf_range(0.6, 1.4)), y0 + 0.15, randf_range(-2.2, 2.2)), randf_range(0.2, 0.5))
+
+
+## Real-looking scaffolding for the two-story walkways: uprights with rope lashings,
+## ledgers and transoms under the deck, diagonal bracing, individual deck boards, hand
+## rails and hanging lanterns.
+const SCAFFOLD_GAPS := [Vector2(-10.5, -13.4), Vector2(23.2, -13.4), Vector2(64.2, -21.5)]
+
+
+func _deck_pt(d: Array, along_x: bool, u: float, v: float, y: float) -> Vector3:
+	return Vector3(d[0] + u, y, d[1] + v) if along_x else Vector3(d[0] + v, y, d[1] + u)
+
+
+func _build_scaffolds() -> void:
+	for d in DECKS:
+		var w: float = d[2] - d[0]
+		var dd: float = d[3] - d[1]
+		if maxf(w, dd) < 8.0:
+			continue  # the rope bridge has its own rails
+		var along_x := w >= dd
+		var L := w if along_x else dd
+		var W := dd if along_x else w
+		var top: float = d[4]
+		var along := 0 if along_x else 2
+		var across := 2 if along_x else 0
+		var n := maxi(1, ceili((L - 0.7) / 3.0))
+		var step := (L - 0.7) / n
+		var sides := [0.28, W - 0.28]
+		for i in n + 1:
+			var u := 0.35 + i * step
+			# Transom across the width under the deck.
+			_timber(_deck_pt(d, along_x, u, W * 0.5, top - 0.52), W, 0.2, 0.2, across)
+			for si in 2:
+				var v: float = sides[si]
+				var inward := 0.2 if si == 0 else -0.2
+				var upright := _timber(_deck_pt(d, along_x, u, v, (top + 1.15) * 0.5), top + 1.15, 0.3, 0.3, 1)
+				upright.rotation_degrees.x = randf_range(-0.8, 0.8)
+				_rope_ring(_deck_pt(d, along_x, u, v, top - 0.62), 0.2)
+				_rope_ring(_deck_pt(d, along_x, u, v, top + 0.58), 0.2)
+				# Diagonal bracing, alternating direction bay to bay.
+				if i < n:
+					var ua := u
+					var ub := u + step
+					var low := _deck_pt(d, along_x, ua, v - inward, 0.35)
+					var high := _deck_pt(d, along_x, ub, v - inward, top - 0.72)
+					if (i + si) % 2 == 1:
+						low = _deck_pt(d, along_x, ub, v - inward, 0.35)
+						high = _deck_pt(d, along_x, ua, v - inward, top - 0.72)
+					_timber_between(low, high, 0.17)
+					# Hand rails between uprights (skipped where stairs and ladders arrive).
+					var mid := _deck_pt(d, along_x, u + step * 0.5, v, top)
+					var open := true
+					for g in SCAFFOLD_GAPS:
+						if Vector2(mid.x, mid.z).distance_to(g) < 2.9:
+							open = false
+					if open:
+						_timber(_deck_pt(d, along_x, u + step * 0.5, v, top + 1.05), step, 0.12, 0.14, along)
+						_timber(_deck_pt(d, along_x, u + step * 0.5, v, top + 0.55), step, 0.1, 0.12, along)
+				if i % 3 == 1 and si == 1:
+					var lp := _deck_pt(d, along_x, u, v + inward * 1.4, top + 0.95)
+					_iron_box(lp, Vector3(0.2, 0.3, 0.2))
+					var glow := MeshInstance3D.new()
+					var gm := BoxMesh.new()
+					gm.size = Vector3(0.14, 0.2, 0.14)
+					var gmat := StandardMaterial3D.new()
+					gmat.albedo_color = Color(1.0, 0.8, 0.45)
+					gmat.emission_enabled = true
+					gmat.emission = Color(1.0, 0.6, 0.2)
+					gmat.emission_energy_multiplier = 3.0
+					gm.material = gmat
+					glow.mesh = gm
+					glow.position = lp
+					add_child(glow)
+					var ll := OmniLight3D.new()
+					ll.position = lp
+					ll.light_color = Color(1.0, 0.65, 0.32)
+					ll.light_energy = 2.4
+					ll.omni_range = 9.0
+					add_child(ll)
+		# Ledgers under the deck, one on each side.
+		for si in 2:
+			var v: float = sides[si]
+			var inward := 0.2 if si == 0 else -0.2
+			_timber(_deck_pt(d, along_x, L * 0.5, v + inward, top - 0.62), L, 0.26, 0.2, along)
+		# Deck boards, each a little different.
+		var count := floori(L / 0.27)
+		for i in count:
+			var u := 0.135 + i * 0.27
+			var board := _timber(_deck_pt(d, along_x, u, W * 0.5 + randf_range(-0.03, 0.03), top + 0.02 + randf_range(-0.006, 0.006)),
+					W + randf_range(-0.05, 0.07), 0.05, 0.25, across)
+			board.rotation.y += randf_range(-0.012, 0.012)
+
+
+## Cluster of black shard crystals (the Black Shard the bandits dug up).
+func _shards(pos: Vector3, scale_: float, seed_: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.03, 0.03, 0.05)
+	mat.metallic = 0.5
+	mat.roughness = 0.22
+	mat.emission_enabled = true
+	mat.emission = Color(0.22, 0.04, 0.36)
+	mat.emission_energy_multiplier = 0.6
+	for i in 5:
+		var h := scale_ * rng.randf_range(1.2, 3.4) * (1.0 if i > 0 else 1.3)
+		var r := scale_ * rng.randf_range(0.28, 0.6)
+		var mi := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.radial_segments = 5
+		cm.top_radius = r * 0.12
+		cm.bottom_radius = r
+		cm.height = h
+		cm.material = mat
+		mi.mesh = cm
+		var off := Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)) * scale_ * 0.9 * (0.0 if i == 0 else 1.0)
+		mi.position = pos + off + Vector3(0, h * 0.5, 0)
+		mi.rotation = Vector3(rng.randf_range(-0.3, 0.3), rng.randf() * TAU, rng.randf_range(-0.3, 0.3))
+		add_child(mi)
+		if i == 0:
+			var body := StaticBody3D.new()
+			var cs := CollisionShape3D.new()
+			var sh := CylinderShape3D.new()
+			sh.radius = r * 0.7
+			sh.height = h
+			cs.shape = sh
+			body.add_child(cs)
+			body.position = mi.position
+			add_child(body)
+	var glow := OmniLight3D.new()
+	glow.position = pos + Vector3(0, scale_ * 1.5, 0)
+	glow.light_color = Color(0.55, 0.25, 1.0)
+	glow.light_energy = 1.6
+	glow.omni_range = 7.0
+	add_child(glow)
 
 
 ## Extra warm and cool light for the big Excavation, which was too dark.
@@ -706,3 +937,22 @@ func _build_excavation_light() -> void:
 			l.light_energy = 5.0
 			l.omni_range = 18.0
 			add_child(l)
+
+
+var _floor_v := PackedVector3Array()
+var _floor_n := PackedVector3Array()
+
+
+## Pebbly gravel for the cave floor (ambientCG Rocks011).
+func _floor_material() -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_texture = load("res://assets/textures/scree/color.jpg")
+	m.albedo_color = Color(0.85, 0.76, 0.68)
+	m.normal_enabled = true
+	m.normal_texture = load("res://assets/textures/scree/normal.jpg")
+	m.normal_scale = 1.6
+	m.roughness_texture = load("res://assets/textures/scree/rough.jpg")
+	m.uv1_triplanar = true
+	m.uv1_scale = Vector3(0.55, 0.55, 0.55)
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	return m
