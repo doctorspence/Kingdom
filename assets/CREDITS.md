@@ -25,5 +25,18 @@ Every downloaded or generated asset goes here, so we always know where things ca
 | Their Coming (generic horn sound, 2 files) | `assets/audio/sfx/horn/` | https://opengameart.org/content/their-coming-generic-horn-sound | StumpyStrust | CC0 1.0 | 2026-11-21 |
 | wind whoosh loop | `assets/audio/ambience/wind_loop.ogg` | https://opengameart.org/content/wind-whoosh-loop | SketchMan3 | CC0 1.0 | 2026-11-21 |
 | PBR texture sets, 1K (Color, NormalGL, Roughness), 14 sets: grass = Grass004, mud = Ground048, path = Ground039, moss = Ground037, dirt_dark = Ground042, cliff = Rock022, scree = Rocks011, stonewall = Rock064, wood = Wood051, planks = WoodSiding001, plaster = Plaster006, thatch = Bark012 (used as thatch), bark = Bark001, cobble = PavingStones070 | `assets/textures/<name>/` | https://ambientcg.com (asset id above, e.g. https://ambientcg.com/view?id=Rock022) | ambientCG (Lennart Demes) | CC0 1.0 | 2026-11-21 |
+| Rock Moss Set 01 (scanned mossy boulders, 1k) | `assets/nature/rock_moss_set_01/` | https://polyhaven.com/a/rock_moss_set_01 | Kless Gyzen | CC0 1.0 | 2026-11-21 |
+| Rock Moss Set 02 (scanned mossy rocks, 1k) | `assets/nature/rock_moss_set_02/` | https://polyhaven.com/a/rock_moss_set_02 | Kless Gyzen | CC0 1.0 | 2026-11-21 |
+| Rock Face 01 (scanned outcrop, 1k; tinted darker in game) | `assets/nature/rock_face_01/` | https://polyhaven.com/a/rock_face_01 | Dario Barresi | CC0 1.0 | 2026-11-21 |
+| Rock Face 02 (scanned outcrop, 1k; tinted darker in game) | `assets/nature/rock_face_02/` | https://polyhaven.com/a/rock_face_02 | Dario Barresi, Rico Cilliers | CC0 1.0 | 2026-11-21 |
+| Fern 02 (1k) | `assets/nature/fern_02/` | https://polyhaven.com/a/fern_02 | Rob Tuytel, Rico Cilliers | CC0 1.0 | 2026-11-21 |
+| Shrub 02 (1k) | `assets/nature/shrub_02/` | https://polyhaven.com/a/shrub_02 | Rico Cilliers | CC0 1.0 | 2026-11-21 |
+| Shrub 03 (1k) | `assets/nature/shrub_03/` | https://polyhaven.com/a/shrub_03 | Rico Cilliers | CC0 1.0 | 2026-11-21 |
+| Nettle Plant (1k; scaled up in game) | `assets/nature/nettle_plant/` | https://polyhaven.com/a/nettle_plant | Rob Tuytel, Rico Cilliers | CC0 1.0 | 2026-11-21 |
+| Weed Plant 02 (1k; scaled up in game) | `assets/nature/weed_plant_02/` | https://polyhaven.com/a/weed_plant_02 | Rob Tuytel, Rico Cilliers | CC0 1.0 | 2026-11-21 |
+| Tree Stump 01 (1k) | `assets/nature/tree_stump_01/` | https://polyhaven.com/a/tree_stump_01 | Rob Tuytel | CC0 1.0 | 2026-11-21 |
+| Tree Stump 02 (1k) | `assets/nature/tree_stump_02/` | https://polyhaven.com/a/tree_stump_02 | Rob Tuytel | CC0 1.0 | 2026-11-21 |
+| Dead Tree Trunk (1k) | `assets/nature/dead_tree_trunk/` | https://polyhaven.com/a/dead_tree_trunk | Rob Tuytel | CC0 1.0 | 2026-11-21 |
+| Dry Branches Medium 01 (1k) | `assets/nature/dry_branches_medium_01/` | https://polyhaven.com/a/dry_branches_medium_01 | Rico Cilliers | CC0 1.0 | 2026-11-21 |
 
 **License rules**: CC0 for art and sound packs; OFL is OK for fonts (credit the author). AI-generated art you make: note the tool used.

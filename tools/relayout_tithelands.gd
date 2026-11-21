@@ -245,6 +245,46 @@ func _initialize() -> void:
 		dr.owner = root
 		dr.set("terrain", terrain)
 		dr.set("dressing_script", load("res://levels/tithelands/tithelands_dressing.gd"))
+	# --- scanned plants and rocks (Poly Haven, CC0) ---
+	var ps := load("res://game/world/plant_scatter.gd")
+	var plants := [
+		# name, models, layer, spacing, scale range, target size, collide, shadows, seen from, extra
+		["Shrubs", ["shrub_02"], "undergrowth", 4.0, Vector2(0.55, 1.05), 0.0, false, true, 110.0, {}],
+		["Ferns", ["fern_02"], "ferns", 2.2, Vector2(1.0, 1.8), 0.0, false, false, 70.0, {}],
+		["Weeds", ["nettle_plant", "weed_plant_02", "shrub_03"], "weeds", 2.4, Vector2(0.7, 1.4), 0.55, false, false, 55.0, {}],
+		["Boulders", ["rock_moss_set_01", "rock_moss_set_02"], "rocks", 6.0, Vector2(0.5, 1.5), 0.0, true, true, 170.0, {"sink": 0.15}],
+		["CliffFaces", ["rock_face_01", "rock_face_02"], "cliffs", 4.0, Vector2(1.0, 2.2), 0.0, false, true, 230.0, {"cliff": 0.7, "keep_off_roads": 5.0, "tint": Color(0.5, 0.5, 0.52)}],
+		["Deadwood", ["tree_stump_01", "tree_stump_02", "dead_tree_trunk", "dry_branches_medium_01"], "deadwood", 8.0, Vector2(0.8, 1.2), 0.0, true, true, 90.0, {}],
+	]
+	for p in plants:
+		var node := root.get_node_or_null(p[0]) as Node3D
+		if node == null:
+			node = Node3D.new()
+			node.name = p[0]
+			node.set_script(ps)
+			root.add_child(node)
+			node.owner = root
+		node.set("terrain", terrain)
+		node.set("models", PackedStringArray(p[1]))
+		node.set("layer", p[2])
+		node.set("spacing", p[3])
+		node.set("scale_range", p[4])
+		node.set("target_size", p[5])
+		node.set("collide", p[6])
+		node.set("shadows", p[7])
+		node.set("seen_from", p[8])
+		node.set("scatter_seed", hash(p[0]) % 1000)
+		for k in p[9]:
+			node.set(k, p[9][k])
+	root.get_node("TitheExtras").set("code_ferns", false)
+	rocks.set("density", 0.45)
+	clutter.set("density", 0.5)
+	var cull := root.get_node_or_null("UndergroundCull")
+	if cull:
+		var surf: Array[NodePath] = []
+		for n in ["Woods", "Grass", "Clutter", "Rocks", "Highcrown", "StoneWalls", "Dressing", "Shrubs", "Ferns", "Weeds", "Boulders", "CliffFaces", "Deadwood"]:
+			surf.append(NodePath("../" + n))
+		cull.set("surface", surf)
 	# --- the rest ---
 	(root.get_node("Highcrown") as Node3D).position = Vector3(0, 0, -255)
 	root.get_node("TitheExtras").set("checkpoint_shift", -34.0)

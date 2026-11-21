@@ -9,6 +9,8 @@ extends Node3D
 @export var sun: DirectionalLight3D
 ## Moves the checkpoint dressing along the road (it was built for the old checkpoint at z = -78).
 @export var checkpoint_shift := 0.0
+## The old code-drawn ferns (off when scanned ferns are scattered instead).
+@export var code_ferns := true
 
 const CLOTH := preload("res://levels/common/materials/cloth_white.tres")
 const WOOD := preload("res://levels/common/materials/dark_wood.tres")
@@ -28,7 +30,8 @@ func _ready() -> void:
 	_checkpoint()
 	if DisplayServer.get_name() == "headless":
 		return  # visuals only: keep automated checks fast
-	_ferns()
+	if code_ferns:
+		_ferns()
 	_puddles()
 	_cloud_layer()
 

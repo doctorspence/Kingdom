@@ -235,3 +235,32 @@ func rocks(x: float, z: float) -> float:
 ## Ground clutter (stones, fallen logs, stumps): woods and woods edges mostly.
 func clutter(x: float, z: float) -> float:
 	return 0.08 + 0.5 * forest(x, z)
+
+
+## Bushes: along woods edges, scattered in the woods, a few in the open.
+func undergrowth(x: float, z: float) -> float:
+	var f := forest(x, z)
+	var edge := smoothstep(0.1, 0.4, f) * (1.0 - smoothstep(0.6, 0.85, f))
+	return 0.03 + 0.25 * f + 0.45 * edge
+
+
+## Ferns: the shade under the trees.
+func ferns(x: float, z: float) -> float:
+	return 0.7 * smoothstep(0.3, 0.75, forest(x, z))
+
+
+## Nettles and weeds: everywhere a little, thicker at woods edges and by the river.
+func weeds(x: float, z: float) -> float:
+	var dr := absf(z - river_z(x))
+	var bank := smoothstep(5.0, 8.0, dr) - smoothstep(10.0, 16.0, dr)
+	return 0.12 + 0.3 * undergrowth(x, z) + 0.35 * bank
+
+
+## Rock faces on steep ground (the scatter keeps only the steep spots).
+func cliffs(_x: float, _z: float) -> float:
+	return 0.55
+
+
+## Fallen wood: in the woods.
+func deadwood(x: float, z: float) -> float:
+	return 0.04 + 0.35 * forest(x, z)
