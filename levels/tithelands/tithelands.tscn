@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Environment" path="res://levels/common/overcast_env.tres" id="env"]
+[ext_resource type="Environment" path="res://levels/common/tithelands_env.tres" id="env"]
 [ext_resource type="Script" path="res://game/net/game_session.gd" id="session"]
 [ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="hud"]
 [ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="shrine"]
@@ -9,7 +9,7 @@
 [ext_resource type="Resource" path="res://data/vendors/vendor_old_wenna.tres" id="wenna"]
 [ext_resource type="Resource" path="res://data/vendors/vendor_soul_broker.tres" id="broker"]
 [ext_resource type="Script" path="res://game/world/zone_terrain.gd" id="terrain"]
-[ext_resource type="Material" path="res://levels/common/materials/terrain.tres" id="terrain_mat"]
+[ext_resource type="Material" path="res://levels/common/materials/terrain_pbr.tres" id="terrain_mat"]
 [ext_resource type="Script" path="res://game/world/ground_snap.gd" id="snap"]
 [ext_resource type="Script" path="res://game/world/scatter.gd" id="scatter"]
 [ext_resource type="PackedScene" path="res://game/enemies/hobb.tscn" id="hobb"]
@@ -67,11 +67,11 @@ environment = ExtResource("env")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-50, 35, 0)
-light_color = Color(0.84, 0.86, 0.9, 1)
-light_energy = 0.9
+light_color = Color(0.96, 0.84, 0.68, 1)
+light_energy = 1.35
 shadow_enabled = true
 shadow_blur = 2.0
-directional_shadow_max_distance = 140.0
+directional_shadow_max_distance = 170.0
 sky_mode = 1
 
 [node name="DayNight" type="Node" parent="." node_paths=PackedStringArray("environment", "sun")]

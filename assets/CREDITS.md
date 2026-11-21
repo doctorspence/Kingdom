@@ -24,5 +24,6 @@ Every downloaded or generated asset goes here, so we always know where things ca
 | Epic Boss Battle (seamless loop; stand-in boss track, 21 MB WAV, should be compressed later) | `assets/audio/music/Juhani_Junkala_-_Epic_Boss_Battle_Seamlessly_Looping.wav` | https://opengameart.org/content/boss-battle-music | Juhani Junkala (SubspaceAudio) | CC0 1.0 | 2026-11-21 |
 | Their Coming (generic horn sound, 2 files) | `assets/audio/sfx/horn/` | https://opengameart.org/content/their-coming-generic-horn-sound | StumpyStrust | CC0 1.0 | 2026-11-21 |
 | wind whoosh loop | `assets/audio/ambience/wind_loop.ogg` | https://opengameart.org/content/wind-whoosh-loop | SketchMan3 | CC0 1.0 | 2026-11-21 |
+| PBR texture sets, 1K (Color, NormalGL, Roughness), 14 sets: grass = Grass004, mud = Ground048, path = Ground039, moss = Ground037, dirt_dark = Ground042, cliff = Rock022, scree = Rocks011, stonewall = Rock064, wood = Wood051, planks = WoodSiding001, plaster = Plaster006, thatch = Bark012 (used as thatch), bark = Bark001, cobble = PavingStones070 | `assets/textures/<name>/` | https://ambientcg.com (asset id above, e.g. https://ambientcg.com/view?id=Rock022) | ambientCG (Lennart Demes) | CC0 1.0 | 2026-11-21 |
 
 **License rules**: CC0 for art and sound packs; OFL is OK for fonts (credit the author). AI-generated art you make: note the tool used.

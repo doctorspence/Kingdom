@@ -41,6 +41,8 @@ extends Node3D
 @export var mounds := PackedVector4Array([Vector4(150, 40, 45, 11), Vector4(-190, -165, 55, -14), Vector4(80, -170, 50, 5)])
 ## Steepness of pit walls (higher = sheer cliffs).
 @export var pit_sharpness := 3.0
+## Trampled ground around buildings and camps: (x, z, radius). Bare dirt there.
+@export var clearings := PackedVector3Array()
 @export var material: Material:
 	set(v):
 		material = v
@@ -133,7 +135,7 @@ func _rebuild() -> void:
 			var hx := heights[i + 1] if ix < n - 1 else heights[i]
 			var hz := heights[i + n] if iz < n - 1 else heights[i]
 			var slope := (absf(hx - v.y) + absf(hz - v.y)) / cell
-			colors[i] = _ground_color(v, slope)
+			colors[i] = _ground_weights(v, slope)
 	var indices := PackedInt32Array()
 	var faces := PackedVector3Array()
 	for iz in n - 1:
@@ -201,6 +203,28 @@ func _rebuild() -> void:
 	water.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_built.add_child(water)
 	add_child(_built)
+
+
+## How much of each ground type a point is, for the ground shader:
+## R grass, G mud, B road, A rock (they are blended and normalized in the shader).
+func _ground_weights(v: Vector3, slope: float) -> Color:
+	var p := Vector2(v.x, v.z)
+	# Muddy patches among the grass.
+	var mud := clampf(_noise.get_noise_2d(v.x * 4.0, v.z * 4.0) * 0.8 + 0.25, 0.0, 1.0) * 0.5
+	# Roads fade into the verge instead of ending in a line.
+	var road := 1.0 - smoothstep(road_width * 0.3, road_width * 0.62, _distance_to_lines(roads, p))
+	# Riverbanks are mud.
+	var bank := 1.0 - smoothstep(river_width * 0.6, river_width * 1.5, _distance_to_line(river, p))
+	mud = maxf(mud, bank)
+	# Trampled dirt around villages and camps.
+	for c in clearings:
+		var d := Vector2(c.x, c.y).distance_to(p)
+		mud = maxf(mud, (1.0 - smoothstep(c.z * 0.55, c.z, d)) * 0.95)
+	var rock := smoothstep(0.55, 0.9, slope)
+	if v.y < -6.0:
+		rock = 1.0
+	var grass := maxf(0.0, 1.0 - mud - road)
+	return Color(grass * (1.0 - rock), mud * (1.0 - rock), road * (1.0 - rock), rock)
 
 
 func _ground_color(v: Vector3, slope: float) -> Color:
