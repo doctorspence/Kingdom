@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/bark.tres" id="m_bark"]
+
+[node name="LogSeat" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Log" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 0.28, 0)
+radius = 0.28
+height = 2.0
+sides = 9
+material = ExtResource("m_bark")
+rotation_degrees = Vector3(0, 0, 90)

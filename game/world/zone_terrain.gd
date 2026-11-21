@@ -41,8 +41,13 @@ extends Node3D
 @export var mounds := PackedVector4Array([Vector4(150, 40, 45, 11), Vector4(-190, -165, 55, -14), Vector4(80, -170, 50, 5)])
 ## Steepness of pit walls (higher = sheer cliffs).
 @export var pit_sharpness := 3.0
+## Narrow dirt tracks (camp trails). Walkable, painted like a thin road, not flattened.
+@export var tracks: Array[PackedVector2Array] = []
+@export var track_width := 2.6
 ## Trampled ground around buildings and camps: (x, z, radius). Bare dirt there.
 @export var clearings := PackedVector3Array()
+## Water look (a ShaderMaterial); empty = a plain dark glass.
+@export var water_material: Material
 @export var material: Material:
 	set(v):
 		material = v
@@ -199,7 +204,7 @@ func _rebuild() -> void:
 	wmat.metallic = 0.3
 	var water := MeshInstance3D.new()
 	water.mesh = wst.commit()
-	water.material_override = wmat
+	water.material_override = water_material if water_material else wmat
 	water.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_built.add_child(water)
 	add_child(_built)
@@ -213,6 +218,8 @@ func _ground_weights(v: Vector3, slope: float) -> Color:
 	var mud := clampf(_noise.get_noise_2d(v.x * 4.0, v.z * 4.0) * 0.8 + 0.25, 0.0, 1.0) * 0.5
 	# Roads fade into the verge instead of ending in a line.
 	var road := 1.0 - smoothstep(road_width * 0.3, road_width * 0.62, _distance_to_lines(roads, p))
+	if not tracks.is_empty():
+		road = maxf(road, (1.0 - smoothstep(track_width * 0.3, track_width * 0.65, _distance_to_lines(tracks, p))) * 0.9)
 	# Riverbanks are mud.
 	var bank := 1.0 - smoothstep(river_width * 0.6, river_width * 1.5, _distance_to_line(river, p))
 	mud = maxf(mud, bank)

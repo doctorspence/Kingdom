@@ -1,0 +1,34 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/dark_wood.tres" id="m_planks"]
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
+
+[node name="Crate" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Box" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.45, 0)
+size = Vector3(0.9, 0.9, 0.9)
+material = ExtResource("m_planks")
+
+[node name="FrameA" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.45, 0.46)
+size = Vector3(0.96, 0.12, 0.05)
+material = ExtResource("m_wood")
+
+[node name="FrameB" type="CSGBox3D" parent="Shape"]
+position = Vector3(0, 0.45, -0.46)
+size = Vector3(0.96, 0.12, 0.05)
+material = ExtResource("m_wood")
+
+[node name="FrameC" type="CSGBox3D" parent="Shape"]
+position = Vector3(0.46, 0.45, 0)
+size = Vector3(0.05, 0.12, 0.96)
+material = ExtResource("m_wood")
+
+[node name="FrameD" type="CSGBox3D" parent="Shape"]
+position = Vector3(-0.46, 0.45, 0)
+size = Vector3(0.05, 0.12, 0.96)
+material = ExtResource("m_wood")

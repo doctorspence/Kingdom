@@ -1,0 +1,37 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/wood.tres" id="m_wood"]
+[ext_resource type="Material" path="res://levels/common/materials/iron.tres" id="m_iron"]
+
+[node name="Barrel" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Staves" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 0.5, 0)
+radius = 0.42
+height = 1.0
+sides = 14
+material = ExtResource("m_wood")
+
+[node name="Belly" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 0.5, 0)
+radius = 0.47
+height = 0.5
+sides = 14
+material = ExtResource("m_wood")
+
+[node name="BandTop" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 0.82, 0)
+radius = 0.455
+height = 0.07
+sides = 14
+material = ExtResource("m_iron")
+
+[node name="BandBottom" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 0.18, 0)
+radius = 0.455
+height = 0.07
+sides = 14
+material = ExtResource("m_iron")

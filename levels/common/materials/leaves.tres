@@ -1,16 +1,13 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
 [ext_resource type="Texture2D" path="res://assets/textures/moss/color.jpg" id="c"]
-[ext_resource type="Texture2D" path="res://assets/textures/moss/normal.jpg" id="n"]
-[ext_resource type="Texture2D" path="res://assets/textures/moss/rough.jpg" id="r"]
 
 [resource]
 cull_mode = 2
-albedo_color = Color(0.2, 0.26, 0.15, 1)
+albedo_color = Color(0.17, 0.25, 0.12, 1)
 albedo_texture = ExtResource("c")
-roughness_texture = ExtResource("r")
-normal_enabled = true
-normal_texture = ExtResource("n")
+roughness = 1.0
+metallic_specular = 0.08
 uv1_scale = Vector3(0.9, 0.9, 0.9)
 uv1_triplanar = true
 texture_filter = 5

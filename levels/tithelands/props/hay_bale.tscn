@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/common/materials/thatch.tres" id="m_thatch"]
+
+[node name="HayBale" type="Node3D"]
+
+[node name="Shape" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Bale" type="CSGCylinder3D" parent="Shape"]
+position = Vector3(0, 0.55, 0)
+radius = 0.55
+height = 1.1
+sides = 12
+material = ExtResource("m_thatch")
+rotation_degrees = Vector3(0, 0, 90)

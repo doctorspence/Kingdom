@@ -43,7 +43,7 @@ func _scatter() -> void:
 	while _placed.size() < count and tries < count * 20:
 		tries += 1
 		var p := Vector2(rng.randf_range(area.position.x, area.end.x), rng.randf_range(area.position.y, area.end.y))
-		if terrain._distance_to_lines(terrain.roads, p) < keep_off_roads:
+		if minf(terrain._distance_to_lines(terrain.roads, p), terrain._distance_to_lines(terrain.tracks, p) + 2.0) < keep_off_roads:
 			continue
 		if terrain.river_distance(p.x, p.y) < keep_off_river:
 			continue

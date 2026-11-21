@@ -13,4 +13,5 @@ normal_scale = 1.3
 normal_texture = ExtResource("n")
 uv1_scale = Vector3(0.3, 0.3, 0.3)
 uv1_triplanar = true
+metallic_specular = 0.2
 texture_filter = 5

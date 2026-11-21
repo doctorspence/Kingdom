@@ -105,7 +105,7 @@ void fragment() {
 
 	ALBEDO = grass * w.x + mud * w.y + path * w.z + rock * w.w;
 	ROUGHNESS = clamp(texture(grass_r, uv * grass_scale).r * w.x + texture(mud_r, uv * mud_scale).r * w.y
-			+ texture(path_r, uv * path_scale).r * w.z + rock_rough * w.w, 0.3, 1.0);
-	SPECULAR = 0.25;
+			+ texture(path_r, uv * path_scale).r * w.z + rock_rough * w.w, 0.55, 1.0);
+	SPECULAR = 0.1;
 	NORMAL = normalize((VIEW_MATRIX * vec4(n_world, 0.0)).xyz);
 }

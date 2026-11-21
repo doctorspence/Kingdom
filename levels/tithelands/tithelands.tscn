@@ -5,6 +5,14 @@
 [ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="hud"]
 [ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="shrine"]
 [ext_resource type="Script" path="res://game/world/camp.gd" id="camp_script"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/campfire.tscn" id="fire_scene"]
+[ext_resource type="Material" path="res://levels/common/materials/water.tres" id="water_mat"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/log_seat.tscn" id="logseat_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/crate.tscn" id="crate_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/barrel.tscn" id="barrel_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/hay_bale.tscn" id="hay_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/trophy_pole.tscn" id="trophy_scene"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/lookout.tscn" id="lookout_scene"]
 [ext_resource type="Script" path="res://game/world/vendor.gd" id="vendor"]
 [ext_resource type="Resource" path="res://data/vendors/vendor_old_wenna.tres" id="wenna"]
 [ext_resource type="Resource" path="res://data/vendors/vendor_soul_broker.tres" id="broker"]
@@ -90,7 +98,10 @@ edge_width = 28.0
 river = PackedVector2Array(-182, -21, -105, -10.5, -42, -5.6, 0, -3.5, 56, 3.5, 119, -7, 182, 10.5)
 roads = Array[PackedVector2Array]([PackedVector2Array(0, 161, 0, 84, 1.4, 0, 0, -84, 0, -178.5), PackedVector2Array(0, 112, -42, 91, -70, 42, -80.5, -14), PackedVector2Array(-80.5, -14, -105, -63, -115.5, -80.5), PackedVector2Array(7, 126, 42, 112, 77, 70, 98, 38.5)])
 mounds = PackedVector4Array(105.00, 28.00, 31.50, 11, -133.00, -115.50, 38.50, -9, -129.50, -112.00, 15.40, -5, 56.00, -119.00, 35.00, 5)
+tracks = Array[PackedVector2Array]([PackedVector2Array(-76, 18, -88, 23, -99, 22), PackedVector2Array(3, -10, 14, -13, 24, -13), PackedVector2Array(77, 68, 86, 40, 80, 12, 74, -8, 80, -28, 87, -42, 100, -60, 114, -76, 120, -80)])
+clearings = PackedVector3Array(3, 118, 22, 36, 122, 14, -28, 96, 16, -60, 58, 18, -87, -20, 12, -105.5, 22.5, 17, 0, -84, 18, 22, -58, 14, 105, 28, 20, 121, -83, 16, 27, -12, 10, 78, 73, 8, 76, -9, 8, 88, -43, 8)
 material = ExtResource("terrain_mat")
+water_material = ExtResource("water_mat")
 
 [node name="Gullet" parent="." instance=ExtResource("gullet")]
 position = Vector3(-130, -40, -100)
@@ -828,4 +839,142 @@ position = Vector3(178.50, 20, 0.00)
 
 [node name="Shape" type="CollisionShape3D" parent="EdgeE"]
 shape = SubResource("edge_E")
+
+
+# ---- Camps (environment pass): fires, seats, crates, barrels, hay, trophy poles, lookouts ----
+[node name="HobbFire" parent="Places" instance=ExtResource("fire_scene")]
+position = Vector3(-105.5, 0, 22.5)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="HobbSeat1" parent="Places" instance=ExtResource("logseat_scene")]
+position = Vector3(-103.1, 0, 22.3)
+rotation_degrees = Vector3(0, 95, 0)
+
+[node name="HobbSeat2" parent="Places" instance=ExtResource("logseat_scene")]
+position = Vector3(-107.9, 0, 23.6)
+rotation_degrees = Vector3(0, 75, 0)
+
+[node name="HobbSeat3" parent="Places" instance=ExtResource("logseat_scene")]
+position = Vector3(-105.2, 0, 25.0)
+rotation_degrees = Vector3(0, 5, 0)
+
+[node name="HobbCrate1" parent="Places" instance=ExtResource("crate_scene")]
+position = Vector3(-111.0, 0, 29.6)
+rotation_degrees = Vector3(0, 20, 0)
+
+[node name="HobbCrate2" parent="Places" instance=ExtResource("crate_scene")]
+position = Vector3(-109.8, 0, 30.7)
+rotation_degrees = Vector3(0, 65, 0)
+
+[node name="HobbCrate3" parent="Places" instance=ExtResource("crate_scene")]
+position = Vector3(-99.4, 0, 31.2)
+rotation_degrees = Vector3(0, 10, 0)
+
+[node name="HobbBarrel1" parent="Places" instance=ExtResource("barrel_scene")]
+position = Vector3(-96.4, 0, 29.6)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="HobbBarrel2" parent="Places" instance=ExtResource("barrel_scene")]
+position = Vector3(-95.5, 0, 28.4)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="HobbBarrel3" parent="Places" instance=ExtResource("barrel_scene")]
+position = Vector3(-113.4, 0, 21.2)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="HobbHay1" parent="Places" instance=ExtResource("hay_scene")]
+position = Vector3(-100.6, 0, 24.8)
+rotation_degrees = Vector3(0, 40, 0)
+
+[node name="HobbHay2" parent="Places" instance=ExtResource("hay_scene")]
+position = Vector3(-99.3, 0, 23.6)
+rotation_degrees = Vector3(0, 110, 0)
+
+[node name="HobbTrophy" parent="Places" instance=ExtResource("trophy_scene")]
+position = Vector3(-100.5, 0, 13.5)
+rotation_degrees = Vector3(0, 25, 0)
+
+[node name="HobbLookout" parent="Places" instance=ExtResource("lookout_scene")]
+position = Vector3(-95.5, 0, 7.5)
+rotation_degrees = Vector3(0, 200, 0)
+
+[node name="HobbCart" parent="Places" instance=ExtResource("cart")]
+position = Vector3(-112.5, 0, 34.5)
+rotation_degrees = Vector3(0, 40, 0)
+
+[node name="FordFire" parent="Places" instance=ExtResource("fire_scene")]
+position = Vector3(30.5, 0, -12.5)
+rotation_degrees = Vector3(0, 0, 0)
+light_energy = 2.0
+[node name="FordSeat1" parent="Places" instance=ExtResource("logseat_scene")]
+position = Vector3(28.6, 0, -11.2)
+rotation_degrees = Vector3(0, 100, 0)
+
+[node name="FordSeat2" parent="Places" instance=ExtResource("logseat_scene")]
+position = Vector3(32.6, 0, -13.8)
+rotation_degrees = Vector3(0, 20, 0)
+
+[node name="FordCrate1" parent="Places" instance=ExtResource("crate_scene")]
+position = Vector3(23.4, 0, -17.6)
+rotation_degrees = Vector3(0, 15, 0)
+
+[node name="FordCrate2" parent="Places" instance=ExtResource("crate_scene")]
+position = Vector3(24.5, 0, -18.4)
+rotation_degrees = Vector3(0, 70, 0)
+
+[node name="FordBarrel1" parent="Places" instance=ExtResource("barrel_scene")]
+position = Vector3(29.2, 0, -18.2)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="FordTrophy" parent="Places" instance=ExtResource("trophy_scene")]
+position = Vector3(20.5, 0, -8.0)
+rotation_degrees = Vector3(0, -60, 0)
+
+[node name="RaiderFire" parent="Places" instance=ExtResource("fire_scene")]
+position = Vector3(123.5, 0, -80.5)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="RaiderSeat1" parent="Places" instance=ExtResource("logseat_scene")]
+position = Vector3(121.4, 0, -79.0)
+rotation_degrees = Vector3(0, 100, 0)
+
+[node name="RaiderSeat2" parent="Places" instance=ExtResource("logseat_scene")]
+position = Vector3(125.6, 0, -82.6)
+rotation_degrees = Vector3(0, 15, 0)
+
+[node name="RaiderCrate1" parent="Places" instance=ExtResource("crate_scene")]
+position = Vector3(116.0, 0, -88.2)
+rotation_degrees = Vector3(0, 25, 0)
+
+[node name="RaiderCrate2" parent="Places" instance=ExtResource("crate_scene")]
+position = Vector3(115.0, 0, -87.2)
+rotation_degrees = Vector3(0, 70, 0)
+
+[node name="RaiderBarrel1" parent="Places" instance=ExtResource("barrel_scene")]
+position = Vector3(131.0, 0, -86.0)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="RaiderTrophy" parent="Places" instance=ExtResource("trophy_scene")]
+position = Vector3(118.0, 0, -74.5)
+rotation_degrees = Vector3(0, 160, 0)
+
+[node name="WoodsFireS" parent="Places" instance=ExtResource("fire_scene")]
+position = Vector3(81.5, 0, 71.0)
+rotation_degrees = Vector3(0, 0, 0)
+light_energy = 1.8
+[node name="WoodsFireM" parent="Places" instance=ExtResource("fire_scene")]
+position = Vector3(78.5, 0, -9.5)
+rotation_degrees = Vector3(0, 0, 0)
+light_energy = 1.8
+[node name="WoodsFireN" parent="Places" instance=ExtResource("fire_scene")]
+position = Vector3(92.5, 0, -43.0)
+rotation_degrees = Vector3(0, 0, 0)
+light_energy = 1.8
+[node name="WoodsSeatM" parent="Places" instance=ExtResource("logseat_scene")]
+position = Vector3(76.8, 0, -8.4)
+rotation_degrees = Vector3(0, 60, 0)
+
+[node name="WoodsCrateN" parent="Places" instance=ExtResource("crate_scene")]
+position = Vector3(87.5, 0, -47.5)
+rotation_degrees = Vector3(0, 30, 0)
 
