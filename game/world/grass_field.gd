@@ -9,8 +9,8 @@ extends Node3D
 ## Size of one patch of ground (meters).
 @export var chunk_size := 12.0
 ## How many patches out from the camera grass grows.
-@export var view_chunks := 5
-@export var tufts_per_chunk := 300
+@export var view_chunks := 4
+@export var tufts_per_chunk := 240
 @export var seed_value := 3
 @export var material: Material = preload("res://levels/common/materials/grass.tres")
 
@@ -97,7 +97,7 @@ func _make_tuft() -> ArrayMesh:
 	rng.seed = 5
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for b in 7:
+	for b in 5:
 		var a := rng.randf() * TAU
 		var dir := Vector3(cos(a), 0, sin(a))
 		var side := Vector3(-dir.z, 0, dir.x)

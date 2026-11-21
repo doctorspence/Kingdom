@@ -10,6 +10,8 @@ extends StaticBody3D
 const BARK := preload("res://levels/common/materials/bark.tres")
 const NEEDLES := preload("res://levels/common/materials/leaves.tres")
 const VARIANTS := 5
+## Trees farther than this are not drawn (the fog hides them anyway).
+const SEEN_FROM := 175.0
 
 static var _cache := {}
 
@@ -23,10 +25,16 @@ func _build() -> void:
 		return
 	var p := global_position
 	var index := int(absf(p.x * 31.0 + p.z * 17.0)) % VARIANTS
-	var mesh := _variant(kind, index)
-	var mi := MeshInstance3D.new()
-	mi.mesh = mesh
-	add_child(mi)
+	var parts := _variant(kind, index)
+	# Solid parts (trunk, dark core) cast shadows; the needle fans (the most
+	# expensive to shadow) do not. Far trees vanish into the fog, so they are
+	# not drawn at all beyond SEEN_FROM meters.
+	for i in parts.size():
+		var mi := MeshInstance3D.new()
+		mi.mesh = parts[i]
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if i == 0 else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.visibility_range_end = SEEN_FROM
+		add_child(mi)
 	var shape := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
 	capsule.radius = 0.38
@@ -36,14 +44,30 @@ func _build() -> void:
 	add_child(shape)
 
 
-static func _variant(tree_kind: String, index: int) -> ArrayMesh:
+## [solid mesh, needle-fan mesh (fir only)].
+static func _variant(tree_kind: String, index: int) -> Array:
 	var key := "%s%d" % [tree_kind, index]
 	if not _cache.has(key):
 		var rng := RandomNumberGenerator.new()
 		rng.seed = 9000 + index * 77 + (0 if tree_kind == "pine" else 500)
-		_cache[key] = _make_pine(rng) if tree_kind == "pine" else _make_dead(rng)
+		var full := _make_pine(rng) if tree_kind == "pine" else _make_dead(rng)
+		_cache[key] = _split(full)
 	return _cache[key]
 
+
+## Surfaces 0 and 1 (trunk, core) become the solid mesh; surface 2 (the fans) its own.
+static func _split(full: ArrayMesh) -> Array:
+	var solid := ArrayMesh.new()
+	var fans: ArrayMesh = null
+	for s in full.get_surface_count():
+		var target := solid
+		if s >= 2:
+			if fans == null:
+				fans = ArrayMesh.new()
+			target = fans
+		target.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, full.surface_get_arrays(s))
+		target.surface_set_material(target.get_surface_count() - 1, full.surface_get_material(s))
+	return [solid] if fans == null else [solid, fans]
 
 # --- The fir ---------------------------------------------------------------------------
 

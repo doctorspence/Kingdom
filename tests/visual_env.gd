@@ -44,6 +44,7 @@ func _run() -> void:
 		await _frames(45)
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("user://shots/%s.png" % spot[0])
+		print("FPS %s: %d (%d draw calls, %dk primitives)" % [spot[0], Performance.get_monitor(Performance.TIME_FPS), Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME) / 1000])
 	get_tree().quit()
 
 
