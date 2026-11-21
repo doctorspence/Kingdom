@@ -157,6 +157,14 @@ func _draw_markers(c: Control) -> void:
 		c.draw_colored_polygon(diamond, Color(0.95, 0.72, 0.3))
 		c.draw_polyline(diamond + PackedVector2Array([diamond[0]]), Color(0, 0, 0, 0.8), 1.5)
 		c.draw_string(font, p + Vector2(10, 5), s.shrine_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.95, 0.88, 0.7))
+	# The cave entrance is always known.
+	for n in get_tree().get_nodes_in_group(&"interactables"):
+		var door := n as CaveDoor
+		if door and door.beacon:
+			var q := _to_map(door.global_position)
+			c.draw_circle(q, 7.0, Color(0, 0, 0, 0.85))
+			c.draw_circle(q, 5.0, Color(1.0, 0.45, 0.15))
+			c.draw_string(font, q + Vector2(10, 5), "The Gullet (cave)", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1.0, 0.7, 0.45))
 	for n in get_tree().get_nodes_in_group(&"player"):
 		var other := n as Player
 		if other == null or other == player:

@@ -83,12 +83,12 @@ script = ExtResource("terrain")
 zone_id = &"tithelands"
 zone_name = "The Tithelands"
 river_depth = 1.1
-pit_sharpness = 1.3
+pit_sharpness = 0.9
 size = 364.0
 edge_width = 28.0
 river = PackedVector2Array(-182, -21, -105, -10.5, -42, -5.6, 0, -3.5, 56, 3.5, 119, -7, 182, 10.5)
 roads = Array[PackedVector2Array]([PackedVector2Array(0, 161, 0, 84, 1.4, 0, 0, -84, 0, -178.5), PackedVector2Array(0, 112, -42, 91, -70, 42, -80.5, -14), PackedVector2Array(-80.5, -14, -105, -63, -115.5, -80.5), PackedVector2Array(7, 126, 42, 112, 77, 70, 98, 38.5)])
-mounds = PackedVector4Array(105.00, 28.00, 31.50, 11, -133.00, -115.50, 38.50, -14, -129.50, -112.00, 15.40, -10, 56.00, -119.00, 35.00, 5)
+mounds = PackedVector4Array(105.00, 28.00, 31.50, 11, -133.00, -115.50, 38.50, -9, -129.50, -112.00, 15.40, -5, 56.00, -119.00, 35.00, 5)
 material = ExtResource("terrain_mat")
 
 [node name="Gullet" parent="." instance=ExtResource("gullet")]
@@ -316,15 +316,16 @@ rotation_degrees = Vector3(0, 60, 0)
 shrine_name = "Quarry Shrine"
 shrine_id = &"quarry"
 [node name="GulletMouth" parent="Places" instance=ExtResource("gullet_mouth")]
-position = Vector3(-155.40, 0, -137.20)
+position = Vector3(-112.00, 0, -84.00)
 rotation_degrees = Vector3(0, 45, 0)
 
 [node name="GulletDoor" type="Node3D" parent="Places"]
-position = Vector3(-153.63, 0, -135.43)
+position = Vector3(-110.23, 0, -82.23)
 rotation_degrees = Vector3(0, 45, 0)
 script = ExtResource("cavedoor")
 other = NodePath("../../Gullet/WayUp")
 arrive_offset = Vector3(0, 0, 2.5)
+beacon = true
 
 [node name="QuarryRock1" parent="Places" instance=ExtResource("rock")]
 position = Vector3(-122.50, 0, -119.00)

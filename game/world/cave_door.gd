@@ -11,8 +11,38 @@ extends Node3D
 @export var arrive_offset := Vector3(0, 0, 2)
 
 
+## A glowing pillar of light and a lamp, so the entrance can be seen from afar (and shows on the map).
+@export var beacon := false
+
+
 func _ready() -> void:
 	add_to_group(&"interactables")
+	if beacon:
+		_build_beacon()
+
+
+func _build_beacon() -> void:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 0.18
+	mesh.bottom_radius = 0.35
+	mesh.height = 22.0
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color(1.0, 0.62, 0.25, 0.55)
+	mat.no_depth_test = false
+	mesh.material = mat
+	var pillar := MeshInstance3D.new()
+	pillar.mesh = mesh
+	pillar.position = Vector3(0, 11.0, 0)
+	pillar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(pillar)
+	var lamp := OmniLight3D.new()
+	lamp.light_color = Color(1.0, 0.65, 0.3)
+	lamp.light_energy = 3.5
+	lamp.omni_range = 20.0
+	lamp.position = Vector3(0, 3.0, 0.5)
+	add_child(lamp)
 
 
 func get_interact_text() -> String:

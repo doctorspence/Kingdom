@@ -14,10 +14,10 @@ func _run() -> void:
 	var door: Node3D = scene.get_node("Places/GulletDoor")
 	var mouth: Node3D = scene.get_node("Places/GulletMouth")
 	print("door ", door.global_position, " mouth ", mouth.global_position)
-	p.global_position = door.global_transform * Vector3(0, 0.5, 1.5)
+	p.global_position = door.global_transform * Vector3(-9, 0.5, 9.0)
 	p.velocity = Vector3.ZERO
 	p.reset_physics_interpolation()
-	p.camera_rig.yaw = door.global_rotation.y
+	p.camera_rig.yaw = door.global_rotation.y - 0.7
 	for i in 50:
 		await get_tree().process_frame
 	print("prompt target: ", p.nearest_interactable())

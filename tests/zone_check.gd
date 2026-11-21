@@ -53,7 +53,7 @@ func _run() -> void:
 
 	# --- Quarry ladder ------------------------------------------------------------
 	var ql := zone.get_node("Places/QuarryLadder") as Ladder
-	_check("quarry ladder reaches the rim (%.1f m tall)" % ql.height, ql.height > 6.0)
+	_check("quarry ladder reaches the rim (%.1f m tall)" % ql.height, ql.height > 3.0)
 
 	# --- Wading -----------------------------------------------------------------------
 	var river_spot := Vector3(-28, 0, -5)
