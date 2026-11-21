@@ -1,6 +1,6 @@
 # HANDOFF: where we are and how to resume
 
-*Updated 2026-11-21. Read this first in a new session or on a different Claude account. Everything lives in this folder and in git.*
+*Updated 2026-11-21 (new Gullet built). Read this first in a new session or on a different Claude account. Everything lives in this folder and in git.*
 
 ## How to resume
 1. Open this folder (`C:\Users\reals\Documents\Kingdom`) in Claude Code.
@@ -60,3 +60,9 @@ Listen-test the audio and playtest the nine abilities (🧪 in TODO.md). Subclas
 - **Commits** use the neutral local identity "Kingdom Dev"; the commit history lets you roll back any step.
 - **The `build/` zip** for friends was re-exported after Phase 10 (audio). Re-export again after later changes (README.md, "Play with friends"); `Godot_console.exe --headless --path . --export-release "Windows" build/windows/Kingdom.exe`, then zip `build/windows`.
 - `SPEC.md` is your original brief and is left exactly as you wrote it.
+
+## Phase 14: the new Gullet (bandit quarry): built, gray-block (2026-11-21)
+Replaces the candle-monk Gullet. Design in `GULLET_DESIGN.md` (build status in its section 10), floor plan in `GULLET_MAP.svg`, checklist in `TODO.md`. Done in order: gold renamed to **coins** everywhere (old saves convert), food and potions and the new gear and loot tables, Bandit / Archer / Captain / Lookout enemies, powder barrels, the new level with the river through both two-story rooms, population, hidden chest and secret wall, and **Harl the Delver**. Brother Tallow and the acolytes stay in the project, unused.
+- New check: `gullet_check` (run it like the others). `boss_check` now tests Harl. All checks should pass; if a timing check fails once, rerun it.
+- Things only you can judge (🧪): how the dungeon feels to walk and fight (about 10 minutes?), whether the archers and barrels are fun or annoying, Harl's numbers, the camp-wide alarm, the river slowing you, and the stand-in sounds. Every number is a first guess.
+- Known loose ends: the named rare's name and loot (Rook the Cutthroat) are mine; quarry-specific audio and boss music are not made; a death pile left in the OLD Gullet's coordinates in an old world save would sit inside rock (it expires after 60 minutes); the friends build needs re-exporting after you approve.

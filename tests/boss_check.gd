@@ -136,7 +136,7 @@ func _run() -> void:
 	var drops_before: int = Loot._host_drops.size()
 	_hit(boss, boss.max_health, 1.0)
 	await _seconds(1.0)
-	_check("his death sets the first-kill flag", WorldState.get_flag(&"gullet_boss_killed") == true)
+	_check("his death sets the first-kill flag", WorldState.get_flag(&"gullet_harl_killed") == true)
 	_check("...which opens the shortcut for good", back.is_open())
 	_check("...and unseals the fog gate", not gate.is_sealed())
 	_check("he drops his guaranteed potions", JSON.stringify(Loot._host_drops.values()).contains("item_health_potion") and Loot._host_drops.size() > drops_before)

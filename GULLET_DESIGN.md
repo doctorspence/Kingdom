@@ -215,3 +215,18 @@ Notes: the Captain's small unique-weapon chance makes the whole route matter, no
 5. ~~The boss~~ done (Harl the Delver)
 6. Loot: confirm the tables above against the code, set souls and XP
 7. Atmosphere and audio (lighting, ambience, boss track)
+
+---
+
+## 10. Build status (2026-11-21)
+
+Built as a gray-block pass (all art is placeholder), in these commits ("Gullet step N"):
+- **Layout** (`game/world/gullet.gd`, `levels/tithelands/props/gullet.tscn`): the six areas from `GULLET_MAP.svg` at 1 map pixel = 0.1 m, both two-story rooms (west stairs and east ladder in the camp, a ladder at the end of the Excavation's north gallery, a rope bridge with rails between the two), the **river** (`game/world/water_stream.gd`: one stream from a seep in the camp, through the east corridor, across the Excavation to a pool in the south-east; wading slows you 20%), the barricade, the secret wall to the hidden chest, the fog gate and the shortcut corridor.
+- **Enemies**: Bandit (sword, pick), Bandit Lookout (the caller, #8), Bandit Archer (real flying arrows you can roll or sidestep, keeps 8 m away, backs off, stabs when cornered), nook archer (ambush: sleeps until you are within 6 m), Bandit Captain (shield, 50% block, delayed red overhead, calls the whole camp), and **Rook the Cutthroat** (named rare, 5% at the camp's crates; my placeholder name and loot). A shout pulls in every "bandits" family member, archers included.
+- **Barrels** (`game/world/powder_barrel.gd`): 0.45 s hiss, then a 4.5 m blast (110 to enemies, 55 to players, less at the edge), chains to other barrels, set off by swings, player arrows and bandit arrows, back after a rest.
+- **Loot**: food (bread 10%, meat 20%, potion 25% of max health, 1.5 s to eat), bronze/iron/steel gear, iron dagger, steel pickaxe, Blackstone amulet, Harl's Black Pick (Epic), all as OSRS-style tables with their own chances (`data/loot/loot_bandit*.tres`, `loot_harl.tres`, `loot_gullet_chest.tres`). The code rolls 1-in-128 odds fine.
+- **Boss**: Harl as designed in section 6. Boss health is 1100 (x2.6 at three players = 2860). His Desperate Assault uses one damage number for all three hits (34), not 30/30/45.
+- **Old Gullet**: Brother Tallow, the acolytes and their data and scenes stay in the project, unused. Harl sets a new flag (`gullet_harl_killed`), so an old save that had killed Tallow does not skip the new boss.
+- **Checks**: `gullet_check` (items, drop rates, eating, enemies, barrels, level, chest) and the rewritten `boss_check`.
+
+Not built yet, by choice: boss music and cave sounds specific to the quarry (the existing cave bed and boss track play), the named rare's final name and drops, souls/XP tuning, and everything in the numbers that needs a playtest.

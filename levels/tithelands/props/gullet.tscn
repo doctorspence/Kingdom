@@ -60,7 +60,7 @@ rotation_degrees = Vector3(0, 90, 0)
 script = ExtResource("6_gate")
 gate_id = &"gullet_back"
 width = 3.2
-open_flag = &"gullet_boss_killed"
+open_flag = &"gullet_harl_killed"
 
 [node name="Barricade" type="StaticBody3D" parent="."]
 position = Vector3(-18, 0, 5.4)
