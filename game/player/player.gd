@@ -173,6 +173,7 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	add_to_group(&"player")
+	_make_lantern()
 	# The body itself never rotates; only the visible model turns.
 	if net_pos != Vector3.ZERO:
 		global_position = net_pos
@@ -1122,6 +1123,7 @@ func _buffered_ability() -> int:
 # --- Main loop ----------------------------------------------------------------
 
 func _physics_process(delta: float) -> void:
+	_update_lantern(delta)
 	if not is_multiplayer_authority():
 		_proxy_update(delta)
 		return
@@ -2034,3 +2036,36 @@ func _update_stamina(delta: float) -> void:
 		stamina_changed.emit(stamina, max_stamina())
 	if _sprint_locked and stamina >= tuning.sprint_restart_stamina:
 		_sprint_locked = false
+
+
+# --- Belt lantern ------------------------------------------------------------------
+
+var _lantern: OmniLight3D
+var _lantern_glow := 0.0
+
+
+## A small lantern on your belt that glows at night (everyone sees each other's).
+func _make_lantern() -> void:
+	_lantern = OmniLight3D.new()
+	_lantern.name = "Lantern"
+	_lantern.position = Vector3(0.28, 1.0, 0.12)
+	_lantern.light_color = Color(1.0, 0.68, 0.38)
+	_lantern.omni_range = 11.0
+	_lantern.omni_attenuation = 1.3
+	_lantern.light_energy = 0.0
+	_lantern.visible = false
+	_lantern.shadow_enabled = false
+	$Visual.add_child(_lantern)
+
+
+func lantern_lit() -> bool:
+	return _lantern != null and _lantern.visible
+
+
+func _update_lantern(delta: float) -> void:
+	var want := smoothstep(0.35, 0.8, DayNight.night) * (0.0 if state == State.DEAD else 1.6)
+	_lantern_glow = move_toward(_lantern_glow, want, delta * 1.5)
+	_lantern.visible = _lantern_glow > 0.01
+	# A gentle flicker.
+	var t := Time.get_ticks_msec() * 0.001
+	_lantern.light_energy = _lantern_glow * (0.95 + 0.05 * sin(t * 9.0 + position.x) * sin(t * 4.3))

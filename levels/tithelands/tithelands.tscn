@@ -42,6 +42,7 @@
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/highcrown.tscn" id="highcrown"]
 [ext_resource type="Script" path="res://game/world/ladder.gd" id="ladder"]
 [ext_resource type="Script" path="res://game/world/shortcut_gate.gd" id="gate"]
+[ext_resource type="Script" path="res://game/world/day_night.gd" id="daynight"]
 
 [sub_resource type="BoxShape3D" id="edge_N"]
 size = Vector3(520, 80, 1)
@@ -69,6 +70,11 @@ shadow_enabled = true
 shadow_blur = 2.0
 directional_shadow_max_distance = 140.0
 sky_mode = 1
+
+[node name="DayNight" type="Node" parent="." node_paths=PackedStringArray("environment", "sun")]
+script = ExtResource("daynight")
+environment = NodePath("../WorldEnvironment")
+sun = NodePath("../Sun")
 
 [node name="Terrain" type="Node3D" parent="."]
 script = ExtResource("terrain")

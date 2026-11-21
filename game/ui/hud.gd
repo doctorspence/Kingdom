@@ -28,6 +28,7 @@ TEST KEYS
 F2: debug info (invincibility shows as a blue tint)
 F3: change equip load (light / medium / heavy / overloaded)
 F4: reset to start, full health
+F5: skip ahead 3 hours (host)    F6: rain on/off (host)
 H: enemy health bars on/off    N: damage numbers on/off
 Page Up: gain a level    Page Down: back to level 1"""
 
@@ -126,6 +127,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		_close_panels()
 		if not map_was_open and player.zone():
 			_map_panel.open(player)
+	elif (event.is_action_pressed("debug_time") or event.is_action_pressed("debug_rain")) and multiplayer.is_server():
+		var dn := get_tree().get_first_node_in_group(&"day_night") as DayNight
+		if dn:
+			if event.is_action_pressed("debug_time"):
+				dn.set_time(dn.time + 3.0 / 24.0)
+			else:
+				dn.set_rain(not DayNight.raining)
+			show_banner("%s%s" % [dn.clock_text(), "   (rain)" if DayNight.raining else ""], 2.0)
 	elif event.is_action_pressed("debug_help"):
 		_help_label.visible = not _help_label.visible
 		_hint_label.visible = false

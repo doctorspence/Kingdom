@@ -128,6 +128,32 @@ func _run() -> void:
 	_check("the map opens, with every found shrine to travel to", map.visible and map.find_children("*", "Button", true, false).size() == player.found_shrines().size())
 	map.close()
 
+	# --- Day, night and rain ------------------------------------------------------------
+	var dn := zone.get_node("DayNight") as DayNight
+	var sun := zone.get_node("Sun") as DirectionalLight3D
+	dn.set_time(0.3)
+	await _seconds(1.5)
+	var day_sun := sun.light_energy
+	_check("daytime: enemies see normally, no lantern (%s)" % dn.clock_text(), Enemy.sight_mult > 0.99 and not player.lantern_lit())
+	dn.set_time(dn.day_share() + 0.1)
+	await _seconds(1.5)
+	_check("night: dark, enemies see half as far, your lantern is lit (%s)" % dn.clock_text(),
+			dn.is_night() and sun.light_energy < day_sun * 0.5 and is_equal_approx(Enemy.sight_mult, 0.5) and player.lantern_lit())
+	_check("a full day is 48 minutes, a third of it night", is_equal_approx(dn.day_length(), 48.0 * 60.0) and is_equal_approx(1.0 - dn.day_share(), 1.0 / 3.0))
+	var t_before := dn.time
+	await _seconds(1.0)
+	_check("time moves on", dn.time > t_before)
+	dn.set_rain(true)
+	await _seconds(1.0)
+	_check("rain starts falling", DayNight.raining and dn.rain_amount > 0.0 and (dn.get_node("Rain") as GPUParticles3D).emitting)
+	var saved_time: Dictionary = JSON.parse_string(JSON.stringify(dn.to_dict()))
+	dn.set_time(0.0)
+	dn.set_rain(false)
+	dn.load_dict(saved_time)
+	_check("time and weather can be saved and restored", absf(dn.time - float(saved_time.time)) < 0.001 and DayNight.raining)
+	dn.set_rain(false)
+	dn.set_time(0.3)
+
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)
 
