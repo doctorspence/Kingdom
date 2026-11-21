@@ -14,6 +14,7 @@ func _run() -> void:
 	await _items_and_loot()
 	await _eating()
 	await _enemies()
+	await _barrels()
 	print("PASS: 0 problem(s)" if failures == 0 else "FAIL: %d problem(s)" % failures)
 	get_tree().quit(1 if failures > 0 else 0)
 
@@ -181,3 +182,46 @@ func _count_arrows(root: Node) -> int:
 		if c is EnemyArrow:
 			n += 1
 	return n
+
+
+# --- Step 5: powder barrels --------------------------------------------------------------------
+func _barrels() -> void:
+	var scene: Node = load("res://levels/sandbox/combat_test.tscn").instantiate()
+	get_tree().root.add_child(scene)
+	await _frames(30)
+	var player := get_tree().get_first_node_in_group(&"player") as Player
+	for e in get_tree().get_nodes_in_group(&"enemies"):
+		(e as Node3D).global_position = Vector3(90, 0, 90)
+	var p0 := player.global_position
+	var b1 := PowderBarrel.new()
+	var b2 := PowderBarrel.new()
+	var far := PowderBarrel.new()
+	scene.add_child(b1)
+	scene.add_child(b2)
+	scene.add_child(far)
+	b1.global_position = p0 + Vector3(0, 0, -3)
+	b2.global_position = p0 + Vector3(0, 0, -6.5)   # 3.5 m from b1: inside the blast
+	far.global_position = p0 + Vector3(20, 0, -3)
+	var bandit := _spawn("res://game/enemies/bandit_sword.tscn", scene, p0 + Vector3(1.5, 0, -3.5), p0 + Vector3(40, 0, 0))
+	await _frames(5)
+	var hp := player.health
+	var bhp := bandit.health
+	var hit := HitInfo.new()
+	hit.attacker = player
+	_check("a swing sets the barrel off", b1.receive_hit(hit) == HitInfo.Result.HIT and not b1.exploded)
+	await _seconds(0.2)
+	_check("...it hisses first (fuse), nothing hurt yet", not b1.exploded and is_equal_approx(player.health, hp))
+	await _seconds(0.5)
+	_check("...then it blows up", b1.exploded)
+	_check("the blast hurt the player (%.0f -> %.0f) and the bandit (%.0f -> %.0f)" % [hp, player.health, bhp, bandit.health],
+			player.health < hp and bandit.health < bhp)
+	await _seconds(0.7)
+	_check("the neighbor barrel went off in a chain", b2.exploded)
+	_check("a barrel far away was left alone", not far.exploded)
+	far.arrow_triggered(null)
+	_check("an enemy arrow sets one off too", far._lit)
+	await _seconds(0.7)
+	_check("...and it blows", far.exploded)
+	b1.reset_from_rest()
+	_check("resting brings the barrel back", not b1.exploded and b1._body.visible)
+	scene.queue_free()

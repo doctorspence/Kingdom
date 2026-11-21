@@ -232,7 +232,7 @@ Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces th
 - [ ] 2. Gold renamed to coins everywhere (saves convert old data)
 - [x] 3. Items and loot: food, potions, bronze/iron/steel gear, iron dagger, steel pickaxe, Blackstone amulet, Harl's unique weapon, loot tables with 1-in-N odds
 - [x] 4. Enemies: Bandit (sword, pick), Bandit Captain, Bandit Archer
-- [ ] 5. Powder barrels
+- [x] 5. Powder barrels
 - [ ] 6. Level layout (six areas, two two-story rooms, a small river through both, rope bridge, barricade, secret wall, fog gate, shortcut)
 - [ ] 7. Populate: 19 enemies, patrols, caller, 3+ player extras, spawn tables, named rare, ambush, hidden chest, halfway shrine
 - [ ] 8. Boss: Harl the Delver
