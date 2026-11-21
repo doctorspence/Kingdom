@@ -142,6 +142,8 @@ func _ready() -> void:
 	_build_camp()
 	_build_dig_dressing()
 	_build_props()
+	_build_cave_assets()
+	_light_stairs()
 	_build_river()
 	_build_lights()
 	_build_stairs_and_ladders()
@@ -1237,3 +1239,29 @@ func _build_dig_dressing() -> void:
 	_asset("Storage_Containers/crate_large", Vector3(37.0, 0, -6.0), 0.2, true)
 	_asset("Lighting_Props/brazier", Vector3(52.0, 0, -9.0))
 	_asset("Lighting_Props/brazier", Vector3(64.0, 0, 0.0))
+
+
+## Rock arches round the tunnel mouths, flared pillars in the deep chamber, boulders and
+## ledges at room edges, from the hideout cave kit. All walk-through dressing.
+func _build_cave_assets() -> void:
+	# [x, z, rotation (radians), scale]: arch faces the room it opens into.
+	for o in [[-42.3, 25.0, -PI * 0.5, 1.3], [-14.3, -5.0, PI * 0.5, 1.3], [27.3, -2.0, -PI * 0.5, 1.4],
+			[17.0, 8.2, PI, 1.15], [49.0, 3.6, PI, 1.3]]:
+		_asset("Cave_Geometry/cave_opening", Vector3(o[0], 0, o[1]), o[2], false, o[3])
+	for pl in PILLARS:
+		var v := px(pl[0], pl[1])
+		var n := _asset("Cave_Geometry/rock_pillar", v, randf() * TAU, false, 1.0)
+		if n:
+			n.scale = Vector3(1.7, 2.8, 1.7)
+	var rocks := [["large", -57.5, 18.5], ["medium", -57.0, 32.4], ["large", -13.4, 8.0], ["medium", 26.6, -17.0],
+			["large", 66.5, 3.6], ["medium", 8.0, 25.0], ["large", 8.2, 39.5], ["medium", 57.5, 39.5], ["small", -44.0, 18.0]]
+	for r in rocks:
+		_asset("Cave_Geometry/rock_" + r[0], Vector3(r[1], 0, r[2]), randf() * TAU)
+	_asset("Cave_Geometry/stone_ledge_3m", Vector3(-51.0, 0, 16.3), 0.0)
+	_asset("Cave_Geometry/stone_ledge_3m", Vector3(-9.0, 0, 8.5), PI)
+
+
+## The west stairs run under the walkway and were left in its shadow: stand torches beside them.
+func _light_stairs() -> void:
+	_asset("Lighting_Props/torch_stand", Vector3(-8.3, 0, -5.4))
+	_asset("Lighting_Props/torch_stand", Vector3(-12.5, 0, -8.5))
