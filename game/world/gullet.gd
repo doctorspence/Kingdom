@@ -304,10 +304,10 @@ func _build_cave_detail(mat: Material) -> void:
 					var r := rng.randf_range(0.5, 1.5) * clampf(hgt / 4.0, 0.8, 1.8)
 					rock.scale = Vector3(r * rng.randf_range(0.7, 1.4), r * rng.randf_range(1.0, 2.6), r * rng.randf_range(0.7, 1.4))
 					rock.rotation = Vector3(rng.randf() * 0.6, rng.randf() * TAU, rng.randf() * 0.6)
-					rock.position = pos + Vector3(0, y0 + rng.randf() * hgt, 0) - out * rng.randf_range(-0.1, 0.35) * r
+					rock.position = pos + Vector3(0, y0 + rng.randf() * hgt, 0) + out * rng.randf_range(0.55, 0.9) * r * 1.2
 					add_child(rock)
 		# Stalagmites and stalactites inside the bigger rooms, kept near the walls.
-		var count := clampi(int(area / 18.0), 0, 40)
+		var count := clampi(int(area / 18.0), 0, 40) if minf(w, d) >= 8.0 else 0
 		for i in count:
 			var onwall := rng.randi() % 4
 			var sx := rng.randf_range(c[0] + 0.5, c[2] - 0.5)
@@ -330,7 +330,7 @@ func _build_cave_detail(mat: Material) -> void:
 			cone.mesh = cm
 			cone.position = Vector3(sx, y0 + h * 0.5 if up else c[4] - h * 0.5, sz)
 			add_child(cone)
-			if up:
+			if false:
 				var body := StaticBody3D.new()
 				var cs := CollisionShape3D.new()
 				var cyl := CylinderShape3D.new()
