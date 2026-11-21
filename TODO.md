@@ -147,3 +147,15 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - Server browser (maybe Steam), PvP
 - Dismemberment
 - Key rebinding menu, full settings, accessibility options
+
+---
+
+## Planned: class structure, subclasses and factions
+Full notes and priority order are in [`CLASS_PLAN.md`](CLASS_PLAN.md). Nothing is built yet.
+- [ ] P1 Foundations: subclass and faction data types, subclass on the character, save and network, old class ID aliases
+- [ ] P2 Level 1 primary classes: Martial / Vanguard / Mystic (reshape of Headsman / Bulwark / Lamplighter), 3 starting abilities each
+- [ ] P3 Level 10 subclass choice: shrine button, preview screen, permanent confirmation, hotbar slots 4-6
+- [ ] P4 Lore: faction data (White Knights, Dark Ages, Outcasts), initiation stories per subclass, DESIGN.md update
+- [ ] P5 Unique subclass abilities, one subclass at a time (Guardian, Warrior, Cleric first; Warden last)
+- [ ] P6 Initiation events once quests exist
+- [ ] P7 Per-subclass talents, visuals, balance
