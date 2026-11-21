@@ -1,17 +1,17 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/cliff/color.jpg" id="c"]
-[ext_resource type="Texture2D" path="res://assets/textures/cliff/normal.jpg" id="n"]
-[ext_resource type="Texture2D" path="res://assets/textures/cliff/rough.jpg" id="r"]
+[ext_resource type="Texture2D" path="res://assets/textures/cave_rock/color.jpg" id="c"]
+[ext_resource type="Texture2D" path="res://assets/textures/cave_rock/normal.jpg" id="n"]
+[ext_resource type="Texture2D" path="res://assets/textures/cave_rock/rough.jpg" id="r"]
 
 [resource]
-albedo_color = Color(0.55, 0.55, 0.57, 1)
+albedo_color = Color(0.85, 0.82, 0.78, 1)
 albedo_texture = ExtResource("c")
 roughness_texture = ExtResource("r")
 normal_enabled = true
-normal_scale = 1.3
+normal_scale = 1.4
 normal_texture = ExtResource("n")
-uv1_scale = Vector3(0.22, 0.22, 0.22)
+uv1_scale = Vector3(0.28, 0.28, 0.28)
 uv1_triplanar = true
-metallic_specular = 0.2
+metallic_specular = 0.25
 texture_filter = 5

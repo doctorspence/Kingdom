@@ -184,7 +184,7 @@ func _apply() -> void:
 			sun.light_energy *= 1.0 - cave
 			sun.shadow_enabled = sun.shadow_enabled and cave < 0.5
 		if _env:
-			_env.ambient_light_energy = lerpf(_env.ambient_light_energy, 0.5, cave)
+			_env.ambient_light_energy = lerpf(_env.ambient_light_energy, 0.85, cave)
 			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.42, 0.32, 0.24), cave)
 			_env.ambient_light_sky_contribution = lerpf(_env.ambient_light_sky_contribution, 0.0, cave)
 			_env.fog_light_color = _env.fog_light_color.lerp(Color(0.08, 0.07, 0.06), cave)
