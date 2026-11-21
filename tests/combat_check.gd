@@ -44,6 +44,8 @@ func _run() -> void:
 	var combo_hits := hp - enemy.health
 	_check_true("3-hit light combo lands all three (%.0f damage)" % combo_hits, combo_hits >= _expected_hit() * 3.0)
 
+	var crit_before := player.weapon.crit_chance
+	player.weapon.crit_chance = -10.0  # no random crits while comparing damage
 	await _setup_duel()
 	hp = enemy.health
 	await _tap("heavy_attack")
@@ -56,6 +58,7 @@ func _run() -> void:
 	_send("heavy_attack", false)
 	await _seconds(1.0)
 	var charged := hp - enemy.health
+	player.weapon.crit_chance = crit_before
 	_check_true("charged heavy hits harder (%.0f vs %.0f)" % [charged, heavy], heavy > 0.0 and charged > heavy * 1.3)
 
 	await _setup_duel()

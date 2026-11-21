@@ -74,6 +74,7 @@ func _run() -> void:
 
 	# --- Guard counter -----------------------------------------------------------------------------
 	await _go_to(Vector3(0, 0.05, 0))
+	await _settle()
 	_send("block", true)
 	await _seconds(0.3)
 	await _tap("light_attack")
@@ -220,3 +221,14 @@ func _check(label: String, ok: bool) -> void:
 	print("%s %s" % ["ok   " if ok else "FAIL ", label])
 	if not ok:
 		failures += 1
+
+
+## Wait until the player is standing idle with full stamina (landings and
+## attack recoveries can still be running from the previous step).
+func _settle() -> void:
+	for i in 180:
+		if player.state == Player.State.MOVE and player.is_on_floor():
+			break
+		await get_tree().physics_frame
+	player.stamina = player.max_stamina()
+	await _frames(10)

@@ -49,7 +49,7 @@ Listen-test the audio and playtest the nine abilities (🧪 in TODO.md). Subclas
 - **The class and loot checks** depend on `two_handed = true` being present in `data/weapons/weapon_executioner_greatsword.tres` and `weapon_lantern_staff.tres`. The Godot editor dropped that line once when it re-saved them; it was restored by hand. If those checks fail on "two-handed", look there.
 - **Your editor tuning** (class and weapon files, `overcast_env.tres`, `look_test.tscn`) is committed (commit "Editor tuning").
 - **Run checks one at a time, never at the same time as the 3-player check** (they share port 31499 and the timing checks fail under load).
-- **Flaky checks:** `combat_check` ("charged heavy hits harder", a random crit) and `moves_check` ("guard counter", timing) each fail about 1 run in 10; rerun before suspecting a real bug.
+- **Flaky checks:** `combat_check` (random crit) and `moves_check` (guard counter timing) were fixed on 2026-11-21; if one fails again, rerun once before suspecting a real bug.
 - **Commits** use the neutral local identity "Kingdom Dev"; the commit history lets you roll back any step.
 - **The `build/` zip** for friends was re-exported after Phase 10 (audio). Re-export again after later changes (README.md, "Play with friends"); `Godot_console.exe --headless --path . --export-release "Windows" build/windows/Kingdom.exe`, then zip `build/windows`.
 - `SPEC.md` is your original brief and is left exactly as you wrote it.
