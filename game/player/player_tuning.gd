@@ -11,11 +11,11 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var max_health := 100.0
 
 @export_group("Speeds (meters per second)")
-@export var walk_speed := 2.0
-@export var run_speed := 4.5
-@export var sprint_speed := 6.5
+@export var walk_speed := 2.4
+@export var run_speed := 5.8
+@export var sprint_speed := 8.2
 ## Movement speed while locked on to a target (strafing).
-@export var lock_on_speed := 3.2
+@export var lock_on_speed := 4.4
 ## Below this stick tilt (0–1) you walk instead of run.
 @export_range(0.1, 0.9) var walk_stick_threshold := 0.55
 
@@ -46,11 +46,11 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export_group("Dodge roll")
 @export var roll_stamina := 18.0
 ## Light, medium, heavy load: how long a roll lasts (seconds).
-@export var roll_duration := PackedFloat32Array([0.55, 0.65, 0.85])
+@export var roll_duration := PackedFloat32Array([0.45, 0.52, 0.68])
 ## Light, medium, heavy load: how far a roll goes (meters).
-@export var roll_distance := PackedFloat32Array([4.0, 3.5, 2.5])
+@export var roll_distance := PackedFloat32Array([4.8, 4.2, 3.1])
 ## Light, medium, heavy load: invincible time at the start of a roll (seconds).
-@export var roll_iframes := PackedFloat32Array([0.33, 0.28, 0.22])
+@export var roll_iframes := PackedFloat32Array([0.28, 0.24, 0.19])
 ## Gear weight ÷ capacity at or below which you count as light / medium / heavy.
 @export var load_light_max := 0.30
 @export var load_medium_max := 0.70
@@ -61,7 +61,7 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var stamina_regen := 35.0
 ## Pause after spending stamina before it refills (seconds).
 @export var stamina_regen_delay := 0.6
-@export var sprint_stamina_per_second := 10.0
+@export var sprint_stamina_per_second := 9.0
 ## After running dry while sprinting, you must recover this much before sprinting again.
 @export var sprint_restart_stamina := 20.0
 
@@ -75,13 +75,15 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var hard_landing_time := 0.35
 
 @export_group("Combat")
+## How fast your attacks play (1 = original speed). Raises wind-ups, swings, recovery and lunges together.
+@export_range(0.7, 1.6) var attack_speed := 1.2
 ## Hits you can take before you stagger (refills after a pause).
 @export var poise := 30.0
 @export var poise_regen_delay := 3.0
 @export var stagger_time := 0.45
 ## Stunned after your stamina runs out while blocking (seconds).
 @export var guard_break_time := 1.2
-@export var block_move_speed := 2.0
+@export var block_move_speed := 2.6
 ## Stamina refills at this fraction of normal speed while blocking.
 @export_range(0.0, 1.0) var block_regen_mult := 0.5
 ## You only get a parry window if you weren't blocking this recently (seconds).

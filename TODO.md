@@ -118,6 +118,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Ladders (watchtower, quarry), a one-way gate that loops back from the watchtower, slow wading through the river
 - [x] World save/load (host): pick a world name in the main menu. Saved: time, weather, opened shortcuts, death piles and their timers. Every 5 minutes and when you leave. Friends joining see existing piles
 - [x] Automated checks: `tests/zone_check.gd` (34 pass), `tests/enemy_check.gd` (13 pass), all earlier checks and the 3-player check still pass
+- [x] Feel pass: faster run/sprint/lock-on, quicker rolls, attacks 20% faster (`attack_speed` in `data/balance` tuning); zone compressed to 364 m, roadside clutter, more trees and rocks, 9 extra encounters
 - [ ] Zone music and ambience (needs your OK to download CC0 sounds)
 - [ ] 🧪 Explore the whole zone with friends; find the shortcut; hunt Hobb; play through a night (F5 skips 3 hours, F6 toggles rain)
 

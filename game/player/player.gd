@@ -1427,14 +1427,14 @@ func _state_attack(delta: float) -> void:
 			mult = 0.12
 		elif _attack.t >= a.windup_until:
 			_charging = false
-	_attack.step(delta, mult)
+	_attack.step(delta, mult * tuning.attack_speed)
 
 	# Stay locked toward the target during the wind-up.
 	if targeting.has_target() and not _attack.past(a.hit_start):
 		model.turn_toward(targeting.target_point() - global_position, deg_to_rad(360.0) * delta)
 
 	# Lunge forward (but don't shove through whoever you're hitting).
-	var lunge := _attack.lunge_speed()
+	var lunge := _attack.lunge_speed() * tuning.attack_speed
 	if lunge > 0.0 and _something_close_in_front(1.1):
 		lunge = 0.0
 	velocity.x = model.forward().x * lunge

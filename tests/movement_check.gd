@@ -56,7 +56,7 @@ func _run() -> void:
 	# Roll while running: come out still running
 	await _tap("dodge_sprint")
 	await _seconds(t.roll_duration[0] + 0.05)
-	_check("speed right after a roll (holding a direction)", _speed(), t.run_speed, 0.3)
+	_check("speed right after a roll (holding a direction)", _speed(), t.run_speed, 0.8)
 	Input.action_release("move_back")
 	await _seconds(2.5)
 

@@ -45,16 +45,16 @@
 [ext_resource type="Script" path="res://game/world/day_night.gd" id="daynight"]
 
 [sub_resource type="BoxShape3D" id="edge_N"]
-size = Vector3(520, 80, 1)
+size = Vector3(364.00, 80, 0.70)
 
 [sub_resource type="BoxShape3D" id="edge_S"]
-size = Vector3(520, 80, 1)
+size = Vector3(364.00, 80, 0.70)
 
 [sub_resource type="BoxShape3D" id="edge_W"]
-size = Vector3(1, 80, 520)
+size = Vector3(0.70, 80, 364.00)
 
 [sub_resource type="BoxShape3D" id="edge_E"]
-size = Vector3(1, 80, 520)
+size = Vector3(0.70, 80, 364.00)
 
 
 [node name="Tithelands" type="Node3D"]
@@ -82,7 +82,11 @@ zone_id = &"tithelands"
 zone_name = "The Tithelands"
 river_depth = 1.1
 pit_sharpness = 1.3
-mounds = PackedVector4Array(150, 40, 45, 11, -190, -165, 55, -14, -185, -160, 22, -10, 80, -170, 50, 5)
+size = 364.0
+edge_width = 28.0
+river = PackedVector2Array(-182, -21, -105, -10.5, -42, -5.6, 0, -3.5, 56, 3.5, 119, -7, 182, 10.5)
+roads = Array[PackedVector2Array]([PackedVector2Array(0, 161, 0, 84, 1.4, 0, 0, -84, 0, -178.5), PackedVector2Array(0, 112, -42, 91, -70, 42, -80.5, -14), PackedVector2Array(-80.5, -14, -105, -63, -115.5, -80.5), PackedVector2Array(7, 126, 42, 112, 77, 70, 98, 38.5)])
+mounds = PackedVector4Array(105.00, 28.00, 31.50, 11, -133.00, -115.50, 38.50, -14, -129.50, -112.00, 15.40, -10, 56.00, -119.00, 35.00, 5)
 material = ExtResource("terrain_mat")
 
 [node name="Players" type="Node3D" parent="."]
@@ -96,23 +100,23 @@ script = ExtResource("snap")
 terrain = NodePath("../Terrain")
 
 [node name="Spawn0" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(-4, 0, 172)
+position = Vector3(-2.80, 0, 120.40)
 metadata/y_offset = 0.1
 
 [node name="Spawn1" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(-2, 0, 172)
+position = Vector3(-1.40, 0, 120.40)
 metadata/y_offset = 0.1
 
 [node name="Spawn2" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(0, 0, 172)
+position = Vector3(0.00, 0, 120.40)
 metadata/y_offset = 0.1
 
 [node name="Spawn3" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(2, 0, 172)
+position = Vector3(1.40, 0, 120.40)
 metadata/y_offset = 0.1
 
 [node name="Spawn4" type="Marker3D" parent="SpawnPoints"]
-position = Vector3(4, 0, 172)
+position = Vector3(2.80, 0, 120.40)
 metadata/y_offset = 0.1
 
 [node name="GameSession" type="Node" parent="." node_paths=PackedStringArray("spawn_points", "players_root")]
@@ -127,241 +131,352 @@ script = ExtResource("snap")
 terrain = NodePath("../Terrain")
 
 [node name="CrossroadsShrine" parent="Places" instance=ExtResource("shrine")]
-position = Vector3(9, 0, 164)
+position = Vector3(6.30, 0, 114.80)
 rotation_degrees = Vector3(0, 200, 0)
 shrine_name = "Crossroads Shrine"
 shrine_id = &"crossroads"
 [node name="Gallows" parent="Places" instance=ExtResource("gallows")]
-position = Vector3(-11, 0, 170)
+position = Vector3(-7.70, 0, 119.00)
 rotation_degrees = Vector3(0, -15, 0)
 
 [node name="Signpost" parent="Places" instance=ExtResource("signpost")]
-position = Vector3(4, 0, 157)
+position = Vector3(2.80, 0, 109.90)
 rotation_degrees = Vector3(0, 10, 0)
 
 
 [node name="OldWenna" type="Node3D" parent="Places"]
-position = Vector3(14, 0, 173)
+position = Vector3(9.80, 0, 121.10)
 rotation_degrees = Vector3(0, 230, 0)
 script = ExtResource("vendor")
 data = ExtResource("wenna")
 body_tint = Color(0.45, 0.38, 0.3, 1)
 
 [node name="SoulBroker" type="Node3D" parent="Places"]
-position = Vector3(-8, 0, 184)
+position = Vector3(-5.60, 0, 128.80)
 rotation_degrees = Vector3(0, 150, 0)
 script = ExtResource("vendor")
 data = ExtResource("broker")
 body_tint = Color(0.12, 0.12, 0.16, 1)
 
 [node name="Farm1" parent="Places" instance=ExtResource("cottage")]
-position = Vector3(-30, 0, 140)
+position = Vector3(-21.00, 0, 98.00)
 rotation_degrees = Vector3(0, 90, 0)
 
 [node name="Farm2" parent="Places" instance=ExtResource("cottage")]
-position = Vector3(-50, 0, 126)
+position = Vector3(-35.00, 0, 88.20)
 rotation_degrees = Vector3(0, 20, 0)
 
 [node name="FarmFence1" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-36, 0, 150)
+position = Vector3(-25.20, 0, 105.00)
 rotation_degrees = Vector3(0, 0, 0)
 
 [node name="FarmFence2" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-42, 0, 150)
+position = Vector3(-29.40, 0, 105.00)
 rotation_degrees = Vector3(0, 0, 0)
 
 [node name="FarmFence3" parent="Places" instance=ExtResource("fence")]
-position = Vector3(-48, 0, 150)
+position = Vector3(-33.60, 0, 105.00)
 rotation_degrees = Vector3(0, 0, 0)
 
 [node name="FarmCart" parent="Places" instance=ExtResource("cart")]
-position = Vector3(-38, 0, 156)
+position = Vector3(-26.60, 0, 109.20)
 rotation_degrees = Vector3(0, 70, 0)
 
 [node name="Burned1" parent="Places" instance=ExtResource("burned_cottage")]
-position = Vector3(-80, 0, 90)
+position = Vector3(-56.00, 0, 63.00)
 rotation_degrees = Vector3(0, 10, 0)
 
 [node name="Burned2" parent="Places" instance=ExtResource("burned_cottage")]
-position = Vector3(-94, 0, 78)
+position = Vector3(-65.80, 0, 54.60)
 rotation_degrees = Vector3(0, 50, 0)
 
 [node name="Burned3" parent="Places" instance=ExtResource("burned_cottage")]
-position = Vector3(-74, 0, 70)
+position = Vector3(-51.80, 0, 49.00)
 rotation_degrees = Vector3(0, -30, 0)
 
 [node name="HamletCottage" parent="Places" instance=ExtResource("cottage")]
-position = Vector3(-100, 0, 98)
+position = Vector3(-70.00, 0, 68.60)
 rotation_degrees = Vector3(0, 120, 0)
 
 [node name="HamletCart" parent="Places" instance=ExtResource("cart")]
-position = Vector3(-86, 0, 96)
+position = Vector3(-60.20, 0, 67.20)
 rotation_degrees = Vector3(0, 200, 0)
 
 [node name="CheckpointBarricadeW" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(-6, 0, -110)
+position = Vector3(-4.20, 0, -77.00)
 rotation_degrees = Vector3(0, 0, 0)
 
 [node name="CheckpointBarricadeE" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(7, 0, -113)
+position = Vector3(4.90, 0, -79.10)
 rotation_degrees = Vector3(0, 0, 0)
 
 [node name="CheckpointTent1" parent="Places" instance=ExtResource("tent")]
-position = Vector3(14, 0, -122)
+position = Vector3(9.80, 0, -85.40)
 rotation_degrees = Vector3(0, 90, 0)
 
 [node name="CheckpointTent2" parent="Places" instance=ExtResource("tent")]
-position = Vector3(-14, 0, -124)
+position = Vector3(-9.80, 0, -86.80)
 rotation_degrees = Vector3(0, 90, 0)
 
 [node name="TitheBarn" parent="Places" instance=ExtResource("tithe_barn")]
-position = Vector3(36, 0, -88)
+position = Vector3(25.20, 0, -61.60)
 rotation_degrees = Vector3(0, 90, 0)
 
 [node name="Bridge" parent="Places" instance=ExtResource("bridge_broken")]
-position = Vector3(0, 0, -5)
+position = Vector3(0.00, 0, -3.50)
 rotation_degrees = Vector3(0, 0, 0)
 metadata/y_offset = 0.4
 [node name="Mill" parent="Places" instance=ExtResource("mill")]
-position = Vector3(-125, 0, -28)
+position = Vector3(-87.50, 0, -19.60)
 rotation_degrees = Vector3(0, 90, 0)
 
 [node name="MillShrine" parent="Places" instance=ExtResource("shrine")]
-position = Vector3(-108, 0, -40)
+position = Vector3(-75.60, 0, -28.00)
 rotation_degrees = Vector3(0, 140, 0)
 shrine_name = "Mill Shrine"
 shrine_id = &"mill"
 [node name="HobbTent1" parent="Places" instance=ExtResource("tent")]
-position = Vector3(-150, 0, 25)
+position = Vector3(-105.00, 0, 17.50)
 rotation_degrees = Vector3(0, 30, 0)
 
 [node name="HobbTent2" parent="Places" instance=ExtResource("tent")]
-position = Vector3(-160, 0, 36)
+position = Vector3(-112.00, 0, 25.20)
 rotation_degrees = Vector3(0, -20, 0)
 
 [node name="HobbTent3" parent="Places" instance=ExtResource("tent")]
-position = Vector3(-141, 0, 40)
+position = Vector3(-98.70, 0, 28.00)
 rotation_degrees = Vector3(0, 75, 0)
 
 [node name="HobbBarricade" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(-138, 0, 18)
+position = Vector3(-96.60, 0, 12.60)
 rotation_degrees = Vector3(0, 40, 0)
 
 [node name="HobbPalisade" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(-165, 0, 22)
+position = Vector3(-115.50, 0, 15.40)
 rotation_degrees = Vector3(0, 70, 0)
 
 [node name="RaiderTent1" parent="Places" instance=ExtResource("tent")]
-position = Vector3(170, 0, -120)
+position = Vector3(119.00, 0, -84.00)
 rotation_degrees = Vector3(0, 10, 0)
 
 [node name="RaiderTent2" parent="Places" instance=ExtResource("tent")]
-position = Vector3(182, 0, -128)
+position = Vector3(127.40, 0, -89.60)
 rotation_degrees = Vector3(0, -40, 0)
 
 [node name="RaiderBarricade" parent="Places" instance=ExtResource("barricade")]
-position = Vector3(160, 0, -110)
+position = Vector3(112.00, 0, -77.00)
 rotation_degrees = Vector3(0, 60, 0)
 
 [node name="RaiderBurned" parent="Places" instance=ExtResource("burned_cottage")]
-position = Vector3(188, 0, -110)
+position = Vector3(131.60, 0, -77.00)
 rotation_degrees = Vector3(0, 15, 0)
 
 [node name="Watchtower" parent="Places" instance=ExtResource("watchtower")]
-position = Vector3(150, 0, 40)
+position = Vector3(105.00, 0, 28.00)
 rotation_degrees = Vector3(0, 0, 0)
 
 [node name="TowerWall0" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(165.00, 0, 40.00)
+position = Vector3(120.00, 0, 28.00)
 rotation_degrees = Vector3(0, 90, 0)
 scale = Vector3(1.45, 1.45, 1.45)
 
 [node name="TowerWall1" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(160.61, 0, 29.39)
+position = Vector3(115.60, 0, 17.39)
 rotation_degrees = Vector3(0, 135, 0)
 scale = Vector3(1.45, 1.45, 1.45)
 
 [node name="TowerWall3" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(139.39, 0, 29.39)
+position = Vector3(94.39, 0, 17.39)
 rotation_degrees = Vector3(0, 225, 0)
 scale = Vector3(1.45, 1.45, 1.45)
 
 [node name="TowerWall4" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(135.00, 0, 40.00)
+position = Vector3(90.00, 0, 28.00)
 rotation_degrees = Vector3(0, 270, 0)
 scale = Vector3(1.45, 1.45, 1.45)
 
 [node name="TowerWall5" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(139.39, 0, 50.61)
+position = Vector3(94.39, 0, 38.60)
 rotation_degrees = Vector3(0, 315, 0)
 scale = Vector3(1.45, 1.45, 1.45)
 
 [node name="TowerWall7" parent="Places" instance=ExtResource("palisade")]
-position = Vector3(160.61, 0, 50.61)
+position = Vector3(115.60, 0, 38.60)
 rotation_degrees = Vector3(0, 405, 0)
 scale = Vector3(1.45, 1.45, 1.45)
 
 [node name="QuarryShrine" parent="Places" instance=ExtResource("shrine")]
-position = Vector3(-148, 0, -110)
+position = Vector3(-103.60, 0, -77.00)
 rotation_degrees = Vector3(0, 60, 0)
 shrine_name = "Quarry Shrine"
 shrine_id = &"quarry"
 [node name="GulletMouth" parent="Places" instance=ExtResource("gullet_mouth")]
-position = Vector3(-222, 0, -196)
+position = Vector3(-155.40, 0, -137.20)
 rotation_degrees = Vector3(0, 45, 0)
 
 [node name="QuarryRock1" parent="Places" instance=ExtResource("rock")]
-position = Vector3(-175, 0, -170)
+position = Vector3(-122.50, 0, -119.00)
 rotation_degrees = Vector3(0, 20, 0)
 scale = Vector3(2.2, 2.2, 2.2)
 
 [node name="QuarryRock2" parent="Places" instance=ExtResource("rock")]
-position = Vector3(-200, 0, -150)
+position = Vector3(-140.00, 0, -105.00)
 rotation_degrees = Vector3(0, 70, 0)
 scale = Vector3(1.8, 1.8, 1.8)
 
+[node name="RoadCart1" parent="Places" instance=ExtResource("cart")]
+position = Vector3(6.30, 0, 64.40)
+rotation_degrees = Vector3(0, 20, 0)
+
+[node name="RoadCart2" parent="Places" instance=ExtResource("cart")]
+position = Vector3(-4.90, 0, 29.40)
+rotation_degrees = Vector3(0, -15, 0)
+
+[node name="RoadCart3" parent="Places" instance=ExtResource("cart")]
+position = Vector3(4.20, 0, -38.50)
+rotation_degrees = Vector3(0, 160, 0)
+
+[node name="RoadCart4" parent="Places" instance=ExtResource("cart")]
+position = Vector3(-21.00, 0, 82.60)
+rotation_degrees = Vector3(0, 70, 0)
+
+[node name="ForkSign1" parent="Places" instance=ExtResource("signpost")]
+position = Vector3(-6.30, 0, 103.60)
+rotation_degrees = Vector3(0, -20, 0)
+
+[node name="ForkSign2" parent="Places" instance=ExtResource("signpost")]
+position = Vector3(-74.20, 0, -9.80)
+rotation_degrees = Vector3(0, 40, 0)
+
+[node name="ForkSign3" parent="Places" instance=ExtResource("signpost")]
+position = Vector3(9.80, 0, 117.60)
+rotation_degrees = Vector3(0, -140, 0)
+
+[node name="HamletGallows" parent="Places" instance=ExtResource("gallows")]
+position = Vector3(-54.60, 0, 70.00)
+rotation_degrees = Vector3(0, 60, 0)
+
+[node name="CheckpointGallows" parent="Places" instance=ExtResource("gallows")]
+position = Vector3(-15.40, 0, -70.00)
+rotation_degrees = Vector3(0, 100, 0)
+
+[node name="FarmFence4" parent="Places" instance=ExtResource("fence")]
+position = Vector3(-25.20, 0, 89.60)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="FarmFence5" parent="Places" instance=ExtResource("fence")]
+position = Vector3(-29.40, 0, 89.60)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="FarmFence6" parent="Places" instance=ExtResource("fence")]
+position = Vector3(-33.60, 0, 89.60)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="FarmFence7" parent="Places" instance=ExtResource("fence")]
+position = Vector3(-39.20, 0, 93.80)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="WoodsTentS" parent="Places" instance=ExtResource("tent")]
+position = Vector3(78.40, 0, 72.80)
+rotation_degrees = Vector3(0, 40, 0)
+
+[node name="WoodsCartS" parent="Places" instance=ExtResource("cart")]
+position = Vector3(85.40, 0, 78.40)
+rotation_degrees = Vector3(0, 120, 0)
+
+[node name="WoodsBarricadeM" parent="Places" instance=ExtResource("barricade")]
+position = Vector3(70.00, 0, -4.20)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="WoodsTentM" parent="Places" instance=ExtResource("tent")]
+position = Vector3(75.60, 0, -11.20)
+rotation_degrees = Vector3(0, 200, 0)
+
+[node name="WoodsTentN" parent="Places" instance=ExtResource("tent")]
+position = Vector3(89.60, 0, -44.80)
+rotation_degrees = Vector3(0, 150, 0)
+
+[node name="WoodsBarricadeN" parent="Places" instance=ExtResource("barricade")]
+position = Vector3(84.00, 0, -40.60)
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="FordBarricade" parent="Places" instance=ExtResource("barricade")]
+position = Vector3(21.00, 0, 4.20)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="FordTent" parent="Places" instance=ExtResource("tent")]
+position = Vector3(26.60, 0, -15.40)
+rotation_degrees = Vector3(0, 30, 0)
+
+[node name="MillCart" parent="Places" instance=ExtResource("cart")]
+position = Vector3(-82.60, 0, -9.80)
+rotation_degrees = Vector3(0, 40, 0)
+
+[node name="QuarryRock3" parent="Places" instance=ExtResource("rock")]
+position = Vector3(-112.00, 0, -64.40)
+rotation_degrees = Vector3(0, 140, 0)
+scale = Vector3(1.6, 1.6, 1.6)
+
+[node name="QuarryRock4" parent="Places" instance=ExtResource("rock")]
+position = Vector3(-133.00, 0, -89.60)
+rotation_degrees = Vector3(0, 10, 0)
+scale = Vector3(2.0, 2.0, 2.0)
+
+[node name="QuarryRock5" parent="Places" instance=ExtResource("rock")]
+position = Vector3(-115.50, 0, -105.00)
+rotation_degrees = Vector3(0, 100, 0)
+scale = Vector3(1.4, 1.4, 1.4)
+
+[node name="QuarryTent" parent="Places" instance=ExtResource("tent")]
+position = Vector3(-112.00, 0, -58.80)
+rotation_degrees = Vector3(0, 80, 0)
+
+[node name="QuarryBarricade" parent="Places" instance=ExtResource("barricade")]
+position = Vector3(-117.60, 0, -85.40)
+rotation_degrees = Vector3(0, 30, 0)
+
 [node name="TowerGate" type="StaticBody3D" parent="Places"]
-position = Vector3(150, 0, 55)
+position = Vector3(105.00, 0, 43.00)
 script = ExtResource("gate")
 gate_id = &"watchtower_south"
 width = 11.6
 
 [node name="QuarryLadder" type="Node3D" parent="Places" node_paths=PackedStringArray("terrain")]
-position = Vector3(-173, 0, -160)
+position = Vector3(-121.10, 0, -112.00)
 rotation_degrees = Vector3(0, -90, 0)
 script = ExtResource("ladder")
 terrain = NodePath("../../Terrain")
-top_ground_point = Vector3(0, 0, -10)
+top_ground_point = Vector3(0.00, 0, -7.00)
 
 [node name="Highcrown" parent="." instance=ExtResource("highcrown")]
-position = Vector3(0, 0, -340)
+position = Vector3(0.00, 0, -238.00)
 
 [node name="Woods" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
 script = ExtResource("scatter")
 terrain = NodePath("../Terrain")
 scenes = Array[PackedScene]([ExtResource("tree_pine"), ExtResource("tree_pine"), ExtResource("tree_dead")])
-area = Rect2(45, -235, 195, 440)
+area = Rect2(31.50, -164.50, 136.50, 308.00)
 count = 320
 scatter_seed = 11
 min_spacing = 5.5
-avoid = PackedVector3Array(150, 40, 22, 176, -118, 16)
+avoid = PackedVector3Array(105.00, 28.00, 15.40, 123.20, -82.60, 11.20)
 
 [node name="FarmTrees" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
 script = ExtResource("scatter")
 terrain = NodePath("../Terrain")
 scenes = Array[PackedScene]([ExtResource("tree_dead"), ExtResource("tree_pine")])
-area = Rect2(-235, -100, 225, 330)
-count = 70
+area = Rect2(-164.50, -70.00, 157.50, 231.00)
+count = 110
 scatter_seed = 23
 min_spacing = 9.0
-avoid = PackedVector3Array(-85, 85, 20, -40, 140, 24, -150, 30, 20, -120, -30, 16, -108, -40, 8, 0, 168, 22)
+avoid = PackedVector3Array(-59.50, 59.50, 14.00, -28.00, 98.00, 16.80, -105.00, 21.00, 14.00, -84.00, -21.00, 11.20, -75.60, -28.00, 5.60, 0.00, 117.60, 15.40)
 
 [node name="Rocks" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
 script = ExtResource("scatter")
 terrain = NodePath("../Terrain")
 scenes = Array[PackedScene]([ExtResource("rock")])
-area = Rect2(-245, -245, 490, 490)
-count = 60
+area = Rect2(-171.50, -171.50, 343.00, 343.00)
+count = 90
 scatter_seed = 5
 min_spacing = 12.0
 scale_range = Vector2(0.6, 2.0)
@@ -381,7 +496,7 @@ terrain = NodePath("../Terrain")
 [node name="EnemySpawns" type="Node3D" parent="."]
 
 [node name="RoadPatrol" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(2, 0, 110)
+position = Vector3(1.40, 0, 77.00)
 rotation_degrees = Vector3(0, 180, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_road")
@@ -390,7 +505,7 @@ min_players = 1
 patrol = PackedVector3Array(0, 0, 0, 0, 0, 50, -2, 0, 95)
 
 [node name="Checkpoint" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(0, 0, -120)
+position = Vector3(0.00, 0, -84.00)
 rotation_degrees = Vector3(0, 0, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_pair")
@@ -399,7 +514,7 @@ min_players = 1
 
 
 [node name="CheckpointExtra" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(12, 0, -128)
+position = Vector3(8.40, 0, -89.60)
 rotation_degrees = Vector3(0, 0, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_or_none")
@@ -408,7 +523,7 @@ min_players = 3
 
 
 [node name="TitheBarn" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(28, 0, -80)
+position = Vector3(19.60, 0, -56.00)
 rotation_degrees = Vector3(0, 270, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
@@ -417,7 +532,7 @@ min_players = 1
 
 
 [node name="TitheBarnPatrol" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(20, 0, -60)
+position = Vector3(14.00, 0, -42.00)
 rotation_degrees = Vector3(0, 0, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_or_none")
@@ -426,7 +541,7 @@ min_players = 1
 patrol = PackedVector3Array(0, 0, 0, 25, 0, -10, 10, 0, -40)
 
 [node name="Farms" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-42, 0, 132)
+position = Vector3(-29.40, 0, 92.40)
 rotation_degrees = Vector3(0, 120, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
@@ -435,7 +550,7 @@ min_players = 1
 
 
 [node name="Hamlet" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-86, 0, 84)
+position = Vector3(-60.20, 0, 58.80)
 rotation_degrees = Vector3(0, 30, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauder_pair")
@@ -444,7 +559,7 @@ min_players = 1
 
 
 [node name="HamletExtra" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-76, 0, 70)
+position = Vector3(-53.20, 0, 49.00)
 rotation_degrees = Vector3(0, 200, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
@@ -453,7 +568,7 @@ min_players = 3
 
 
 [node name="HamletEdge" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-110, 0, 60)
+position = Vector3(-77.00, 0, 42.00)
 rotation_degrees = Vector3(0, 90, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
@@ -462,7 +577,7 @@ min_players = 6
 
 
 [node name="Mill" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-132, 0, -14)
+position = Vector3(-92.40, 0, -9.80)
 rotation_degrees = Vector3(0, 90, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
@@ -471,7 +586,7 @@ min_players = 1
 
 
 [node name="HobbCamp" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-151, 0, 30)
+position = Vector3(-105.70, 0, 21.00)
 rotation_degrees = Vector3(0, 60, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauder_pair")
@@ -481,7 +596,7 @@ named_scene = ExtResource("hobb")
 named_chance = 0.05
 
 [node name="HobbCampBack" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-160, 0, 42)
+position = Vector3(-112.00, 0, 29.40)
 rotation_degrees = Vector3(0, 160, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
@@ -490,7 +605,7 @@ min_players = 3
 
 
 [node name="WoodsSouth" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(115, 0, 110)
+position = Vector3(80.50, 0, 77.00)
 rotation_degrees = Vector3(0, 270, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
@@ -499,7 +614,7 @@ min_players = 1
 
 
 [node name="WoodsMid" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(105, 0, -10)
+position = Vector3(73.50, 0, -7.00)
 rotation_degrees = Vector3(0, 270, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_mixed")
@@ -508,7 +623,7 @@ min_players = 1
 
 
 [node name="WoodsNorth" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(125, 0, -70)
+position = Vector3(87.50, 0, -49.00)
 rotation_degrees = Vector3(0, 180, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
@@ -517,7 +632,7 @@ min_players = 3
 
 
 [node name="RaiderCamp" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(172, 0, -116)
+position = Vector3(120.40, 0, -81.20)
 rotation_degrees = Vector3(0, 180, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauder_pair")
@@ -526,7 +641,7 @@ min_players = 1
 
 
 [node name="RaiderCampBack" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(184, 0, -122)
+position = Vector3(128.80, 0, -85.40)
 rotation_degrees = Vector3(0, 200, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
@@ -535,7 +650,7 @@ min_players = 1
 
 
 [node name="RaiderCampExtra" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(162, 0, -128)
+position = Vector3(113.40, 0, -89.60)
 rotation_degrees = Vector3(0, 150, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_mixed")
@@ -544,7 +659,7 @@ min_players = 6
 
 
 [node name="TowerYard" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(146, 0, 36)
+position = Vector3(102.20, 0, 25.20)
 rotation_degrees = Vector3(0, 0, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauders")
@@ -553,7 +668,7 @@ min_players = 1
 patrol = PackedVector3Array(0, 0, 0, 8, 0, 6, 0, 0, 10, -8, 0, 6)
 
 [node name="TowerOutside" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(150, 0, 64)
+position = Vector3(105.00, 0, 44.80)
 rotation_degrees = Vector3(0, 0, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_or_none")
@@ -562,7 +677,7 @@ min_players = 3
 
 
 [node name="QuarryRim" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-170, 0, -135)
+position = Vector3(-119.00, 0, -94.50)
 rotation_degrees = Vector3(0, 220, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_mixed")
@@ -571,7 +686,7 @@ min_players = 1
 
 
 [node name="QuarryFloor" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-190, 0, -170)
+position = Vector3(-133.00, 0, -119.00)
 rotation_degrees = Vector3(0, 45, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_marauder_pair")
@@ -580,7 +695,7 @@ min_players = 1
 
 
 [node name="QuarryDeep" type="Marker3D" parent="EnemySpawns"]
-position = Vector3(-205, 0, -185)
+position = Vector3(-143.50, 0, -129.50)
 rotation_degrees = Vector3(0, 45, 0)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_hound_pack")
@@ -588,26 +703,107 @@ radius = 3.0
 min_players = 3
 
 
+[node name="BridgeGuard" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(8.40, 0, 9.80)
+rotation_degrees = Vector3(0, 90, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 1
+
+
+[node name="RoadMid" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(4.20, 0, 29.40)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_mixed")
+radius = 3.0
+min_players = 1
+
+
+[node name="HamletRoad" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-42.00, 0, 84.00)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 1
+
+
+[node name="FordCamp" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(28.00, 0, -12.60)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauder_pair")
+radius = 3.0
+min_players = 1
+
+
+[node name="NorthRoad" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(2.80, 0, -28.00)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_zealot_or_none")
+radius = 2.0
+min_players = 1
+
+
+[node name="MillRoad" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-70.00, 0, 9.80)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_hound_pack")
+radius = 3.0
+min_players = 3
+
+
+[node name="QuarryRoad" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-113.40, 0, -60.20)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_marauders")
+radius = 2.5
+min_players = 1
+
+
+[node name="WoodsRoad" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(56.00, 0, 49.00)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_hound_pack")
+radius = 3.0
+min_players = 1
+
+
+[node name="FarmEdge" type="Marker3D" parent="EnemySpawns"]
+position = Vector3(-18.20, 0, 84.00)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("spawnpt")
+table = ExtResource("spawn_zealot_or_none")
+radius = 2.0
+min_players = 3
+
+
 [node name="EdgeN" type="StaticBody3D" parent="."]
-position = Vector3(0, 20, -255)
+position = Vector3(0.00, 20, -178.50)
 
 [node name="Shape" type="CollisionShape3D" parent="EdgeN"]
 shape = SubResource("edge_N")
 
 [node name="EdgeS" type="StaticBody3D" parent="."]
-position = Vector3(0, 20, 255)
+position = Vector3(0.00, 20, 178.50)
 
 [node name="Shape" type="CollisionShape3D" parent="EdgeS"]
 shape = SubResource("edge_S")
 
 [node name="EdgeW" type="StaticBody3D" parent="."]
-position = Vector3(-255, 20, 0)
+position = Vector3(-178.50, 20, 0.00)
 
 [node name="Shape" type="CollisionShape3D" parent="EdgeW"]
 shape = SubResource("edge_W")
 
 [node name="EdgeE" type="StaticBody3D" parent="."]
-position = Vector3(255, 20, 0)
+position = Vector3(178.50, 20, 0.00)
 
 [node name="Shape" type="CollisionShape3D" parent="EdgeE"]
 shape = SubResource("edge_E")

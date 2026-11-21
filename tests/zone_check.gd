@@ -21,7 +21,7 @@ func _run() -> void:
 	_check("the Tithelands load (%d ms)" % (Time.get_ticks_msec() - t0), Time.get_ticks_msec() - t0 < 15000)
 	player = get_tree().get_first_node_in_group(&"player") as Player
 	terrain = zone.get_node("Terrain")
-	_check("you start at the Crossroads, on the ground", player.global_position.distance_to(Vector3(0, player.global_position.y, 172)) < 8.0
+	_check("you start at the Crossroads, on the ground", player.global_position.distance_to(Vector3(0, player.global_position.y, 120.4)) < 8.0
 			and absf(player.global_position.y - terrain.height_at(player.global_position.x, player.global_position.z)) < 1.0)
 	_check("3 shrines", get_tree().get_nodes_in_group(&"interactables").filter(func(n: Node) -> bool: return n is Shrine).size() == 3)
 	await _seconds(0.5)
@@ -56,18 +56,18 @@ func _run() -> void:
 	_check("quarry ladder reaches the rim (%.1f m tall)" % ql.height, ql.height > 6.0)
 
 	# --- Wading -----------------------------------------------------------------------
-	var river_spot := Vector3(-40, 0, -7)
+	var river_spot := Vector3(-28, 0, -5)
 	await _go_to(Vector3(river_spot.x, terrain.height_at(river_spot.x, river_spot.z) + 0.2, river_spot.z))
 	Input.action_press("move_right")
 	await _seconds(1.0)
 	var wade_speed := Vector2(player.velocity.x, player.velocity.z).length()
 	Input.action_release("move_right")
-	_check("wading through the river is slow (%.1f m/s)" % wade_speed, wade_speed < 3.0 and wade_speed > 1.0)
+	_check("wading through the river is slow (%.1f m/s)" % wade_speed, wade_speed < player.tuning.run_speed * 0.7 and wade_speed > 1.0)
 
 	# --- Spawning ------------------------------------------------------------------
 	var enemies := zone.get_node("Enemies").get_children()
 	_check("enemies spawn around the zone (%d)" % enemies.size(), enemies.size() >= 12)
-	var near_start := enemies.filter(func(e: Node3D) -> bool: return Vector2(e.global_position.x, e.global_position.z).distance_to(Vector2(0, 172)) < 40.0)
+	var near_start := enemies.filter(func(e: Node3D) -> bool: return Vector2(e.global_position.x, e.global_position.z).distance_to(Vector2(0, 120.4)) < 30.0)
 	_check("the Crossroads start is quiet", near_start.is_empty())
 	var floating := enemies.filter(func(e: Node3D) -> bool: return absf(e.global_position.y - terrain.height_at(e.global_position.x, e.global_position.z)) > 1.5)
 	_check("enemies stand on the ground (%d off)" % floating.size(), floating.is_empty())
@@ -90,7 +90,7 @@ func _run() -> void:
 	# Named rare: force the roll.
 	var camp := zone.get_node("EnemySpawns/HobbCamp") as SpawnPoint
 	camp.named_chance = 1.0
-	await _go_to(Vector3(0, 0, 172))
+	await _go_to(Vector3(0, 0, 120.4))
 	(zone.get_node("SpawnDirector") as SpawnDirector).populate(true)
 	await _frames(5)
 	_check("Hobb the Unhanged can appear at his camp", camp.spawned.size() == 1 and (camp.spawned[0] as Enemy).data.named)
@@ -102,8 +102,8 @@ func _run() -> void:
 	var key := player.world_key()
 	await _seconds(0.7)
 	_check("you find the Crossroads Shrine at the start", player.exploration.found_shrines(key).has("crossroads"))
-	_check("the map clears around you, not far away", player.exploration.revealed_at(key, Vector3(0, 0, 172), terrain.size)
-			and not player.exploration.revealed_at(key, Vector3(-200, 0, -180), terrain.size))
+	_check("the map clears around you, not far away", player.exploration.revealed_at(key, Vector3(0, 0, 120.4), terrain.size)
+			and not player.exploration.revealed_at(key, Vector3(-140, 0, -130), terrain.size))
 	var quarry := Shrine.by_id(get_tree(), &"quarry")
 	var crossroads := Shrine.by_id(get_tree(), &"crossroads")
 	_check("you can't travel to a shrine you haven't found", player.travel_to(quarry) != "")

@@ -22,7 +22,7 @@ func _run() -> void:
 	# Overview from straight above.
 	var cam := Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
-	cam.size = 540.0
+	cam.size = 380.0
 	cam.far = 1000.0
 	scene.add_child(cam)
 	cam.global_position = Vector3(0, 400, 0)
@@ -38,8 +38,8 @@ func _run() -> void:
 	env.environment.volumetric_fog_enabled = true
 	cam.queue_free()
 	player.camera_rig.camera.current = true
-	for spot in [["zone_watchtower", Vector3(140, 0, 75), 200.0], ["zone_quarry", Vector3(-145, 0, -100), 40.0],
-			["zone_road_north", Vector3(0, 0, -60), 0.0], ["zone_hamlet", Vector3(-70, 0, 110), 40.0]]:
+	for spot in [["zone_watchtower", Vector3(98, 0, 52), 200.0], ["zone_quarry", Vector3(-101, 0, -70), 40.0],
+			["zone_road_north", Vector3(0, 0, -42), 0.0], ["zone_hamlet", Vector3(-49, 0, 77), 40.0]]:
 		var p: Vector3 = spot[1]
 		var terrain: ZoneTerrain = scene.get_node("Terrain")
 		player.global_position = Vector3(p.x, terrain.height_at(p.x, p.z) + 0.2, p.z)

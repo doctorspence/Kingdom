@@ -14,7 +14,7 @@ func _run() -> void:
 	var player := get_tree().get_first_node_in_group(&"player") as Player
 	var terrain: ZoneTerrain = scene.get_node("Terrain")
 	# Walk the old road north, then west to the mill.
-	for p in [Vector3(0, 0, 120), Vector3(0, 0, 60), Vector3(0, 0, 0), Vector3(-40, 0, -20), Vector3(-90, 0, -30), Vector3(-110, 0, -40)]:
+	for p in [Vector3(0, 0, 84), Vector3(0, 0, 42), Vector3(0, 0, 0), Vector3(-40, 0, -20), Vector3(-90, 0, -30), Vector3(-110, 0, -40)]:
 		player.global_position = Vector3(p.x, terrain.height_at(p.x, p.z) + 0.2, p.z)
 		await get_tree().create_timer(0.6).timeout
 	var hud := scene.get_node("Hud")
