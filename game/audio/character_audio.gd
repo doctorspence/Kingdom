@@ -51,9 +51,11 @@ func _at() -> Vector3:
 
 func _on_anim(anim: StringName) -> void:
 	var name := String(anim)
-	# Calling for help: a knight blows a horn; a boss roars (its second phase).
+	# Calling for help: a boss roars (its second phase). Knights used to blow a horn, which
+	# sounded like a honk, so now they raise the alarm silently (the camp raid horn is separate).
 	if name == "ual2/Idle_Rail_Call":
-		Audio.sfx(&"roar" if voice == &"boss" else &"horn", _at())
+		if voice == &"boss":
+			Audio.sfx(&"roar", _at())
 		return
 	if name.ends_with("_Rec") or "Block" in name or "Idle" in name:
 		return

@@ -108,7 +108,11 @@ func _run() -> void:
 	await _seconds(0.1)
 	n = Audio.played_count
 	player.model.mirror(&"ual2/Idle_Rail_Call", 1.0, 70002)
-	_check("a knight's call for help blows the horn", Audio.played_count > n)
+	_check("a knight raises the alarm silently (no horn honk)", Audio.played_count == n)
+	player.model.audio.voice = &"boss"
+	n = Audio.played_count
+	player.model.mirror(&"ual2/Idle_Rail_Call", 1.0, 70004)
+	_check("a boss call for help is a roar", Audio.played_count > n)
 	player.model.audio.voice = &"raider"
 	await _seconds(0.1)
 	n = Audio.played_count

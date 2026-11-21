@@ -226,7 +226,7 @@ func _stall(pos: Vector3) -> void:
 
 # --- visible from afar ----------------------------------------------------------
 # Highcrown is 350 m from the start altar, far beyond where the zone fog hides things.
-# It is exempt from distance fog (a dark, cold silhouette with warm lights), so the
+# Fog is thin enough that it shows as a hazy shape, with beacons on the towers, so the
 # stronghold can be seen from the first shrine.
 
 func _beacons() -> void:
@@ -238,20 +238,9 @@ func _beacons() -> void:
 
 
 func _exempt_from_fog() -> void:
-	var cache := {}
+	# Normal distance fog now (hazy but visible from the altar); only the beacons ignore it.
+	# The town is hundreds of small meshes, so none of them cast shadows.
 	for c in get_children():
 		var mi := c as GeometryInstance3D
 		if mi != null:
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		if mi == null or mi.material_override == null:
-			continue
-		var src := mi.material_override as BaseMaterial3D
-		if src == null:
-			continue
-		if not cache.has(src):
-			var m := src.duplicate() as BaseMaterial3D
-			m.disable_fog = true
-			if not m.emission_enabled:
-				m.albedo_color = m.albedo_color * Color(0.62, 0.66, 0.74, 1.0)
-			cache[src] = m
-		mi.material_override = cache[src]

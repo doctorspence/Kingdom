@@ -64,6 +64,8 @@ func _make_chunk(cell: Vector2i) -> MultiMeshInstance3D:
 	for i in tufts_per_chunk:
 		var x := origin.x + rng.randf() * chunk_size
 		var z := origin.y + rng.randf() * chunk_size
+		if absf(x) > terrain.size * 0.5 - 3.0 or absf(z) > terrain.size * 0.5 - 3.0:
+			continue  # past the edge of the ground mesh: tufts would float in the air
 		var y := terrain.height_at(x, z)
 		var slope := (absf(terrain.height_at(x + 1.0, z) - y) + absf(terrain.height_at(x, z + 1.0) - y))
 		if slope > 0.7 or y < terrain.water_level() + 0.3:
