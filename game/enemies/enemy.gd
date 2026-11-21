@@ -70,6 +70,14 @@ var _threat_check := 0.0
 var _patrol_i := 0
 var _called := false
 var _fury := false
+var _phase := 1
+var _fire_dropped := false
+var net_phase := 1
+var _roaring := false
+var _engaged := false
+var _adds: Array[Node] = []
+## Boss: true while it is fighting (shared so fog gates and bars work for everyone).
+var net_engaged := false
 
 @onready var model: CharacterModel = $Visual
 
@@ -79,6 +87,8 @@ func _ready() -> void:
 	add_to_group(&"lock_targets")
 	add_to_group(&"enemies")
 	add_to_group(&"respawn_on_rest")
+	if data.boss:
+		add_to_group(&"bosses")
 	_spawn = global_transform
 	global_basis = Basis.IDENTITY
 	model.face_instantly(-_spawn.basis.z)
@@ -98,6 +108,11 @@ func _is_host() -> bool:
 	return multiplayer.is_server()
 
 
+## The attacks in use right now (bosses change them in phase 2).
+func _attacks() -> Array[AttackData]:
+	return data.phase2_attacks if _phase == 2 and not data.phase2_attacks.is_empty() else data.attacks
+
+
 func _reset() -> void:
 	health = max_health
 	_poise = max_poise
@@ -108,6 +123,10 @@ func _reset() -> void:
 	_taunt_time = 0.0
 	_called = false
 	_fury = false
+	_phase = 1
+	net_engaged = false
+	_set_engaged(false)
+	_free_adds()
 	_patrol_i = 0
 	collision_layer = 4
 	_set_state(State.IDLE)
@@ -226,6 +245,9 @@ func _update_target(delta: float) -> void:
 	_threat_check -= delta
 	if _threat_check > 0.0:
 		return
+	# Bosses only switch at the start of an attack (see _boss_retarget).
+	if data.boss and target and not target.is_out_of_fight():
+		return
 	_threat_check = 0.5
 	var best: Player
 	var best_threat := 0.0
@@ -251,9 +273,12 @@ func is_fighting() -> bool:
 
 ## Tougher with more players (host only; health keeps the same percentage).
 func set_party_size(count: int) -> void:
+	if data.boss and _engaged:
+		return  # the arena's head count was taken when the fight began
 	_party_size = count
 	var ratio := health / max_health
-	max_health = data.max_health * (1.0 + HEALTH_PER_EXTRA_PLAYER * (count - 1))
+	var per := data.boss_health_per_player if data.boss else HEALTH_PER_EXTRA_PLAYER
+	max_health = data.max_health * (1.0 + per * (count - 1))
 	max_poise = data.poise * (1.0 + POISE_PER_EXTRA_PLAYER * (count - 1))
 	health = max_health * ratio
 
@@ -364,6 +389,9 @@ func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 		return HitInfo.Result.KILLED
 	if state == State.RIPOSTED:
 		return HitInfo.Result.HIT  # stays down for the rest of the knockdown
+	if data.boss:
+		_boss_after_hit(hit)
+		return HitInfo.Result.HIT
 	_poise -= hit.poise_damage
 	_poise_timer = data.poise_regen_delay
 	if _poise <= 0.0:
@@ -415,7 +443,7 @@ func _net_status_fx(label: String, burst: float) -> void:
 
 ## Build the hit for one of our attacks (used by players' machines too).
 func make_hit(attack_index: int) -> HitInfo:
-	var a: AttackData = data.attacks[clampi(attack_index, 0, data.attacks.size() - 1)]
+	var a: AttackData = _attacks()[clampi(attack_index, 0, _attacks().size() - 1)]
 	var hit := HitInfo.new()
 	hit.attacker = self
 	hit.attack = a
@@ -425,6 +453,8 @@ func make_hit(attack_index: int) -> HitInfo:
 	hit.status_amount = a.status_amount
 	hit.poise_damage = a.base_poise_damage
 	hit.parryable = a.parryable
+	hit.slow = a.slow
+	hit.slow_time = a.slow_time
 	hit.unblockable = a.unblockable
 	hit.hit_stop = a.hit_stop
 	hit.attacker_level = data.level
@@ -433,7 +463,7 @@ func make_hit(attack_index: int) -> HitInfo:
 
 ## Could this attack reach that player from where we are? (`margin` forgives lag.)
 func reaches(p: Node3D, attack_index: int, margin: float) -> bool:
-	var a: AttackData = data.attacks[clampi(attack_index, 0, data.attacks.size() - 1)]
+	var a: AttackData = _attacks()[clampi(attack_index, 0, _attacks().size() - 1)]
 	var to := p.global_position - global_position
 	to.y = 0.0
 	return to.length() <= a.reach + hit_radius() + margin
@@ -450,7 +480,9 @@ func report_hit_result(result: int) -> void:
 func _on_hit_result(result: HitInfo.Result) -> void:
 	match result:
 		HitInfo.Result.PARRIED:
-			if state == State.ATTACK:
+			if data.boss and state == State.ATTACK:
+				_boss_parried()
+			elif state == State.ATTACK:
 				_set_state(State.PARRIED)
 				model.set_overlay("")
 				model.play_fitted(CharacterModel.ANIM_GUARD_BREAK, data.riposte_window, 0.05)
@@ -497,7 +529,7 @@ func _physics_process(delta: float) -> void:
 		State.STAGGER:
 			_state_wait(delta, data.stagger_time)
 		State.PARRIED:
-			_state_wait(delta, data.riposte_window)
+			_state_wait(delta, data.stance_time if data.boss else data.riposte_window)
 		State.RIPOSTED:
 			_state_wait(delta, data.riposted_time)
 		State.RETURN:
@@ -510,6 +542,10 @@ func _physics_process(delta: float) -> void:
 
 
 func _write_net_state() -> void:
+	var now := target != null and state in [State.CHASE, State.ATTACK, State.STAGGER, State.PARRIED, State.RIPOSTED, State.CALL]
+	if data.boss and now != _engaged:
+		_set_engaged(now)
+	net_phase = _phase
 	net_pos = global_position
 	net_yaw = model.rotation.y
 	net_anim = model.current_anim()
@@ -529,6 +565,9 @@ func _mirror(delta: float) -> void:
 	model.rotation.y = lerp_angle(model.rotation.y, net_yaw, 1.0 - exp(-18.0 * delta))
 	model.mirror(net_anim, net_anim_speed, net_anim_count)
 	state = net_state as State
+	if net_phase == 2 and not _tinted:
+		_tinted = true
+		model.set_tint(Color(1.0, 0.55, 0.25))
 	collision_layer = 0 if state == State.DEAD else 4
 	if net_overlay != model.overlay_kind():
 		model.set_overlay(net_overlay, Color(1.0, 0.1, 0.05, 0.35))
@@ -573,6 +612,10 @@ func _aggro(p: Player) -> void:
 
 func _state_call(delta: float) -> void:
 	_move(Vector3.ZERO, delta)
+	if _roaring:
+		if _state_time >= data.call_time:
+			_finish_roar()
+		return
 	if _state_time < data.call_time:
 		return
 	# Everyone of its kind nearby joins the fight.
@@ -638,9 +681,11 @@ func _state_chase(delta: float) -> void:
 
 
 func _start_attack(dist: float) -> void:
+	if data.boss:
+		_boss_retarget()
 	var choices: Array[AttackData] = []
 	var total := 0.0
-	for a in data.attacks:
+	for a in _attacks():
 		if dist <= a.max_use_distance:
 			choices.append(a)
 			total += a.weight
@@ -653,14 +698,15 @@ func _start_attack(dist: float) -> void:
 		if roll <= 0.0:
 			pick = a
 			break
-	start_attack(data.attacks.find(pick))
+	start_attack(_attacks().find(pick))
 
 
 ## Begin attack number `index` (also used by tests).
 func start_attack(index: int) -> void:
 	_telegraphed = false
+	_fire_dropped = false
 	_set_state(State.ATTACK)
-	_attack.start(data.attacks[index], model)
+	_attack.start(_attacks()[index], model)
 
 
 func _state_attack(delta: float) -> void:
@@ -683,7 +729,11 @@ func _state_attack(delta: float) -> void:
 	var lunge := _attack.lunge_speed()
 	_move(model.forward() * lunge, delta, true)
 	if _attack.in_hit_window():
-		var index := data.attacks.find(a)
+		var index := _attacks().find(a)
+		if a.fire_radius > 0.0 and not _fire_dropped:
+			_fire_dropped = true
+			var at := global_position + model.forward() * a.fire_ahead
+			_net_fire.rpc(at, a.fire_radius, a.fire_time)
 		for n in _attack.find_new_targets(self, model.forward(), &"player"):
 			var p := n as Player
 			if p.is_multiplayer_authority():
@@ -737,6 +787,11 @@ func _die() -> void:
 	model.set_overlay("")
 	model.play_death()
 	died.emit()
+	if data.boss:
+		_set_engaged(false)
+		Net.system_message("%s has fallen." % data.display_name)
+		if data.kill_flag != &"":
+			WorldState.set_flag(data.kill_flag, true)
 	# White Knights nearby fly into a martyr's fury.
 	for n in get_tree().get_nodes_in_group(&"enemies"):
 		var e := n as Enemy
@@ -771,6 +826,8 @@ func _find_player() -> Player:
 		var p := n as Player
 		if p == null or p.is_out_of_fight():
 			continue
+		if data.boss and not _in_arena(p):
+			continue  # a boss waits for you to step into his arena
 		var to := p.global_position - global_position
 		var d := to.length()
 		var loud := p.is_sprinting or p.state == Player.State.ATTACK or p.state == Player.State.ROLL
@@ -803,3 +860,150 @@ func _weapon_tip() -> Node3D:
 		var tip := _weapon.find_child("Tip", true, false) as Node3D
 		return tip if tip else _weapon
 	return model
+
+
+# --- Bosses ---------------------------------------------------------------------------
+
+var _tinted := false
+
+
+## Fight starts or ends (host). A new fight counts the players in the arena and scales to them.
+func _set_engaged(on: bool) -> void:
+	if on == _engaged:
+		return
+	if on:
+		_scale_to(_arena_count())
+	_engaged = on
+	net_engaged = on
+
+
+## Players inside this boss's arena (or everyone, if it has none).
+func _arena_count() -> int:
+	var count := 0
+	var room: BossRoom
+	for n in get_tree().get_nodes_in_group(&"boss_rooms"):
+		if (n as BossRoom).contains(_spawn.origin):
+			room = n
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p and not p.is_dead() and (room == null or room.contains(p.global_position)):
+			count += 1
+	return maxi(count, 1)
+
+
+func _scale_to(count: int) -> void:
+	var was := _engaged
+	_engaged = false
+	set_party_size(count)
+	_engaged = was
+
+
+## Bosses switch target only as an attack begins: the taunted player, else the top of the threat table.
+func _boss_retarget() -> void:
+	var forced := _player_of_peer(_taunt_peer) if _taunt_time > 0.0 else null
+	if forced and not forced.is_out_of_fight():
+		target = forced
+		return
+	var best: Player
+	var best_threat := 0.0
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p == null or p.is_out_of_fight():
+			continue
+		var t: float = threat.get(p.get_multiplayer_authority(), 0.0)
+		if t > best_threat:
+			best_threat = t
+			best = p
+	if best and best != target:
+		target = best
+
+
+func _boss_after_hit(hit: HitInfo) -> void:
+	if state != State.PARRIED:
+		_poise -= hit.poise_damage
+		_poise_timer = data.poise_regen_delay
+		if _poise <= 0.0:
+			_poise = max_poise
+			_stance_break()
+	if _phase == 1 and data.phase2_at > 0.0 and health <= max_health * data.phase2_at:
+		_start_phase2()
+
+
+## Parrying a boss attack chips its poise instead of staggering it.
+func _boss_parried() -> void:
+	_poise -= data.parry_poise_damage
+	_poise_timer = data.poise_regen_delay
+	_status_fx("Parried", 0.0)
+	_net_status_fx.rpc("Parried", 0.0)
+	if _poise <= 0.0:
+		_poise = max_poise
+		_stance_break()
+
+
+## Poise gone: it kneels, open to a critical hit (riposte).
+func _stance_break() -> void:
+	if state in [State.PARRIED, State.RIPOSTED, State.CALL, State.DEAD]:
+		return
+	_set_state(State.PARRIED)
+	model.set_overlay("")
+	model.play_fitted(CharacterModel.ANIM_GUARD_BREAK, data.stance_time, 0.05)
+	_status_fx("Stance broken!", 0.0)
+	_net_status_fx.rpc("Stance broken!", 0.0)
+
+
+func _start_phase2() -> void:
+	_phase = 2
+	_roaring = true
+	_set_state(State.CALL)
+	model.set_overlay("")
+	model.face_instantly(model.forward())
+	model.play(data.call_anim, 0.15, 1.0, true)
+	_status_fx("Ablaze!", 0.0)
+	_net_status_fx.rpc("Ablaze!", 0.0)
+
+
+func _finish_roar() -> void:
+	_roaring = false
+	effects.add_mod(&"phase2", 99999.0, {"move": data.phase2_speed_mult})
+	if data.adds_scene and get_parent():
+		var n := data.adds_count + _party_size - 1
+		for i in n:
+			var e := data.adds_scene.instantiate() as Enemy
+			e.name = "%s_add%d_%d" % [name, i, Time.get_ticks_msec() % 100000]
+			var a := TAU * i / maxf(n, 1)
+			e.position = global_position + Vector3(cos(a), 0.2, sin(a)) * 5.0
+			get_parent().add_child(e, true)
+			e.remove_from_group(&"respawn_on_rest")
+			e.set_party_size(_party_size)
+			e.target = target
+			e._set_state(State.CHASE)
+			_adds.append(e)
+	_set_state(State.CHASE)
+
+
+func _free_adds() -> void:
+	for e in _adds:
+		if is_instance_valid(e):
+			e.queue_free()
+	_adds.clear()
+
+
+@rpc("authority", "call_local", "reliable")
+func _net_fire(at: Vector3, radius: float, time: float) -> void:
+	var patch := FirePatch.new()
+	patch.radius = radius
+	patch.time = time
+	var root := get_parent().get_parent() if get_parent() and get_parent().get_parent() else get_tree().root
+	root.add_child(patch)
+	patch.global_position = at
+
+
+func _in_arena(p: Node3D) -> bool:
+	var found := false
+	for n in get_tree().get_nodes_in_group(&"boss_rooms"):
+		var room := n as BossRoom
+		if room.contains(_spawn.origin):
+			found = true
+			if room.contains(p.global_position):
+				return true
+	return not found

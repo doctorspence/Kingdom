@@ -14,6 +14,11 @@ extends Marker3D
 @export var named_scene: PackedScene
 @export_range(0.0, 1.0) var named_chance := 0.05
 
+## Underground spawns keep their own height instead of snapping to the terrain.
+@export var snap_to_terrain := true
+## Don't reroll while a player is this close (meters). -1 = the director's default.
+@export var reset_distance := -1.0
+
 ## Host only: the enemies this point made, still in the world.
 var spawned: Array[Node] = []
 

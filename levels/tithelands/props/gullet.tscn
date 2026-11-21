@@ -1,0 +1,103 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/world/gullet.gd" id="1_gullet"]
+[ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="2_shrine"]
+[ext_resource type="Script" path="res://game/enemies/spawn_point.gd" id="3_sp"]
+[ext_resource type="Script" path="res://game/world/boss_room.gd" id="4_room"]
+[ext_resource type="Script" path="res://game/world/fog_gate.gd" id="5_fog"]
+[ext_resource type="Script" path="res://game/world/shortcut_gate.gd" id="6_gate"]
+[ext_resource type="Script" path="res://game/world/cave_door.gd" id="7_door"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_acolytes_few.tres" id="t_few"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_acolytes_pack.tres" id="t_pack"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_acolytes_extra.tres" id="t_extra"]
+[ext_resource type="Resource" path="res://data/spawns/spawn_tallow.tres" id="t_tallow"]
+
+[node name="Gullet" type="Node3D"]
+script = ExtResource("1_gullet")
+
+[node name="WayUp" type="Node3D" parent="."]
+position = Vector3(0, 0, 45.5)
+script = ExtResource("7_door")
+door_name = "the Tithelands"
+verb = "Climb out into"
+arrive_offset = Vector3(0, 0, -2.5)
+other = NodePath("../../Places/GulletDoor")
+
+[node name="GulletShrine" parent="." instance=ExtResource("2_shrine")]
+position = Vector3(-30, 0, -27)
+rotation_degrees = Vector3(0, 0, 0)
+shrine_name = "Gullet Shrine"
+shrine_id = &"gullet"
+
+[node name="BossRoom" type="Node3D" parent="."]
+position = Vector3(-30, 6, -62)
+script = ExtResource("4_room")
+size = Vector3(26, 12, 28)
+
+[node name="Door" type="Marker3D" parent="BossRoom"]
+position = Vector3(0, -6, 19)
+
+[node name="FogGate" type="StaticBody3D" parent="."]
+position = Vector3(-30, 0, -46)
+script = ExtResource("5_fog")
+boss_id = &"enemy_tallow"
+width = 5.0
+
+[node name="ShortcutGate" type="StaticBody3D" parent="."]
+position = Vector3(2, 0, -62)
+rotation_degrees = Vector3(0, 90, 0)
+script = ExtResource("6_gate")
+gate_id = &"gullet_back"
+width = 5.4
+open_flag = &"gullet_boss_killed"
+
+[node name="Spawns" type="Node3D" parent="."]
+
+[node name="HallPatrol" type="Marker3D" parent="Spawns"]
+position = Vector3(0, 0.1, 38)
+rotation_degrees = Vector3(0, 0, 0)
+script = ExtResource("3_sp")
+table = ExtResource("t_few")
+snap_to_terrain = false
+
+[node name="GalleryPack" type="Marker3D" parent="Spawns"]
+position = Vector3(0, 0.1, 8)
+script = ExtResource("3_sp")
+table = ExtResource("t_pack")
+snap_to_terrain = false
+
+[node name="GalleryExtra" type="Marker3D" parent="Spawns"]
+position = Vector3(0, 0.1, 14)
+script = ExtResource("3_sp")
+table = ExtResource("t_extra")
+min_players = 3
+snap_to_terrain = false
+
+[node name="CisternPack" type="Marker3D" parent="Spawns"]
+position = Vector3(0, 0.1, -24)
+script = ExtResource("3_sp")
+table = ExtResource("t_pack")
+snap_to_terrain = false
+
+[node name="CisternExtra" type="Marker3D" parent="Spawns"]
+position = Vector3(0, 0.1, -29)
+script = ExtResource("3_sp")
+table = ExtResource("t_extra")
+min_players = 3
+snap_to_terrain = false
+
+[node name="CisternExtraMore" type="Marker3D" parent="Spawns"]
+position = Vector3(6, 0.1, -18)
+script = ExtResource("3_sp")
+table = ExtResource("t_extra")
+min_players = 6
+snap_to_terrain = false
+
+[node name="Tallow" type="Marker3D" parent="Spawns"]
+position = Vector3(-30, 0.1, -66)
+rotation_degrees = Vector3(0, 180, 0)
+script = ExtResource("3_sp")
+table = ExtResource("t_tallow")
+radius = 0.0
+reset_distance = 14.0
+snap_to_terrain = false

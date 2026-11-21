@@ -122,13 +122,19 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] Zone music and ambience (needs your OK to download CC0 sounds)
 - [ ] 🧪 Explore the whole zone with friends; find the shortcut; hunt Hobb; play through a night (F5 skips 3 hours, F6 toggles rain)
 
-## Phase 9: The Gullet (cave dungeon and boss)
-- [ ] Cave layout, fog gate, a shrine near the boss
-- [ ] Boss: Brother Tallow, the Candle-Saint (2 phases, telegraphs, stance break)
-- [ ] Candle Acolytes; extra adds for 3+ players; health and poise scaling
-- [ ] Boss loot table and unique drop; shortcut opens after the first kill
-- [ ] Tune for 3 players
-- [ ] 🧪 **Milestone: 3 friends clear the zone and the dungeon**
+## Phase 9: The Gullet (cave dungeon and boss) ✅ gray-block pass (waiting for your test)
+- [x] The Gullet (`levels/tithelands/props/gullet.tscn`, carved by `game/world/gullet.gd`): built underground beneath the quarry. Enter by the **Descend into the Gullet** door at the cave mouth (E); climb back out at the entrance hall. Entrance hall, bone gallery, cistern, shrine alcove, then the fog gate and Brother Tallow's chapel. Dark and candle-lit; your belt lantern lights underground
+- [x] Fourth shrine, the **Gullet Shrine** (rest, travel, bank), 38 m from the boss so he comes back when you rest
+- [x] Fog gate: walk through the mist (E) to enter; it turns solid while he fights and opens when he dies or the fight ends. He only wakes once you step inside his arena
+- [x] Boss: **Brother Tallow, the Candle-Saint** (`data/enemies/enemy_tallow.tres`). Phase 1: flail sweep (parryable), red overhead slam (unblockable), wax spit (blockable, slows). Phase 2 under 50% health: he sets himself alight, moves 25% faster, calls Candle Acolytes, and adds a fire slam and burning ground (`game/enemies/fire_patch.gd`)
+- [x] Boss rules: huge poise (breaking it = stance break, he kneels 3 s, open to a riposte); each parry chips 90 poise; switches target only as an attack begins (taunts take effect at his next attack); boss bar at the bottom of the screen with a phase marker
+- [x] Candle Acolytes (`data/enemies/enemy_acolyte.tres`): weak fanatics in packs; extra packs spawn for 3+ and 6+ players; boss health x(1 + 0.8 per extra player in the arena), counted when the fight starts, and more acolytes join in phase 2
+- [x] Boss loot (`data/loot/loot_tallow.tres`): 2-3 items (one Rare or better, small chance of Legendary) plus the unique Tallow Crown, 300-450 gold, 600-800 souls
+- [x] First kill sets the `gullet_boss_killed` world flag (saved with the world) and opens a long shortcut corridor from the chapel back to the entrance hall; he still respawns on rest. Dying in the arena puts your pile at the boss door
+- [x] Automated `tests/boss_check.gd`: all 29 pass; zone, enemy, combat, death and the 3-player checks still pass
+- [ ] Tune for 3 players (needs real playtesting: boss health, damage, acolyte counts)
+- [ ] Later: real cave art, a more winding layout, a boss track, candle-wax visuals on the boss
+- [ ] 🧪 **Milestone: 3 friends clear the zone and the dungeon** (use the Descend door at the quarry cave mouth)
 
 ---
 

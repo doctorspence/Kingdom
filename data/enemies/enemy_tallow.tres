@@ -1,0 +1,198 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
+[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/mace_placeholder.tscn" id="3_mace"]
+[ext_resource type="Resource" path="res://data/loot/loot_tallow.tres" id="4_loot"]
+[ext_resource type="PackedScene" path="res://game/enemies/acolyte.tscn" id="5_acolyte"]
+
+[sub_resource type="Resource" id="P1_sweep"]
+script = ExtResource("2_attack")
+display_name = "Flail sweep (parryable)"
+anim = &"ual2/Sword_Regular_B"
+recovery_anim = &"ual2/Sword_Regular_B_Rec"
+anim_speed = 0.4
+windup_until = 0.15
+windup_speed_mult = 0.5
+hit_start = 0.17
+hit_end = 0.31
+end_time = 1.13
+track_until = 0.14
+telegraph_time = 0.03
+base_damage = 36.0
+base_poise_damage = 28.0
+hit_stop = 0.09
+reach = 4.2
+arc_degrees = 200.0
+lunge_distance = 0.8
+lunge_start = 0.1
+lunge_end = 0.3
+weight = 2.0
+max_use_distance = 4.6
+
+[sub_resource type="Resource" id="P1_slam"]
+script = ExtResource("2_attack")
+display_name = "Overhead slam (unblockable)"
+anim = &"ual2/Sword_Heavy_Combo"
+anim_speed = 0.7
+windup_until = 0.3
+windup_speed_mult = 0.55
+hit_start = 0.36
+hit_end = 0.56
+end_time = 1.15
+track_until = 0.3
+telegraph_time = 0.0
+base_damage = 62.0
+base_poise_damage = 60.0
+hit_stop = 0.14
+reach = 4.0
+arc_degrees = 110.0
+lunge_distance = 1.2
+lunge_start = 0.3
+lunge_end = 0.5
+parryable = false
+unblockable = true
+weight = 1.2
+max_use_distance = 4.6
+
+[sub_resource type="Resource" id="P1_spit"]
+script = ExtResource("2_attack")
+display_name = "Wax spit (blockable, slows)"
+anim = &"Sword_Attack"
+anim_speed = 0.8
+windup_until = 0.33
+windup_speed_mult = 0.35
+hit_start = 0.36
+hit_end = 0.48
+end_time = 1.2
+track_until = 0.32
+telegraph_time = 0.2
+base_damage = 12.0
+base_poise_damage = 6.0
+reach = 8.5
+arc_degrees = 40.0
+lunge_distance = 0.0
+parryable = false
+slow = 0.45
+slow_time = 4.0
+weight = 1.0
+max_use_distance = 9.0
+
+[sub_resource type="Resource" id="P2_sweep"]
+script = ExtResource("2_attack")
+display_name = "Blazing sweep (parryable)"
+anim = &"ual2/Sword_Regular_B"
+recovery_anim = &"ual2/Sword_Regular_B_Rec"
+anim_speed = 0.5
+windup_until = 0.15
+windup_speed_mult = 0.5
+hit_start = 0.17
+hit_end = 0.31
+end_time = 1.13
+track_until = 0.14
+telegraph_time = 0.03
+base_damage = 44.0
+base_poise_damage = 30.0
+hit_stop = 0.09
+reach = 4.4
+arc_degrees = 210.0
+lunge_distance = 1.0
+lunge_start = 0.1
+lunge_end = 0.3
+weight = 2.0
+max_use_distance = 4.8
+
+[sub_resource type="Resource" id="P2_slam"]
+script = ExtResource("2_attack")
+display_name = "Fire slam (unblockable, burning ground)"
+anim = &"ual2/Sword_Heavy_Combo"
+anim_speed = 0.8
+windup_until = 0.3
+windup_speed_mult = 0.55
+hit_start = 0.36
+hit_end = 0.56
+end_time = 1.15
+track_until = 0.3
+telegraph_time = 0.0
+base_damage = 72.0
+base_poise_damage = 60.0
+hit_stop = 0.14
+reach = 4.2
+arc_degrees = 120.0
+lunge_distance = 1.4
+lunge_start = 0.3
+lunge_end = 0.5
+parryable = false
+unblockable = true
+fire_radius = 3.6
+fire_ahead = 3.2
+fire_time = 9.0
+weight = 1.8
+max_use_distance = 4.8
+
+[sub_resource type="Resource" id="P2_spit"]
+script = ExtResource("2_attack")
+display_name = "Burning wax spit (blockable, slows)"
+anim = &"Sword_Attack"
+anim_speed = 0.95
+windup_until = 0.33
+windup_speed_mult = 0.35
+hit_start = 0.36
+hit_end = 0.48
+end_time = 1.2
+track_until = 0.32
+telegraph_time = 0.2
+base_damage = 16.0
+base_poise_damage = 6.0
+reach = 9.0
+arc_degrees = 40.0
+lunge_distance = 0.0
+parryable = false
+slow = 0.5
+slow_time = 4.0
+fire_radius = 2.4
+fire_ahead = 7.0
+fire_time = 7.0
+weight = 1.0
+max_use_distance = 9.5
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"enemy_tallow"
+display_name = "Brother Tallow, the Candle-Saint"
+max_health = 1500.0
+level = 8
+armor = 40.0
+xp = 1500
+loot_table = ExtResource("4_loot")
+poise = 280.0
+poise_regen_delay = 4.0
+riposte_window = 1.5
+riposted_time = 2.0
+walk_speed = 1.5
+run_speed = 3.6
+turn_speed = 200.0
+sight_range = 40.0
+sight_angle = 360.0
+hearing_range = 20.0
+named = true
+aggro_range = 30.0
+leash_range = 60.0
+attack_range = 7.5
+attack_cooldown_min = 0.9
+attack_cooldown_max = 1.8
+attacks = Array[ExtResource("2_attack")]([SubResource("P1_sweep"), SubResource("P1_slam"), SubResource("P1_spit")])
+body_tint = Color(0.85, 0.8, 0.6, 1)
+scale = 1.7
+weapon_scene = ExtResource("3_mace")
+lock_height = 1.5
+bar_height = 2.5
+boss = true
+phase2_at = 0.5
+phase2_attacks = Array[ExtResource("2_attack")]([SubResource("P2_sweep"), SubResource("P2_slam"), SubResource("P2_spit")])
+phase2_speed_mult = 1.25
+adds_scene = ExtResource("5_acolyte")
+adds_count = 2
+stance_time = 3.0
+parry_poise_damage = 90.0
+kill_flag = &"gullet_boss_killed"

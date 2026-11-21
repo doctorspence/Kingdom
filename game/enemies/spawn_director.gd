@@ -64,7 +64,8 @@ func _can_reset(sp: SpawnPoint, players: Array) -> bool:
 		if is_instance_valid(e) and (e as Enemy).is_fighting():
 			return false
 	for p in players:
-		if (p as Node3D).global_position.distance_to(sp.global_position) < safe_distance:
+		var limit := sp.reset_distance if sp.reset_distance >= 0.0 else safe_distance
+		if (p as Node3D).global_position.distance_to(sp.global_position) < limit:
 			return false
 	return true
 
@@ -76,7 +77,7 @@ func _spawn(sp: SpawnPoint, scene: PackedScene, index: int, count: int) -> void:
 	var a := TAU * index / maxf(count, 1)
 	var off := Vector3(cos(a), 0, sin(a)) * (sp.radius if count > 1 else 0.0)
 	var p := sp.global_position + off
-	if terrain:
+	if terrain and sp.snap_to_terrain:
 		p.y = terrain.height_at(p.x, p.z) + 0.05
 	e.position = p
 	e.rotation = sp.global_rotation

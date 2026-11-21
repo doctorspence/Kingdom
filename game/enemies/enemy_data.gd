@@ -69,3 +69,24 @@ extends Resource
 ## Height of the lock-on point and the health bar (meters, before scaling).
 @export var lock_height := 1.35
 @export var bar_height := 2.25
+
+@export_group("Boss")
+## A boss: huge poise (a break = stance break, kneeling open to a critical),
+## switches target only at the start of attacks, has a bar at the screen bottom.
+@export var boss := false
+## Phase 2 starts below this share of health (0 = no second phase).
+@export_range(0.0, 1.0) var phase2_at := 0.0
+## Used instead of `attacks` in phase 2.
+@export var phase2_attacks: Array[AttackData] = []
+@export var phase2_speed_mult := 1.25
+## Enemy scene it calls in phase 2 (`adds_count` plus one per extra player in the arena).
+@export var adds_scene: PackedScene
+@export var adds_count := 2
+## Kneels this long after its poise breaks.
+@export var stance_time := 3.0
+## Poise lost when one of its attacks is parried.
+@export var parry_poise_damage := 40.0
+## Extra health per extra player in the arena (bosses: 0.8).
+@export var boss_health_per_player := 0.8
+## Flag set the first time it dies (opens shortcuts for good).
+@export var kill_flag := &""

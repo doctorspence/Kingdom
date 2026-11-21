@@ -450,6 +450,9 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	if state == State.DEAD or state == State.DOWNED:
 		return HitInfo.Result.KILLED
 	_apply_status(hit.status, hit.status_amount)
+	if hit.slow > 0.0:
+		effects.add_mod(&"slow", hit.slow_time, {"move": 1.0 - hit.slow})
+		CombatFx.word(chest + Vector3.UP * 0.5, "Slowed")
 	_poise -= hit.poise_damage
 	_poise_timer = tuning.poise_regen_delay
 	if _poise <= 0.0:
@@ -2063,7 +2066,7 @@ func lantern_lit() -> bool:
 
 
 func _update_lantern(delta: float) -> void:
-	var want := smoothstep(0.35, 0.8, DayNight.night) * (0.0 if state == State.DEAD else 1.6)
+	var want := maxf(smoothstep(0.35, 0.8, DayNight.night), 0.85 if global_position.y < DayNight.CAVE_BELOW else 0.0) * (0.0 if state == State.DEAD else 1.6)
 	_lantern_glow = move_toward(_lantern_glow, want, delta * 1.5)
 	_lantern.visible = _lantern_glow > 0.01
 	# A gentle flicker.

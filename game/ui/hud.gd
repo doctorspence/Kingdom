@@ -462,6 +462,7 @@ func _draw_marker() -> void:
 	var center := _marker.size * 0.5
 	_marker.draw_circle(center, 2.5, Color(0, 0, 0, 0.5))
 	_marker.draw_circle(center, 1.5, Color(1, 1, 1, 0.7))
+	_draw_boss_bar()
 	# Enemy health bars (once hurt or targeted).
 	if CombatFx.show_enemy_health_bars:
 		for n in get_tree().get_nodes_in_group(&"enemies"):
@@ -495,6 +496,30 @@ func _draw_marker() -> void:
 	var pos := cam.unproject_position(point)
 	_marker.draw_circle(pos, 7.0, Color(0, 0, 0, 0.6))
 	_marker.draw_circle(pos, 4.5, Color(0.95, 0.9, 0.8, 0.95))
+
+
+## The boss bar at the bottom of the screen while a boss is fighting you.
+func _draw_boss_bar() -> void:
+	for n in get_tree().get_nodes_in_group(&"bosses"):
+		var b := n as Enemy
+		if b == null or not b.net_engaged or b.state == Enemy.State.DEAD:
+			continue
+		if b.global_position.distance_to(player.global_position) > 70.0:
+			continue
+		var size := _marker.size
+		var w := minf(size.x * 0.5, 720.0)
+		var r := Rect2(Vector2((size.x - w) * 0.5, size.y - 70.0), Vector2(w, 12))
+		_marker.draw_rect(r.grow(2.0), Color(0, 0, 0, 0.85))
+		_marker.draw_rect(r, Color(0.14, 0.03, 0.03))
+		_marker.draw_rect(Rect2(r.position, Vector2(w * clampf(b.health_ratio(), 0.0, 1.0), r.size.y)), Color(0.66, 0.1, 0.07))
+		if b.data.phase2_at > 0.0:
+			_marker.draw_rect(Rect2(r.position + Vector2(w * b.data.phase2_at - 1.0, -2.0), Vector2(2, r.size.y + 4.0)), Color(0.9, 0.8, 0.5, 0.8))
+		var font: Font = ThemeDB.fallback_font
+		var label: String = b.data.display_name
+		var tw: float = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
+		_marker.draw_string(font, Vector2((size.x - tw) * 0.5 + 1, r.position.y - 6 + 1), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0, 0, 0, 0.9))
+		_marker.draw_string(font, Vector2((size.x - tw) * 0.5, r.position.y - 6), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0.93, 0.85, 0.65))
+		return
 
 
 # --- Building the screen ------------------------------------------------------

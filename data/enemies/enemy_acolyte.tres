@@ -1,0 +1,74 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
+[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/sword_placeholder.tscn" id="3_sword"]
+[ext_resource type="Resource" path="res://data/loot/loot_acolyte.tres" id="4_loot"]
+
+[sub_resource type="Resource" id="Attack_slash"]
+script = ExtResource("2_attack")
+display_name = "Wild slash (parryable)"
+anim = &"ual2/Sword_Regular_B"
+recovery_anim = &"ual2/Sword_Regular_B_Rec"
+anim_speed = 0.6
+windup_until = 0.15
+windup_speed_mult = 0.6
+hit_start = 0.17
+hit_end = 0.31
+end_time = 1.13
+track_until = 0.14
+telegraph_time = 0.03
+base_damage = 13.0
+base_poise_damage = 10.0
+reach = 2.3
+arc_degrees = 130.0
+lunge_distance = 0.6
+lunge_start = 0.1
+lunge_end = 0.3
+weight = 2.0
+max_use_distance = 2.8
+
+[sub_resource type="Resource" id="Attack_stab"]
+script = ExtResource("2_attack")
+display_name = "Candle stab (parryable)"
+anim = &"Sword_Attack"
+anim_speed = 0.9
+windup_until = 0.33
+windup_speed_mult = 0.4
+hit_start = 0.36
+hit_end = 0.48
+end_time = 1.2
+track_until = 0.32
+telegraph_time = 0.2
+base_damage = 18.0
+base_poise_damage = 14.0
+reach = 2.6
+arc_degrees = 50.0
+lunge_distance = 0.9
+lunge_start = 0.3
+lunge_end = 0.45
+weight = 1.0
+max_use_distance = 3.0
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"enemy_candle_acolyte"
+display_name = "Candle Acolyte"
+max_health = 95.0
+level = 5
+armor = 6.0
+xp = 70
+loot_table = ExtResource("4_loot")
+poise = 22.0
+walk_speed = 1.5
+run_speed = 3.9
+sight_range = 16.0
+hearing_range = 7.0
+leash_range = 35.0
+attack_range = 2.6
+attack_cooldown_min = 0.7
+attack_cooldown_max = 1.6
+attacks = Array[ExtResource("2_attack")]([SubResource("Attack_slash"), SubResource("Attack_stab")])
+body_tint = Color(0.78, 0.72, 0.55, 1)
+scale = 1.0
+weapon_scene = ExtResource("3_sword")

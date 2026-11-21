@@ -1,7 +1,7 @@
 # KINGDOM: Design Document
 
 *Working title. A living document that we update as we build and playtest.*
-*Last updated: 2026-11-20 (Phase 1).*
+*Last updated: 2026-11-21 (Phase 9: the Gullet is built underground beneath the quarry, entered by a door at the cave mouth).*
 
 > **How to read this.** Sections 1–12 describe the game: what players see and do. Section 13 is the technical plan: how we build it. Numbers marked *(start)* are first guesses. We tune them by playing.
 

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LootTable" format=3]
+
+[ext_resource type="Script" path="res://game/items/loot_table.gd" id="1_loot"]
+
+[resource]
+script = ExtResource("1_loot")
+drop_chance = 0.4
+item_level = Vector2i(5, 8)
+gold = Vector2i(6, 16)
+souls = Vector2i(15, 30)

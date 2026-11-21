@@ -6,13 +6,16 @@ extends StaticBody3D
 @export var gate_id := &"gate"
 @export var width := 6.0
 @export var gate_height := 3.4
+## If set, nobody opens it by hand: it opens by itself when this world flag turns on (a boss kill).
+@export var open_flag := &""
 
 var _door: MeshInstance3D
 var _shape: CollisionShape3D
 
 
 func _ready() -> void:
-	add_to_group(&"interactables")
+	if open_flag == &"":
+		add_to_group(&"interactables")
 	_door = MeshInstance3D.new()
 	var m := BoxMesh.new()
 	m.size = Vector3(width, gate_height, 0.3)
@@ -34,6 +37,8 @@ func _ready() -> void:
 
 
 func _flag() -> StringName:
+	if open_flag != &"":
+		return open_flag
 	return StringName("opened_" + String(gate_id))
 
 
@@ -48,7 +53,7 @@ func get_interact_text() -> String:
 
 
 func interact(player: Node3D) -> void:
-	if is_open():
+	if is_open() or open_flag != &"":
 		return
 	var to_player := player.global_position - global_position
 	if to_player.dot(global_transform.basis.z) > 0.0:

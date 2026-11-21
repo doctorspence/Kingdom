@@ -23,7 +23,7 @@ func _run() -> void:
 	terrain = zone.get_node("Terrain")
 	_check("you start at the Crossroads, on the ground", player.global_position.distance_to(Vector3(0, player.global_position.y, 120.4)) < 8.0
 			and absf(player.global_position.y - terrain.height_at(player.global_position.x, player.global_position.z)) < 1.0)
-	_check("3 shrines", get_tree().get_nodes_in_group(&"interactables").filter(func(n: Node) -> bool: return n is Shrine).size() == 3)
+	_check("4 shrines (3 on the surface, one in the Gullet)", get_tree().get_nodes_in_group(&"interactables").filter(func(n: Node) -> bool: return n is Shrine).size() == 4)
 	await _seconds(0.5)
 	_check("you stand on the ground (no falling through)", player.is_on_floor())
 
@@ -69,7 +69,7 @@ func _run() -> void:
 	_check("enemies spawn around the zone (%d)" % enemies.size(), enemies.size() >= 12)
 	var near_start := enemies.filter(func(e: Node3D) -> bool: return Vector2(e.global_position.x, e.global_position.z).distance_to(Vector2(0, 120.4)) < 30.0)
 	_check("the Crossroads start is quiet", near_start.is_empty())
-	var floating := enemies.filter(func(e: Node3D) -> bool: return absf(e.global_position.y - terrain.height_at(e.global_position.x, e.global_position.z)) > 1.5)
+	var floating := enemies.filter(func(e: Node3D) -> bool: return e.global_position.y > -20.0 and absf(e.global_position.y - terrain.height_at(e.global_position.x, e.global_position.z)) > 1.5)
 	_check("enemies stand on the ground (%d off)" % floating.size(), floating.is_empty())
 	var kinds := {}
 	for e in enemies:

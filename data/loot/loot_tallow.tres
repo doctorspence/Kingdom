@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="LootTable" format=3]
+
+[ext_resource type="Script" path="res://game/items/loot_table.gd" id="1_loot"]
+[ext_resource type="Resource" path="res://data/items/armor/item_tallow_crown.tres" id="2_crown"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="3_item"]
+
+[resource]
+script = ExtResource("1_loot")
+drop_chance = 1.0
+item_count = Vector2i(2, 3)
+item_level = Vector2i(10, 12)
+rarity_weights = PackedFloat32Array(0, 0, 62, 30, 8)
+guaranteed_min_rarity = 2
+gold = Vector2i(300, 450)
+souls = Vector2i(600, 800)
+always = Array[ExtResource("3_item")]([ExtResource("2_crown")])

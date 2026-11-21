@@ -10,6 +10,10 @@ extends Node
 ## How dark it is right now, 0 (day) to 1 (deep night). Read by players (lantern) and enemies.
 static var night := 0.0
 static var raining := false
+## 0 on the surface, 1 deep underground (the Gullet): no sun, no rain, a dark warm gloom.
+static var cave := 0.0
+## Below this height the camera counts as underground.
+const CAVE_BELOW := -15.0
 
 @export var environment: WorldEnvironment
 @export var sun: DirectionalLight3D
@@ -104,6 +108,8 @@ func _process(delta: float) -> void:
 		if _sync_timer <= 0.0 and multiplayer.has_multiplayer_peer() and multiplayer.get_peers().size() > 0:
 			_sync_timer = 10.0
 			_net_sync.rpc(time, raining)
+	var cam := get_viewport().get_camera_3d()
+	cave = move_toward(cave, 1.0 if cam and cam.global_position.y < CAVE_BELOW else 0.0, delta * 1.5)
 	_apply()
 
 
@@ -169,9 +175,20 @@ func _apply() -> void:
 			_sky.sky_top_color = (_day.sky_top as Color).lerp(Color(0.05, 0.06, 0.1), night).darkened(0.25 * wet)
 			_sky.sky_horizon_color = (_day.sky_horizon as Color).lerp(Color(0.13, 0.15, 0.21), night).darkened(0.25 * wet)
 			_sky.ground_horizon_color = _sky.sky_horizon_color
+	if cave > 0.0:
+		if sun:
+			sun.light_energy *= 1.0 - cave
+			sun.shadow_enabled = sun.shadow_enabled and cave < 0.5
+		if _env:
+			_env.ambient_light_energy = lerpf(_env.ambient_light_energy, 0.5, cave)
+			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.42, 0.32, 0.24), cave)
+			_env.ambient_light_sky_contribution = lerpf(_env.ambient_light_sky_contribution, 0.0, cave)
+			_env.fog_light_color = _env.fog_light_color.lerp(Color(0.08, 0.07, 0.06), cave)
+			_env.fog_light_energy = lerpf(_env.fog_light_energy, 0.3, cave)
+			_env.volumetric_fog_albedo = _env.volumetric_fog_albedo.lerp(Color(0.25, 0.2, 0.15), cave)
 	if _rain:
-		_rain.amount_ratio = wet
-		_rain.emitting = wet > 0.01
+		_rain.amount_ratio = wet * (1.0 - cave)
+		_rain.emitting = wet * (1.0 - cave) > 0.01
 		var cam := get_viewport().get_camera_3d()
 		if cam:
 			_rain.global_position = cam.global_position + Vector3.UP * 8.0

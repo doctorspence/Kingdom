@@ -70,3 +70,12 @@ extends Resource
 @export var weight := 1.0
 ## Enemy only: only used when the target is within this distance.
 @export var max_use_distance := 3.0
+
+@export_group("Special")
+## Slows the target (0.3 = 30% slower) for slow_time seconds (wax spit).
+@export_range(0.0, 0.9) var slow := 0.0
+@export var slow_time := 3.0
+## Leaves burning ground (radius meters) this far ahead of the boss at the hit moment.
+@export var fire_radius := 0.0
+@export var fire_ahead := 2.5
+@export var fire_time := 8.0
