@@ -658,7 +658,7 @@ func _build() -> void:
 	root.add_child(_death_label)
 
 	_menu = PanelContainer.new()
-	_place(_menu, Control.PRESET_CENTER, Rect2(-180, -90, 360, 180))
+	_place(_menu, Control.PRESET_CENTER, Rect2(-200, -170, 400, 340))
 	_menu.visible = false
 	var menu_box := VBoxContainer.new()
 	menu_box.add_theme_constant_override("separation", 12)
@@ -671,6 +671,14 @@ func _build() -> void:
 		_menu.visible = false
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED)
 	menu_box.add_child(resume)
+	var volume := Button.new()
+	volume.text = "Volume"
+	volume.custom_minimum_size = Vector2(0, 44)
+	var sliders := AudioSettings.new()
+	sliders.visible = false
+	volume.pressed.connect(func() -> void: sliders.visible = not sliders.visible)
+	menu_box.add_child(volume)
+	menu_box.add_child(sliders)
 	var leave := Button.new()
 	leave.text = "Leave game" if Net.mode != Net.Mode.HOST else "Close game (everyone leaves)"
 	leave.custom_minimum_size = Vector2(0, 44)

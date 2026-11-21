@@ -246,6 +246,10 @@ func _build() -> void:
 	right.add_child(_address_edit)
 	right.add_child(_button("Join game", _on_join))
 	right.add_child(_spacer(10))
+	var sliders := AudioSettings.new()
+	sliders.visible = false
+	right.add_child(_button("Volume", func() -> void: sliders.visible = not sliders.visible))
+	right.add_child(sliders)
 	right.add_child(_button("Quit", func() -> void: get_tree().quit()))
 
 	_status = _label("")

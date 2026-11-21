@@ -151,7 +151,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 
 ## Phase 10: Audio (in progress, step 2 next)
 - [x] 1. Sounds downloaded (you approved 2026-11-21): 321 CC0 files in `assets/audio/` (sfx, ambience, music), all logged in `assets/CREDITS.md`. Got from OpenGameArt because Kenney's site blocks scripted downloads. Not yet found: wind loop, hound howl is in the creature pack, no dedicated horn, cave/boss music are stand-ins
-- [ ] 2. Audio setup: buses Master, Music, Effects, Ambience, Interface; volume sliders in settings, remembered
+- [x] 2. Audio setup: buses Master, Music, Effects, Ambience, Interface (`game/audio/audio_manager.gd`, autoload `Audio`); volume sliders under a **Volume** button in the main menu and the Esc menu, saved in `settings.cfg`; `tests/audio_check.gd` passes. 🧪 Open the menu and check the sliders feel right (nothing plays yet, so you can't hear a difference until step 3)
 - [ ] 3. Combat sounds: swings, hits, blocks, parries, rolls, footsteps, grunts, flask, and the nine class abilities
 - [ ] 4. Loot and interface sounds, a distinct sound per rarity (Legendary special), shrine rest, death
 - [ ] 5. Tithelands music and ambience: wind, rain, crows, day and night differences, shrine hum
