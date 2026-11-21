@@ -26,7 +26,13 @@ const GROUP := &"lock_targets"
 var target: Node3D
 var camera: Camera3D
 
+## A quick sideways mouse flick (this many pixels within `flick_window` seconds) lets go of the lock.
+@export var flick_pixels := 260.0
+@export var flick_window := 0.2
+
 var _out_of_sight := 0.0
+var _flick_sum := 0.0
+var _flick_time := 0.0
 var _flick_ready := true
 
 @onready var _owner: Node3D = get_parent()
@@ -119,7 +125,27 @@ func _physics_process(delta: float) -> void:
 		_flick_ready = true
 
 
+## Feed horizontal mouse movement; returns true (and lets go) if it was a flick away from the target.
+func mouse_moved(relative_x: float) -> bool:
+	if target == null:
+		_flick_sum = 0.0
+		return false
+	var now := Time.get_ticks_msec() * 0.001
+	if now - _flick_time > flick_window or signf(relative_x) != signf(_flick_sum):
+		_flick_sum = 0.0
+	_flick_time = now
+	_flick_sum += relative_x
+	if absf(_flick_sum) >= flick_pixels:
+		_flick_sum = 0.0
+		clear()
+		return true
+	return false
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		mouse_moved((event as InputEventMouseMotion).relative.x)
+		return
 	if event.is_action_pressed("target_next"):
 		switch_target(1)
 	elif event.is_action_pressed("target_prev"):

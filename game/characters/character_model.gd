@@ -32,8 +32,10 @@ static var _library_cache := {}
 
 ## Speed (m/s) at which each looping animation's feet match the ground.
 @export var walk_anim_speed := 1.6
-@export var run_anim_speed := 4.0
-@export var sprint_anim_speed := 6.2
+@export var run_anim_speed := 6.2
+@export var sprint_anim_speed := 9.2
+## Legs cycle this much faster than the ground speed alone needs, so strides are quick but long.
+@export var leg_speed_mult := 1.35
 ## Share of the roll animation that plays during a roll (the rest is the get-up).
 @export_range(0.3, 1.0) var roll_anim_portion := 0.8
 ## Recolor the whole body (alpha 0 = keep the model's own colors).
@@ -125,11 +127,11 @@ func update_locomotion(ground_speed: float, sprinting: bool, walking: bool) -> v
 	if ground_speed < 0.15:
 		play(idle_anim, 0.2)
 	elif sprinting:
-		play(ANIM_SPRINT, 0.2, clampf(ground_speed / sprint_anim_speed, 0.6, 1.4))
+		play(ANIM_SPRINT, 0.2, clampf(ground_speed / sprint_anim_speed * leg_speed_mult, 0.6, 2.0))
 	elif walking or ground_speed < 2.6:
 		play(ANIM_WALK, 0.2, clampf(ground_speed / walk_anim_speed, 0.5, 1.6))
 	else:
-		play(ANIM_RUN, 0.2, clampf(ground_speed / run_anim_speed, 0.6, 1.4))
+		play(ANIM_RUN, 0.2, clampf(ground_speed / run_anim_speed * leg_speed_mult, 0.6, 2.0))
 
 
 func play_roll(duration: float) -> void:

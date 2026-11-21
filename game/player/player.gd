@@ -39,6 +39,8 @@ enum State { MOVE, AIR, ROLL, LANDING, ATTACK, DRINK, CAST, CLIMB, STAGGER, GUAR
 const RESPAWN_DELAY := 3.0
 ## Below this height you've fallen out of the world.
 const KILL_HEIGHT := -60.0
+## Attacking this far above the ground (meters) while falling is a plunge.
+const PLUNGE_HEIGHT := 2.5
 
 const INTERACT_RANGE := 2.2
 ## You keep this many of your most valuable items when you die.
@@ -94,6 +96,8 @@ var _roll_duration := 0.6
 var _roll_distance := 3.5
 var _since_roll := 99.0
 var _roll_backward := false
+var _air_attack := false
+var _plunging := false
 var _buffered := &""
 var _buffer_timer := 0.0
 var _dodge_held := -1.0
@@ -1275,9 +1279,7 @@ func _state_move(delta: float) -> void:
 		return
 	if _has_buffered(&"heavy") and stamina > 0.0 and weapon.heavy:
 		_consume(&"heavy")
-		_start_attack(weapon.heavy, dir)
-		_charging = true
-		_charge = 0.0
+		_start_heavy_attack(dir)
 		return
 	if _update_revive(delta):
 		move_and_slide()
@@ -1383,13 +1385,64 @@ func _start_light_attack(dir: Vector3) -> void:
 		victim.call(&"begin_riposte", self)
 		_start_attack(weapon.riposte, Vector3.ZERO, false)
 		return
-	if is_sprinting and weapon.running_attack:
+	if is_blocking and weapon.move(&"guard_counter"):
+		_stop_blocking()
+		_start_attack(weapon.move(&"guard_counter"), dir)
+	elif _since_roll <= tuning.rolling_attack_window and _roll_backward and weapon.move(&"backstep_attack"):
+		_start_attack(weapon.move(&"backstep_attack"), dir)
+	elif is_sprinting and weapon.running_attack:
 		_start_attack(weapon.running_attack, dir)
 	elif _since_roll <= tuning.rolling_attack_window and weapon.rolling_attack:
 		_start_attack(weapon.rolling_attack, dir)
 	else:
 		_combo_index = 0
 		_start_attack(weapon.light_combo[0], dir)
+
+
+## Heavy attack on the ground: running, rolling and guard variants, or the charged heavy.
+func _start_heavy_attack(dir: Vector3) -> void:
+	var variant: AttackData
+	if is_sprinting:
+		variant = weapon.move(&"running_heavy")
+	elif _since_roll <= tuning.rolling_attack_window:
+		variant = weapon.move(&"rolling_heavy")
+	elif is_blocking:
+		variant = weapon.move(&"guard_counter")
+		_stop_blocking()
+	if variant:
+		_start_attack(variant, dir)
+		return
+	_start_attack(weapon.heavy, dir)
+	_charging = true
+	_charge = 0.0
+
+
+## Attack while airborne: a jump attack, or a plunge when you're high above the ground.
+func _try_air_attack() -> bool:
+	var heavy := _has_buffered(&"heavy")
+	if not (heavy or _has_buffered(&"light")) or stamina <= 0.0:
+		return false
+	_consume(&"heavy" if heavy else &"light")
+	var dir := _input_direction()
+	var a: AttackData
+	var plunge := false
+	if _height_above_ground() >= PLUNGE_HEIGHT and velocity.y < 1.0:
+		a = weapon.move(&"plunge")
+		plunge = a != null
+	if a == null:
+		a = weapon.move(&"jump_heavy" if heavy else &"jump_light")
+	if a == null:
+		return false
+	_start_attack(a, dir, false)
+	_air_attack = true
+	_plunging = plunge
+	return true
+
+
+func _height_above_ground() -> float:
+	var q := PhysicsRayQueryParameters3D.create(global_position, global_position + Vector3.DOWN * 60.0, 1)
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	return global_position.y - hit.position.y if hit else 60.0
 
 
 func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
@@ -1399,6 +1452,8 @@ func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
 	_charging = false
 	_charge = 0.0
 	_ability_strike = null
+	_air_attack = false
+	_plunging = false
 	if a != weapon.riposte:
 		_is_riposte = false
 	is_sprinting = false
@@ -1430,6 +1485,8 @@ func _state_attack(delta: float) -> void:
 			mult = 0.12
 		elif _attack.t >= a.windup_until:
 			_charging = false
+	if _plunging and _attack.t >= a.hit_start - 0.05:
+		mult = 0.0  # hold the raised blade until we land
 	_attack.step(delta, mult * tuning.attack_speed)
 
 	# Stay locked toward the target during the wind-up.
@@ -1440,13 +1497,24 @@ func _state_attack(delta: float) -> void:
 	var lunge := _attack.lunge_speed() * tuning.attack_speed
 	if lunge > 0.0 and _something_close_in_front(1.1):
 		lunge = 0.0
-	velocity.x = model.forward().x * lunge
-	velocity.z = model.forward().z * lunge
-	if not is_on_floor():
-		velocity.y -= tuning.gravity * delta
+	if _air_attack:
+		# Keep your momentum through the air; a plunge dives straight down.
+		velocity.x *= 0.4 if _plunging else 1.0
+		velocity.z *= 0.4 if _plunging else 1.0
+		velocity.y = -24.0 if _plunging else velocity.y - tuning.gravity * delta
+		_fall_peak_y = maxf(_fall_peak_y, global_position.y)
+	else:
+		velocity.x = model.forward().x * lunge
+		velocity.z = model.forward().z * lunge
+		if not is_on_floor():
+			velocity.y -= tuning.gravity * delta
 	move_and_slide()
+	if _air_attack and is_on_floor() and velocity.y <= 0.0:
+		_air_attack_landed()
 
-	if _attack.in_hit_window():
+	if _plunging:
+		pass  # no blows until we land
+	elif _attack.in_hit_window():
 		if a.projectile_speed > 0.0:
 			if not _arrow_fired:
 				_arrow_fired = true
@@ -1457,17 +1525,17 @@ func _state_attack(delta: float) -> void:
 
 	# What comes next: chain, cancel or finish.
 	if _attack.past(a.chain_time) and _has_buffered(&"light") and not _is_riposte \
-			and a in weapon.light_combo and stamina > 0.0:
+			and a in weapon.light_combo and not _air_attack and stamina > 0.0:
 		_consume(&"light")
 		_combo_index = (weapon.light_combo.find(a) + 1) % weapon.light_combo.size()
 		_start_attack(weapon.light_combo[_combo_index], _input_direction())
 		return
-	if _attack.past(a.chain_time) and _has_buffered(&"heavy") and not _is_riposte and stamina > 0.0:
+	if _attack.past(a.chain_time) and _has_buffered(&"heavy") and not _is_riposte and not _air_attack and stamina > 0.0:
 		_consume(&"heavy")
 		_start_attack(weapon.heavy, _input_direction())
 		_charging = true
 		return
-	if _attack.past(a.cancel_time) and not _is_riposte:
+	if _attack.past(a.cancel_time) and not _is_riposte and not _air_attack:
 		if _has_buffered(&"roll") and _can_roll():
 			_consume(&"roll")
 			_start_roll(_input_direction())
@@ -1487,7 +1555,33 @@ func _finish_attack() -> void:
 	_is_riposte = false
 	_riposte_victim = null
 	_ability_strike = null
-	_set_state(State.MOVE)
+	var was_air := _air_attack
+	_air_attack = false
+	_plunging = false
+	if was_air and not is_on_floor():
+		_set_state(State.AIR)  # keep falling (the fall height carries over)
+		model.play_fall()
+	else:
+		_set_state(State.MOVE)
+
+
+## Touched the ground during an air attack: plunges strike now; any fall still hurts (a plunge softens it).
+func _air_attack_landed() -> void:
+	var height := maxf(0.0, _fall_peak_y - global_position.y)
+	last_fall_height = height
+	var a := _attack.attack
+	if _plunging:
+		_plunging = false
+		_attack.t = maxf(_attack.t, a.hit_start)
+		model.seek(_attack.t)
+		camera_rig.add_shake(0.6)
+		CombatFx.sparks(global_position + Vector3.UP * 0.2, Vector3.UP)
+		height = 0.0
+	var damage := tuning.fall_damage_fraction(height) * max_health()
+	if damage > 0.0:
+		take_damage(damage, true)
+	_air_attack = false
+	_fall_peak_y = global_position.y
 
 
 ## Bows: shoot an arrow at the locked target, the enemy ahead, or the center dot.
@@ -1551,7 +1645,7 @@ func _land_hit(target: Node3D, a: AttackData = null, charge := -1.0) -> void:
 	hit.attack = a
 	hit.is_riposte = _is_riposte
 	var dmg := weapon_damage() * a.damage_mult
-	if a == weapon.heavy:
+	if weapon.is_heavy(a):
 		dmg *= stats.mod_mult("heavy_damage_mult")
 	if charge > 0.0:
 		dmg *= 1.0 + weapon.heavy_charge_bonus * clampf(charge / weapon.heavy_charge_time, 0.0, 1.0)
@@ -1573,8 +1667,8 @@ func _land_hit(target: Node3D, a: AttackData = null, charge := -1.0) -> void:
 	var result: HitInfo.Result = target.call(&"receive_hit", hit)
 	if result == HitInfo.Result.HIT or result == HitInfo.Result.KILLED:
 		freeze(hit.hit_stop)
-		camera_rig.add_shake(0.35 if hit.is_crit else (0.25 if a == weapon.heavy else 0.15))
-		caster.on_hit_landed(hit, a == weapon.heavy)
+		camera_rig.add_shake(0.35 if hit.is_crit else (0.25 if weapon.is_heavy(a) else 0.15))
+		caster.on_hit_landed(hit, weapon.is_heavy(a))
 		if _ability_strike and a == _ability_strike.attack:
 			caster.on_strike_hit(_ability_strike)
 		var steal := effects.total("lifesteal")
@@ -1773,6 +1867,8 @@ func _enter_air(jumped: bool) -> void:
 
 func _state_air(delta: float) -> void:
 	_fall_peak_y = maxf(_fall_peak_y, global_position.y)
+	if _try_air_attack():
+		return
 	velocity.y -= tuning.gravity * delta
 
 	# A little steering in the air, but you can't stop or turn around.

@@ -35,3 +35,85 @@ extends Resource
 @export var running_attack: AttackData
 @export var rolling_attack: AttackData
 @export var riposte: AttackData
+
+@export_group("Extra moves (optional; made from the basic attacks when left empty)")
+@export var jump_light: AttackData
+@export var jump_heavy: AttackData
+## Falling attack from a height: lands with a heavy blow around you.
+@export var plunge: AttackData
+## Light attack right out of a raised guard.
+@export var guard_counter: AttackData
+@export var running_heavy: AttackData
+@export var rolling_heavy: AttackData
+## Light attack right after a backstep.
+@export var backstep_attack: AttackData
+
+var _variants := {}
+
+
+## One of the extra moves: the one set in the data file, or one made from the
+## basic light and heavy attacks (stronger, longer reach, more stamina).
+func move(kind: StringName) -> AttackData:
+	var explicit: AttackData = get(kind)
+	if explicit:
+		return explicit
+	if _variants.has(kind):
+		return _variants[kind]
+	var light: AttackData = light_combo[0] if not light_combo.is_empty() else null
+	var made: AttackData
+	match kind:
+		&"jump_light":
+			made = _make(light, 1.15, 1.2, 1.2, 0.2)
+		&"jump_heavy":
+			made = _make(heavy, 1.3, 1.4, 1.15, 0.2)
+		&"plunge":
+			made = _make(heavy, 2.2, 2.5, 1.0, 0.9)
+			if made:
+				made.arc_degrees = 360.0
+				made.lunge_distance = 0.0
+				made.stamina_cost = 30.0
+		&"guard_counter":
+			made = _make(heavy, 1.4, 1.8, 0.8, 0.3)
+		&"running_heavy":
+			made = _make(heavy, 1.35, 1.4, 1.1, 0.3)
+			if made:
+				made.lunge_distance += 1.2
+		&"rolling_heavy":
+			made = _make(heavy, 1.25, 1.3, 1.1, 0.2)
+			if made:
+				made.lunge_distance += 0.6
+		&"backstep_attack":
+			made = _make(light, 1.2, 1.2, 1.1, 0.4)
+			if made:
+				made.lunge_distance += 1.0
+				made.arc_degrees = minf(made.arc_degrees, 70.0)
+	_variants[kind] = made
+	return made
+
+
+func is_heavy(a: AttackData) -> bool:
+	if a == heavy:
+		return true
+	for v in _variants.values():
+		if v == a and v != null and a.damage_mult >= 1.0 and kind_is_heavy(a):
+			return true
+	return false
+
+
+func kind_is_heavy(a: AttackData) -> bool:
+	for k in [&"jump_heavy", &"plunge", &"guard_counter", &"running_heavy", &"rolling_heavy"]:
+		if _variants.get(k) == a or get(k) == a:
+			return true
+	return false
+
+
+func _make(base: AttackData, damage: float, poise: float, stamina: float, reach_bonus: float) -> AttackData:
+	if base == null:
+		return null
+	var a := base.duplicate() as AttackData
+	a.display_name = base.display_name
+	a.damage_mult = base.damage_mult * damage
+	a.poise_mult = base.poise_mult * poise
+	a.stamina_cost = base.stamina_cost * stamina
+	a.reach = base.reach + reach_bonus
+	return a

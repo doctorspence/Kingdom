@@ -663,21 +663,116 @@ func _state_chase(delta: float) -> void:
 	to.y = 0.0
 	var dist := to.length()
 	model.turn_toward(to, deg_to_rad(data.turn_speed) * delta)
-	if dist <= data.attack_range and _cooldown <= 0.0 and _facing_error(to) < 30.0 and _attackers_on(target) < MAX_ATTACKERS:
+	if dist <= data.attack_range and _cooldown <= 0.0 and _facing_error(to) < 30.0 and _attackers_on(target) < MAX_ATTACKERS and not _ally_in_the_way(to):
 		_start_attack(dist)
 		return
 	if dist > data.attack_range * 0.9:
-		# Close in: run when far, walk when near.
+		# Close in: run when far, walk when near; near the target, head for our own
+		# spot in the ring so the group spreads out around it.
 		var speed := data.run_speed if dist > 5.0 else data.walk_speed * 1.4
-		_move(to.normalized() * speed, delta)
+		var heading := to.normalized()
+		if dist < 7.0:
+			var spot := _slot_point() - global_position
+			spot.y = 0.0
+			if spot.length() > 0.3:
+				heading = spot.normalized()
+		_move(heading * speed, delta)
 		model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, speed < 3.0)
 	else:
-		# In range but waiting: circle slowly, sometimes switching direction.
-		if randf() < delta * 0.5:
-			_strafe_dir = -_strafe_dir
-		var side := to.normalized().cross(Vector3.UP) * _strafe_dir
-		_move(side * data.walk_speed * 0.6, delta)
+		# In range but waiting: slide along the ring toward our own spot (so the group
+		# spreads evenly); once there, circle slowly.
+		var spot := _slot_point() - global_position
+		spot.y = 0.0
+		if spot.length() > 0.5:
+			_move(spot.normalized() * data.walk_speed * 1.1, delta)
+		else:
+			if randf() < delta * 0.5:
+				_strafe_dir = -_strafe_dir
+			var side := to.normalized().cross(Vector3.UP) * _strafe_dir
+			_move(side * data.walk_speed * 0.4, delta)
 		model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
+
+
+## Enemies are solid and don't stand inside each other. Everyone chasing the same
+## player is given an evenly spaced spot on a ring around them (kept close to where
+## they already are, so they don't swap places).
+static var _slot_frame := -1
+static var _slot_cache := {}
+
+
+func _slot_point() -> Vector3:
+	var frame := Engine.get_physics_frames()
+	if frame != _slot_frame:
+		_slot_frame = frame
+		_slot_cache.clear()
+	if not _slot_cache.has(target):
+		_slot_cache[target] = _assign_slots(target)
+	var angle: float = _slot_cache[target].get(self, _angle_around(target.global_position, global_position))
+	var radius := maxf(data.attack_range * 0.85, 1.4)
+	return target.global_position + Vector3(cos(angle), 0.0, sin(angle)) * radius
+
+
+static func _angle_around(center: Vector3, p: Vector3) -> float:
+	return atan2(p.z - center.z, p.x - center.x)
+
+
+func _assign_slots(on: Player) -> Dictionary:
+	var mates: Array = []
+	for n in get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e and e.target == on and e.state in [State.CHASE, State.ATTACK, State.STAGGER, State.PARRIED, State.RIPOSTED]:
+			mates.append(e)
+	var out := {}
+	var count := mates.size()
+	if count < 2:
+		return out
+	var center := on.global_position
+	mates.sort_custom(func(a: Enemy, b: Enemy) -> bool:
+		return _angle_around(center, a.global_position) < _angle_around(center, b.global_position))
+	var sx := 0.0
+	var sy := 0.0
+	for i in count:
+		var off := _angle_around(center, (mates[i] as Enemy).global_position) - TAU * i / count
+		sx += cos(off)
+		sy += sin(off)
+	var base := atan2(sy, sx)
+	for i in count:
+		out[mates[i]] = base + TAU * i / count
+	return out
+
+
+## Is another enemy standing between us and the target (so we couldn't swing at them anyway)?
+func _ally_in_the_way(to: Vector3) -> bool:
+	var dist := to.length()
+	if dist < 0.01:
+		return false
+	var dir := to / dist
+	for n in get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e == null or e == self or e.state == State.DEAD:
+			continue
+		var rel := e.global_position - global_position
+		rel.y = 0.0
+		var along := rel.dot(dir)
+		if along > 0.3 and along < dist and (rel - dir * along).length() < 0.5 * (data.scale + e.data.scale):
+			return true
+	return false
+
+
+## A gentle push away from enemies we overlap, so bodies never sit inside each other.
+func _separation() -> Vector3:
+	var push := Vector3.ZERO
+	for n in get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e == null or e == self or e.state == State.DEAD:
+			continue
+		var away := global_position - e.global_position
+		away.y = 0.0
+		var need := 0.55 * (data.scale + e.data.scale)
+		var d := away.length()
+		if d < need:
+			push += (away / maxf(d, 0.05)) * (need - d) / need
+	return push
 
 
 func _start_attack(dist: float) -> void:
@@ -806,6 +901,8 @@ func _die() -> void:
 func _move(horizontal_velocity: Vector3, delta: float, instant := false) -> void:
 	var h := Vector3(velocity.x, 0, velocity.z)
 	horizontal_velocity *= effects.move_mult()
+	if not instant:
+		horizontal_velocity += _separation() * 3.0
 	h = horizontal_velocity if instant else h.move_toward(horizontal_velocity, 20.0 * delta)
 	velocity.x = h.x
 	velocity.z = h.z

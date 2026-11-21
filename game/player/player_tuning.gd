@@ -11,26 +11,26 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var max_health := 100.0
 
 @export_group("Speeds (meters per second)")
-@export var walk_speed := 2.4
-@export var run_speed := 5.8
-@export var sprint_speed := 8.2
+@export var walk_speed := 2.6
+@export var run_speed := 6.8
+@export var sprint_speed := 9.6
 ## Movement speed while locked on to a target (strafing).
-@export var lock_on_speed := 4.4
+@export var lock_on_speed := 5.0
 ## Below this stick tilt (0–1) you walk instead of run.
 @export_range(0.1, 0.9) var walk_stick_threshold := 0.55
 
 @export_group("Weight and turning")
 ## How fast you reach your target speed (m/s per second).
-@export var acceleration := 30.0
+@export var acceleration := 60.0
 ## How fast you stop when you let go (m/s per second).
-@export var deceleration := 35.0
+@export var deceleration := 80.0
 ## How fast your body turns while walking/running (degrees per second).
 @export var turn_speed := 1080.0
 ## How fast your movement swings to a new direction while walking/running (degrees per second).
 ## You keep your speed through the turn instead of slowing to a stop.
 @export var direction_change_speed := 1080.0
 ## How fast you turn while sprinting. Low = wide, heavy turns.
-@export var sprint_turn_speed := 400.0
+@export var sprint_turn_speed := 620.0
 ## How much you can steer in the air (0 = none, 1 = full).
 @export_range(0.0, 1.0) var air_control := 0.2
 @export var gravity := 22.0

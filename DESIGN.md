@@ -1,7 +1,7 @@
 # KINGDOM: Design Document
 
 *Working title. A living document that we update as we build and playtest.*
-*Last updated: 2026-11-21 (Phase 9: the Gullet is built underground beneath the quarry, entered by a door at the cave mouth).*
+*Last updated: 2026-11-21 (Phase 9; Nioh 2 movement, extra attacks, enemy spacing).*
 
 > **How to read this.** Sections 1–12 describe the game: what players see and do. Section 13 is the technical plan: how we build it. Numbers marked *(start)* are first guesses. We tune them by playing.
 
@@ -98,7 +98,7 @@ Dark Souls pace: every swing commits you, every hit hurts, and stamina is the cl
 
 ### 5.2 Movement
 - **Weighty**: acceleration and turning take time; no instant 180s while sprinting.
-- Speeds *(start)*: walk 2.0 m/s, run 4.5 m/s, sprint 6.5 m/s, moving while locked on 3.2 m/s.
+- Speeds *(start)*: walk 2.6 m/s, run 6.8 m/s, sprint 9.6 m/s, moving while locked on 5.0 m/s (Nioh 2-style snappy; see `data/balance`).
 - **Jump**: ~1.1 m high, short i-frames at take-off (~0.12 s).
 - **Dodge roll** with i-frames. Speed depends on **equip load** (gear weight ÷ capacity; capacity = 60 + 0.5 × Strength *(start)*):
 
@@ -125,6 +125,20 @@ Light attacks chain into 2–3 hit combos. Heavy attacks can be charged. Running
 | Bow | 2H | Agi | Hold to draw, release to fire; unlimited arrows |
 | Staff | 2H | Int | Sweeping bonks; boosts the Lamplighter's healing |
 | Shield | Off-hand | Str | Blocks well; light shields parry easier, heavy ones block more |
+
+#### Extra moves (Elden Ring-style)
+Every weapon also has these, made from its light and heavy attacks unless its data file sets its own:
+
+| Move | How |
+|---|---|
+| Jump light / jump heavy | Attack while in the air |
+| Plunging attack | Attack while falling from 2.5 m or more above the ground: you dive and land with a wide heavy blow (no fall damage) |
+| Running light / running heavy | Attack while sprinting |
+| Rolling light / rolling heavy | Attack right after a roll |
+| Backstep attack | Light attack right after a backstep (a roll with no direction held) |
+| Guard counter | Attack while your guard is raised |
+
+The weapon data holds these as optional `jump_light`, `jump_heavy`, `plunge`, `guard_counter`, `running_heavy`, `rolling_heavy` and `backstep_attack`.
 
 ### 5.4 Block, parry, riposte
 - **Block** (hold): covers a 120° arc in front of you. Shields stop nearly all physical damage; weapons stop ~60%. Each blocked hit drains stamina based on the shield's stability.
