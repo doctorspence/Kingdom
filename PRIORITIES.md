@@ -44,17 +44,17 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 
 - [x] **Souls for the Gullet enemies** (2026-11-22, still tunable in `data/loot/loot_bandit*.tres`, `loot_harl.tres`): Bandit 8-16, Captain 40-70, Rook 60-90, Harl 250-350 (a Marauder gives 10-20, Hobb 120-200). XP was already set: Bandit 90, Captain 400, Rook 300, Harl 1200.
 - [x] **Cryptic descriptions** already exist as drafts and are in the item files (`flavor =`). Change any you don't like: Steel Pickaxe "A miner's tool that learned a second trade." · Blackstone Amulet "A chip of the black stone on a leather cord. It never quite reaches room temperature." · Harl's Black Pick "The head is cut from the stone itself, and it is warm." · Bread "Hard, but it is food." · Health Potion "Tastes of iron and bad decisions."
-- [ ] **Your call:** keep "Harl's Black Pick" as the unique weapon's name? And rename "Rook the Cutthroat" (file `data/enemies/enemy_bandit_rook.tres`, `display_name`)? Tell me the names and I'll change them.
+- [x] Harl's unique weapon stays **Harl's Black Pick** (decided 2026-11-22). [ ] Still open: rename "Rook the Cutthroat" (`data/enemies/enemy_bandit_rook.tres`).
 - [ ] The open questions in `DESIGN.md` section 14.
-- [ ] What the chapel and barrow are *for*. They're built but there's nothing to do there.
-- [ ] Brother Tallow and the acolytes: keep them for a later zone, or delete them? (They're unused data, spawn tables and tests.)
+- [x] Chapel and barrow: **used later** (decided 2026-11-22), nothing to build now.
+- [x] Brother Tallow and the acolytes: **keep** (decided 2026-11-22; for a later zone).
 - [ ] Class abilities: you will change these later (the 🧪 ability lines in `TODO.md` are ticked as played).
 
 ## P3: Overhauls under the hood (after the milestone, with the checks as a safety net)
 
 - [ ] **Split `player.gd`.** It's 2,273 lines and 148 functions in one file: movement, combat, abilities, gear, network and debug. Split it into parts (movement, combat, abilities, equipment). Then `enemy.gd` (1,211 lines), `gullet.gd` (1,726) and `hud.gd` (848). Smaller files also stop two sessions from colliding in the same file.
-- [ ] **Safer saves** (`game/core/save_system.gd`). It deletes the old save *before* renaming the new one into place. A crash between those two steps leaves only a `.tmp` file, which loading ignores, so the character looks gone. Fix: keep a `.bak` copy, or read the `.tmp` as a fallback.
-- [ ] **Saves for similar names.** "Bob!" and "Bob?" save to the same file and overwrite each other.
+- [x] **Safer saves** *(done 2026-11-22, `tests/save_check.gd`)* (`game/core/save_system.gd`). It deletes the old save *before* renaming the new one into place. A crash between those two steps leaves only a `.tmp` file, which loading ignores, so the character looks gone. Fix: keep a `.bak` copy, or read the `.tmp` as a fallback.
+- [x] **Saves for similar names.** *(done 2026-11-22)* "Bob!" and "Bob?" save to the same file and overwrite each other.
 - [ ] **Network trust.** There are 24 network messages any player can send. The host accepts item data straight from a player: dropped items and death-pile contents come from the client. That's fine among friends. It must be fixed before any server browser or playing with strangers.
 - [ ] **Gamepad.** Not tested at all (TODO Phase 2).
 - [ ] **Strafe "moonwalk" when locked on.** Still unchecked.

@@ -25,7 +25,7 @@ Phases 1-15 are built: movement, combat, multiplayer, three classes with talents
 | `CLASS_PLAN.md`, `GULLET_DESIGN.md`, `ZONES_DESIGN.md`, `ZONE1_OVERHAUL.md`, `ART_NEEDS.md` | Detail for one area. `ZONE1_OVERHAUL.md` also holds the stage 7 performance plan. |
 
 ## Things to know
-- **Checks:** run one with `--headless --script res://tests/run.gd -- <name>` (README.md). Names: movement, combat, moves, enemy, death, loot, class, subclass, boss, camp, gullet, zone, audio, sound, prefs. Plus the 3-player check `tests/run_net_check.ps1`. Run them one at a time (shared port 31499, and timing checks fail under load). If a timing check fails once, rerun it before suspecting a bug.
+- **Checks:** run one with `--headless --script res://tests/run.gd -- <name>` (README.md). Names: movement, combat, moves, enemy, death, loot, class, subclass, boss, camp, gullet, zone, audio, sound, prefs. Plus the 3-player check `tests/run_net_check.ps1`. Also `save_check`. Run them one at a time (shared port 31499, and timing checks fail under load). If a timing check fails once, rerun it before suspecting a bug.
 - **Godot and git paths:** no PATH shortcuts. Godot is in `%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\` (use `_console.exe` for output). Git is `C:\Program Files\Git\cmd\git.exe`.
 - **Port 31415 is the owner's live game.** Checks use 31499.
 - **Test keys** (F3-F7, Page Up/Down) only work in the editor or a debug build; the exported friends build has them unbound. F1 help hides them there too.
