@@ -2,6 +2,20 @@
 
 *Written 2026-11-22 from "Zone 1 — The Greenwood: Updated Biome & Environment Brief" (the .docx on your desktop, text and reference board both read in full). This is Phases 1 and 2 only: **nothing in the game has been changed.** The only new files are this document and the "before" pictures in `docs/greenwood_before/`.*
 
+## Progress
+
+**Decisions (2026-11-22):** keep the name "The Tithelands" (the forest is "the Greenwood"); grade the existing scanned look toward the palette and build new trees and plants in a simpler painterly style; CC0 downloads OK; remove every fir; add the brook; keep Highcrown as it is.
+
+| Stage | State |
+|---|---|
+| 0. Safety | **Done.** Branch `greenwood`, tag `pre-greenwood` on main. |
+| 1. Foundations | **Done (ground and rock).** Terrain shader: limestone graded to the palette with horizontal beds lining up across cliffs, warm sandstone bands (south scarp, crag skirt, gorge), dark mudstone on soil slopes, moss on ledges, leaf litter under the canopy (Poly Haven `forest_leaves_02`). Land script `ground_extra()` feeds it. Puddles and grass colour still to do (stage 6). |
+| 2. Tree library | **Done.** `game/world/tree_species.gd`: oak (8: young, mature, old), ancient oak (3), dead / stag-headed oak (4), beech (5), ash (5), birch (6, incl. clumps), yew (4); code-drawn bark and leaf textures; full detail to 80 m then a cheap far version. Gallery: `tools/preview_trees.gd`. |
+| 3. Forest composition | **Done.** Every fir gone. Land script `tree_kind()` picks species by place (beech in deep interiors, ash by water, birch at the quarry, hamlet, scree and edges, yew at the churchyard, barrow, scarp top and a pocket in the East Woods). Expected shares: oak 55% (incl. 2.5% dead), beech 18%, ash 12%, birch 8%, yew 7%. Landmarks: great oak on the green, hollow oak at the East Lane bend, ancient oak at Knight's Gap, stag-headed oak below the watchtower, churchyard and barrow yews. No trees within 5 m of an enemy spawn, the Gullet door or the ladder. Trunk colliders sized per tree. A first "canopy light" in `DayNight`: under the trees the ambient turns lifted green instead of black. |
+| 4-9 | Not started. |
+
+**Checks after stage 3:** `zone_check`, `camp_check`, `gullet_check` pass; placement audit shows no trees in or against buildings (the building flags it lists are unchanged from before). FPS at 1920x1080: 78 to 116 at the 10 spots (before: 81 to 128); zone load 8.1 s (before 6.6 s; trees are built at load, baking them to files is the fix if it matters). Pictures: `docs/greenwood_progress/`.
+
 ---
 
 ## 0. The short version

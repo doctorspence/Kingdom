@@ -41,6 +41,11 @@ var _star_mat: ShaderMaterial
 var _glow: Material
 ## How soaked the ground is: rises quickly in rain, dries slowly after.
 var wet_ground := 0.0
+## 0 in the open .. 1 deep in the woods (eased as the camera moves).
+var canopy := 0.0
+var _canopy_target := 0.0
+var _canopy_timer := 0.0
+var _land: Object
 var _rng := RandomNumberGenerator.new()
 
 
@@ -120,6 +125,12 @@ func _process(delta: float) -> void:
 			_net_sync.rpc(time, raining)
 	var cam := get_viewport().get_camera_3d()
 	cave = move_toward(cave, 1.0 if cam and cam.global_position.y < CAVE_BELOW else 0.0, delta * 1.5)
+	# Under the trees: how thick the woods are where the camera is (land script woodland map).
+	_canopy_timer -= delta
+	if _canopy_timer <= 0.0 and cam:
+		_canopy_timer = 0.25
+		_canopy_target = _woodland_at(cam.global_position)
+	canopy = move_toward(canopy, _canopy_target, delta * 0.6)
 	_apply()
 
 
@@ -193,6 +204,15 @@ func _apply() -> void:
 		_env.fog_density = _day.fog_density * lerpf(1.0, 1.8, wet) * lerpf(1.0, 1.3, night)
 		_env.volumetric_fog_albedo = (_day.vol_albedo as Color).lerp(Color(0.2, 0.23, 0.3), night)
 		_env.volumetric_fog_density = _day.vol_density * lerpf(1.0, 1.6, wet)
+		# Deep woodland: the light under the canopy is a lifted green, never black
+		# (brief: shadows lean to #354536), with a little more haze for light shafts.
+		var cw := canopy * (1.0 - night)
+		if cw > 0.0:
+			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.45, 0.53, 0.42), cw)
+			_env.ambient_light_sky_contribution = lerpf(_env.ambient_light_sky_contribution, 0.45, cw)
+			_env.ambient_light_energy *= 1.0 + 0.45 * cw
+			_env.volumetric_fog_density *= 1.0 + 0.5 * cw
+			_env.volumetric_fog_albedo = _env.volumetric_fog_albedo.lerp(Color(0.62, 0.7, 0.6), 0.5 * cw)
 		if _sky:
 			_sky.sky_top_color = (_day.sky_top as Color).lerp(Color(0.4, 0.42, 0.58), gold * 0.5).lerp(Color(0.05, 0.06, 0.1), night).darkened(0.25 * wet)
 			_sky.sky_horizon_color = (_day.sky_horizon as Color).lerp(Color(0.95, 0.58, 0.38), gold * 0.8).lerp(Color(0.13, 0.15, 0.21), night).darkened(0.25 * wet)
@@ -307,3 +327,18 @@ func load_dict(d: Dictionary) -> void:
 	raining = bool(d.get("raining", false))
 	rain_amount = 1.0 if raining else 0.0
 	_apply()
+
+
+func _woodland_at(p: Vector3) -> float:
+	if _land == null:
+		var t := get_tree().get_first_node_in_group(&"zone_terrain")
+		if t == null or t.get("land") == null:
+			return 0.0
+		_land = t.get("land")
+	if not _land.has_method("woodland"):
+		return 0.0
+	# Average a few points around the camera, so one gap in the trees doesn't flicker.
+	var s := 0.0
+	for o: Vector2 in [Vector2.ZERO, Vector2(8, 0), Vector2(-8, 0), Vector2(0, 8), Vector2(0, -8)]:
+		s += float(_land.call("woodland", p.x + o.x, p.z + o.y))
+	return smoothstep(0.25, 0.75, s / 5.0)

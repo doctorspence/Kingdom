@@ -12,6 +12,8 @@
 [ext_resource type="Texture2D" uid="uid://dxnio6t2ffir5" path="res://assets/textures/path/color.jpg" id="path_c"]
 [ext_resource type="Texture2D" uid="uid://b1vxrincg1v3" path="res://assets/textures/path/normal.jpg" id="path_n"]
 [ext_resource type="Texture2D" uid="uid://tgufgv8igx2y" path="res://assets/textures/path/rough.jpg" id="path_r"]
+[ext_resource type="Texture2D" uid="uid://dsiunf5yw6nrv" path="res://assets/textures/leaf_litter/color.jpg" id="litter_c"]
+[ext_resource type="Texture2D" uid="uid://dh2jybmn72p2p" path="res://assets/textures/leaf_litter/normal.jpg" id="litter_n"]
 [ext_resource type="Texture2D" uid="uid://di5rl8qrfwh31" path="res://assets/textures/cliff/color.jpg" id="rock_c"]
 [ext_resource type="Texture2D" uid="uid://b1ig8x61pps3i" path="res://assets/textures/cliff/normal.jpg" id="rock_n"]
 [ext_resource type="Texture2D" uid="uid://2b5qit7nsmu3" path="res://assets/textures/cliff/rough.jpg" id="rock_r"]
@@ -42,14 +44,16 @@ shader_parameter/rock_n = ExtResource("rock_n")
 shader_parameter/rock_r = ExtResource("rock_r")
 shader_parameter/moss_c = ExtResource("moss_c")
 shader_parameter/dirt_c = ExtResource("dirt_c")
+shader_parameter/litter_c = ExtResource("litter_c")
+shader_parameter/litter_n = ExtResource("litter_n")
 shader_parameter/noise_tex = SubResource("NoiseTex_ground")
 shader_parameter/grass_scale = 0.22
 shader_parameter/mud_scale = 0.28
 shader_parameter/path_scale = 0.3
 shader_parameter/rock_scale = 0.13
-shader_parameter/grass_tint = Color(0.62, 0.66, 0.5, 1)
+shader_parameter/grass_tint = Color(0.56, 0.63, 0.5, 1)
 shader_parameter/mud_tint = Color(0.6, 0.55, 0.5, 1)
 shader_parameter/path_tint = Color(0.72, 0.66, 0.58, 1)
-shader_parameter/rock_tint = Color(0.62, 0.62, 0.64, 1)
+
 shader_parameter/normal_strength = 1.0
 shader_parameter/blend_sharpness = 3.0

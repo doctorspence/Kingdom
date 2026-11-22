@@ -31,6 +31,12 @@ extends Node3D
 @export var sink := 0.1
 ## Let leaves and needles cast shadows too (costs more; good for broadleaf trees).
 @export var leaf_shadows := false
+## Let the land script choose each tree (land.tree_kind(x, z, roll) -> TreeSpecies kind).
+@export var species_from_land := false
+## Also place the land script's hand-placed landmark trees (land.landmark_trees).
+@export var landmarks := false
+## TreeSpecies trees: full detail up to this distance, then the cheap far version.
+@export var near_until := 80.0
 @export var rebuild := false:
 	set(v):
 		_scatter()
@@ -116,7 +122,12 @@ func _scatter() -> void:
 				k += 1
 				acc += weights[k] if k < weights.size() else 1.0
 			if as_trees:
-				_trees.append([_kinds[k], Vector3(p.x, h - sink, p.y), rot, sc])
+				var kind: String = _kinds[k]
+				if species_from_land and land.has_method("tree_kind"):
+					kind = land.call("tree_kind", p.x, p.y, pick / maxf(total_w, 0.001))
+					if kind == "":
+						continue
+				_trees.append([kind, Vector3(p.x, h - sink, p.y), rot, sc, -1])
 			else:
 				var node: Node3D = scenes[k].instantiate()
 				add_child(node)
@@ -125,48 +136,93 @@ func _scatter() -> void:
 				node.scale = Vector3.ONE * sc
 			placed += 1
 		z += spacing
+	# Landmark trees, placed by hand in the land script: [kind, x, z, yaw degrees, scale, variant].
+	if as_trees and landmarks and land.get("landmark_trees") != null:
+		for lt: Array in land.get("landmark_trees"):
+			var lx: float = lt[1]
+			var lz: float = lt[2]
+			_trees.append([lt[0], Vector3(lx, terrain.height_at(lx, lz) - sink, lz), deg_to_rad(float(lt[3])), float(lt[4]), int(lt[5])])
+			placed += 1
 	if as_trees and not Engine.is_editor_hint():
 		_build_trees()
 
 
-## Trees drawn in batches: one MultiMesh per 64 m patch, tree shape and part,
-## each hidden beyond GeneratedTree.SEEN_FROM; one body holds all trunk colliders.
+## Trees drawn in batches: one MultiMesh per patch, tree shape and part. Greenwood
+## species (TreeSpecies) get full detail near the camera and a cheap far version
+## (main limbs and a few big leaf cards) beyond near_until, out to the fog.
+## One body holds all trunk colliders, each sized to its tree's trunk.
 func _build_trees() -> void:
 	var patch := 64.0
 	var groups := {}
 	var body := StaticBody3D.new()
 	body.name = "Trunks"
 	add_child(body)
-	var capsule := CapsuleShape3D.new()
-	capsule.radius = 0.38
-	capsule.height = 4.5
+	var shapes := {}
 	for t in _trees:
 		var kind: String = t[0]
 		var pos: Vector3 = t[1]
-		var index := int(absf(pos.x * 31.0 + pos.z * 17.0)) % GeneratedTree.VARIANTS
+		var sc: float = t[3]
+		var species := TreeSpecies.KINDS.has(kind)
+		var n := TreeSpecies.count(kind) if species else GeneratedTree.VARIANTS
+		var index := int(absf(pos.x * 31.0 + pos.z * 17.0)) % n
+		if species:
+			# Two shapes per species in each patch (fewer batches); the pair changes from patch to patch.
+			var ph := absi(hash(Vector3i(floori(pos.x / patch), floori(pos.z / patch), kind.hash())))
+			index = (ph + int(absf(pos.x * 31.0 + pos.z * 17.0)) % 2) % n
+		if t.size() > 4 and int(t[4]) >= 0:
+			index = int(t[4]) % n
 		var key := "%s|%d|%d|%d" % [kind, index, floori(pos.x / patch), floori(pos.z / patch)]
 		if not groups.has(key):
 			groups[key] = []
-		var xf := Transform3D(Basis(Vector3.UP, t[2]).scaled(Vector3.ONE * float(t[3])), pos - global_position)
+		var xf := Transform3D(Basis(Vector3.UP, t[2]).scaled(Vector3.ONE * sc), pos - global_position)
 		groups[key].append(xf)
 		if absf(pos.x) < terrain.size * 0.5 and absf(pos.z) < terrain.size * 0.5:
+			var r := 0.38
+			if species:
+				r = clampf(float(TreeSpecies.build(kind, index).radius) * sc, 0.15, 1.6)
+			var rk := snappedf(r, 0.05)
+			if not shapes.has(rk):
+				var capsule := CapsuleShape3D.new()
+				capsule.radius = rk
+				capsule.height = maxf(4.5, rk * 2.0 + 1.0)
+				shapes[rk] = capsule
 			var cs := CollisionShape3D.new()
-			cs.shape = capsule
-			cs.position = pos - global_position + Vector3.UP * 2.25
+			cs.shape = shapes[rk]
+			cs.position = pos - global_position + Vector3.UP * (shapes[rk] as CapsuleShape3D).height * 0.5
 			body.add_child(cs)
 	for key in groups:
 		var bits: PackedStringArray = key.split("|")
-		var parts: Array = GeneratedTree._variant(bits[0], int(bits[1]))
+		var kind := bits[0]
 		var xfs: Array = groups[key]
-		for pi in parts.size():
-			var mm := MultiMesh.new()
-			mm.transform_format = MultiMesh.TRANSFORM_3D
-			mm.mesh = parts[pi]
-			mm.instance_count = xfs.size()
-			for i in xfs.size():
-				mm.set_instance_transform(i, xfs[i])
-			var mmi := MultiMeshInstance3D.new()
-			mmi.multimesh = mm
-			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if (pi == 0 or leaf_shadows) else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			mmi.visibility_range_end = GeneratedTree.SEEN_FROM + patch * 0.7
-			add_child(mmi)
+		if TreeSpecies.KINDS.has(kind):
+			var d := TreeSpecies.build(kind, int(bits[1]))
+			var near: Array = d.near
+			for pi in near.size():
+				var mmi := _batch(near[pi], xfs, pi == 0 or leaf_shadows)
+				mmi.visibility_range_end = near_until
+				mmi.visibility_range_end_margin = 8.0
+				mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			var far := _batch(d.far, xfs, false)
+			far.visibility_range_begin = near_until
+			far.visibility_range_begin_margin = 8.0
+			far.visibility_range_end = GeneratedTree.SEEN_FROM + 120.0
+			far.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		else:
+			var parts: Array = GeneratedTree._variant(kind, int(bits[1]))
+			for pi in parts.size():
+				var mmi := _batch(parts[pi], xfs, pi == 0 or leaf_shadows)
+				mmi.visibility_range_end = GeneratedTree.SEEN_FROM + patch * 0.7
+
+
+func _batch(mesh: Mesh, xfs: Array, shadows: bool) -> MultiMeshInstance3D:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = mesh
+	mm.instance_count = xfs.size()
+	for i in xfs.size():
+		mm.set_instance_transform(i, xfs[i])
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mmi)
+	return mmi

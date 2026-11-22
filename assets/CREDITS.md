@@ -38,5 +38,6 @@ Every downloaded or generated asset goes here, so we always know where things ca
 | Tree Stump 02 (1k) | `assets/nature/tree_stump_02/` | https://polyhaven.com/a/tree_stump_02 | Rob Tuytel | CC0 1.0 | 2026-11-21 |
 | Dead Tree Trunk (1k) | `assets/nature/dead_tree_trunk/` | https://polyhaven.com/a/dead_tree_trunk | Rob Tuytel | CC0 1.0 | 2026-11-21 |
 | Dry Branches Medium 01 (1k) | `assets/nature/dry_branches_medium_01/` | https://polyhaven.com/a/dry_branches_medium_01 | Rico Cilliers | CC0 1.0 | 2026-11-21 |
+| Forest Leaves 02 (leaf litter ground, 1k: diffuse, normal GL, roughness) | `assets/textures/leaf_litter/` | https://polyhaven.com/a/forest_leaves_02 | Rob Tuytel | CC0 1.0 | 2026-11-22 |
 
 **License rules**: CC0 for art and sound packs; OFL is OK for fonts (credit the author). AI-generated art you make: note the tool used.

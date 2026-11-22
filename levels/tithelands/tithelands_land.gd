@@ -123,7 +123,7 @@ var keep_clear := PackedVector3Array([
 	Vector3(-49, 160, 15), Vector3(150, -140, 17), Vector3(-152, 16, 7), Vector3(-4, 111, 18),
 	Vector3(105, 26, 21), Vector3(0, -108, 19), Vector3(122, -84, 16), Vector3(-112, 32, 14),
 	Vector3(-150, -100, 24), Vector3(29, -33, 10), Vector3(40, 127, 10),
-	Vector3(94, 86, 10), Vector3(64, -55, 10), Vector3(102, -51, 10), Vector3(15, 64, 4),
+	Vector3(94, 86, 11), Vector3(64, -55, 11), Vector3(102, -49, 14), Vector3(15, 64, 4),
 ])
 
 
@@ -224,6 +224,22 @@ func forest(x: float, z: float) -> float:
 	return f
 
 
+## Extra ground data for the terrain shader: (leaf litter under the broadleaf
+## canopy 0..1, sandstone share of the rock 0..1; the rest is limestone).
+func ground_extra(x: float, z: float) -> Vector2:
+	var f := forest(x, z)
+	var litter := smoothstep(0.2, 0.65, f) * (0.75 + 0.25 * noise.get_noise_2d(x * 2.0 + 40.0, z * 2.0))
+	# Warm sandstone: low down in the south of the scarp, the crag's skirt, the gorge banks.
+	var sand := 0.0
+	sand = maxf(sand, smoothstep(10.0, 60.0, z) * (1.0 - smoothstep(scarp_x(z) + 2.0, scarp_x(z) + 14.0, x)))
+	var cq := Vector2((x - 105.0) / 40.0, (z - 26.0) / 36.0).length()
+	sand = maxf(sand, 0.55 * (smoothstep(0.5, 0.8, cq) - smoothstep(1.1, 1.5, cq)))
+	if x > 85.0:
+		sand = maxf(sand, 0.6 * (1.0 - smoothstep(8.0, 16.0, absf(z - river_z(x)))))
+	sand *= 0.7 + 0.3 * noise.get_noise_2d(x * 1.3, z * 1.3 + 200.0)
+	return Vector2(clampf(litter, 0.0, 1.0), clampf(sand, 0.0, 1.0))
+
+
 ## Fallen boulders: under the scarp, around the crag, along the gorge, a few elsewhere.
 func rocks(x: float, z: float) -> float:
 	var r := 0.02
@@ -269,6 +285,91 @@ func cliffs(_x: float, _z: float) -> float:
 ## Fallen wood: in the woods.
 func deadwood(x: float, z: float) -> float:
 	return 0.04 + 0.35 * forest(x, z)
+
+
+# ---- The Greenwood's trees (see GREENWOOD_OVERHAUL.md 7.1) ---------------------------
+
+## Woodland density for the Woods scatter (the old forest map, all broadleaf now).
+func woodland(x: float, z: float) -> float:
+	return forest(x, z)
+
+
+## Lone trees in the open: hedgerow and field oaks, ash by the water.
+func lone_trees(x: float, z: float) -> float:
+	var open := 1.0 - smoothstep(0.08, 0.3, forest(x, z))
+	var dr := absf(z - river_z(x))
+	return open * (0.012 + 0.03 * (smoothstep(7.0, 10.0, dr) - smoothstep(14.0, 22.0, dr)))
+
+
+## Which species stands here. roll is 0..1 (seeded per spot). Target shares over
+## the zone: oak ~50%, beech ~20%, ash ~12%, birch ~10%, yew ~8% (brief section 4).
+func tree_kind(x: float, z: float, roll: float) -> String:
+	var f := forest(x, z)
+	var dr := absf(z - river_z(x))
+	var p := Vector2(x, z)
+	# Ominous places: churchyard, barrow, quarry brow, a dark pocket deep in the East Woods.
+	var yew := 0.0
+	yew = maxf(yew, 0.9 * (1.0 - smoothstep(18.0, 34.0, p.distance_to(Vector2(-50, 160)))))
+	yew = maxf(yew, 0.9 * (1.0 - smoothstep(18.0, 34.0, p.distance_to(Vector2(150, -140)))))
+	yew = maxf(yew, 0.5 * (1.0 - smoothstep(20.0, 40.0, p.distance_to(Vector2(-168, -100)))))
+	yew = maxf(yew, 0.8 * (1.0 - smoothstep(12.0, 26.0, p.distance_to(Vector2(146, 40)))))
+	yew = maxf(yew, 0.35 * (1.0 - smoothstep(10.0, 22.0, p.distance_to(Vector2(-44, -128)))))
+	# Yews love limestone: scattered along the scarp top, and a few in the deep woods.
+	yew = maxf(yew, 0.3 * (1.0 - smoothstep(scarp_x(z) - 14.0, scarp_x(z) - 3.0, x)))
+	yew = maxf(yew, 0.07 * smoothstep(0.6, 0.85, f))
+	# Birch: disturbed ground and edges: the quarry, the burned hamlet, scree, wood edges.
+	var birch := 0.13 + 0.25 * (smoothstep(0.08, 0.25, f) - smoothstep(0.35, 0.6, f))
+	birch = maxf(birch, 0.65 * (1.0 - smoothstep(25.0, 55.0, p.distance_to(Vector2(-145, -98)))))
+	birch = maxf(birch, 0.5 * (1.0 - smoothstep(20.0, 40.0, p.distance_to(Vector2(-74, 58)))))
+	var sx := scarp_x(z)
+	birch = maxf(birch, 0.35 * (smoothstep(sx - 2.0, sx + 2.0, x) - smoothstep(sx + 10.0, sx + 18.0, x)))
+	# Beech: the enclosed interiors of the deep woods.
+	var beech := 0.32 * smoothstep(0.55, 0.8, f) + 0.25 * smoothstep(90.0, 130.0, x) * smoothstep(0.5, 0.8, f)
+	# Ash: damp ground by the water, and the airy edges.
+	var ash := 0.18 + 0.3 * (1.0 - smoothstep(12.0, 30.0, dr)) + 0.1 * (1.0 - smoothstep(0.3, 0.6, f))
+	var dead := 0.04 + 0.08 * (1.0 - smoothstep(30.0, 50.0, p.distance_to(Vector2(105, 26))))
+	var oak := 1.0
+	var total := yew + birch + beech + ash + dead + oak
+	var r := roll * total
+	for pair: Array in [["yew", yew], ["birch", birch], ["beech", beech], ["ash", ash], ["oak_dead", dead]]:
+		if r < pair[1]:
+			return pair[0]
+		r -= pair[1]
+	return "oak"
+
+
+## Hand-placed landmark trees: [kind, x, z, yaw degrees, scale, variant].
+var landmark_trees := [
+	["oak_ancient", -10.0, 103.0, 20.0, 1.0, 0],   # the great oak on the village green
+	["oak_ancient", 49.0, 101.0, 140.0, 0.9, 1],   # the hollow oak at the East Lane bend
+	["oak_ancient", -44.0, -136.0, 250.0, 0.95, 2],  # on the shoulder of Knight's Gap
+	["oak_dead", 126.0, 44.0, 70.0, 1.35, 0],      # the stag-headed oak below the watchtower
+	["yew", -66.0, 160.0, 30.0, 1.15, 3],          # churchyard yews
+	["yew", -50.0, 177.0, 200.0, 1.0, 0],
+	["yew", -34.0, 168.0, 110.0, 0.9, 2],
+	["yew", 133.0, -153.0, 10.0, 1.1, 3],          # yews by the barrow
+	["yew", 168.0, -126.0, 150.0, 1.0, 1],
+	["yew", 160.0, -158.0, 260.0, 0.9, 0],
+]
+
+## Enemy spawn points (EnemySpawns in the scene): no trees or rocks on top of a fight.
+const SPAWN_CLEAR := [
+	Vector2(5, 32), Vector2(0, -110), Vector2(8, -116), Vector2(13, -46), Vector2(8, -28), Vector2(-40, 92),
+	Vector2(-72, 60), Vector2(-74, 44), Vector2(-90, 58), Vector2(-92, 6), Vector2(-112, 30), Vector2(-118, 39),
+	Vector2(93, 85), Vector2(65, -54), Vector2(101, -50), Vector2(120, -81), Vector2(129, -85), Vector2(113, -90),
+	Vector2(99, 30), Vector2(105, 47), Vector2(-152, -72), Vector2(-148, -98), Vector2(-163, -106), Vector2(10, 14),
+	Vector2(6, 46), Vector2(-52, 96), Vector2(28, -32), Vector2(6, -62), Vector2(-84, 30), Vector2(-116, -62),
+	Vector2(60, 88), Vector2(-30, 88),
+]
+
+
+func _init() -> void:
+	for s: Vector2 in SPAWN_CLEAR:
+		keep_clear.append(Vector3(s.x, s.y, 5.0))
+	keep_clear.append(Vector3(-166.5, -98.0, 7.0))  # the Gullet door
+	keep_clear.append(Vector3(-150.0, -86.0, 4.0))  # the quarry ladder
+	for lt: Array in landmark_trees:
+		keep_clear.append(Vector3(lt[1], lt[2], 6.0 if String(lt[0]).begins_with("oak_anc") else 3.5))
 
 
 ## How much of the woods here is fir rather than broadleaf (0..1).

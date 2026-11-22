@@ -652,6 +652,7 @@ func _rebuild() -> void:
 		_built.queue_free()
 	_built = Node3D.new()
 	_built.name = "Built"
+	_bake_extra()
 	# Ground mesh in chunks (so off-screen parts are skipped when drawing).
 	var chunk := 52
 	var c0 := 0
@@ -714,6 +715,7 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 	var verts := PackedVector3Array()
 	var norms := PackedVector3Array()
 	var cols := PackedColorArray()
+	var uvs := PackedVector2Array()
 	for iz in zs:
 		for ix in xs:
 			var i := iz * _n + ix
@@ -727,6 +729,7 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 			norms.append(nrm)
 			var slope := Vector2(hr - hl, hd - hu).length() / (2.0 * cell)
 			cols.append(_weights_at(i, v, slope))
+			uvs.append(_extra_at(ix, iz))
 	var idx := PackedInt32Array()
 	for z in hgt - 1:
 		for x in w - 1:
@@ -755,6 +758,7 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 				verts.append(verts[src] + Vector3.DOWN * 2.0)
 				norms.append(norms[src])
 				cols.append(cols[src])
+				uvs.append(uvs[src])
 			for j in run[1] - 1:
 				var a2: int = edge[run[0] + j]
 				var b2: int = edge[run[0] + j + 1]
@@ -766,6 +770,7 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 	arrays[Mesh.ARRAY_VERTEX] = verts
 	arrays[Mesh.ARRAY_NORMAL] = norms
 	arrays[Mesh.ARRAY_COLOR] = cols
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
 	arrays[Mesh.ARRAY_INDEX] = idx
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
@@ -775,6 +780,30 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 	if step > 1:
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if step > 2 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	return mi
+
+
+var _extra := PackedVector2Array()  # per 2 m cell: (leaf litter 0..1, sandstone 0..1)
+var _extra_n := 0
+
+
+## Extra ground data from the land script, sampled every 2 m: how much leaf
+## litter lies there (under the canopy) and how much the rock is sandstone
+## rather than limestone. Goes into the ground mesh's UV for the shader.
+func _bake_extra() -> void:
+	_extra_n = _n / 2 + 1
+	_extra.resize(_extra_n * _extra_n)
+	var has := land != null and land.has_method("ground_extra")
+	for jz in _extra_n:
+		for jx in _extra_n:
+			var x := -_half + jx * 2.0 * cell
+			var z := -_half + jz * 2.0 * cell
+			_extra[jz * _extra_n + jx] = land.call("ground_extra", x, z) if has else Vector2.ZERO
+
+
+func _extra_at(ix: int, iz: int) -> Vector2:
+	if _extra.is_empty():
+		return Vector2.ZERO
+	return _extra[mini(iz / 2, _extra_n - 1) * _extra_n + mini(ix / 2, _extra_n - 1)]
 
 
 func _weights_at(i: int, v: Vector3, slope: float) -> Color:

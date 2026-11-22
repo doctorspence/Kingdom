@@ -61,8 +61,6 @@
 [ext_resource type="Material" path="res://levels/common/materials/terrain_pbr.tres" id="terrain_mat"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/tithe_barn.tscn" id="tithe_barn"]
 [ext_resource type="Script" path="res://game/world/tithe_extras.gd" id="tithe_extras"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_dead.tscn" id="tree_dead"]
-[ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_pine.tscn" id="tree_pine"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/trophy_pole.tscn" id="trophy_scene"]
 [ext_resource type="Script" path="res://game/world/underground_cull.gd" id="ucull"]
 [ext_resource type="Script" path="res://game/world/distance_cull.gd" id="dcull"]
@@ -573,15 +571,19 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -255)
 [node name="Woods" type="Node3D" parent="." unique_id=1451982409 node_paths=PackedStringArray("terrain")]
 script = ExtResource("43_5qe01")
 terrain = NodePath("../Terrain")
-scenes = Array[PackedScene]([ExtResource("tree_pine"), ExtResource("tree_dead")])
-weights = PackedFloat32Array(5, 1)
-layer = "conifers"
-spacing = 5.5
+scenes = Array[PackedScene]([ExtResource("67_a6ns4")])
+weights = PackedFloat32Array()
+layer = "woodland"
+spacing = 5.0
 scatter_seed = 11
 keep_off_roads = 6.5
-scale_range = Vector2(0.8, 1.35)
+keep_off_tracks = 2.5
+scale_range = Vector2(0.85, 1.2)
 max_slope = 0.8
 beyond_edge = 40.0
+leaf_shadows = true
+species_from_land = true
+landmarks = true
 
 [node name="Rocks" type="Node3D" parent="." unique_id=1868252271 node_paths=PackedStringArray("terrain")]
 script = ExtResource("43_5qe01")
@@ -986,7 +988,7 @@ script = ExtResource("43_5qe01")
 terrain = NodePath("../Terrain")
 scenes = Array[PackedScene]([ExtResource("67_a6ns4")])
 weights = PackedFloat32Array()
-layer = "broadleaf"
+layer = "lone_trees"
 spacing = 7.0
 scatter_seed = 77
 keep_off_roads = 7.0
@@ -995,3 +997,4 @@ scale_range = Vector2(0.85, 1.25)
 max_slope = 0.7
 beyond_edge = 40.0
 leaf_shadows = true
+species_from_land = true
