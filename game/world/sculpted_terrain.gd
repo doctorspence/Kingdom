@@ -139,6 +139,11 @@ func _bake() -> void:
 	_half = size * 0.5
 	_n = int(round(size / cell)) + 1
 	var nn := _n * _n
+	var cache_key := _cache_key()
+	if cache_key != "" and _load_cache(cache_key):
+		clearings = land.clearings
+		_grid_ready = true
+		return
 	_h.resize(nn)
 	_rd.resize(nn)
 	_rw.resize(nn)
@@ -236,6 +241,76 @@ func _bake() -> void:
 			_apply_pad(Vector2(n3.position.x, n3.position.z), sz * 0.5, n3.rotation.y, float(n3.get_meta("pad_blend", 4.0)), y, false)
 	clearings = land.clearings
 	_grid_ready = true
+	if cache_key != "":
+		_save_cache(cache_key)
+
+
+# ---- bake cache ---------------------------------------------------------------
+# The bake is deterministic, so its result is stored in user:// and reused while the
+# land script, this script, the grid settings and the building pads are unchanged.
+# Exported builds (no script source) simply bake every time.
+
+func _cache_path() -> String:
+	return "user://terrain_cache_%s.bin" % name
+
+
+func _cache_key() -> String:
+	var own: Script = get_script()
+	if land_script == null or land_script.source_code.is_empty() or own.source_code.is_empty():
+		return ""
+	var s: String = land_script.source_code + get_script().source_code
+	if land.get_script() != land_script:
+		return ""
+	s += "|%d|%f|%f|%d" % [noise_seed, size, cell, backdrop]
+	if not pad_root.is_empty() and has_node(pad_root):
+		for c in get_node(pad_root).get_children():
+			var n3 := c as Node3D
+			if n3 != null and n3.has_meta("pad"):
+				s += "|%s %s %f %s %s %s" % [n3.name, n3.position, n3.rotation.y, n3.get_meta("pad"), n3.get_meta("pad_y", NAN), n3.get_meta("pad_blend", 4.0)]
+	return s.sha256_text()
+
+
+func _load_cache(key: String) -> bool:
+	var f := FileAccess.open(_cache_path(), FileAccess.READ)
+	if f == null:
+		return false
+	var raw_size := int(f.get_64())
+	var d: Variant = bytes_to_var(f.get_buffer(f.get_length() - 8).decompress(raw_size, FileAccess.COMPRESSION_ZSTD))
+	if not (d is Dictionary) or d.get("key", "") != key:
+		return false
+	_h = d.h
+	_rd = d.rd
+	_rw = d.rw
+	_td = d.td
+	_vd = d.vd
+	_wl = d.wl
+	_vw = d.vw
+	_pm = d.pm
+	_rock = d.rock
+	_fp = d.fp
+	_road_lines = d.road_lines
+	_river_line = d.river_line
+	_water_mid = d.water_mid
+	roads.clear()
+	for p in d.roads:
+		roads.append(p)
+	tracks.clear()
+	for p in d.tracks:
+		tracks.append(p)
+	return true
+
+
+func _save_cache(key: String) -> void:
+	var f := FileAccess.open(_cache_path(), FileAccess.WRITE)
+	if f == null:
+		return
+	var d := {"key": key, "h": _h, "rd": _rd, "rw": _rw, "td": _td, "vd": _vd, "wl": _wl, "vw": _vw, "pm": _pm,
+		"rock": _rock, "fp": _fp, "road_lines": _road_lines, "river_line": _river_line, "water_mid": _water_mid,
+		"roads": Array(roads), "tracks": Array(tracks)}
+	var raw := var_to_bytes(d)
+	f.store_64(raw.size())
+	f.store_buffer(raw.compress(FileAccess.COMPRESSION_ZSTD))
+	f.close()
 
 
 ## Height before roads, used for road profiles (natural land only).
