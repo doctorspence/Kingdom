@@ -1,6 +1,6 @@
 extends Node
-## Screenshots of the Tithelands at dusk, at night (with the lantern) and in the
-## rain (not a pass/fail check). Saves user://shots/time_*.png. Windowed.
+## Screenshots of the Tithelands at dawn, dusk, night (stars, lit windows) and in
+## the rain (not a pass/fail check). Saves user://shots/time_*.png. Windowed.
 
 func _ready() -> void:
 	_run.call_deferred()
@@ -14,14 +14,38 @@ func _run() -> void:
 	var player := get_tree().get_first_node_in_group(&"player") as Player
 	var dn := scene.get_node("DayNight") as DayNight
 	var terrain: ZoneTerrain = scene.get_node("Terrain")
-	var p := Vector3(-70, 0, 110)
-	player.global_position = Vector3(p.x, terrain.height_at(p.x, p.z) + 0.2, p.z)
-	player.reset_physics_interpolation()
-	player.camera_rig.yaw = deg_to_rad(40.0)
-	for shot in [["time_day", 0.3, false], ["time_dusk", dn.day_share() - 0.02, false], ["time_night", dn.day_share() + 0.1, false], ["time_rain", 0.3, true]]:
+	var ds := dn.day_share()
+	# name, time, rain, x, z, yaw, pitch
+	var shots := [
+		["time_day", 0.3, false, -70, 110, 40, 8],
+		["time_golden", ds * 0.92, false, -70, 110, 40, 8],
+		["time_dawn", ds * 0.05, false, -70, 110, 40, 8],
+		["time_dusk", ds - 0.02, false, -70, 110, 40, 8],
+		["time_night", ds + 0.1, false, -70, 110, 40, 8],
+		["time_night_sky", ds + 0.1, false, -70, 110, 40, 40],
+		["time_night_hamlet", ds + 0.1, false, -49, 77, 40, 6],
+		["time_night_farm", ds + 0.1, false, -44, 98, 180, 6],
+		["time_golden_farm", ds * 0.93, false, -44, 98, 180, 6],
+		["time_night_farm_near", ds + 0.1, false, -40, 93, 170, 4],
+		["time_night_farm_back", ds + 0.1, false, -37, 79, 0, 4],
+		["time_rain", 0.3, true, -70, 110, 40, 8],
+		["time_rain_hamlet", 0.3, true, -49, 77, 40, 6],
+	]
+	for a in OS.get_cmdline_user_args().slice(1):
+		shots = shots.filter(func(s): return s[0] in OS.get_cmdline_user_args())
+		break
+	for shot in shots:
+		var x: float = shot[3]
+		var z: float = shot[4]
+		player.global_position = Vector3(x, terrain.height_at(x, z) + 0.2, z)
+		player.velocity = Vector3.ZERO
+		player.reset_physics_interpolation()
+		player.camera_rig.yaw = deg_to_rad(shot[5])
+		player.camera_rig.pitch = deg_to_rad(shot[6])
 		dn.set_time(shot[1])
 		dn.set_rain(shot[2])
 		dn.rain_amount = 1.0 if shot[2] else 0.0
+		dn.wet_ground = 1.0 if shot[2] else 0.0
 		await get_tree().create_timer(2.0).timeout
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("user://shots/%s.png" % shot[0])

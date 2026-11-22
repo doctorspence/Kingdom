@@ -7,6 +7,7 @@ uniform vec3 base_color : source_color = vec3(0.07, 0.1, 0.04);
 uniform vec3 tip_color : source_color = vec3(0.4, 0.43, 0.2);
 uniform float sway = 0.12;
 uniform float wind_speed = 1.4;
+global uniform float wetness;  // 0 dry .. 1 soaked (set by DayNight)
 
 void vertex() {
 	float h = COLOR.r;
@@ -18,7 +19,11 @@ void vertex() {
 }
 
 void fragment() {
-	ALBEDO = mix(base_color, tip_color, COLOR.r) * (0.8 + 0.4 * COLOR.g);
-	ROUGHNESS = 0.9;
+	// Blades are two-sided: keep the normal pointing up on the back face too
+	// (Godot flips it there, which made half the blades black).
+	NORMAL = normalize((VIEW_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+	ALBEDO = mix(base_color, tip_color, COLOR.r) * (0.8 + 0.4 * COLOR.g) * (1.0 - 0.3 * wetness);
+	ROUGHNESS = mix(0.9, 0.5, wetness);
 	SPECULAR = 0.04;
+	BACKLIGHT = vec3(0.12, 0.14, 0.05) * COLOR.r;
 }

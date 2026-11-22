@@ -44,7 +44,8 @@ func _process(_delta: float) -> void:
 		_clouds.global_position = Vector3(cam.global_position.x, 230.0, cam.global_position.z)
 	# Brightness follows the sun (dim at night and in rain), so clouds never glow at night.
 	var b := clampf(sun.light_energy, 0.0, 1.0)
-	_cloud_mat.set_shader_parameter("tint", Color(0.5, 0.52, 0.56) * (0.25 + 0.75 * b))
+	var base := Color(0.5, 0.52, 0.56).lerp(Color(0.06, 0.07, 0.11), DayNight.night)
+	_cloud_mat.set_shader_parameter("tint", base * sun.light_color.lerp(Color.WHITE, 0.4) * (0.25 + 0.75 * b))
 
 
 # ---- checkpoint -------------------------------------------------------------

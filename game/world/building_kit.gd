@@ -17,6 +17,7 @@ class Ctx:
 	var m: Dictionary
 	var boxes: Array = []  # [Transform3D, Vector3 size]
 	var soot := 0.0  # chance a stone comes out blackened (burned buildings)
+	var lit := false  # windows hold a glow pane (lit at night by DayNight)
 
 	func _init(seed_: int, mats: Dictionary) -> void:
 		mb = Kit.MB.new(seed_)
@@ -88,6 +89,12 @@ static func materials(save := false) -> Dictionary:
 	dark.albedo_color = Color(0.025, 0.022, 0.02)
 	dark.roughness = 1.0
 	defs["dark"] = dark
+	var glow := StandardMaterial3D.new()  # window panes: emission is driven by DayNight at night
+	glow.albedo_color = Color(0.06, 0.045, 0.03)
+	glow.emission_enabled = true
+	glow.emission = Color(1.0, 0.6, 0.26)
+	glow.emission_energy_multiplier = 0.0
+	defs["glow"] = glow
 	var water := StandardMaterial3D.new()
 	water.albedo_color = Color(0.1, 0.13, 0.13, 0.82)
 	water.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -377,6 +384,8 @@ static func _window(c: Ctx, h: Vector4, state: int) -> void:
 	c.mb.box(c.m.dark, Vector3(cx, (h.z + h.w) * 0.5, -0.03), Vector3(w + 0.02, hh + 0.02, 0.05))
 	c.mb.box(c.m.oak, Vector3(cx, h.z - 0.07, 0.03), Vector3(w + 0.36, 0.14, T + 0.1), Basis(), 0.01)
 	c.mb.box(c.m.oak, Vector3(cx, h.w + 0.08, 0.0), Vector3(w + 0.3, 0.16, T + 0.02), Basis(), 0.01)
+	if c.lit:
+		c.mb.box(c.m.glow, Vector3(cx, (h.z + h.w) * 0.5, -0.012), Vector3(w - 0.02, hh - 0.02, 0.012))
 	var nm := 2 if w > 0.7 else 1
 	for i in nm:
 		c.mb.box(c.m.oak, Vector3(h.x + w * float(i + 1) / (nm + 1), (h.z + h.w) * 0.5, 0.0), Vector3(0.07, hh, 0.09), Basis(), 0.005)
@@ -584,6 +593,7 @@ static func smoke(parent: Node3D, pos: Vector3) -> void:
 static func cottage(mats: Dictionary, seed_: int, burned := false, lived := true) -> Node3D:
 	var c := Ctx.new(seed_, mats)
 	var r := c.rng
+	c.lit = lived and not burned
 	var hx := r.randf_range(2.75, 3.05) if burned else r.randf_range(2.85, 3.2)
 	var hz := r.randf_range(2.2, 2.45)
 	var pitch := r.randf_range(48.0, 54.0)

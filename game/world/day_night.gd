@@ -36,6 +36,11 @@ var _day := {}
 var _sync_timer := 0.0
 var _weather_timer := 0.0
 var _rain: GPUParticles3D
+var _stars: MeshInstance3D
+var _star_mat: ShaderMaterial
+var _glow: Material
+## How soaked the ground is: rises quickly in rain, dries slowly after.
+var wet_ground := 0.0
 var _rng := RandomNumberGenerator.new()
 
 
@@ -61,6 +66,7 @@ func _ready() -> void:
 			"sun_color": sun.light_color if sun else Color.WHITE,
 		}
 	_build_rain()
+	_build_stars()
 	_weather_timer = _rng.randf_range(weather_minutes.x, weather_minutes.y) * 60.0
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	var zone_audio := ZoneAudio.new()  # the zone's ambience and music
@@ -157,27 +163,39 @@ func _apply() -> void:
 	night = _night_amount()
 	Enemy.sight_mult = lerpf(1.0, 0.5, night)
 	var wet := rain_amount
+	# Golden hour: the low sun at dawn and dusk warms the light, sky and haze.
+	var ds := day_share()
+	var gold := 0.0
+	if time < ds:
+		var arc_d := time / ds
+		gold = (1.0 - smoothstep(0.02, 0.24, minf(arc_d, 1.0 - arc_d))) * (1.0 - night) * (1.0 - 0.7 * wet)
+	wet_ground = move_toward(wet_ground, 1.0 if raining else 0.0, get_process_delta_time() / (25.0 if raining else 150.0))
+	RenderingServer.global_shader_parameter_set(&"wetness", wet_ground * (1.0 - cave))
+	if _glow == null and ResourceLoader.exists("res://assets/buildings/materials/glow.tres"):
+		_glow = load("res://assets/buildings/materials/glow.tres")
+	if _glow:
+		# Lit windows: the only warm light in the dark, a little in heavy rain too.
+		(_glow as StandardMaterial3D).emission_energy_multiplier = maxf(smoothstep(0.2, 0.9, night), 0.3 * wet + 0.5 * gold) * 2.4 * (1.0 - cave)
 	if sun:
 		# The sun crosses the sky during the day; at night a dim blue moon stands in.
-		var ds := day_share()
 		var arc := clampf(time / ds, 0.0, 1.0) if time < ds else (time - ds) / (1.0 - ds)
 		sun.rotation_degrees = Vector3(-lerpf(15.0, 165.0, arc), 35.0, 0.0)
 		sun.light_energy = lerpf(_day.get("sun_energy", 0.9), 0.6, night) * lerpf(1.0, 0.6, wet)
-		sun.light_color = (_day.get("sun_color", Color.WHITE) as Color).lerp(Color(0.5, 0.6, 0.9), night)
+		sun.light_color = (_day.get("sun_color", Color.WHITE) as Color).lerp(Color(1.0, 0.6, 0.32), gold * 0.8).lerp(Color(0.5, 0.6, 0.9), night)
 		sun.shadow_enabled = night < 0.95
 	if _env:
 		_env.ambient_light_energy = lerpf(_day.ambient, 0.95, night) * lerpf(1.0, 0.8, wet)
 		# At night the light comes from a cold moonlit color, not the black sky.
 		_env.ambient_light_color = Color(0.32, 0.38, 0.55)
 		_env.ambient_light_sky_contribution = lerpf(1.0, 0.0, night)
-		_env.fog_light_color = (_day.fog_color as Color).lerp(Color(0.16, 0.19, 0.27), night).darkened(0.2 * wet)
+		_env.fog_light_color = (_day.fog_color as Color).lerp(Color(0.82, 0.55, 0.42), gold * 0.42).lerp(Color(0.16, 0.19, 0.27), night).darkened(0.2 * wet)
 		_env.fog_light_energy = lerpf(_day.fog_energy, 0.9, night)
 		_env.fog_density = _day.fog_density * lerpf(1.0, 1.8, wet) * lerpf(1.0, 1.3, night)
 		_env.volumetric_fog_albedo = (_day.vol_albedo as Color).lerp(Color(0.2, 0.23, 0.3), night)
 		_env.volumetric_fog_density = _day.vol_density * lerpf(1.0, 1.6, wet)
 		if _sky:
-			_sky.sky_top_color = (_day.sky_top as Color).lerp(Color(0.05, 0.06, 0.1), night).darkened(0.25 * wet)
-			_sky.sky_horizon_color = (_day.sky_horizon as Color).lerp(Color(0.13, 0.15, 0.21), night).darkened(0.25 * wet)
+			_sky.sky_top_color = (_day.sky_top as Color).lerp(Color(0.4, 0.42, 0.58), gold * 0.5).lerp(Color(0.05, 0.06, 0.1), night).darkened(0.25 * wet)
+			_sky.sky_horizon_color = (_day.sky_horizon as Color).lerp(Color(0.95, 0.58, 0.38), gold * 0.8).lerp(Color(0.13, 0.15, 0.21), night).darkened(0.25 * wet)
 			_sky.ground_horizon_color = _sky.sky_horizon_color
 	if cave > 0.0:
 		if sun:
@@ -190,6 +208,15 @@ func _apply() -> void:
 			_env.fog_light_color = _env.fog_light_color.lerp(Color(0.08, 0.07, 0.06), cave)
 			_env.fog_light_energy = lerpf(_env.fog_light_energy, 0.3, cave)
 			_env.volumetric_fog_albedo = _env.volumetric_fog_albedo.lerp(Color(0.25, 0.2, 0.15), cave)
+	if _stars:
+		var cam_s := get_viewport().get_camera_3d()
+		if cam_s:
+			_stars.global_position = cam_s.global_position
+		var vis := smoothstep(0.35, 0.95, night) * (1.0 - cave) * (1.0 - wet)
+		_stars.visible = vis > 0.01
+		_star_mat.set_shader_parameter("amount", vis)
+		if sun:
+			_star_mat.set_shader_parameter("moon_dir", sun.global_transform.basis.z)
 	if _rain:
 		_rain.amount_ratio = wet * (1.0 - cave)
 		_rain.emitting = wet * (1.0 - cave) > 0.01
@@ -198,17 +225,60 @@ func _apply() -> void:
 			_rain.global_position = cam.global_position + Vector3.UP * 8.0
 
 
+
+## A dome of stars and a moon that follow the camera, faded in with the night.
+func _build_stars() -> void:
+	var sh := Shader.new()
+	sh.code = """shader_type spatial;
+render_mode unshaded, cull_front, depth_draw_never, fog_disabled, blend_add;
+uniform float amount = 0.0;
+uniform vec3 moon_dir = vec3(0.0, 1.0, 0.0);
+varying vec3 dir;
+float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
+void vertex() { dir = VERTEX; }
+void fragment() {
+	vec3 d = normalize(dir);
+	vec3 p = d * 110.0;
+	vec3 g = floor(p);
+	vec3 f = fract(p) - 0.5;
+	float r = hash(g);
+	float star = step(0.985, r) * smoothstep(0.22, 0.0, length(f)) * (0.55 + 0.45 * sin(TIME * (1.0 + r * 3.0) + r * 40.0));
+	star *= 0.6 + 1.6 * hash(g + 7.0);
+	float horizon = smoothstep(0.04, 0.4, d.y);
+	float md = dot(d, normalize(moon_dir));
+	float moon = smoothstep(0.9990, 0.9995, md) + 0.25 * smoothstep(0.985, 0.9995, md);
+	vec3 col = vec3(0.75, 0.82, 1.0) * star * horizon + vec3(0.85, 0.9, 1.0) * moon * 1.4;
+	ALBEDO = col * amount;
+	ALPHA = 1.0;
+}
+"""
+	_star_mat = ShaderMaterial.new()
+	_star_mat.shader = sh
+	var sphere := SphereMesh.new()
+	sphere.radius = 480.0  # inside the camera far plane (600)
+	sphere.height = 960.0
+	sphere.radial_segments = 48
+	sphere.rings = 24
+	sphere.material = _star_mat
+	_stars = MeshInstance3D.new()
+	_stars.name = "Stars"
+	_stars.mesh = sphere
+	_stars.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_stars.extra_cull_margin = 16384.0
+	add_child(_stars)
+
+
 ## Streaks of rain falling around the camera.
 func _build_rain() -> void:
 	_rain = GPUParticles3D.new()
 	_rain.name = "Rain"
-	_rain.amount = 3000
+	_rain.amount = 6000
 	_rain.lifetime = 1.2
 	_rain.emitting = false
 	_rain.visibility_aabb = AABB(Vector3(-25, -20, -25), Vector3(50, 30, 50))
 	var pm := ParticleProcessMaterial.new()
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
-	pm.emission_box_extents = Vector3(22, 1, 22)
+	pm.emission_box_extents = Vector3(24, 1, 24)
 	pm.direction = Vector3(0.1, -1, 0.05)
 	pm.spread = 3.0
 	pm.initial_velocity_min = 16.0
@@ -216,11 +286,11 @@ func _build_rain() -> void:
 	pm.gravity = Vector3(0, -9.8, 0)
 	_rain.process_material = pm
 	var streak := QuadMesh.new()
-	streak.size = Vector2(0.015, 0.5)
+	streak.size = Vector2(0.01, 0.55)
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0.7, 0.75, 0.82, 0.35)
+	mat.albedo_color = Color(0.72, 0.77, 0.85, 0.22)
 	mat.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
 	mat.billboard_keep_scale = true
 	streak.material = mat

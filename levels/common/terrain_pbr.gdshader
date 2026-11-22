@@ -32,6 +32,7 @@ uniform vec3 mud_tint : source_color = vec3(0.6, 0.55, 0.5);
 uniform vec3 path_tint : source_color = vec3(0.72, 0.66, 0.58);
 uniform vec3 rock_tint : source_color = vec3(0.62, 0.62, 0.64);
 uniform float normal_strength = 1.0;
+global uniform float wetness;  // 0 dry .. 1 soaked (set by DayNight)
 uniform float blend_sharpness = 3.0;
 
 varying vec3 wpos;
@@ -103,9 +104,11 @@ void fragment() {
 	// Rock takes over the more it is a rock vertex (steep ground or pits).
 	vec3 n_world = normalize(mix(ground_n, rock_normal, w.w));
 
-	ALBEDO = grass * w.x + mud * w.y + path * w.z + rock * w.w;
+	ALBEDO = (grass * w.x + mud * w.y + path * w.z + rock * w.w) * (1.0 - 0.35 * wetness);
 	ROUGHNESS = clamp(texture(grass_r, uv * grass_scale).r * w.x + texture(mud_r, uv * mud_scale).r * w.y
 			+ texture(path_r, uv * path_scale).r * w.z + rock_rough * w.w, 0.55, 1.0);
+	// Wet ground shines, most on mud and roads.
+	ROUGHNESS = mix(ROUGHNESS, 0.3, wetness * clamp(0.4 + 0.6 * w.y + 0.6 * w.z, 0.0, 1.0));
 	SPECULAR = 0.1;
 	NORMAL = normalize((VIEW_MATRIX * vec4(n_world, 0.0)).xyz);
 }
