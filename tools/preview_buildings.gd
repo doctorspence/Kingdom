@@ -36,7 +36,7 @@ func _run() -> void:
 		var b := (load("res://assets/buildings/%s.scn" % nm) as PackedScene).instantiate() as Node3D
 		add_child(b)
 		for v: Array in VIEWS:
-			var scale := 0.6 if String(nm).begins_with("tent") else (1.6 if String(nm).begins_with("barn") or String(nm).begins_with("tower") or String(nm).begins_with("mill") else 1.0)
+			var scale := 0.6 if String(nm).begins_with("tent") else (1.6 if String(nm).begins_with("barn") or String(nm).begins_with("tower") or String(nm).begins_with("mill") else (2.0 if String(nm).begins_with("chapel") or String(nm).begins_with("barrow") else 1.0))
 			cam.position = (v[1] as Vector3) * Vector3(scale, scale, scale)
 			cam.look_at((v[2] as Vector3) * scale)
 			await _frames(20)

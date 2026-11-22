@@ -709,7 +709,7 @@ static func chapel(mats: Dictionary, seed_: int) -> Node3D:
 	arch_ring(c, wa, wb, th, wl * 0.5, 0.8, 4.3, 5.2, _top_at(west_p, wl * 0.5))
 	# bell-cote on the apex: two piers, a pointed top and a bell
 	var apex_y := 5.9 + hz * 0.62
-	c.mb.push(Transform3D(Basis(Vector3.UP, PI * 0.5), Vector3(-hx, apex_y - 0.05, 0)))
+	c.mb.push(Transform3D(Basis(Vector3.UP, PI * 0.5), Vector3(-hx, apex_y - 0.4, 0)))
 	for sx: float in [-0.42, 0.42]:
 		c.mb.box(c.m.stone_q, Vector3(sx, 0.7, 0), Vector3(0.36, 1.4, 0.55), Basis(), 0.015)
 	for i in 5:
@@ -718,7 +718,7 @@ static func chapel(mats: Dictionary, seed_: int) -> Node3D:
 	c.mb.cyl(mats.iron, Vector3(0, 1.2, 0), Vector3(0, 0.62, 0), 0.1, 0.3, 10, 0.01)
 	c.mb.cyl(mats.iron, Vector3(-0.42, 1.28, 0), Vector3(0.42, 1.28, 0), 0.03, 0.03, 6)
 	c.mb.pop()
-	c.col(Vector3(-hx, apex_y + 0.6, 0), Vector3(0.6, 1.4, 1.3))
+	c.col(Vector3(-hx, apex_y + 0.3, 0), Vector3(0.6, 1.4, 1.3))
 	# --- nave east wall with the chancel arch
 	var east_p: Array = [Vector2(1.3, 6.3), Vector2(2.0, 5.7), Vector2(3.9, 6.6), Vector2(4.6, 6.0), Vector2(5.9, 5.5)]
 	var ea := Vector2(hx, hz)
@@ -807,7 +807,7 @@ static func barrow(mats: Dictionary, seed_: int) -> Node3D:
 		c.col(kp + Vector3(0, 0.1, 0), Vector3(rr * 1.3, rr * 1.0, rr * 1.3), Basis(Vector3.UP, -a))
 	# facade: upright slabs in a crescent, the portal in the middle
 	var fr := 5.7
-	for k in [-2, -1, 1, 2]:
+	for k: int in [-2, -1, 1, 2]:
 		var a := PI * 0.5 + k * 0.42
 		_menhir(c, Vector3(cos(a) * fr, 0.0, sin(a) * fr), r.randf_range(2.0, 2.9), r.randf_range(0.9, 1.3), -a + PI * 0.5)
 	for sx: float in [-1.0, 1.0]:

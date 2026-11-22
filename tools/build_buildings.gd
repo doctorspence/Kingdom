@@ -27,6 +27,8 @@ func _init() -> void:
 		"mill_0": func() -> Node3D: return BL.mill(mats, 3),
 		"tower_0": func() -> Node3D: return BL.watchtower(mats, 2),
 		"weir_0": func() -> Node3D: return BL.weir(mats, 4),
+		"chapel_0": func() -> Node3D: return BL.chapel(mats, 6),
+		"barrow_0": func() -> Node3D: return BL.barrow(mats, 8),
 	}
 	var only := OS.get_cmdline_user_args()
 	for nm: String in jobs:

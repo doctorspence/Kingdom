@@ -102,8 +102,8 @@ var flats := PackedVector4Array([
 	Vector4(102, -51, 6, 4),      # woods camp north
 	Vector4(40, 127, 7, 4),       # the camp hearth's yard
 	Vector4(-152, 16, 5, 3),      # the overlook on the cliff top
-	Vector4(-48, 160, 11, 12),    # RESERVED: ruined chapel (not built yet)
-	Vector4(150, -140, 9, 12),    # RESERVED: old barrow (not built yet)
+	Vector4(-48, 160, 11, 12),    # ruined chapel (built: props/chapel.tscn)
+	Vector4(150, -140, 9, 12),    # old barrow (built: props/barrow.tscn)
 ])
 
 # ---- trampled dirt: (x, z, radius).
@@ -115,7 +115,7 @@ var clearings := PackedVector3Array([
 
 # Places kept clear of trees and rocks: (x, z, radius).
 var keep_clear := PackedVector3Array([
-	Vector3(-48, 160, 14), Vector3(150, -140, 12), Vector3(-152, 16, 7), Vector3(-4, 111, 18),
+	Vector3(-49, 160, 15), Vector3(150, -140, 17), Vector3(-152, 16, 7), Vector3(-4, 111, 18),
 	Vector3(105, 26, 21), Vector3(0, -108, 19), Vector3(122, -84, 16), Vector3(-112, 32, 14),
 	Vector3(-150, -100, 24), Vector3(29, -33, 10), Vector3(40, 127, 10),
 	Vector3(94, 86, 10), Vector3(64, -55, 10), Vector3(102, -51, 10), Vector3(15, 64, 4),

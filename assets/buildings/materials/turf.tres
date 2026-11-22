@@ -1,0 +1,16 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/grass/color.jpg" id="1_2ucr5"]
+[ext_resource type="Texture2D" path="res://assets/textures/grass/normal.jpg" id="2_gsqmh"]
+[ext_resource type="Texture2D" path="res://assets/textures/grass/rough.jpg" id="3_1pekf"]
+
+[resource]
+albedo_color = Color(0.6, 0.66, 0.4, 1)
+albedo_texture = ExtResource("1_2ucr5")
+metallic_specular = 0.25
+roughness_texture = ExtResource("3_1pekf")
+normal_enabled = true
+normal_scale = 0.8
+normal_texture = ExtResource("2_gsqmh")
+uv1_scale = Vector3(0.22, 0.22, 0.22)
+texture_filter = 5
