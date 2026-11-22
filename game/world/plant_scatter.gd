@@ -25,6 +25,8 @@ extends Node3D
 @export var max_slope := 0.8
 ## Only steep ground (rise per meter); 0 = off.
 @export var cliff := 0.0
+## With `cliff` on: no pieces on ground steeper than this (sheer walls are rock already).
+@export var cliff_max := 1.5
 @export var collide := false
 @export var shadows := true
 @export var seen_from := 90.0
@@ -87,7 +89,7 @@ func _build() -> void:
 			var gz := terrain.height_at(p.x, p.y + 1.0) - terrain.height_at(p.x, p.y - 1.0)
 			var slope := Vector2(gx, gz).length() * 0.5
 			if cliff > 0.0:
-				if slope < cliff:
+				if slope < cliff or slope > cliff_max:
 					continue
 				pass  # any turn: chunks of rock bedded into the slope
 			elif slope > max_slope:
