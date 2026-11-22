@@ -324,7 +324,7 @@ static func mill(mats: Dictionary, seed_: int) -> Node3D:
 	var L := hz * 2.0 + th
 	# ground floor in stone: door in the front gable, window at the back, axle through the -z side
 	BK.rubble(c, Vector2(hx, hz + th * 0.5), Vector2(hx, -hz - th * 0.5), -0.6, stone_top, th, [Vector4(L * 0.5 - 0.8, L * 0.5 + 0.8, 0.1, 2.75)])
-	BK.rubble(c, Vector2(hx - th * 0.5, -hz), Vector2(-hx + th * 0.5, -hz), -0.6, stone_top, th, [Vector4(hx - th * 0.5 - 0.3, hx - th * 0.5 + 0.3, 2.3, 2.9)], false)
+	BK.rubble(c, Vector2(hx - th * 0.5, -hz), Vector2(-hx + th * 0.5, -hz), -0.6, stone_top, th, [Vector4(hx - th * 0.5 - 0.3, hx - th * 0.5 + 0.3, 1.2, 1.9)], false)
 	BK.rubble(c, Vector2(-hx, -hz - th * 0.5), Vector2(-hx, hz + th * 0.5), -0.6, stone_top, th, [Vector4(L * 0.5 - 0.4, L * 0.5 + 0.4, 1.3, 2.0)])
 	BK.rubble(c, Vector2(-hx + th * 0.5, hz), Vector2(hx - th * 0.5, hz), -0.6, stone_top, th, [], false)
 	BK._push_wall(c, Vector2(hx, hz + th * 0.5), Vector2(hx, -hz - th * 0.5))
@@ -356,30 +356,68 @@ static func mill(mats: Dictionary, seed_: int) -> Node3D:
 	c.mb.cyl(mats.rope, Vector3(hx + 1.46, hy - 0.3, 0), Vector3(hx + 1.46, 2.6, 0), 0.02, 0.02, 4, 0.0, false)
 	c.mb.cyl(mats.iron, Vector3(hx + 1.46, 2.6, 0), Vector3(hx + 1.46, 2.35, 0.05), 0.025, 0.02, 4)
 	c.mb.pop()
-	# wheel pit along the +x wall (scene axes from here)
+	# Wheel pit and race (scene axes from here: local x -> world -z toward the pond, local z -> world +x
+	# downstream). The ground is cut away around the pit (land script, "late" cuts): pond water is ~1.06 m
+	# below the mill floor, the tail water ~1.55 m. A sluice in the pond-side wall lets the pond in, the
+	# wheel dips into it, a stone lip drops the water into a walled tailrace that runs on to the river.
 	var pit_x := hx + th * 0.5
-	c.mb.box(mats.water, Vector3(pit_x + 0.95, 0.05, 0), Vector3(1.9, 0.02, 6.4))
-	c.mb.box(mats.dark, Vector3(pit_x + 0.95, -0.5, 0), Vector3(1.9, 0.1, 6.4))
-	BK.rubble(c, Vector2(pit_x + 2.0, 3.3), Vector2(pit_x + 2.0, -3.3), -0.9, 0.55, 0.45)
-	BK.rubble(c, Vector2(pit_x, 3.2), Vector2(pit_x + 2.25, 3.2), -0.9, 0.3, 0.4, [], false)
-	BK.rubble(c, Vector2(pit_x + 2.25, -3.2), Vector2(pit_x, -3.2), -0.9, 0.3, 0.4, [], false)
-	c.mb.cyl(mats.oak, Vector3(hx - 0.3, 2.6, 0), Vector3(pit_x + 1.6, 2.6, 0), 0.2, 0.2, 10, 0.02, true)
+	var wx0 := pit_x
+	var wx1 := pit_x + 2.0
+	var wcx := (wx0 + wx1) * 0.5
+	var pond_y := -1.06
+	var tail_y := -1.55
+	var tail_len := 5.0
+	var wheel_y := 1.55
+	# water: pit and sluice stub at pond level, tailrace lower
+	c.mb.box(mats.water, Vector3(wcx, pond_y, 0), Vector3(wx1 - wx0, 0.02, 6.4))
+	c.mb.box(mats.water, Vector3(wx1 + 0.55, pond_y, -2.0), Vector3(1.1, 0.02, 1.6))
+	c.mb.box(mats.water, Vector3(wcx, tail_y, 3.2 + tail_len * 0.5), Vector3(wx1 - wx0, 0.02, tail_len))
+	# floors under the water
+	c.mb.box(mats.dark, Vector3(wcx, -1.5, 0), Vector3(wx1 - wx0, 0.1, 6.4))
+	c.mb.box(mats.dark, Vector3(wcx, -1.99, 3.2 + tail_len * 0.5), Vector3(wx1 - wx0, 0.1, tail_len))
+	# the lip the water spills over, between pit and tailrace
+	c.mb.box(c.stone(), Vector3(wcx, -1.22, 3.35), Vector3(wx1 - wx0, 0.36, 0.5), Basis(), 0.02)
+	# pit walls: west end closed; the mill side and pond side run on as the tailrace walls
+	BK.rubble(c, Vector2(wx0, -3.2), Vector2(wx1 + 0.2, -3.2), -2.0, 0.3, 0.4, [], false)
+	BK.rubble(c, Vector2(wx0 + 0.0, 3.2 + tail_len), Vector2(wx0 + 0.0, 3.2), -2.2, 0.28, 0.35, [], false)
+	BK.rubble(c, Vector2(wx1 + 0.12, 3.2), Vector2(wx1 + 0.12, 3.2 + tail_len), -2.2, 0.35, 0.4, [], false)
+	# pond side of the pit, with a 1.6 m opening for the sluice
+	BK.rubble(c, Vector2(wx1 + 0.12, 3.3), Vector2(wx1 + 0.12, -1.2), -2.0, 0.55, 0.45, [], false)
+	BK.rubble(c, Vector2(wx1 + 0.12, -2.8), Vector2(wx1 + 0.12, -3.3), -2.0, 0.55, 0.45, [], false)
+	# sluice stub: two short walls out to the pond edge
+	BK.rubble(c, Vector2(wx1 + 0.12, -1.2), Vector2(wx1 + 1.3, -1.2), -2.0, 0.25, 0.35, [], false)
+	BK.rubble(c, Vector2(wx1 + 1.3, -2.8), Vector2(wx1 + 0.12, -2.8), -2.0, 0.25, 0.35, [], false)
+	# sluice gate: two oak posts, a cross beam with a winch, and a plank gate raised a hand's breadth
+	for zz: float in [-1.2, -2.8]:
+		c.mb.box(mats.oak, Vector3(wx1 + 0.12, 0.6, zz), Vector3(0.3, 3.2, 0.3), Basis(), 0.015)
+	c.mb.box(mats.oak, Vector3(wx1 + 0.12, 1.8, -2.0), Vector3(0.28, 0.26, 1.9), Basis(), 0.015)
+	c.mb.box(mats.planks, Vector3(wx1 + 0.12, 0.45, -2.0), Vector3(0.1, 1.6, 1.3), Basis(), 0.01)
+	c.mb.cyl(mats.oak_grey, Vector3(wx1 - 0.12, 1.95, -2.55), Vector3(wx1 - 0.12, 1.95, -1.45), 0.09, 0.09, 8)
+	c.mb.box(mats.iron, Vector3(wx1 + 0.12, 1.15, -2.0), Vector3(0.04, 1.5, 0.05))
+	# axle through the mill wall at wheel height, bearing post on the pond side
+	c.mb.cyl(mats.oak, Vector3(hx - 0.3, wheel_y, 0), Vector3(pit_x + 1.6, wheel_y, 0), 0.2, 0.2, 10, 0.02, true)
 	for xx: float in [pit_x + 0.08, pit_x + 1.5]:
-		c.mb.cyl(mats.iron, Vector3(xx, 2.6, 0), Vector3(xx + 0.12, 2.6, 0), 0.23, 0.23, 10)
-	# bearing post at the far end of the axle
-	c.mb.box(mats.oak, Vector3(pit_x + 1.75, 1.3, 0), Vector3(0.3, 3.2, 0.36), Basis(), 0.015)
-	c.col(Vector3(pit_x + 1.0, 0.0, 0), Vector3(2.4, 0.6, 6.8))
-	c.col(Vector3(pit_x + 0.95, 2.8, 0), Vector3(0.8, 5.4, 5.4))
+		c.mb.cyl(mats.iron, Vector3(xx, wheel_y, 0), Vector3(xx + 0.12, wheel_y, 0), 0.23, 0.23, 10)
+	c.mb.box(mats.oak, Vector3(pit_x + 1.75, wheel_y * 0.5, 0), Vector3(0.3, wheel_y + 1.0, 0.36), Basis(), 0.015)
+	# collision: the wheel, and low walls along the trench so nobody falls in by accident
+	c.col(Vector3(pit_x + 0.95, wheel_y + 0.2, 0), Vector3(0.8, 5.0, 5.4))
+	c.col(Vector3(wx1 + 0.12, 0.2, 2.0), Vector3(0.45, 2.4, 2.4))
+	c.col(Vector3(wx1 + 0.12, 0.2, -3.1), Vector3(0.45, 2.4, 0.6))
+	c.col(Vector3(wx1 + 0.12, 0.2, 3.2 + tail_len * 0.5), Vector3(0.45, 2.4, tail_len))
+	c.col(Vector3(wx0, 0.2, 3.2 + tail_len * 0.5), Vector3(0.4, 2.4, tail_len))
+	c.col(Vector3(wcx, 0.2, -3.2), Vector3(2.4, 2.4, 0.4))
 	var root := BK.finish(c, "Building")
 	var wc := BK.Ctx.new(seed_ + 1, mats)
 	_wheel(wc, 2.7, 0.7)
 	var wheel := MeshInstance3D.new()
 	wheel.name = "Wheel"
 	wheel.mesh = wc.mb.build()
-	wheel.position = Vector3(pit_x + 0.95, 2.6, 0)
+	wheel.position = Vector3(pit_x + 0.95, wheel_y, 0)
 	wheel.set_script(SPIN)
 	wheel.set("speed", -0.35)
 	root.add_child(wheel)
+	# foam where the water falls over the lip and spreads into the tailrace
+	root.add_child(_foam(Vector3(wcx, tail_y + 0.04, 4.2), Vector2(wx1 - wx0, 1.8), 0.8))
 	return root
 
 

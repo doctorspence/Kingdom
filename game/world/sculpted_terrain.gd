@@ -227,7 +227,8 @@ func _bake() -> void:
 	# 4. Cuts (quarry floors, benches, ramps).
 	var pre := _h.duplicate()
 	for c in land.cuts:
-		_apply_cut(c, pre)
+		if not c.get("late", false):
+			_apply_cut(c, pre)
 	# 5. Flat spots and building pads.
 	for f in land.flats:
 		_apply_pad(Vector2(f.x, f.y), Vector2(f.z, f.z), 0.0, f.w, NAN, true)
@@ -239,6 +240,11 @@ func _bake() -> void:
 			var sz: Vector2 = n3.get_meta("pad")
 			var y: float = n3.get_meta("pad_y", NAN)
 			_apply_pad(Vector2(n3.position.x, n3.position.z), sz * 0.5, n3.rotation.y, float(n3.get_meta("pad_blend", 4.0)), y, false)
+	# 6. Late cuts: carved after the pads (trenches beside buildings, like the mill race).
+	var after_pads := _h.duplicate()
+	for c in land.cuts:
+		if c.get("late", false):
+			_apply_cut(c, after_pads)
 	clearings = land.clearings
 	_grid_ready = true
 	if cache_key != "":

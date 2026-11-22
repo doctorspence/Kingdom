@@ -69,6 +69,11 @@ var cuts := [
 	{"center": Vector2(-150, -100), "half": Vector2(21, 16), "floor": 12.0, "edge": 1.6, "mode": "carve", "rock": 0.55, "rough": 3.0},
 	{"center": Vector2(-155, -113.5), "half": Vector2(15, 3.4), "floor": 18.0, "edge": 0.8, "mode": "fill", "rock": 0.7},
 	{"center": Vector2(-135, -114), "half": Vector2(6.5, 2.6), "floor": 18.0, "floor_end": 12.2, "edge": 1.0, "mode": "fill", "rock": 0.5},
+	# The mill race (cut after the pads; the walls come with the mill model, see building_landmarks.gd):
+	# the wheel pit, the sluice stub to the pond, and the tailrace down to the river below the weir.
+	{"center": Vector2(-104, -1.3), "half": Vector2(3.4, 1.0), "floor": 6.3, "edge": 0.25, "mode": "carve", "rock": 0.8, "late": true},
+	{"center": Vector2(-106, -3.0), "half": Vector2(0.8, 0.7), "floor": 6.3, "edge": 0.25, "mode": "carve", "rock": 0.8, "late": true},
+	{"center": Vector2(-98.2, -1.3), "half": Vector2(2.8, 1.0), "floor": 5.85, "edge": 0.25, "mode": "carve", "rock": 0.8, "late": true},
 ]
 
 # ---- fields: ploughed strips (ridge and furrow) and pasture, each walled in
