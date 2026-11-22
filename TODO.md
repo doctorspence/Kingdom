@@ -6,7 +6,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 
 **First milestone: 3 friends can clear one zone and one dungeon.**
 
-> **Where we are (2026-11-21):** Phases 1-9 are built (gray-block pass) and all automated checks pass. Waiting on **your playtest**: the Tithelands, the Gullet and Brother Tallow, and the 3-friends milestone. You said movement and combat now feel good. **Next up:** the class overhaul in [`CLASS_PLAN.md`](CLASS_PLAN.md), starting at Priority 1 (planned only, nothing built). See [`HANDOFF.md`](HANDOFF.md) for how to resume.
+> **Where we are (2026-11-21):** Phases 1-9 are built (gray-block pass) and all automated checks pass. Waiting on **your playtest**: the Tithelands (now much more detailed), the new bandit Gullet and Harl the Delver, and the 3-friends milestone. You said movement and combat now feel good. **Next up:** the class overhaul in [`CLASS_PLAN.md`](CLASS_PLAN.md), starting at Priority 1 (planned only, nothing built). See [`HANDOFF.md`](HANDOFF.md) for how to resume.
 
 ---
 
