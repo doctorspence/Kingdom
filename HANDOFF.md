@@ -30,7 +30,8 @@ Phases 1-15 are built: movement, combat, multiplayer, three classes with talents
 - **`two_handed = true`** must stay in `data/weapons/weapon_executioner_greatsword.tres` and `weapon_lantern_staff.tres`; the editor dropped it once when re-saving. If class or loot checks fail on "two-handed", look there.
 - **Editor churn:** opening the project in the editor regenerates `.import` files and rebakes `assets/buildings/*.scn`. Commit it as its own commit.
 - **Two sessions at once:** another session may own `game/world/gullet.gd` or the terrain files. Check `git status` first and commit only your own files.
-- **Friends build:** `build/Kingdom-windows.zip` is out of date (before the camp, environment pass, new Gullet and equipment). Re-export steps are in README.md "Play with friends".
+- **Friends build:** `build/Kingdom-windows.zip` was re-exported 2026-11-22 (176 MB; test keys unbound). Re-export after later changes: README.md "Play with friends".
+- **Performance:** `Godot --path . --resolution 1920x1080 --script res://tests/run.gd -- perf_zone` prints FPS at 10 fixed spots (options: `nogrow`, `noomni`, `hide:Node,Node`, `only:spot`). Terrain LODs are in `sculpted_terrain.gd`, `distance_cull.gd` and `shadow_budget.gd` are nodes in tithelands.tscn.
 - **Commits** use the neutral local identity "Kingdom Dev".
 - **Brother Tallow and the acolytes** are unused data (the old Gullet). Keep or delete is an open decision in `PRIORITIES.md` P2.
 - **Reusing art:** shared materials are in `levels/common/materials/`, textures in `assets/textures/`, camp props in `levels/tithelands/props/`. Do not use height fog in an environment (it buries underground rooms).

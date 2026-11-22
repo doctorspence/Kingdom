@@ -242,4 +242,4 @@ Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces th
 - [x] 9. Retire the old Gullet (Tallow kept, saves migrate)
 - [x] 10. Atmosphere: torch and fire light, campfire, deep gloom (the existing cave sound bed and boss track play; quarry-specific audio later)
 - [x] 11a. Tests and 3-player check pass (2026-11-22)
-- [ ] 11b. Re-export the friends build (see PRIORITIES.md P1)
+- [x] 11b. Friends build re-exported (2026-11-22)
