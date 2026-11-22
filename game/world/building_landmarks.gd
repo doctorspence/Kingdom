@@ -590,3 +590,262 @@ void fragment() {
 	mi.position = at
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return mi
+
+
+# ---------------------------------------------------------------- ruined chapel
+
+## Wall a→b with a broken top: profile = [Vector2(u_end, top_y), ...] from the start. Holes are in the
+## whole wall's frame (Vector4 u0, u1, y0, y1); each piece gets the part that falls inside it.
+static func ruin_wall(c: BK.Ctx, a: Vector2, b: Vector2, y0: float, profile: Array, th: float, holes: Array = []) -> void:
+	var dir := (b - a).normalized()
+	var u0 := 0.0
+	for k in profile.size():
+		var p: Vector2 = profile[k]
+		var u1 := p.x
+		var hs: Array = []
+		for h: Vector4 in holes:
+			if h.y <= u0 + 0.02 or h.x >= u1 - 0.02:
+				continue
+			hs.append(Vector4(maxf(h.x, u0) - u0, minf(h.y, u1) - u0, h.z, h.w))
+		BK.rubble(c, a + dir * u0, a + dir * u1, y0, p.y, th, hs, k == 0 or k == profile.size() - 1)
+		u0 = u1
+
+
+static func _top_at(profile: Array, u: float) -> float:
+	for p: Vector2 in profile:
+		if u <= p.x:
+			return p.y
+	return (profile[profile.size() - 1] as Vector2).y
+
+
+## Pointed (equilateral) arch opening as stepped holes: width w from u_c, springing at ys, sill y0.
+static func arch_holes(u_c: float, w: float, y0: float, ys: float, step := 0.2) -> Array:
+	var out: Array = [Vector4(u_c - w * 0.5, u_c + w * 0.5, y0, ys)]
+	var apex := w * sqrt(3.0) * 0.5
+	var dy := 0.0
+	while dy < apex - 0.05:
+		var top := minf(dy + step, apex)
+		var half := (sqrt(maxf(w * w - top * top, 0.0)) - w * 0.5)
+		if half < 0.06:
+			break
+		out.append(Vector4(u_c - half, u_c + half, ys + dy, ys + top))
+		dy = top
+	return out
+
+
+## Dressed stones round the arch on the outer face of wall a→b, plus a sill and jamb stones.
+static func arch_ring(c: BK.Ctx, a: Vector2, b: Vector2, th: float, u_c: float, w: float, y0: float, ys: float, top_y: float) -> void:
+	var apex := ys + w * sqrt(3.0) * 0.5
+	if top_y < apex + 0.15:
+		return
+	BK._push_wall(c, a, b)
+	var n := 7
+	for side: float in [1.0, -1.0]:
+		var cen := Vector2(u_c + side * w * 0.5, ys)
+		for i in n:
+			var f := (float(i) + 0.5) / n
+			var phi := lerpf(PI, PI * 2.0 / 3.0, f) if side > 0.0 else lerpf(0.0, PI / 3.0, f)
+			var rad := w + 0.15
+			var pos := cen + Vector2(cos(phi), sin(phi)) * rad
+			c.mb.box(c.m.stone_q, Vector3(pos.x, pos.y, th * 0.5 + 0.01), Vector3(0.3, 0.37, 0.12), Basis(Vector3(0, 0, 1), phi), 0.01)
+	for sx: float in [-1.0, 1.0]:  # jamb stones
+		var yy := y0 + 0.2
+		while yy < ys - 0.1:
+			c.mb.box(c.m.stone_q, Vector3(u_c + sx * (w * 0.5 + 0.16), yy, th * 0.5 + 0.01), Vector3(0.3, 0.34, 0.12), Basis(), 0.01)
+			yy += 0.4
+	c.mb.box(c.m.stone_q, Vector3(u_c, y0 - 0.04, th * 0.5 + 0.02), Vector3(w + 0.5, 0.1, 0.3), Basis(), 0.01)
+	c.mb.pop()
+
+
+static func _grave(c: BK.Ctx, at: Vector3, yaw: float, h: float) -> void:
+	var r := c.rng
+	c.mb.push(Transform3D(Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, r.randf_range(-0.12, 0.12)) * Basis(Vector3(0, 0, 1), r.randf_range(-0.1, 0.1)), at))
+	c.mb.box(c.stone(), Vector3(0, h * 0.5 - 0.1, 0), Vector3(0.62, h + 0.1, 0.14), Basis(), 0.03)
+	c.mb.box(c.stone(), Vector3(0, h - 0.05, 0), Vector3(0.5, 0.16, 0.12), Basis(), 0.04)
+	c.mb.pop()
+	c.col(at + Vector3(0, h * 0.5, 0), Vector3(0.62, h, 0.3), Basis(Vector3.UP, yaw))
+
+
+## Ruined chapel on the south ridge: a stone nave and chancel with pointed lancet windows, the west
+## gable and bell-cote still standing, the north wall mostly down, roof beams fallen, flagged floor,
+## altar, rubble, a stone cross and leaning gravestones. Nave along x, west door at x = -5.
+## Origin at the nave's centre; the whole footprint spans x -5.5 .. 9.3 (z +-3.4).
+static func chapel(mats: Dictionary, seed_: int) -> Node3D:
+	var c := BK.Ctx.new(seed_, mats)
+	var r := c.rng
+	var hx := 5.0
+	var hz := 2.95
+	var th := 0.75
+	var y0 := -0.55
+	# --- nave south wall: three lancets
+	var south_p: Array = [Vector2(1.0, 6.3), Vector2(2.6, 6.0), Vector2(3.4, 4.9), Vector2(4.6, 5.8), Vector2(6.0, 6.1), Vector2(7.1, 3.6), Vector2(8.4, 5.2), Vector2(9.2, 6.0), Vector2(10.0, 6.3)]
+	var south_h: Array = []
+	var wins_s := [2.1, 5.0, 7.9]
+	for u: float in wins_s:
+		south_h.append_array(arch_holes(u, 0.9, 1.7, 3.6))
+	var sa := Vector2(-hx, hz)
+	var sb := Vector2(hx, hz)
+	ruin_wall(c, sa, sb, y0, south_p, th, south_h)
+	for u: float in wins_s:
+		arch_ring(c, sa, sb, th, u, 0.9, 1.7, 3.6, _top_at(south_p, u))
+	# --- nave north wall: low, one window stump
+	var north_p: Array = [Vector2(1.4, 2.2), Vector2(3.0, 1.4), Vector2(4.2, 3.8), Vector2(5.3, 2.6), Vector2(6.6, 4.6), Vector2(7.8, 1.8), Vector2(10.0, 3.2)]
+	ruin_wall(c, Vector2(hx, -hz), Vector2(-hx, -hz), y0, north_p, th, arch_holes(5.0, 0.9, 1.7, 3.6))
+	# --- west gable: door and a window above, stepped gable rising to the bell-cote
+	var wl := hz * 2.0
+	var west_p: Array = []
+	var uu := 0.0
+	while uu < wl - 0.01:
+		uu = minf(uu + 0.6, wl)
+		var mid := uu - 0.3
+		west_p.append(Vector2(uu, 5.9 + (wl * 0.5 - absf(mid - wl * 0.5)) * 0.62))
+	var west_h: Array = []
+	west_h.append_array(arch_holes(wl * 0.5, 1.5, -0.55, 2.2))
+	west_h.append_array(arch_holes(wl * 0.5, 0.8, 4.3, 5.2))
+	var wa := Vector2(-hx, -hz)
+	var wb := Vector2(-hx, hz)
+	ruin_wall(c, wa, wb, y0, west_p, th, west_h)
+	arch_ring(c, wa, wb, th, wl * 0.5, 1.5, 0.0, 2.2, _top_at(west_p, wl * 0.5))
+	arch_ring(c, wa, wb, th, wl * 0.5, 0.8, 4.3, 5.2, _top_at(west_p, wl * 0.5))
+	# bell-cote on the apex: two piers, a pointed top and a bell
+	var apex_y := 5.9 + hz * 0.62
+	c.mb.push(Transform3D(Basis(Vector3.UP, PI * 0.5), Vector3(-hx, apex_y - 0.05, 0)))
+	for sx: float in [-0.42, 0.42]:
+		c.mb.box(c.m.stone_q, Vector3(sx, 0.7, 0), Vector3(0.36, 1.4, 0.55), Basis(), 0.015)
+	for i in 5:
+		var f := float(i) / 4.0
+		c.mb.box(c.m.stone_q, Vector3(0, 1.45 + (1.0 - absf(f - 0.5) * 2.0) * 0.28, 0), Vector3(0.9 - absf(f - 0.5) * 1.3, 0.2, 0.55), Basis(), 0.015)
+	c.mb.cyl(mats.iron, Vector3(0, 1.2, 0), Vector3(0, 0.62, 0), 0.1, 0.3, 10, 0.01)
+	c.mb.cyl(mats.iron, Vector3(-0.42, 1.28, 0), Vector3(0.42, 1.28, 0), 0.03, 0.03, 6)
+	c.mb.pop()
+	c.col(Vector3(-hx, apex_y + 0.6, 0), Vector3(0.6, 1.4, 1.3))
+	# --- nave east wall with the chancel arch
+	var east_p: Array = [Vector2(1.3, 6.3), Vector2(2.0, 5.7), Vector2(3.9, 6.6), Vector2(4.6, 6.0), Vector2(5.9, 5.5)]
+	var ea := Vector2(hx, hz)
+	var eb := Vector2(hx, -hz)
+	ruin_wall(c, ea, eb, y0, east_p, th, arch_holes(hz, 2.2, -0.55, 3.3))
+	arch_ring(c, ea, eb, th, hz, 2.2, 0.0, 3.3, 6.0)
+	# --- chancel
+	var chx := 8.8
+	var chz := 2.15
+	var cth := 0.7
+	ruin_wall(c, Vector2(hx, chz), Vector2(chx, chz), y0, [Vector2(1.0, 4.5), Vector2(2.0, 3.4), Vector2(3.8, 4.2)], cth, arch_holes(2.4, 0.6, 1.8, 3.2))
+	var ce_p: Array = [Vector2(1.0, 4.2), Vector2(1.7, 5.0), Vector2(2.6, 5.8), Vector2(3.3, 5.0), Vector2(4.3, 4.0)]
+	ruin_wall(c, Vector2(chx, chz), Vector2(chx, -chz), y0, ce_p, cth, arch_holes(chz, 1.1, 1.6, 3.8))
+	arch_ring(c, Vector2(chx, chz), Vector2(chx, -chz), cth, chz, 1.1, 1.6, 3.8, 5.8)
+	ruin_wall(c, Vector2(chx, -chz), Vector2(hx, -chz), y0, [Vector2(1.5, 3.0), Vector2(2.4, 1.2), Vector2(3.8, 2.4)], cth)
+	# --- flagged floor: nave and chancel, some stones missing or heaved
+	for fx in range(-4, 5):
+		for fz in range(-2, 3):
+			if r.randf() < 0.22:
+				continue
+			c.mb.box(c.m.stone_b, Vector3(fx * 0.95 + r.randf_range(-0.04, 0.04), 0.03 + r.randf_range(0.0, 0.05), fz * 0.95 + r.randf_range(-0.04, 0.04)), Vector3(0.9, 0.12, 0.9), Basis(Vector3.UP, r.randf_range(-0.05, 0.05)), 0.02)
+	for fx in range(0, 4):
+		for fz in range(-1, 2):
+			if r.randf() < 0.2:
+				continue
+			c.mb.box(c.m.stone_b, Vector3(5.85 + fx * 0.95, 0.06, fz * 0.95), Vector3(0.9, 0.14, 0.9), Basis(Vector3.UP, r.randf_range(-0.05, 0.05)), 0.02)
+	# altar block with a cracked top slab
+	c.mb.box(c.m.stone_q, Vector3(8.0, 0.45, 0), Vector3(0.9, 0.9, 1.7), Basis(), 0.02)
+	c.mb.box(c.m.stone_q, Vector3(8.0, 0.97, 0.35), Vector3(1.05, 0.14, 1.0), Basis(Vector3.UP, 0.04), 0.02)
+	c.mb.box(c.m.stone_q, Vector3(8.05, 0.99, -0.5), Vector3(1.0, 0.1, 0.62), Basis(Vector3(0, 0, 1), 0.22), 0.02)
+	c.col(Vector3(8.0, 0.5, 0), Vector3(0.9, 1.0, 1.7))
+	# --- fallen roof timbers and rubble
+	for i in 6:
+		var p0 := Vector3(r.randf_range(-3.8, 4.0), r.randf_range(0.2, 1.2), r.randf_range(-2.0, 2.0))
+		var d := Vector3(r.randf_range(-1.0, 1.0), 0.0, r.randf_range(-1.0, 1.0)).normalized()
+		var p1 := p0 + d * r.randf_range(2.2, 4.2) + Vector3(0, r.randf_range(-0.7, 0.2), 0)
+		p1.y = maxf(p1.y, 0.25)
+		BK.beam(c, mats.oak_grey if i % 2 == 0 else mats.charred, p0, p1, 0.26, 0.3, 0.02)
+		c.col((p0 + p1) * 0.5, Vector3(p0.distance_to(p1), 0.3, 0.3), Kit.basis_x(p1 - p0))
+	for i in 16:
+		var side := 1.0 if r.randf() < 0.5 else -1.0
+		var px := r.randf_range(-4.6, 9.0)
+		var inside := r.randf() < 0.45
+		var pz := side * (r.randf_range(0.8, 2.0) if inside else r.randf_range(3.5, 4.6))
+		var rr := r.randf_range(0.28, 0.75)
+		c.mb.blob(c.stone(), Vector3(px, rr * 0.25, pz), Vector3(rr * 1.4, rr * 0.7, rr), r.randi() % 997, 0.3, 1.5, 6, 10, Basis(Vector3.UP, r.randf() * TAU), true, 0.7)
+		c.col(Vector3(px, rr * 0.25, pz), Vector3(rr * 1.6, rr * 1.0, rr * 1.4))
+	# --- west cross, graves
+	c.mb.box(c.m.stone_q, Vector3(-8.2, 0.12, 1.4), Vector3(1.0, 0.25, 1.0), Basis(), 0.02)
+	c.mb.box(c.m.stone_q, Vector3(-8.2, 0.37, 1.4), Vector3(0.7, 0.25, 0.7), Basis(), 0.02)
+	c.mb.box(c.m.stone_q, Vector3(-8.2, 1.4, 1.4), Vector3(0.3, 2.0, 0.3), Basis(Vector3(0, 0, 1), 0.03), 0.015)
+	c.mb.box(c.m.stone_q, Vector3(-8.2, 2.05, 1.4), Vector3(0.28, 0.3, 1.0), Basis(), 0.015)
+	c.col(Vector3(-8.2, 1.1, 1.4), Vector3(0.9, 2.2, 0.9))
+	for i in 11:
+		var gx := -4.0 + i * 1.15 + r.randf_range(-0.2, 0.2)
+		_grave(c, Vector3(gx, 0.0, hz + 2.1 + r.randf_range(0.0, 2.4)), PI + r.randf_range(-0.25, 0.25), r.randf_range(0.55, 1.1))
+	for i in 4:
+		_grave(c, Vector3(-6.5 - i * 0.2, 0.0, -hz - 1.4 - i * 1.2), r.randf_range(-0.3, 0.3), r.randf_range(0.5, 0.9))
+	return BK.finish(c, "Chapel")
+
+
+# ---------------------------------------------------------------- old barrow
+
+## Grassed burial mound (radius 7.6, 3 m high) ringed with kerbstones, a crescent facade of upright
+## stones with a sealed trilithon portal on +z, a ring of leaning standing stones and a flat altar slab.
+## Origin at the mound's centre on the ground. The dome has its own collision, so it can be climbed.
+static func barrow(mats: Dictionary, seed_: int) -> Node3D:
+	var c := BK.Ctx.new(seed_, mats)
+	var r := c.rng
+	var R := 7.6
+	var H := 3.0
+	var prof := PackedVector2Array()
+	for i in 13:
+		var f := float(i) / 12.0
+		prof.append(Vector2(R * (1.0 - f) + 0.01, -0.3 + (H + 0.3) * (0.5 + 0.5 * cos(PI * (1.0 - f)))))
+	prof[prof.size() - 1] = Vector2(0.01, H)
+	c.mb.lathe(mats.turf, prof, 28, true)
+	# kerbstones round the foot (the forecourt side stays open)
+	for i in 26:
+		var a := TAU * float(i) / 26.0 + r.randf_range(-0.04, 0.04)
+		if absf(wrapf(a - PI * 0.5, -PI, PI)) < 1.0:
+			continue
+		var rr := r.randf_range(0.55, 0.85)
+		var kp := Vector3(cos(a) * (R - 0.1), rr * 0.2, sin(a) * (R - 0.1))
+		c.mb.blob(mats.stone_a if i % 2 == 0 else mats.stone_c, kp, Vector3(rr * 1.2, rr * 0.8, rr), r.randi() % 997, 0.22, 1.4, 6, 10, Basis(Vector3.UP, -a), true, 0.65)
+		c.col(kp + Vector3(0, 0.1, 0), Vector3(rr * 1.3, rr * 1.0, rr * 1.3), Basis(Vector3.UP, -a))
+	# facade: upright slabs in a crescent, the portal in the middle
+	var fr := 5.7
+	for k in [-2, -1, 1, 2]:
+		var a := PI * 0.5 + k * 0.42
+		_menhir(c, Vector3(cos(a) * fr, 0.0, sin(a) * fr), r.randf_range(2.0, 2.9), r.randf_range(0.9, 1.3), -a + PI * 0.5)
+	for sx: float in [-1.0, 1.0]:
+		_menhir(c, Vector3(sx * 1.1, 0.0, fr), 2.3, 0.7, 0.0)
+	c.mb.box(mats.stone_c, Vector3(0, 2.55, fr), Vector3(3.0, 0.6, 0.9), Basis(Vector3(0, 0, 1), 0.015), 0.03)
+	c.col(Vector3(0, 2.55, fr), Vector3(3.0, 0.6, 0.9))
+	c.mb.box(mats.stone_b, Vector3(0.05, 1.0, fr + 0.05), Vector3(1.6, 2.1, 0.55), Basis(Vector3(1, 0, 0), -0.05), 0.04)
+	c.mb.box(mats.dark, Vector3(0, 1.0, fr - 0.45), Vector3(1.5, 2.0, 0.2))
+	c.col(Vector3(0, 1.0, fr), Vector3(1.6, 2.1, 0.6))
+	# standing stones in a wide ring, one fallen
+	for i in 9:
+		var a := TAU * float(i) / 9.0 + r.randf_range(-0.08, 0.08)
+		var rad := r.randf_range(11.2, 12.4)
+		var pos := Vector3(cos(a) * rad, 0.0, sin(a) * rad)
+		if i == 4:
+			c.mb.blob(mats.stone_b, pos + Vector3(0, 0.45, 0), Vector3(1.7, 0.55, 0.6), 91, 0.12, 1.2, 7, 12, Basis(Vector3.UP, -a + 0.4), true)
+			c.col(pos + Vector3(0, 0.5, 0), Vector3(3.2, 1.0, 1.1), Basis(Vector3.UP, -a + 0.4))
+		else:
+			_menhir(c, pos, r.randf_range(1.9, 3.3), r.randf_range(0.8, 1.2), -a + PI * 0.5)
+	# altar slab in the forecourt
+	c.mb.box(mats.stone_q, Vector3(0.9, 0.35, 8.6), Vector3(0.5, 0.7, 0.9), Basis(), 0.03)
+	c.mb.box(mats.stone_q, Vector3(-0.9, 0.35, 8.6), Vector3(0.5, 0.7, 0.9), Basis(), 0.03)
+	c.mb.box(mats.stone_b, Vector3(0, 0.82, 8.6), Vector3(2.9, 0.22, 1.3), Basis(Vector3.UP, 0.05), 0.03)
+	c.col(Vector3(0, 0.5, 8.6), Vector3(2.9, 1.0, 1.3))
+	var root := BK.finish(c, "Barrow")
+	# the mound's own collision: a trimesh of the dome so the slope can be walked
+	var dome := BK.Ctx.new(1, mats)
+	dome.mb.lathe(mats.turf, prof, 28, true)
+	var cs := CollisionShape3D.new()
+	cs.name = "Dome"
+	cs.shape = dome.mb.build().create_trimesh_shape()
+	root.get_node("Collision").add_child(cs)
+	return root
+
+
+## One upright standing stone: a faceted block leaning a little, with its collision.
+static func _menhir(c: BK.Ctx, at: Vector3, h: float, w: float, yaw: float) -> void:
+	var r := c.rng
+	var lean := Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, r.randf_range(-0.07, 0.07)) * Basis(Vector3(0, 0, 1), r.randf_range(-0.07, 0.07))
+	c.mb.blob(c.stone(), at + Vector3(0, h * 0.45, 0), Vector3(w * 0.55, h * 0.55, w * 0.3), r.randi() % 997, 0.16, 1.3, 7, 10, lean, true)
+	c.col(at + Vector3(0, h * 0.45, 0), Vector3(w * 0.9, h * 0.9, w * 0.55), Basis(Vector3.UP, yaw))

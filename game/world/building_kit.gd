@@ -81,6 +81,7 @@ static func materials(save := false) -> Dictionary:
 		"canvas_red": _tex("plaster", Color(0.45, 0.2, 0.15), 0.9, 0.5, true),
 		"hide": _tex("plaster", Color(0.34, 0.25, 0.18), 1.2, 0.8, true),
 		"rope": _tex("thatch", Color(0.62, 0.5, 0.33), 2.5, 0.6),
+		"turf": _tex("grass", Color(0.6, 0.66, 0.4), 0.22, 0.8),
 		"water": null,
 	}
 	var iron := Kit.iron().duplicate() as StandardMaterial3D

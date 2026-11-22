@@ -468,7 +468,7 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 			if not (_in_pillar(a) and _in_pillar(b) and _in_pillar(c)):
 				back_v.append_array(PackedVector3Array([a, b, c]))
 				back_n.append_array(PackedVector3Array([ns[ia], ns[ib], ns[ic]]))
-			var amp := 0.22 if n.y > 0.7 else 2.3
+			var amp := 0.34 if n.y > 0.7 else 2.3
 			cut_v.append_array(PackedVector3Array([a, b, c]))
 			cut_n.append(n)
 			cut_amp.append(amp)
@@ -497,6 +497,7 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 		farr[Mesh.ARRAY_COLOR] = _tint_colors(_floor_v, true)
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, farr)
 		mesh.surface_set_material(1, _floor_material())
+		_scatter_pebbles()
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	add_child(mi)
@@ -1066,19 +1067,96 @@ var _floor_n := PackedVector3Array()
 
 
 ## Pebbly gravel for the cave floor (ambientCG Rocks011).
-func _floor_material() -> StandardMaterial3D:
-	var m := StandardMaterial3D.new()
-	m.albedo_texture = load("res://assets/textures/scree/color.jpg")
-	m.albedo_color = Color(0.85, 0.76, 0.68)
-	m.normal_enabled = true
-	m.normal_texture = load("res://assets/textures/scree/normal.jpg")
-	m.normal_scale = 1.0
-	m.roughness_texture = load("res://assets/textures/scree/rough.jpg")
-	m.uv1_triplanar = true
-	m.uv1_scale = Vector3(0.36, 0.36, 0.36)
-	m.vertex_color_use_as_albedo = true
-	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+func _floor_material() -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = load("res://game/world/shaders/cave_floor.gdshader")
+	m.set_shader_parameter("scree_c", load("res://assets/textures/scree/color.jpg"))
+	m.set_shader_parameter("scree_n", load("res://assets/textures/scree/normal.jpg"))
+	m.set_shader_parameter("scree_r", load("res://assets/textures/scree/rough.jpg"))
+	m.set_shader_parameter("dirt_c", load("res://assets/textures/dirt_dark/color.jpg"))
+	m.set_shader_parameter("dirt_n", load("res://assets/textures/dirt_dark/normal.jpg"))
+	m.set_shader_parameter("dirt_r", load("res://assets/textures/dirt_dark/rough.jpg"))
+	m.set_shader_parameter("mud_c", load("res://assets/textures/mud/color.jpg"))
+	var pn := FastNoiseLite.new()
+	pn.frequency = 0.04
+	pn.fractal_octaves = 4
+	pn.seed = 17
+	var pt := NoiseTexture2D.new()
+	pt.noise = pn
+	pt.seamless = true
+	pt.width = 512
+	pt.height = 512
+	m.set_shader_parameter("patch_tex", pt)
 	return m
+
+
+## Scatter pebbles, flakes and small stones over the floor so the ground has real clutter.
+func _scatter_pebbles() -> void:
+	if _floor_v.size() < 3:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 2024
+	var tris := _floor_v.size() / 3
+	var areas := PackedFloat32Array()
+	var total := 0.0
+	for t in tris:
+		var a := _floor_v[t * 3]
+		var ar := ((_floor_v[t * 3 + 1] - a).cross(_floor_v[t * 3 + 2] - a)).length() * 0.5
+		total += ar
+		areas.append(total)
+	var count := clampi(int(total * 1.6), 500, 9000)
+	var sm := SphereMesh.new()
+	sm.radial_segments = 6
+	sm.rings = 3
+	sm.radius = 0.5
+	sm.height = 1.0
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = load("res://assets/textures/scree/color.jpg")
+	mat.albedo_color = Color(0.75, 0.68, 0.62)
+	mat.normal_enabled = true
+	mat.normal_texture = load("res://assets/textures/scree/normal.jpg")
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3.ONE * 2.0
+	mat.vertex_color_use_as_albedo = true
+	mat.roughness = 0.85
+	sm.material = mat
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = true
+	mm.mesh = sm
+	mm.instance_count = count
+	for i in count:
+		var r := rng.randf() * total
+		var lo := 0
+		var hi := tris - 1
+		while lo < hi:
+			var mid := (lo + hi) / 2
+			if areas[mid] < r:
+				lo = mid + 1
+			else:
+				hi = mid
+		var a := _floor_v[lo * 3]
+		var b := _floor_v[lo * 3 + 1]
+		var c := _floor_v[lo * 3 + 2]
+		var u := rng.randf()
+		var v := rng.randf()
+		if u + v > 1.0:
+			u = 1.0 - u
+			v = 1.0 - v
+		var p := a + (b - a) * u + (c - a) * v
+		# Mostly tiny grit, a few fist-sized stones.
+		var s := rng.randf_range(0.03, 0.09)
+		if rng.randf() < 0.07:
+			s = rng.randf_range(0.12, 0.28)
+		var bs := Basis.from_euler(Vector3(rng.randf() * TAU, rng.randf() * TAU, rng.randf() * TAU))
+		bs = bs.scaled(Vector3(s * rng.randf_range(0.8, 1.5), s * rng.randf_range(0.4, 0.8), s * rng.randf_range(0.8, 1.3)))
+		mm.set_instance_transform(i, Transform3D(bs, p + Vector3(0, s * 0.12, 0)))
+		var g := rng.randf_range(0.55, 1.0)
+		mm.set_instance_color(i, Color(g, g * 0.95, g * 0.9))
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mmi)
 
 
 # ---- Atmosphere: ground fog, hazy light shafts, waterfalls ---------------------
