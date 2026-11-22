@@ -737,7 +737,8 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 			cols.append(_weights_at(i, v, slope))
 			var ex := _extra_at(ix, iz)
 			uvs.append(Vector2(ex.x, ex.y))
-			uv2s.append(Vector2(ex.z, 0.0))
+			# UV2.y: distance from the road centre (meters) for wheel ruts; +100 marks a lane (grass strip).
+			uv2s.append(Vector2(ex.z, _rd[i] + (100.0 if _rw[i] < 2.4 else 0.0)))
 	var idx := PackedInt32Array()
 	for z in hgt - 1:
 		for x in w - 1:

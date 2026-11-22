@@ -118,6 +118,15 @@ void fragment() {
 	mud = mix(mud, dirt, smoothstep(0.4, 0.65, n2)) * (0.85 + 0.3 * n1);
 	mud = mix(mud, litter * 0.8, litter_w * 0.5);
 	vec3 path = texture(path_c, uv * path_scale).rgb * path_tint * (0.85 + 0.3 * n2);
+	// Wheel ruts: two darker, wetter bands about 0.8 m either side of the road's centre;
+	// the narrow lanes keep a grassy strip down the middle where hooves and wheels don't reach.
+	bool lane = UV2.y > 50.0;
+	float rd = lane ? UV2.y - 100.0 : UV2.y;
+	float rut = (1.0 - smoothstep(0.12, 0.3, abs(rd - 0.8))) * (0.75 + 0.25 * n3);
+	path = mix(path, mud * 0.75, rut * 0.65);
+	if (lane) {
+		path = mix(path, grass * 0.85, (1.0 - smoothstep(0.2, 0.45, rd)) * 0.6 * smoothstep(0.35, 0.7, n2 + 0.3));
+	}
 	// The quarry floor: pale stone dust and chippings trodden into the mud.
 	mud = mix(mud, lime_mid * 1.05 * (0.8 + 0.35 * n3) * (0.9 + 0.2 * n2), worked * 0.65);
 
@@ -173,6 +182,8 @@ void fragment() {
 			+ texture(path_r, uv * path_scale).r * w.z + rock_rough * w.w, 0.55, 1.0);
 	// Wet ground shines, most on mud and roads.
 	ROUGHNESS = mix(ROUGHNESS, 0.3, wetness * clamp(0.4 + 0.6 * w.y + 0.6 * w.z, 0.0, 1.0));
+	// Water stands in the ruts after rain.
+	ROUGHNESS = mix(ROUGHNESS, 0.08, wetness * rut * w.z);
 	SPECULAR = 0.1;
 	NORMAL = normalize((VIEW_MATRIX * vec4(n_world, 0.0)).xyz);
 }

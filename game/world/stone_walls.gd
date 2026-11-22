@@ -77,6 +77,13 @@ func _wall(w: Dictionary) -> void:
 	var height := float(w.get("height", 1.1))
 	var pier_every := float(w.get("piers", 0.0))
 	var gate := int(w.get("gate", -1))
+	# Ruined walls: tumbled gaps (share of the length) and runs of different heights.
+	var ruin := float(w.get("ruin", 0.0))
+	var rrng := RandomNumberGenerator.new()
+	rrng.seed = hash(pts)
+	var walked := 0.0
+	var bucket := -1
+	var fallen := false
 	# Walk the line in 0.25 m steps and cut it into free runs.
 	var runs: Array = []
 	var run := PackedVector2Array()
@@ -87,6 +94,11 @@ func _wall(w: Dictionary) -> void:
 		for k in n:
 			var p := a.lerp(b, float(k) / n)
 			var gap := i == gate and k > n / 2 - 7 and k < n / 2 + 7  # a 3.5 m field gate
+			walked += 0.25
+			if ruin > 0.0 and int(walked / 2.5) != bucket:
+				bucket = int(walked / 2.5)
+				fallen = rrng.randf() < ruin
+			gap = gap or fallen
 			if _free(p) and not gap:
 				run.append(p)
 			elif run.size() > 0:
@@ -97,7 +109,7 @@ func _wall(w: Dictionary) -> void:
 	for r in runs:
 		if r.size() < 8:
 			continue  # less than 2 m: not worth a stub
-		_run(r, height, pier_every)
+		_run(r, height * (rrng.randf_range(0.35, 1.0) if ruin > 0.0 else 1.0), pier_every)
 
 
 func _run(r: PackedVector2Array, height: float, pier_every: float) -> void:

@@ -98,6 +98,9 @@ var walls := [
 	{"points": PackedVector2Array([Vector2(-4.5, 124), Vector2(-5, 140), Vector2(-6, 160)]), "height": 1.1, "piers": 12.0},
 	{"points": PackedVector2Array([Vector2(5, 126), Vector2(6, 140), Vector2(7, 160)]), "height": 1.1, "piers": 12.0},
 	{"points": PackedVector2Array([Vector2(12, -36), Vector2(38, -36), Vector2(38, -64), Vector2(12, -64), Vector2(12, -36)]), "height": 1.6, "piers": 13.0},
+	# Old boundary walls, long abandoned, tumbling away into the East Woods.
+	{"points": PackedVector2Array([Vector2(62, 127), Vector2(84, 120), Vector2(108, 124), Vector2(131, 139), Vector2(150, 160)]), "height": 0.95, "piers": 0.0, "ruin": 0.4},
+	{"points": PackedVector2Array([Vector2(118, 104), Vector2(122, 84), Vector2(132, 70)]), "height": 0.85, "piers": 0.0, "ruin": 0.5},
 ]
 
 # ---- level spots: (x, z, radius, blend). Camps, the crag summit, the checkpoint

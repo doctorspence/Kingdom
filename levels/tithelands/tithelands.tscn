@@ -64,6 +64,7 @@
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/trophy_pole.tscn" id="trophy_scene"]
 [ext_resource type="Script" path="res://game/world/underground_cull.gd" id="ucull"]
 [ext_resource type="Script" path="res://game/world/quarry_works.gd" id="qworks"]
+[ext_resource type="Script" path="res://game/world/story_props.gd" id="sprops"]
 [ext_resource type="Script" path="res://game/world/distance_cull.gd" id="dcull"]
 [ext_resource type="Script" path="res://game/world/shadow_budget.gd" id="sbudget"]
 [ext_resource type="Script" path="res://game/world/vendor.gd" id="vendor"]
@@ -900,11 +901,11 @@ code_ferns = false
 [node name="UndergroundCull" type="Node" parent="." unique_id=1034587490]
 script = ExtResource("ucull")
 underground = Array[NodePath]([NodePath("../Gullet")])
-surface = Array[NodePath]([NodePath("../Bracken"), NodePath("../Brambles"), NodePath("../Holly"), NodePath("../Bluebells"), NodePath("../Foxgloves"), NodePath("../WildGarlic"), NodePath("../Sorrel"), NodePath("../Ivy"), NodePath("../Fungi"), NodePath("../Scree"), NodePath("../QuarryWorks"), NodePath("../Woods"), NodePath("../Oaks"), NodePath("../Grass"), NodePath("../Clutter"), NodePath("../Rocks"), NodePath("../Highcrown"), NodePath("../StoneWalls"), NodePath("../Dressing"), NodePath("../Shrubs"), NodePath("../Ferns"), NodePath("../Weeds"), NodePath("../Boulders"), NodePath("../CliffFaces"), NodePath("../Deadwood")])
+surface = Array[NodePath]([NodePath("../StoryProps"), NodePath("../Bracken"), NodePath("../Brambles"), NodePath("../Holly"), NodePath("../Bluebells"), NodePath("../Foxgloves"), NodePath("../WildGarlic"), NodePath("../Sorrel"), NodePath("../Ivy"), NodePath("../Fungi"), NodePath("../Scree"), NodePath("../QuarryWorks"), NodePath("../Woods"), NodePath("../Oaks"), NodePath("../Grass"), NodePath("../Clutter"), NodePath("../Rocks"), NodePath("../Highcrown"), NodePath("../StoneWalls"), NodePath("../Dressing"), NodePath("../Shrubs"), NodePath("../Ferns"), NodePath("../Weeds"), NodePath("../Boulders"), NodePath("../CliffFaces"), NodePath("../Deadwood")])
 
 [node name="DistanceCull" type="Node" parent="."]
 script = ExtResource("dcull")
-roots = Array[NodePath]([NodePath("../Places"), NodePath("../QuarryWorks"), NodePath("../Dressing"), NodePath("../TitheExtras"), NodePath("../StoneWalls"), NodePath("../Clutter"), NodePath("../Rocks")])
+roots = Array[NodePath]([NodePath("../Places"), NodePath("../StoryProps"), NodePath("../QuarryWorks"), NodePath("../Dressing"), NodePath("../TitheExtras"), NodePath("../StoneWalls"), NodePath("../Clutter"), NodePath("../Rocks")])
 
 [node name="ShadowBudget" type="Node" parent="."]
 script = ExtResource("sbudget")
@@ -1148,3 +1149,7 @@ keep_off_tracks = 1.0
 shadows = false
 seen_from = 24.0
 patch_size = 24.0
+
+[node name="StoryProps" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("sprops")
+terrain = NodePath("../Terrain")
