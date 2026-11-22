@@ -10,7 +10,7 @@ extends Node3D
 @export var chunk_size := 12.0
 ## How many patches out from the camera grass grows.
 @export var view_chunks := 4
-@export var tufts_per_chunk := 240
+@export var tufts_per_chunk := 440
 @export var seed_value := 3
 @export var material: Material = preload("res://levels/common/materials/grass.tres")
 
@@ -74,7 +74,7 @@ func _make_chunk(cell: Vector2i) -> MultiMeshInstance3D:
 		# Thicker where it is properly grassy, thin along edges, none on bare ground.
 		if rng.randf() > pow(w.r, 1.6):
 			continue
-		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * rng.randf_range(0.7, 1.5))
+		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * rng.randf_range(0.55, 1.45))
 		spots.append(Transform3D(basis, Vector3(x, y - 0.04, z)))
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
@@ -93,34 +93,52 @@ func _make_chunk(cell: Vector2i) -> MultiMeshInstance3D:
 	return mmi
 
 
-## One tuft: seven thin, bent blades around a point.
+## One tuft: a clump of fine, tapering blades that bend as they rise. Most are short and
+## leafy, a few stand taller (and a very few carry a seed head), all leaning outward from the
+## middle like real grass. COLOR.r = height along the blade, COLOR.g = blade shade.
 func _make_tuft() -> ArrayMesh:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 5
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for b in 5:
+	var blades := 12
+	for b in blades:
 		var a := rng.randf() * TAU
-		var dir := Vector3(cos(a), 0, sin(a))
-		var side := Vector3(-dir.z, 0, dir.x)
-		var root := dir * rng.randf_range(0.0, 0.12)
-		var height := rng.randf_range(0.26, 0.5)
-		var lean := rng.randf_range(0.04, 0.2)
+		var out := Vector3(cos(a), 0, sin(a))
+		# The blade's flat face is turned at random around its own length.
+		var face := rng.randf() * TAU
+		var side := Vector3(cos(face), 0, sin(face))
+		var dist := absf(rng.randfn(0.0, 0.07))
+		var root := out * dist
+		var tall := rng.randf() < 0.22
+		var height := rng.randf_range(0.2, 0.42) if not tall else rng.randf_range(0.45, 0.78)
+		var lean := rng.randf_range(0.05, 0.28) * (1.0 + height)
+		var half := rng.randf_range(0.011, 0.02) * (1.0 + 0.5 * height)
 		var shade := rng.randf()
-		var half := 0.032
-		var b0 := root - side * half
-		var b1 := root + side * half
-		var m0 := root + dir * lean * 0.4 - side * half * 0.7 + Vector3.UP * height * 0.55
-		var m1 := root + dir * lean * 0.4 + side * half * 0.7 + Vector3.UP * height * 0.55
-		var tip := root + dir * lean + Vector3.UP * height
-		_vert(st, b0, 0.0, shade)
-		_vert(st, b1, 0.0, shade)
-		_vert(st, m1, 0.55, shade)
-		_vert(st, b0, 0.0, shade)
-		_vert(st, m1, 0.55, shade)
-		_vert(st, m0, 0.55, shade)
-		_vert(st, m0, 0.55, shade)
-		_vert(st, m1, 0.55, shade)
+		# Rows up the blade: height fraction, width fraction.
+		var rows := [Vector2(0.0, 1.0), Vector2(0.33, 0.9), Vector2(0.66, 0.62), Vector2(0.9, 0.3)]
+		var prev_l := Vector3.ZERO
+		var prev_r := Vector3.ZERO
+		var prev_t := 0.0
+		for k in rows.size():
+			var t: float = rows[k].x
+			# Bends outward more and more toward the tip (a curve, not a straight lean).
+			var p: Vector3 = root + out * lean * t * t + Vector3.UP * height * t * (1.0 - 0.18 * t)
+			var l: Vector3 = p - side * half * float(rows[k].y)
+			var r: Vector3 = p + side * half * float(rows[k].y)
+			if k > 0:
+				_vert(st, prev_l, prev_t, shade)
+				_vert(st, prev_r, prev_t, shade)
+				_vert(st, r, t, shade)
+				_vert(st, prev_l, prev_t, shade)
+				_vert(st, r, t, shade)
+				_vert(st, l, t, shade)
+			prev_l = l
+			prev_r = r
+			prev_t = t
+		var tip := root + out * lean + Vector3.UP * height * 0.84
+		_vert(st, prev_l, prev_t, shade)
+		_vert(st, prev_r, prev_t, shade)
 		_vert(st, tip, 1.0, shade)
 	return st.commit()
 

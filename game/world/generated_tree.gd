@@ -441,5 +441,5 @@ static func _tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, inside: Ve
 ## (the camera only collides with trunks).
 static func _fade_near(mat: BaseMaterial3D) -> void:
 	mat.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER
-	mat.distance_fade_min_distance = 2.6
-	mat.distance_fade_max_distance = 0.8
+	mat.distance_fade_min_distance = 0.7
+	mat.distance_fade_max_distance = 2.4
