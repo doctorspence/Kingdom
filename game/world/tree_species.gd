@@ -42,12 +42,15 @@ static func build(kind: String, index: int) -> Dictionary:
 	b.grow()
 	var out := {
 		"near": [b.bark_mesh(_bark_mat(p.bark)), b.leaf_mesh(_leaf_mat(p.leaf), false)],
+		"ivy": b.ivy_mesh() if float(p.ivy) > 0.0 else null,
 		"far": b.far_mesh(_bark_mat(p.bark), _leaf_mat(p.leaf)),
 		"radius": float(p.trunk_r) * 0.85,
 		"height": b.top,
 	}
 	if out.near[1] == null:
 		out.near = [out.near[0]]
+	if out.ivy != null:
+		out.near.append(out.ivy)
 	_cache[key] = out
 	return out
 
@@ -62,7 +65,7 @@ static func _params(kind: String, index: int, rng: RandomNumberGenerator) -> Dic
 		"limb_r": 0.55, "depth": 2, "children": Vector2i(2, 3), "len_falloff": Vector2(0.55, 0.75),
 		"bend_up": 0.0, "droop": 0.0, "cluster_r": Vector2(1.7, 2.4), "mid_clusters": true,
 		"card_size": Vector2(1.3, 1.9), "card_density": 5.0, "flat": 0.75, "hang": 0.0,
-		"leaves": 1.0, "broken": 0.12, "top_cluster": 2.4, "scale": 1.0, "sides": 9,
+		"leaves": 1.0, "broken": 0.12, "top_cluster": 2.4, "scale": 1.0, "sides": 9, "ivy": 0.0, "min_leaf_y": 0.0,
 	}
 	match kind:
 		"oak":
@@ -75,6 +78,7 @@ static func _params(kind: String, index: int, rng: RandomNumberGenerator) -> Dic
 			p.limb_r = 0.55 * age
 			p.cluster_r = Vector2(1.7, 2.4) * lerpf(0.85, 1.05, age)
 			p.broken = 0.35 if index == 7 else 0.1
+			p.ivy = 0.6 if index == 7 else (0.3 if index == 5 else 0.0)
 			p.scale = age
 		"oak_ancient":
 			p.trunk_h = rng.randf_range(2.8, 3.4)
@@ -95,6 +99,8 @@ static func _params(kind: String, index: int, rng: RandomNumberGenerator) -> Dic
 			# Old but in full leaf: at most a short snapped stub, never a bare dead limb.
 			p.broken = 0.06
 			p.top_cluster = 4.2
+			p.ivy = 0.9
+			p.min_leaf_y = 3.4  # walk and fight under it: no leaves at head height
 			p.sides = 12
 		"oak_dead":
 			p.trunk_h = rng.randf_range(2.8, 3.8)
@@ -104,6 +110,7 @@ static func _params(kind: String, index: int, rng: RandomNumberGenerator) -> Dic
 			p.broken = 0.6
 			# 0-1 stag-headed (a few living lower clusters), 2-3 quite dead.
 			p.leaves = 0.35 if index < 2 else 0.0
+			p.ivy = 0.5 if index == 0 else 0.0
 			p.top_cluster = 0.0
 		"beech":
 			p.bark = "beech"
@@ -212,6 +219,8 @@ class _Builder:
 	var bark := SurfaceTool.new()
 	var far_bark := SurfaceTool.new()
 	var clusters: Array = []  # [center, radius, living]
+	var trunk_pts := PackedVector3Array()
+	var trunk_rad := PackedFloat32Array()
 	var top := 0.0
 
 	func grow() -> void:
@@ -266,6 +275,9 @@ class _Builder:
 			leader_end = pos
 		_tube(pts, rad, int(p.sides), 0)
 		top = maxf(top, leader_end.y)
+		if trunk_pts.is_empty():
+			trunk_pts = pts
+			trunk_rad = rad
 		# Limbs from the upper trunk (and the leader).
 		var limbs: int = p.limbs
 		var off_a := rng.randf() * TAU
@@ -331,6 +343,8 @@ class _Builder:
 			_cluster(pts[2] + Vector3.UP * 0.7, rng.randf_range(float(p.cluster_r.x), float(p.cluster_r.y)) * 0.75 * sz)
 
 	func _cluster(c: Vector3, r: float) -> void:
+		if c.y - r * 0.6 < float(p.min_leaf_y):
+			c.y = float(p.min_leaf_y) + r * 0.6
 		var living := rng.randf() < float(p.leaves)
 		if float(p.leaves) < 0.99 and c.y > top * 0.7:
 			living = false  # stag-headed: the crown top is dead
@@ -446,6 +460,43 @@ class _Builder:
 					st.set_uv(uvs[idx])
 					st.add_vertex(corners[idx])
 		st.set_material(mat)
+		return st.commit()
+
+	## English ivy climbing the lower trunk: leaf cards lying flat against the bark,
+	## thick at the foot and thinning upward, on one side more than the other.
+	func ivy_mesh() -> ArrayMesh:
+		if trunk_pts.size() < 2:
+			return null
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var irng := RandomNumberGenerator.new()
+		irng.seed = rng.seed + 31
+		var amount: float = p.ivy
+		var favored := irng.randf() * TAU
+		var count := int(60.0 * amount * float(p.trunk_r) / 0.6) + 10
+		for k in count:
+			var t := pow(irng.randf(), 1.6) * 0.95
+			var f := t * (trunk_pts.size() - 1)
+			var i := mini(int(f), trunk_pts.size() - 2)
+			var c := trunk_pts[i].lerp(trunk_pts[i + 1], f - i)
+			var r := lerpf(trunk_rad[i], trunk_rad[i + 1], f - i)
+			var a := favored + irng.randfn(0.0, 1.2)
+			var radial := Vector3(cos(a), 0.0, sin(a))
+			var pos := c + radial * (r * 1.02 + 0.02)
+			var size := irng.randf_range(0.45, 0.75) * (1.0 - 0.4 * t)
+			var up := Vector3.UP.rotated(radial, irng.randf_range(-0.6, 0.6))
+			var side := radial.cross(up).normalized()
+			var h1 := side * size * 0.5
+			var h2 := up * size * 0.5
+			var corners := [pos - h1 - h2, pos + h1 - h2, pos + h1 + h2, pos - h1 + h2]
+			var uvs := [Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0)]
+			var tint := Color(1, 1, 1).lerp(Color(0.8, 0.85, 0.72), irng.randf())
+			for idx in [0, 1, 2, 0, 2, 3]:
+				st.set_normal(radial)
+				st.set_color(tint)
+				st.set_uv(uvs[idx])
+				st.add_vertex(corners[idx])
+		st.set_material(PlantKit._material("ivy"))
 		return st.commit()
 
 	func far_mesh(bark_mat: Material, leaf_mat: Material) -> ArrayMesh:

@@ -6,8 +6,8 @@ render_mode cull_disabled, diffuse_lambert, specular_schlick_ggx;
 
 uniform vec3 base_color : source_color = vec3(0.025, 0.05, 0.015);
 uniform vec3 mid_color : source_color = vec3(0.13, 0.22, 0.05);
-uniform vec3 tip_color : source_color = vec3(0.34, 0.38, 0.13);
-uniform vec3 dry_color : source_color = vec3(0.42, 0.36, 0.17);
+uniform vec3 tip_color : source_color = vec3(0.33, 0.38, 0.19);
+uniform vec3 dry_color : source_color = vec3(0.4, 0.37, 0.24);
 uniform float sway = 0.1;
 uniform float wind_speed = 1.3;
 global uniform float wetness;  // 0 dry .. 1 soaked (set by DayNight)

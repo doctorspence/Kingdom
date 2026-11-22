@@ -39,28 +39,22 @@ func _ready() -> void:
 	_props()
 
 
-## Courses of cut blocks, battered back a little with height; the top courses
-## are broken and ragged where the face meets the natural rock above.
+## The living rock round the opening: big rough, irregular masses (no courses,
+## no straight joints) that close the gap between the timber frame and the
+## quarry face, heavier low down and breaking up toward the top.
 func _facade(st: SurfaceTool) -> void:
-	var course_h := 0.72
-	var rows := 11
-	for r in rows:
-		var y0 := r * course_h
-		var x := -7.0 + _rng.randf_range(0.0, 0.8)
-		var back := -0.6 - r * 0.07
-		while x < 7.0:
-			var length := _rng.randf_range(1.0, 1.9)
-			var x1 := minf(x + length, 7.0)
-			var cx := (x + x1) * 0.5
-			var in_opening := absf(cx) < W * 0.5 + length * 0.5 - 0.15 and y0 < H + 0.05
-			var top_ragged := r >= rows - 3 and _rng.randf() < 0.25 * (r - rows + 4) + absf(cx) * 0.05
-			if not in_opening and not top_ragged:
-				var size := Vector3(x1 - x - 0.05, course_h - 0.05, 2.6)
-				var pos := Vector3(cx, y0 + course_h * 0.5, back - 1.3 + _rng.randf_range(0.0, 0.12))
-				QuarryKit.rock_box(st, pos, size, 0.0, _rng, 0.025)
-			x = x1
-	# A lintel stone over the opening, and two jamb stones.
-	QuarryKit.rock_box(st, Vector3(0, H + 0.4, -1.9), Vector3(W + 1.6, 0.8, 2.7), 0.0, _rng, 0.02)
+	# Over the opening: one massive rough brow the frame holds up.
+	QuarryKit.rock_box(st, Vector3(0, H + 1.1, -1.9), Vector3(W + 2.6, 2.2, 2.8), _rng.randf_range(-0.08, 0.08), _rng, 0.22)
+	for side: float in [-1.0, 1.0]:
+		var y := 0.0
+		while y < 6.5:
+			var h := _rng.randf_range(1.6, 2.8)
+			var w := _rng.randf_range(2.2, 3.6) * (1.0 - y / 12.0)
+			var x := side * (W * 0.5 + w * 0.5 + 0.35 + _rng.randf_range(-0.2, 0.3))
+			QuarryKit.rock_box(st, Vector3(x, y + h * 0.5, -1.9 + _rng.randf_range(-0.4, 0.3)), Vector3(w, h, 2.6), _rng.randf_range(-0.25, 0.25), _rng, 0.3)
+			y += h * 0.8
+		# A second, smaller mass further out so the edge melts into the face.
+		QuarryKit.rock_box(st, Vector3(side * (W * 0.5 + 4.2), 1.2, -2.3), Vector3(2.4, 2.4, 2.2), _rng.randf() * TAU, _rng, 0.35)
 
 
 func _tunnel(st: SurfaceTool) -> void:

@@ -27,9 +27,13 @@ extends Node3D
 @export var cliff := 0.0
 ## With `cliff` on: no pieces on ground steeper than this (sheer walls are rock already).
 @export var cliff_max := 1.5
+## Only this far from a road or track (meters, min..max); (0, 0) = anywhere. For path-edge plants.
+@export var road_band := Vector2.ZERO
 @export var collide := false
 @export var shadows := true
 @export var seen_from := 90.0
+## Batch size (meters): smaller for short-range plants, so a near batch doesn't also draw plants far away.
+@export var patch_size := 48.0
 ## Multiplies the scanned colors (to match the zone's own rock, for example).
 @export var tint := Color(1, 1, 1)
 
@@ -57,8 +61,9 @@ func _build() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = scatter_seed
 	var half := terrain.size * 0.5 - 2.0
-	var patch := 48.0
+	var patch := patch_size
 	var groups := {}
+	var dens_cache := {}
 	var body: StaticBody3D = null
 	if collide:
 		body = StaticBody3D.new()
@@ -74,12 +79,20 @@ func _build() -> void:
 			var rot := rng.randf() * TAU
 			var sc := rng.randf_range(scale_range.x, scale_range.y)
 			x += spacing
-			if roll > float(land.call(layer, p.x, p.y)) * density:
+			# Densities change over tens of meters: ask the land once per 4 m cell (load time).
+			var ck := Vector2i(floori(p.x / 4.0), floori(p.y / 4.0))
+			if not dens_cache.has(ck):
+				dens_cache[ck] = float(land.call(layer, ck.x * 4.0 + 2.0, ck.y * 4.0 + 2.0))
+			if roll > float(dens_cache[ck]) * density:
 				continue
 			if terrain._distance_to_lines(terrain.roads, p) < keep_off_roads:
 				continue
 			if terrain._distance_to_lines(terrain.tracks, p) < keep_off_tracks:
 				continue
+			if road_band.y > 0.0:
+				var rdist := minf(terrain._distance_to_lines(terrain.roads, p), terrain._distance_to_lines(terrain.tracks, p))
+				if rdist < road_band.x or rdist > road_band.y:
+					continue
 			if terrain.in_pad(p.x, p.y) > 0.05 or terrain.in_field(p.x, p.y) > 0.05:
 				continue
 			var h := terrain.height_at(p.x, p.y)
@@ -135,6 +148,8 @@ func _build() -> void:
 				body.add_child(cs)
 			placed += 1
 		z += spacing
+	if OS.is_debug_build() and OS.get_cmdline_user_args().has("plant_counts"):
+		print("PLANTS %-12s %d" % [name, placed])
 	for key in groups:
 		var pick := int((key as String).split("|")[0])
 		var xfs: Array = groups[key]
@@ -159,6 +174,12 @@ func _build() -> void:
 func _load_parts() -> void:
 	_parts.clear()
 	for id in models:
+		if String(id).begins_with("plant:"):
+			# Code-built plants from PlantKit ("plant:bracken", ...), four variants each.
+			for v in 3:
+				var pm := PlantKit.mesh(String(id).substr(6), v)
+				_parts.append([pm, Transform3D.IDENTITY, pm.get_aabb().size])
+			continue
 		if String(id).begins_with("kit:"):
 			# Code-built stone from QuarryKit ("kit:rubble", "kit:slab", "kit:block_broken"), four variants each.
 			for v in 4:

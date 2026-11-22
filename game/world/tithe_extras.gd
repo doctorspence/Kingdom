@@ -236,17 +236,14 @@ func _ferns() -> void:
 func _puddles() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 909
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.03, 0.035, 0.04, 0.8)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.roughness = 0.04
-	mat.metallic = 0.2
-	mat.metallic_specular = 0.9
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = 1.0
-	mesh.bottom_radius = 1.0
-	mesh.height = 0.02
-	mesh.radial_segments = 14
+	# Soft, ragged-edged damp patches: barely darker mud when dry, shining water when
+	# it rains (global "wetness" from DayNight). No hard grey discs.
+	var mat := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = PUDDLE_SHADER
+	mat.shader = sh
+	var mesh := PlaneMesh.new()
+	mesh.size = Vector2(2.0, 2.0)
 	var half := terrain.size * 0.5 - 20.0
 	var xforms: Array[Transform3D] = []
 	var tries := 0
@@ -321,3 +318,21 @@ func _cloud_layer() -> void:
 	_clouds.material_override = _cloud_mat
 	_clouds.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_clouds)
+
+
+const PUDDLE_SHADER := """
+shader_type spatial;
+render_mode blend_mix, depth_draw_never, cull_back, specular_schlick_ggx;
+global uniform float wetness;
+varying vec3 lp;
+void vertex() { lp = VERTEX; }
+void fragment() {
+	float a = atan(lp.z, lp.x);
+	float r = length(lp.xz) + 0.1 * sin(a * 5.0 + lp.x * 3.0) + 0.06 * sin(a * 11.0);
+	float edge = 1.0 - smoothstep(0.45, 0.95, r);
+	ALBEDO = vec3(0.07, 0.06, 0.05);
+	ROUGHNESS = mix(0.55, 0.04, wetness);
+	SPECULAR = mix(0.3, 0.9, wetness);
+	ALPHA = edge * mix(0.28, 0.82, wetness);
+}
+"""

@@ -349,7 +349,92 @@ func ferns(x: float, z: float) -> float:
 func weeds(x: float, z: float) -> float:
 	var dr := absf(z - river_z(x))
 	var bank := smoothstep(5.0, 8.0, dr) - smoothstep(10.0, 16.0, dr)
-	return 0.12 + 0.3 * undergrowth(x, z) + 0.35 * bank
+	return 0.08 + 0.22 * undergrowth(x, z) + 0.3 * bank + 0.45 * _disturbed(x, z)  # nettles love trampled, dug and burned ground
+
+
+# ---- The Greenwood's ground plants (GREENWOOD_OVERHAUL.md 7.2) ----------------------------
+# Built from four ideas: shade (how thick the canopy is), the woods' edge, damp
+# (near the river, the brook, in hollows) and disturbed ground (camps, ruins,
+# the quarry, the burned hamlet). Patches come from slow noise, so plants grow
+# in drifts and stands, never sprinkled evenly.
+
+func _patch(x: float, z: float, seed_off: float, cut: float) -> float:
+	return smoothstep(cut, cut + 0.25, noise.get_noise_2d(x * 2.5 + seed_off, z * 2.5 - seed_off))
+
+
+func _edge(f: float) -> float:
+	return smoothstep(0.08, 0.3, f) * (1.0 - smoothstep(0.5, 0.8, f))
+
+
+func _damp(x: float, z: float) -> float:
+	var dr := absf(z - river_z(x))
+	var d := 1.0 - smoothstep(10.0, 26.0, dr)
+	return maxf(d, 1.0 - smoothstep(3.0, 12.0, _line_dist(Vector2(x, z), brook).x))
+
+
+## Camps, ruins, the burned hamlet, the quarry floor: trampled, burned or dug.
+func _disturbed(x: float, z: float) -> float:
+	var p := Vector2(x, z)
+	var d := 0.0
+	for c: Vector3 in clearings:
+		d = maxf(d, 1.0 - smoothstep(c.z, c.z + 10.0, p.distance_to(Vector2(c.x, c.y))))
+	d = maxf(d, 1.0 - smoothstep(20.0, 34.0, p.distance_to(Vector2(-72, 58))))   # burned hamlet
+	d = maxf(d, 1.0 - smoothstep(14.0, 24.0, p.distance_to(Vector2(-50, 160))))  # chapel ruin
+	var qd := maxf(absf(x + 150.0) - 21.0, absf(z + 100.0) - 16.0)
+	d = maxf(d, 1.0 - smoothstep(-2.0, 8.0, absf(qd)))                         # quarry margins
+	return d
+
+
+## Bracken: big stands at woods' edges and in clearings and open slopes.
+func bracken(x: float, z: float) -> float:
+	var f := forest(x, z)
+	return (0.75 * _edge(f) + 0.2 * (1.0 - smoothstep(0.1, 0.3, f)) * smoothstep(0.3, 0.7, f + 0.5)) * _patch(x, z, 11.0, 0.0)
+
+
+## Brambles: path edges (the scatter keeps them to a band beside the paths), wood edges, disturbed ground.
+func bramble(x: float, z: float) -> float:
+	var f := forest(x, z)
+	return 0.25 + 0.3 * _edge(f) + 0.4 * _disturbed(x, z)
+
+
+## Holly: dark evergreen understory in the oak and beech woods.
+func holly(x: float, z: float) -> float:
+	return 0.16 * smoothstep(0.45, 0.75, forest(x, z)) * _patch(x, z, 33.0, -0.2)
+
+
+## Bluebells: drifts in dappled shade (half-open canopy), not too many.
+func bluebell(x: float, z: float) -> float:
+	var f := forest(x, z)
+	return 0.9 * smoothstep(0.3, 0.5, f) * (1.0 - smoothstep(0.75, 0.9, f)) * _patch(x, z, 55.0, 0.15)
+
+
+## Foxglove: sparse spikes at wood edges, in clearings and on disturbed ground.
+func foxglove(x: float, z: float) -> float:
+	return (0.1 * _edge(forest(x, z)) + 0.18 * _disturbed(x, z)) * _patch(x, z, 77.0, -0.15)
+
+
+## Wild garlic: damp shade by the brook and river.
+func garlic(x: float, z: float) -> float:
+	return 0.8 * _damp(x, z) * smoothstep(0.25, 0.55, forest(x, z)) * _patch(x, z, 91.0, 0.0)
+
+
+## Wood sorrel: low in deep shade.
+func sorrel(x: float, z: float) -> float:
+	return 0.5 * smoothstep(0.6, 0.85, forest(x, z)) * _patch(x, z, 123.0, 0.05)
+
+
+## Ivy carpets: round the ruins and old stone, and in patches on the deep wood floor.
+func ivy(x: float, z: float) -> float:
+	var p := Vector2(x, z)
+	var r := 0.0
+	for site: Vector2 in [Vector2(-50, 160), Vector2(150, -140), Vector2(-72, 58), Vector2(122, -84), Vector2(105, 26)]:
+		r = maxf(r, 0.5 * (1.0 - smoothstep(8.0, 20.0, p.distance_to(site))))
+	return maxf(r, 0.12 * smoothstep(0.6, 0.85, forest(x, z)) * _patch(x, z, 140.0, 0.1))
+
+
+## Mushrooms and bracket fungus: shaded, damp corners where dead wood lies.
+func fungi(x: float, z: float) -> float:
+	return 0.18 * smoothstep(0.45, 0.8, forest(x, z)) * (0.6 + 0.4 * _damp(x, z)) * _patch(x, z, 160.0, 0.0)
 
 
 ## Scree and rubble: the foot of the scarp, the quarry floor along its walls and round the spoil

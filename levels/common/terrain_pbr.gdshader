@@ -129,7 +129,7 @@ void fragment() {
 	float lum = clamp(dot(rock_src, vec3(0.3, 0.59, 0.11)) * 2.2, 0.0, 1.0);
 	// Horizontal beds: each bed a slightly different tone, dark joints between them,
 	// gently warped so they don't read as ruled lines.
-	float warp = ((texture(noise_tex, uv * 0.006).r - 0.5) * 3.0 + (n2 - 0.5) * 0.6) * (1.0 - 0.85 * worked);
+	float warp = (texture(noise_tex, uv * 0.006).r - 0.5) * 3.0 + (n2 - 0.5) * 0.6;
 	float bed_coord = wpos.y / strata_height + warp;
 	float bed = floor(bed_coord);
 	float in_bed = fract(bed_coord);
@@ -145,18 +145,13 @@ void fragment() {
 	// Rain streaks darken faces from the top of each bed down.
 	rock *= 1.0 - vertical * 0.12 * smoothstep(0.55, 1.0, texture(noise_tex, vec2(uv.x * 0.9 + uv.y * 0.9, wpos.y * 0.04)).r);
 	rock *= rock_brightness;
-	// Worked stone (the quarry): squared blocks in regular courses, offset per course like
-	// masonry, each block a slightly different tone, fresh pale cut faces with fine pick marks.
+	// Worked stone (the quarry): fresh pale cut faces, a little patchy, with faint tool marks.
 	if (worked > 0.01) {
 		float along = abs(wnorm.x) > abs(wnorm.z) ? wpos.z : wpos.x;
-		float bc = along / 1.5 + hash1(bed) * 0.73;
-		float in_block = fract(bc);
-		float vjoint = 1.0 - smoothstep(0.0, 0.035, in_block) * smoothstep(1.0, 0.965, in_block);
-		float block_tone = hash1(floor(bc) * 3.7 + bed * 1.31);
-		float pick = smoothstep(0.55, 1.0, sin((along * 0.8 + wpos.y) * 22.0) * 0.5 + 0.5) * (0.5 + 0.5 * n3);
-		vec3 fresh = mix(lime_mid, lime_pale, 0.45 + 0.4 * lum) * (0.88 + 0.22 * block_tone) * rock_brightness;
-		fresh *= 1.0 - vjoint * 0.42 - joint * 0.3 - pick * 0.1;
-		rock = mix(rock, fresh, worked * smoothstep(0.3, 0.7, vertical));
+		float pick = smoothstep(0.6, 1.0, sin((along * 0.8 + wpos.y) * 22.0) * 0.5 + 0.5) * (0.5 + 0.5 * n3);
+		vec3 fresh = mix(lime_mid, lime_pale, 0.45 + 0.4 * lum) * (0.9 + 0.15 * n2) * rock_brightness;
+		fresh *= 1.0 - pick * 0.06;
+		rock = mix(rock, fresh, worked * smoothstep(0.3, 0.7, vertical) * 0.8);
 	}
 	// Moss and soil on ledges and tops (faces up, in damp or shade).
 	float ledge = smoothstep(0.55, 0.85, wnorm.y);

@@ -74,7 +74,13 @@ func _make_chunk(cell: Vector2i) -> MultiMeshInstance3D:
 		# Thicker where it is properly grassy, thin along edges, none on bare ground.
 		if rng.randf() > pow(w.r, 1.6):
 			continue
-		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * rng.randf_range(0.55, 1.45))
+		# Under the trees the turf gives way to leaf litter: fewer, shorter tufts.
+		var shade := 0.0
+		if terrain.land and terrain.land.has_method("woodland"):
+			shade = smoothstep(0.2, 0.7, float(terrain.land.call("woodland", x, z)))
+		if rng.randf() < shade * 0.75:
+			continue
+		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * rng.randf_range(0.55, 1.45) * (1.0 - 0.35 * shade))
 		spots.append(Transform3D(basis, Vector3(x, y - 0.04, z)))
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
