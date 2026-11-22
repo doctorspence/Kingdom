@@ -1208,13 +1208,13 @@ func _build_falls() -> void:
 		for k in 6:
 			_rock_chunk(Vector3(x + randf_range(-1.8, 1.8), 0.15, wallz - randf_range(1.8, 2.8)), randf_range(0.2, 0.45))
 		var pool := MeshInstance3D.new()
-		var pm := CylinderMesh.new()
-		pm.top_radius = 2.2
-		pm.bottom_radius = 2.2
-		pm.height = 0.06
-		pm.radial_segments = 20
-		pm.material = _water_material(Vector2(0.0, -1.0))
+		var pm := QuadMesh.new()
+		pm.size = Vector2(5.6, 5.6)
+		var pmat := _water_material(Vector2(0.0, -1.0))
+		pmat.set_shader_parameter("pool", true)
+		pm.material = pmat
 		pool.mesh = pm
+		pool.rotation.x = -PI / 2.0
 		pool.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		pool.position = Vector3(x, 0.08, wallz - 1.1)
 		add_child(pool)
