@@ -61,6 +61,7 @@ var tracks := [
 		Vector2(82, 15), Vector2(94, 10), Vector2(104, 11)])},                                                                       # the long way up the crag
 	{"points": PackedVector2Array([Vector2(-150, -78), Vector2(-157, -56), Vector2(-160, -30), Vector2(-158, -4), Vector2(-152, 16)])}, # cliff-top path to the overlook
 	{"points": PackedVector2Array([Vector2(8, -50), Vector2(16, -50)])},                                                           # into the tithe yard
+	{"points": PackedVector2Array([Vector2(-45, 131), Vector2(-44, 138), Vector2(-45, 145), Vector2(-47, 151), Vector2(-49, 156)])},           # the sunken lane up to the chapel
 ]
 
 # ---- cuts: the quarry floor carved into the scarp, a bench along its north
@@ -143,9 +144,39 @@ func river_z(x: float) -> float:
 	return p[p.size() - 1].y
 
 
+# ---- the brook in the East Woods (west end joins the river) and the chapel's sunken lane.
+var brook := PackedVector2Array([Vector2(186, 74), Vector2(171, 66), Vector2(159, 58), Vector2(149, 46),
+	Vector2(142, 32), Vector2(135, 18), Vector2(129, 6), Vector2(126, -5)])
+var holloway := PackedVector2Array([Vector2(-45, 131), Vector2(-44, 138), Vector2(-45, 145), Vector2(-47, 151), Vector2(-49, 156)])
+
+
+## (distance to a polyline, position along it 0..1).
+func _line_dist(p: Vector2, pts: PackedVector2Array) -> Vector2:
+	var best := INF
+	var best_t := 0.0
+	var total := 0.0
+	var lens := PackedFloat32Array()
+	for i in pts.size() - 1:
+		lens.append(pts[i].distance_to(pts[i + 1]))
+		total += lens[i]
+	var run := 0.0
+	for i in pts.size() - 1:
+		var a := pts[i]
+		var ab := pts[i + 1] - a
+		var t := clampf((p - a).dot(ab) / maxf(ab.length_squared(), 0.0001), 0.0, 1.0)
+		var dd := p.distance_to(a + ab * t)
+		if dd < best:
+			best = dd
+			best_t = (run + lens[i] * t) / maxf(total, 0.001)
+		run += lens[i]
+	return Vector2(best, best_t)
+
+
 ## The west scarp's cliff line (x) at a given z.
 func scarp_x(z: float) -> float:
-	return -140.0 + 6.0 * sin(z * 0.045) + 4.0 * sin(z * 0.11 + 1.0) + noise.get_noise_2d(17.0, z * 3.0) * 2.5
+	var base := -140.0 + 6.0 * sin(z * 0.045) + 4.0 * sin(z * 0.11 + 1.0) + noise.get_noise_2d(17.0, z * 3.0) * 2.5
+	# Two combes: small wooded valleys bitten back into the scarp (north of the quarry, south of the overlook).
+	return base - 10.0 * exp(-pow((z + 152.0) / 8.0, 2.0)) - 9.0 * exp(-pow((z - 46.0) / 7.0, 2.0))
 
 
 func _g(x: float, z: float, cx: float, cz: float, r: float) -> float:
@@ -181,19 +212,49 @@ func natural(x: float, z: float) -> float:
 	h -= maxf(0.0, -135.0 - z) * 0.06 * (1.0 - smoothstep(60.0, 140.0, absf(x)))
 	# The west scarp: a cliff band, highest in the north, softening into a wooded slope in the south.
 	var sx := scarp_x(z)
-	var cliff := 1.0 - smoothstep(sx - 4.0, sx + 3.0, x)
 	var tall := lerpf(13.5, 4.0, smoothstep(40.0, 120.0, z))
-	h += tall * cliff + maxf(0.0, sx - x) * 0.05
+	# Limestone steps: an upper face, a ledge 2 to 4 m wide, a lower face; a ragged, broken
+	# brow; and a scree apron of fallen rock at the foot.
+	var u := x - sx - noise.get_noise_2d(19.0, z * 4.0) * 1.4
+	var lw := 3.0 + 1.0 * noise.get_noise_2d(23.0, z * 1.5)
+	var split := 0.5 + 0.12 * noise.get_noise_2d(29.0, z * 2.0)
+	var upper := 1.0 - smoothstep(-4.5, -2.5, u)
+	var lower := 1.0 - smoothstep(lw - 2.5, lw, u)
+	h += tall * (split * upper + (1.0 - split) * lower) + maxf(0.0, sx - x) * 0.05
+	var foot := lw
+	h += tall * 0.11 * (smoothstep(foot - 1.0, foot + 0.5, u) - smoothstep(foot + 1.0, foot + 9.0, u)) * (0.75 + 0.5 * absf(noise.get_noise_2d(x * 6.0, z * 6.0))) * smoothstep(38.0, 50.0, Vector2(x, z).distance_to(Vector2(-150, -100)))
 	# Watchtower Crag: a flat-topped knoll, steep on the river (north) side.
 	var cx := (x - 105.0) / (44.0 if x < 105.0 else 34.0)
 	var cz := (z - 26.0) / (28.0 if z < 26.0 else 40.0)
 	var q := sqrt(cx * cx + cz * cz) + noise.get_noise_2d(x * 5.0 + 900.0, z * 5.0) * 0.12
-	h += 13.0 * (1.0 - smoothstep(0.55, 1.0, q))
+	var cs := 1.0 - smoothstep(0.55, 1.0, q)
+	# Its north-east face over the river breaks into rock terraces (layered outcrops).
+	var steps := floorf(cs * 4.0) / 4.0 + smoothstep(0.72, 1.0, fposmod(cs * 4.0, 1.0)) / 4.0
+	cs = lerpf(cs, steps, 0.85 * smoothstep(106.0, 114.0, x) * (1.0 - smoothstep(14.0, 24.0, z)))
+	h += 13.0 * cs
 	# Hobb's hollow: a sunken bowl by the river.
 	var hd := Vector2(x + 112.0, z - 32.0).length() / 16.0
 	h -= 3.5 * (1.0 - smoothstep(0.5, 1.0, hd))
 	# The East Woods climb to a ridge at the east edge.
 	h += 7.0 * smoothstep(125.0, 190.0, x)
+	# ...over rolling ground with dells where the mist will lie.
+	var ew := smoothstep(60.0, 95.0, x)
+	# ...but the barrow, the raiders' farmstead and the woods camps keep their ground.
+	for site: Vector2 in [Vector2(150, -140), Vector2(122, -84), Vector2(102, -49), Vector2(64, -55), Vector2(94, 86)]:
+		ew *= smoothstep(14.0, 30.0, Vector2(x, z).distance_to(site))
+	h += ew * (noise.get_noise_2d(x * 1.6 + 300.0, z * 1.6) * 2.4 + noise.get_noise_2d(x * 4.0, z * 4.0 + 90.0) * 0.5)
+	h -= 2.6 * _g(x, z, 148.0, 42.0, 24.0) + 2.0 * _g(x, z, 152.0, -36.0, 26.0) + 1.6 * _g(x, z, 82.0, 62.0, 18.0)
+	# Knight's Gap: limestone knobs break out on the hill shoulders (not on the road).
+	for hc: Vector2 in [Vector2(-44.0, -124.0), Vector2(46.0, -118.0)]:
+		var hdist := Vector2(x, z).distance_to(hc)
+		var knob := maxf(0.0, (1.0 - absf(noise.get_noise_2d(x * 3.5 + 700.0, z * 3.5))) - 0.72) / 0.28
+		h += 3.2 * knob * (1.0 - smoothstep(14.0, 28.0, hdist)) * smoothstep(14.0, 22.0, absf(x))
+	# The brook: a stony channel from the east ridge down past the crag into the river.
+	var bd := _line_dist(Vector2(x, z), brook)
+	h -= 1.0 * (1.0 - smoothstep(0.9, 4.5, bd.x))
+	# The sunken lane to the chapel, worn deep into the ridge (deepest halfway up).
+	var hl := _line_dist(Vector2(x, z), holloway)
+	h -= 1.6 * sin(PI * clampf(hl.y, 0.0, 1.0)) * (1.0 - smoothstep(1.3, 5.0, hl.x))
 	# Beyond the playable square: hills close the horizon (but not across the north road,
 	# where Highcrown stands, nor where the river leaves).
 	var out := maxf(absf(x), absf(z)) - 182.0
@@ -291,7 +352,7 @@ func deadwood(x: float, z: float) -> float:
 
 ## Woodland density for the Woods scatter (the old forest map, all broadleaf now).
 func woodland(x: float, z: float) -> float:
-	return forest(x, z)
+	return forest(x, z) * smoothstep(2.5, 4.5, _line_dist(Vector2(x, z), brook).x)
 
 
 ## Lone trees in the open: hedgerow and field oaks, ash by the water.

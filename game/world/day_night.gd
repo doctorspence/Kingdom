@@ -209,8 +209,8 @@ func _apply() -> void:
 		var cw := canopy * (1.0 - night)
 		if cw > 0.0:
 			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.45, 0.53, 0.42), cw)
-			_env.ambient_light_sky_contribution = lerpf(_env.ambient_light_sky_contribution, 0.45, cw)
-			_env.ambient_light_energy *= 1.0 + 0.45 * cw
+			_env.ambient_light_sky_contribution = lerpf(_env.ambient_light_sky_contribution, 0.35, cw)
+			_env.ambient_light_energy *= 1.0 + 0.85 * cw
 			_env.volumetric_fog_density *= 1.0 + 0.5 * cw
 			_env.volumetric_fog_albedo = _env.volumetric_fog_albedo.lerp(Color(0.62, 0.7, 0.6), 0.5 * cw)
 		if _sky:

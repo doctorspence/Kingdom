@@ -90,8 +90,8 @@ static func _params(kind: String, index: int, rng: RandomNumberGenerator) -> Dic
 			p.limb_r = 0.62
 			p.cluster_r = Vector2(2.8, 3.6)
 			p.children = Vector2i(3, 4)
-			p.card_density = 6.5
-			p.card_size = Vector2(1.6, 2.2)
+			p.card_density = 3.6
+			p.card_size = Vector2(2.1, 2.8)
 			# Old but in full leaf: at most a short snapped stub, never a bare dead limb.
 			p.broken = 0.06
 			p.top_cluster = 4.2

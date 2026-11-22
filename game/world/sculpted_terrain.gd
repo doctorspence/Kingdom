@@ -687,6 +687,8 @@ func _rebuild() -> void:
 	body.add_child(cs)
 	_built.add_child(body)
 	_built.add_child(_water_mesh())
+	if land.get("brook") != null:
+		_built.add_child(_brook())
 	if DisplayServer.get_name() != "headless":
 		_built.add_child(_backdrop_mesh())
 	add_child(_built)
@@ -780,6 +782,46 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 	if step > 1:
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if step > 2 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	return mi
+
+
+## A small brook (land.brook): a shallow water ribbon laid along its carved bed,
+## sampled every 3 m so it follows the ground down to the river. Wading slows a little.
+func _brook() -> Node3D:
+	var line: PackedVector2Array = _densify(land.get("brook"), 3.0)
+	var pts := PackedVector3Array()
+	var last := INF
+	for p in line:
+		# Lowest point within half a meter (the bed), never flowing uphill.
+		var y := minf(height_at(p.x, p.y), minf(height_at(p.x + 0.5, p.y), height_at(p.x, p.y + 0.5)))
+		y = minf(y + 0.3, last)
+		last = y
+		pts.append(Vector3(p.x, y, p.y))
+	var ws := WaterStream.new()
+	ws.name = "Brook"
+	ws.points = pts
+	ws.width = 1.9
+	ws.wade_speed = 0.85
+	var n1 := FastNoiseLite.new()
+	n1.frequency = 0.03
+	n1.fractal_octaves = 4
+	var nt := NoiseTexture2D.new()
+	nt.noise = n1
+	nt.as_normal_map = true
+	nt.bump_strength = 5.0
+	nt.seamless = true
+	var n2 := FastNoiseLite.new()
+	n2.frequency = 0.025
+	n2.seed = 9
+	var nn := NoiseTexture2D.new()
+	nn.noise = n2
+	nn.seamless = true
+	var sm := ShaderMaterial.new()
+	sm.shader = load("res://game/world/shaders/cave_water.gdshader")
+	sm.set_shader_parameter("normal_tex", nt)
+	sm.set_shader_parameter("noise_tex", nn)
+	sm.set_shader_parameter("shallow", Color(0.16, 0.22, 0.2))
+	ws.shader_material = sm
+	return ws
 
 
 var _extra := PackedVector2Array()  # per 2 m cell: (leaf litter 0..1, sandstone 0..1)
