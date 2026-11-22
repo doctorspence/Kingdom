@@ -110,6 +110,14 @@ func _build() -> void:
 				base = h - part_h * 0.45  # outcrop: bedded about halfway into the slope
 			var pos := Vector3(p.x, base, p.y)
 			var xf: Transform3D = Transform3D(Basis(Vector3.UP, rot).scaled(Vector3.ONE * s), pos) * (part[1] as Transform3D)
+			if cliff > 0.0:
+				# Lie along the slope instead of standing out of it: up = the ground's normal, bedded in
+				# along that normal, so the rock reads as part of the cliff and never as a floating fin.
+				var n := Vector3(-gx * 0.5, 1.0, -gz * 0.5).normalized()
+				var part_h2: float = (part[2] as Vector3).y * s
+				var tilt := Basis(Quaternion(Vector3.UP, n))
+				pos = Vector3(p.x, h, p.y) - n * part_h2 * 0.55
+				xf = Transform3D(tilt * Basis(Vector3.UP, rot).scaled(Vector3.ONE * s), pos) * (part[1] as Transform3D)
 			var key := "%d|%d|%d" % [pick, floori(p.x / patch), floori(p.y / patch)]
 			if not groups.has(key):
 				groups[key] = []
