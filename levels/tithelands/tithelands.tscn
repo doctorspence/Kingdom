@@ -65,6 +65,8 @@
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/tree_pine.tscn" id="tree_pine"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/trophy_pole.tscn" id="trophy_scene"]
 [ext_resource type="Script" path="res://game/world/underground_cull.gd" id="ucull"]
+[ext_resource type="Script" path="res://game/world/distance_cull.gd" id="dcull"]
+[ext_resource type="Script" path="res://game/world/shadow_budget.gd" id="sbudget"]
 [ext_resource type="Script" path="res://game/world/vendor.gd" id="vendor"]
 [ext_resource type="Material" path="res://levels/common/materials/vignette.tres" id="vignette_mat"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/watchtower.tscn" id="watchtower"]
@@ -895,6 +897,13 @@ code_ferns = false
 script = ExtResource("ucull")
 underground = Array[NodePath]([NodePath("../Gullet")])
 surface = Array[NodePath]([NodePath("../Woods"), NodePath("../Oaks"), NodePath("../Grass"), NodePath("../Clutter"), NodePath("../Rocks"), NodePath("../Highcrown"), NodePath("../StoneWalls"), NodePath("../Dressing"), NodePath("../Shrubs"), NodePath("../Ferns"), NodePath("../Weeds"), NodePath("../Boulders"), NodePath("../CliffFaces"), NodePath("../Deadwood")])
+
+[node name="DistanceCull" type="Node" parent="."]
+script = ExtResource("dcull")
+roots = Array[NodePath]([NodePath("../Places"), NodePath("../Dressing"), NodePath("../TitheExtras"), NodePath("../StoneWalls"), NodePath("../Clutter"), NodePath("../Rocks")])
+
+[node name="ShadowBudget" type="Node" parent="."]
+script = ExtResource("sbudget")
 
 [node name="StoneWalls" type="Node3D" parent="." unique_id=399762350 node_paths=PackedStringArray("terrain")]
 script = ExtResource("63_og1uf")

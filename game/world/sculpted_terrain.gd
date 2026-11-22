@@ -22,6 +22,10 @@ extends ZoneTerrain
 @export var land_script: Script
 ## Children of this node with a "pad" metadata (Vector2 w, d) get a level pad.
 @export var pad_root: NodePath
+## Distances (to a ground chunk's center) where the ground switches to 2 m, then 4 m detail.
+const LOD1_FROM := 130.0
+const LOD2_FROM := 260.0
+
 ## How far the backdrop land reaches beyond the playable edge (meters).
 @export var backdrop := 150.0
 
@@ -654,7 +658,20 @@ func _rebuild() -> void:
 	while c0 < _n - 1:
 		var r0 := 0
 		while r0 < _n - 1:
-			_built.add_child(_chunk_mesh(c0, r0, mini(c0 + chunk, _n - 1), mini(r0 + chunk, _n - 1)))
+			var c1 := mini(c0 + chunk, _n - 1)
+			var r1 := mini(r0 + chunk, _n - 1)
+			var near := _chunk_mesh(c0, r0, c1, r1)
+			_built.add_child(near)
+			if DisplayServer.get_name() != "headless":
+				# Farther chunks are drawn with every 2nd, then every 4th, grid cell.
+				near.visibility_range_end = LOD1_FROM
+				var mid := _chunk_mesh(c0, r0, c1, r1, 2)
+				mid.visibility_range_begin = LOD1_FROM - 10.0
+				mid.visibility_range_end = LOD2_FROM
+				_built.add_child(mid)
+				var far := _chunk_mesh(c0, r0, c1, r1, 4)
+				far.visibility_range_begin = LOD2_FROM - 10.0
+				_built.add_child(far)
 			r0 += chunk
 		c0 += chunk
 	# Collision: a height field (fast and exact for this grid).
@@ -675,15 +692,32 @@ func _rebuild() -> void:
 	print("SculptedTerrain: built %dx%d in %d ms" % [_n, _n, Time.get_ticks_msec() - t0])
 
 
-func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int) -> MeshInstance3D:
-	var w := cx1 - cx0 + 1
+## One chunk of ground at the given LOD: step 1 = every grid cell, 2 = every other
+## cell, 4 = every fourth. Coarser versions sit a hair lower and get a skirt so
+## the seams against neighbours of another detail level stay closed.
+func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInstance3D:
+	var xs := PackedInt32Array()
+	var zs := PackedInt32Array()
+	var k := cx0
+	while k < cx1:
+		xs.append(k)
+		k += step
+	xs.append(cx1)
+	k = cz0
+	while k < cz1:
+		zs.append(k)
+		k += step
+	zs.append(cz1)
+	var w := xs.size()
+	var hgt := zs.size()
+	var lower := 0.0 if step == 1 else 0.15 * step
 	var verts := PackedVector3Array()
 	var norms := PackedVector3Array()
 	var cols := PackedColorArray()
-	for iz in range(cz0, cz1 + 1):
-		for ix in range(cx0, cx1 + 1):
+	for iz in zs:
+		for ix in xs:
 			var i := iz * _n + ix
-			var v := Vector3(-_half + ix * cell, _h[i], -_half + iz * cell)
+			var v := Vector3(-_half + ix * cell, _h[i] - lower, -_half + iz * cell)
 			verts.append(v)
 			var hl := _h[i - 1] if ix > 0 else _h[i]
 			var hr := _h[i + 1] if ix < _n - 1 else _h[i]
@@ -694,7 +728,6 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int) -> MeshInstance3D:
 			var slope := Vector2(hr - hl, hd - hu).length() / (2.0 * cell)
 			cols.append(_weights_at(i, v, slope))
 	var idx := PackedInt32Array()
-	var hgt := cz1 - cz0 + 1
 	for z in hgt - 1:
 		for x in w - 1:
 			var a := z * w + x
@@ -702,7 +735,32 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int) -> MeshInstance3D:
 			var c := a + w
 			var d := c + 1
 			idx.append_array([a, b, d, a, d, c])
-	# Skirt on the outer edges of the whole ground hides cracks against the backdrop.
+	if step > 1:
+		# Skirt: a strip dropping 2 m down along all four edges of the chunk.
+		var edge: Array = []
+		for x in w:
+			edge.append(x)
+		var first := edge.size()
+		for x in w:
+			edge.append((hgt - 1) * w + x)
+		for z in hgt:
+			edge.append(z * w)
+		for z in hgt:
+			edge.append(z * w + w - 1)
+		var runs := [[0, w], [first, w], [first * 2, hgt], [first * 2 + hgt, hgt]]
+		for run in runs:
+			var base := verts.size()
+			for j in run[1]:
+				var src: int = edge[run[0] + j]
+				verts.append(verts[src] + Vector3.DOWN * 2.0)
+				norms.append(norms[src])
+				cols.append(cols[src])
+			for j in run[1] - 1:
+				var a2: int = edge[run[0] + j]
+				var b2: int = edge[run[0] + j + 1]
+				var c2: int = base + j
+				var d2: int = base + j + 1
+				idx.append_array([a2, b2, d2, a2, d2, c2, a2, d2, b2, a2, c2, d2])
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = verts
@@ -714,6 +772,8 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	mi.material_override = material
+	if step > 1:
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if step > 2 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	return mi
 
 
