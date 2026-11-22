@@ -284,9 +284,27 @@ func _smooth(a: PackedFloat32Array, r: int) -> PackedFloat32Array:
 
 ## For every cell within `radius` of the line: the distance to it (_nd), the
 ## nearest segment (_ns, -1 = none) and where on that segment (_nt, 0..1).
-func _nearest(pts: PackedVector2Array, radius: float) -> void:
-	_ns.fill(-1)
-	_nd.fill(radius + 1.0)
+## With stride > 1 the line is sampled every `stride` points (a coarser, faster
+## measure for far cells; segment and position are mapped back to the full line)
+## and only cells still unassigned (_ns < 0) are filled in.
+func _nearest(full: PackedVector2Array, radius: float, stride := 1) -> void:
+	var nn := _n * _n
+	var fixed := PackedByteArray()
+	var pts := full
+	if stride > 1:
+		fixed.resize(nn)
+		for i in nn:
+			fixed[i] = 1 if _ns[i] >= 0 else 0
+			if _ns[i] < 0:
+				_nd[i] = radius + 1.0
+		pts = PackedVector2Array()
+		for i in range(0, full.size(), stride):
+			pts.append(full[i])
+		if (full.size() - 1) % stride != 0:
+			pts.append(full[full.size() - 1])
+	else:
+		_ns.fill(-1)
+		_nd.fill(radius + 1.0)
 	for si in pts.size() - 1:
 		var a := pts[si]
 		var b := pts[si + 1]
@@ -299,16 +317,24 @@ func _nearest(pts: PackedVector2Array, radius: float) -> void:
 		for iz in range(z0, z1 + 1):
 			var pz := -_half + iz * cell
 			for ix in range(x0, x1 + 1):
+				var i := iz * _n + ix
+				if stride > 1 and fixed[i] == 1:
+					continue
 				var px := -_half + ix * cell
 				var t := clampf(((px - a.x) * ab.x + (pz - a.y) * ab.y) / len2, 0.0, 1.0)
 				var qx := a.x + ab.x * t - px
 				var qz := a.y + ab.y * t - pz
 				var d := sqrt(qx * qx + qz * qz)
-				var i := iz * _n + ix
 				if d < _nd[i]:
 					_nd[i] = d
-					_ns[i] = si
-					_nt[i] = t
+					if stride > 1:
+						var ft := t * stride
+						var k := mini(int(ft), stride - 1)
+						_ns[i] = mini(si * stride + k, full.size() - 2)
+						_nt[i] = clampf(ft - k, 0.0, 1.0)
+					else:
+						_ns[i] = si
+						_nt[i] = t
 
 
 func _carve_river() -> void:
@@ -347,7 +373,8 @@ func _carve_river() -> void:
 	dp.resize(nn)
 	_vw.fill(5.0)
 	_wl.fill(lvl[0])
-	_nearest(line, 60.0)
+	_nearest(line, 20.0)          # exact near the river ...
+	_nearest(line, 60.0, 6)       # ... and a coarser measure for the far cells
 	for i in nn:
 		var si := _ns[i]
 		if si < 0:

@@ -506,3 +506,87 @@ static func watchtower(mats: Dictionary, seed_: int) -> Node3D:
 		var rot := Basis(Vector3.UP, c.rng.randf() * TAU) * Basis(Vector3.FORWARD, c.rng.randf_range(-0.35, 0.35))
 		c.mb.box(c.stone(), p + Vector3(0, sz.y * 0.4, 0), sz, rot, 0.03)
 	return BK.finish(c, "Building")
+
+
+## The mill weir: a stone crest across the river with an oak capping beam and posts on the
+## pond side, a stone apron sloping down under the sheeting water, boulders and foam at the
+## foot. Local x runs downstream, z across; y = 0 is the water level below the drop, the crest
+## top is at +0.78. Visual only (you still wade across).
+static func weir(mats: Dictionary, seed_: int) -> Node3D:
+	var c := BK.Ctx.new(seed_, mats)
+	var r := c.rng
+	var half := 8.0
+	# crest wall: courses of squared stones, bedded into both banks
+	var y := -0.75
+	var row := 0
+	while y < 0.74:
+		var h := r.randf_range(0.22, 0.3)
+		var z := -half
+		while z < half:
+			var l := r.randf_range(0.55, 0.95)
+			l = minf(l, half - z)
+			c.mb.box(c.stone(), Vector3(-0.05 + r.randf_range(-0.03, 0.03), y + h * 0.5, z + l * 0.5 + (0.0 if row % 2 == 0 else 0.0)), Vector3(0.9, h, l - 0.025), Basis(), 0.018)
+			z += l
+		y += h
+		row += 1
+	# capping beam and the posts holding it on the pond side
+	c.mb.box(mats.oak, Vector3(-0.05, 0.86, 0), Vector3(0.5, 0.16, half * 2.0), Basis(), 0.012)
+	var zp := -half + 0.6
+	while zp < half:
+		c.mb.box(mats.oak, Vector3(-0.62, 0.45, zp), Vector3(0.2, 1.7, 0.2), Basis(), 0.012)
+		c.mb.box(mats.iron, Vector3(-0.52, 0.8, zp), Vector3(0.05, 0.3, 0.22))
+		zp += 1.9
+	# stone apron: a ramp from the crest down to the stream bed below, under the water
+	var ang := atan2(-0.5, 2.85)
+	var xr := 0.45
+	while xr < 3.3:
+		var yy := lerpf(0.3, -0.2, (xr - 0.45) / 2.85)
+		var zz := -5.6
+		while zz < 5.6:
+			var l := r.randf_range(0.5, 0.9)
+			l = minf(l, 5.6 - zz)
+			c.mb.box(c.stone(), Vector3(xr + 0.2, yy - 0.1, zz + l * 0.5), Vector3(0.42, 0.28, l - 0.03), Basis(Vector3(0, 0, 1), ang), 0.02)
+			zz += l
+		xr += 0.4
+	# boulders below the drop
+	for i in 7:
+		var rr := r.randf_range(0.25, 0.5)
+		c.mb.blob(c.stone(), Vector3(r.randf_range(3.2, 4.6), -0.05, r.randf_range(-5.0, 5.0)), Vector3(rr * 1.2, rr * 0.8, rr), 3, 0.25)
+	var root := BK.finish(c, "Weir")
+	root.add_child(_foam(Vector3(3.9, 0.04, 0.0), Vector2(3.4, 12.0)))
+	root.add_child(_foam(Vector3(0.75, 0.52, 0.0), Vector2(0.9, 11.4), 0.55))
+	return root
+
+
+static func _foam(at: Vector3, size: Vector2, strength := 1.0) -> MeshInstance3D:
+	var sh := Shader.new()
+	sh.code = """shader_type spatial;
+render_mode unshaded, cull_disabled, depth_draw_never;
+uniform float strength = 1.0;
+float h(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vn(vec2 p) {
+	vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(h(i), h(i + vec2(1, 0)), f.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), f.x), f.y);
+}
+void fragment() {
+	vec2 p = UV * vec2(5.0, 22.0);
+	float n = vn(p + vec2(-TIME * 1.1, 0.0)) * 0.6 + vn(p * 2.3 + vec2(-TIME * 1.7, 3.0)) * 0.4;
+	float edge = smoothstep(0.0, 0.2, UV.x) * (1.0 - smoothstep(0.35, 1.0, UV.x)) * smoothstep(0.0, 0.06, UV.y) * (1.0 - smoothstep(0.94, 1.0, UV.y));
+	ALBEDO = vec3(0.86, 0.9, 0.92);
+	ALPHA = smoothstep(0.5, 0.8, n) * edge * 0.75 * strength;
+}
+"""
+	var m := ShaderMaterial.new()
+	m.shader = sh
+	m.set_shader_parameter("strength", strength)
+	var pm := PlaneMesh.new()
+	pm.size = size
+	var am := ArrayMesh.new()
+	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, pm.get_mesh_arrays())
+	am.surface_set_material(0, m)
+	var mi := MeshInstance3D.new()
+	mi.name = "Foam"
+	mi.mesh = am
+	mi.position = at
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return mi

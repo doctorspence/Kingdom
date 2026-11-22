@@ -197,6 +197,7 @@ static func _fan_material() -> StandardMaterial3D:
 	mat.albedo_texture = ImageTexture.create_from_image(img)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_HASH
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_fade_near(mat)
 	mat.roughness = 1.0
 	mat.metallic_specular = 0.05
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
@@ -388,6 +389,7 @@ static func _leaf_material() -> StandardMaterial3D:
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 	mat.alpha_scissor_threshold = 0.45
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_fade_near(mat)
 	mat.roughness = 0.95
 	mat.metallic_specular = 0.15
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
@@ -433,3 +435,11 @@ static func _tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, inside: Ve
 	st.add_vertex(a)
 	st.add_vertex(b)
 	st.add_vertex(c)
+
+
+## Foliage that comes close to the camera dithers away instead of filling the screen
+## (the camera only collides with trunks).
+static func _fade_near(mat: BaseMaterial3D) -> void:
+	mat.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER
+	mat.distance_fade_min_distance = 2.6
+	mat.distance_fade_max_distance = 0.8

@@ -39,6 +39,7 @@
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/lookout.tscn" id="lookout_scene"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/mill.tscn" id="mill"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/palisade.tscn" id="palisade"]
+[ext_resource type="PackedScene" path="res://levels/tithelands/props/weir.tscn" id="weir"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/rock.tscn" id="rock"]
 [ext_resource type="Script" path="res://game/net/game_session.gd" id="session"]
 [ext_resource type="PackedScene" path="res://game/world/shrine.tscn" id="shrine"]
@@ -255,6 +256,10 @@ metadata/y_offset = 0.4
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -104, 0, 3.5)
 metadata/pad = Vector2(9, 10.5)
 metadata/pad_blend = 2.0
+
+[node name="Weir" parent="Places" unique_id=770120451 instance=ExtResource("weir")]
+transform = Transform3D(0.99, 0, 0.139, 0, 1, 0, -0.139, 0, 0.99, -95, 0, -6.66)
+metadata/y_offset = 0.1
 
 [node name="MillShrine" parent="Places" unique_id=1079375942 instance=ExtResource("shrine")]
 transform = Transform3D(-0.50000006, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, -0.50000006, -80, 0, 20)

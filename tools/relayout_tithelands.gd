@@ -38,6 +38,7 @@ var PLACES := {
 	"Bridge": [0, 2, -10, {}],
 	"Mill": [-104, 3.5, 90, {"pad": Vector2(9, 10.5), "pad_blend": 2.0}],
 	"MillShrine": [-80, 20, 120, {"pad": Vector2(3, 3), "pad_blend": 2.0}],
+	"Weir": [-95, -6.66, 8, {}],
 	"HobbTent1": [-111.5, 27, 30, {}],
 	"HobbTent2": [-118.5, 34.7, -20, {}],
 	"HobbTent3": [-105.2, 37.5, 75, {}],
