@@ -49,16 +49,19 @@ func _ready() -> void:
 	# Test helpers (only for development)
 	_add("debug_help", [_key(KEY_F1)])
 	_add("debug_info", [_key(KEY_F2)])
-	_add("debug_equip_load", [_key(KEY_F3)])
-	_add("debug_reset", [_key(KEY_F4)])
-	_add("debug_time", [_key(KEY_F5)])
-	_add("debug_rain", [_key(KEY_F6)])
-	_add("debug_raid", [_key(KEY_F7)])
+	# Cheat keys only exist in editor/debug builds; an exported build keeps the
+	# actions (so is_action_pressed stays valid) but gives them no keys.
+	var dev := OS.is_debug_build()
+	_add("debug_equip_load", [_key(KEY_F3)] if dev else [])
+	_add("debug_reset", [_key(KEY_F4)] if dev else [])
+	_add("debug_time", [_key(KEY_F5)] if dev else [])
+	_add("debug_rain", [_key(KEY_F6)] if dev else [])
+	_add("debug_raid", [_key(KEY_F7)] if dev else [])
 	_add("toggle_health_bars", [_key(KEY_H)])
 	_add("toggle_damage_numbers", [_key(KEY_N)])
 	_add("talents", [_key(KEY_T), _button(JOY_BUTTON_DPAD_LEFT)])
-	_add("debug_level_up", [_key(KEY_PAGEUP)])
-	_add("debug_level_reset", [_key(KEY_PAGEDOWN)])
+	_add("debug_level_up", [_key(KEY_PAGEUP)] if dev else [])
+	_add("debug_level_reset", [_key(KEY_PAGEDOWN)] if dev else [])
 
 
 func _add(action: StringName, events: Array, deadzone := STICK_DEADZONE) -> void:

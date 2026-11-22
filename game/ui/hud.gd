@@ -698,7 +698,7 @@ func _build() -> void:
 	root.add_child(_debug_label)
 
 	_help_label = _make_label(18)
-	_help_label.text = HELP_TEXT
+	_help_label.text = HELP_TEXT if OS.is_debug_build() else HELP_TEXT.split("\nTEST KEYS")[0] + "\nH: enemy health bars on/off    N: damage numbers on/off"
 	_place(_help_label, Control.PRESET_TOP_RIGHT, Rect2(-720, 36, 680, 640))
 	_help_label.visible = false
 	root.add_child(_help_label)
