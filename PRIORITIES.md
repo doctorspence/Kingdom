@@ -42,12 +42,13 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 
 ## P2: Decisions only you can make (they block content, not code)
 
-- [ ] Name Harl's unique weapon and the named rare bandit ("Rook the Cutthroat" is a placeholder).
-- [ ] One-line cryptic descriptions for the pickaxe, Blackstone amulet, Black Pick, bread and potion.
-- [ ] Souls and XP for the Gullet enemies (rough numbers, tune later).
+- [x] **Souls for the Gullet enemies** (2026-11-22, still tunable in `data/loot/loot_bandit*.tres`, `loot_harl.tres`): Bandit 8-16, Captain 40-70, Rook 60-90, Harl 250-350 (a Marauder gives 10-20, Hobb 120-200). XP was already set: Bandit 90, Captain 400, Rook 300, Harl 1200.
+- [x] **Cryptic descriptions** already exist as drafts and are in the item files (`flavor =`). Change any you don't like: Steel Pickaxe "A miner's tool that learned a second trade." · Blackstone Amulet "A chip of the black stone on a leather cord. It never quite reaches room temperature." · Harl's Black Pick "The head is cut from the stone itself, and it is warm." · Bread "Hard, but it is food." · Health Potion "Tastes of iron and bad decisions."
+- [ ] **Your call:** keep "Harl's Black Pick" as the unique weapon's name? And rename "Rook the Cutthroat" (file `data/enemies/enemy_bandit_rook.tres`, `display_name`)? Tell me the names and I'll change them.
 - [ ] The open questions in `DESIGN.md` section 14.
 - [ ] What the chapel and barrow are *for*. They're built but there's nothing to do there.
 - [ ] Brother Tallow and the acolytes: keep them for a later zone, or delete them? (They're unused data, spawn tables and tests.)
+- [ ] Class abilities: you will change these later (the 🧪 ability lines in `TODO.md` are ticked as played).
 
 ## P3: Overhauls under the hood (after the milestone, with the checks as a safety net)
 

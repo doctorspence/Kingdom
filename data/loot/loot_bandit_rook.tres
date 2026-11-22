@@ -40,5 +40,5 @@ script = ExtResource("t")
 drop_chance = 0.0
 item_level = Vector2i(4, 7)
 coins = Vector2i(60, 120)
-souls = Vector2i(30, 50)
+souls = Vector2i(60, 90)
 entries = Array[ExtResource("e")]([SubResource("r1"), SubResource("r2"), SubResource("r3"), SubResource("r4")])

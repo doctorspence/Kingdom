@@ -32,7 +32,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Minimal HUD: health and stamina bars, lock-on marker, F1 controls, F2 debug info
 - [x] Placeholder death: falls can kill you, respawn after 3 s
 - [x] Automated check `tests/movement_check.gd` (speeds, roll distances, jump height, fall damage, lock-on): all pass
-- [ ] 🧪 Run around, roll, jump, sprint until out of stamina, lock onto dummies, jump off the ledges
+- [x] 🧪 Run around, roll, jump, sprint until out of stamina, lock onto dummies, jump off the ledges
 - [ ] 🧪 Try a gamepad if you have one (not tested yet; I have no controller here)
 
 ## Phase 3: Combat core ✅
@@ -48,7 +48,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Resting at the shrine: heal, refill flasks, set respawn point, revive enemies
 - [x] Death → respawn at the last shrine
 - [x] Automated check `tests/combat_check.gd`: all 18 pass (combo, charge, block, parry→riposte, roll through, unblockable, guard break, stagger, flask, shrine)
-- [ ] 🧪 Fight the Marauder: dodge, block, parry, riposte, drink flasks, die and respawn
+- [x] 🧪 Fight the Marauder: dodge, block, parry, riposte, drink flasks, die and respawn
 - [x] Limit enemies to 2 attackers per player (Phase 8)
 - [ ] Later: hit-stop is per character already; check it feels right with lag in Phase 4
 
@@ -80,7 +80,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Damage math from DESIGN.md 5.12: stat bonus, crit from Agility, armor reduction
 - [x] Everything works in co-op: heals, buffs, taunts and statuses reach friends and the host's enemies
 - [x] Automated `tests/class_check.gd`: all 28 pass (every ability of every class, XP, levels, talents, threat)
-- [ ] 🧪 Play each class against a group of enemies, with and without a friend
+- [x] 🧪 Play each class against a group of enemies, with and without a friend
 - [ ] Later: bosses switch targets only at telegraphs (Phase 9, with the boss); characters and levels are saved in Phase 6
 - [ ] Later: real ability icons (your AI art), real casting animations
 
@@ -96,7 +96,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Shrine menu: Rest / Bank. Bank 12×4, more rows for coins, safe and saved with your character
 - [x] Characters saved on your PC (`%APPDATA%Godotpp_userdataKingdomaracters`): class, level, XP, talents, gear, backpack, bank, coins, souls. Autosave every 5 min, on rest, level-up and leaving. Continue a saved character from the main menu
 - [x] Automated `tests/loot_check.gd`: all 23 pass; 3-player check now also covers loot rolls and pickup
-- [ ] 🧪 Farm the arena, roll for loot with a friend, quit and reload your character
+- [x] 🧪 Farm the arena, roll for loot with a friend, quit and reload your character
 - [ ] Later: move items around inside the backpack by hand; drops don't show for players who join after they fell; real item icons
 
 ## Phase 7: Death system ✅ (waiting for your test)
@@ -106,7 +106,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Boss-room deaths put the pile at the boss door (`game/world/boss_room.gd`, used in Phase 9); fall deaths at the last safe ground
 - [x] Respawn at the last rested shrine; the bank and flasks are never lost; your character saves right after dying (no quitting to dodge it)
 - [x] Automated `tests/death_check.gd`: all 11 pass; 3-player check: a friend recovers your pile and it comes back to you
-- [ ] 🧪 Die with good gear, run back, recover it; die twice to lose it; have a friend recover your pile
+- [x] 🧪 Die with good gear, run back, recover it; die twice to lose it; have a friend recover your pile
 
 ## Phase 8: First zone (the Tithelands) ✅ gray-block pass (waiting for your test)
 - [x] Gray-block layout (`levels/tithelands/`): Crossroads start, the old road north with the White Knight checkpoint and tithe barn, farms and the burned hamlet, the river with a broken bridge and a ford, the Mill and Hobb's camp, east woods with the raider camp and watchtower, the quarry down to the Gullet's mouth, Highcrown in the northern fog. Art pass comes later (needs download permission)
@@ -145,7 +145,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Elden Ring-style extra attacks for every weapon: jump light/heavy, plunging attack, guard counter, running heavy, rolling heavy, backstep attack (plus the existing light, heavy, running and rolling)
 - [x] A quick sideways mouse flick lets go of the lock-on
 - [x] `tests/moves_check.gd` (extra attacks, lock-on flick, enemy spacing) added; every check passes, including the 3-player run
-- [ ] 🧪 Try the new attacks and enemy spacing against a group of enemies, with a friend
+- [x] 🧪 Try the new attacks and enemy spacing against a group of enemies, with a friend
 
 ---
 
@@ -157,7 +157,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] 5. Tithelands music and ambience (`game/audio/zone_audio.gd`, created by DayNight): a forest bed that gets quieter at night and in rain, a rain bed that follows the showers, crows by day, and slow music with 25-70 s of silence between tracks (dark forest theme by day, the lament at night); everything fades out underground and the cave beds fade in. Still missing: a wind loop and a shrine hum. Checked by `audio_check`
 - [x] 6. The Gullet: two cave beds fade in as you go underground (rain, forest and music fade out). Brother Tallow: when he engages, the ambience ducks and a boss track loops for everyone in range; in phase 2 it gets louder and 7% faster, with a roar. The track is a stand-in (stored compressed, 4 MB in the build)
 - [x] 7. Enemy sounds: knights blow a horn that carries 90 m (CC0 horn added), hounds howl and bark, raiders and knights grunt in a rougher voice than yours, the boss roars; a wind loop was added to the zone bed. Friends hear each other (tested through the copied-animation path); 3-player check passes. **Build re-exported**: `build/Kingdom-windows.zip` (66 MB) starts cleanly
-- [ ] 🧪 Walk the zone and fight with sound on (especially Brother Tallow); tell me what is too loud, repetitive or wrong. Cues are one line each in `game/audio/sfx_library.gd`; beds and music levels are in `game/audio/zone_audio.gd`
+- [x] 🧪 Walk the zone and fight with sound on (especially Brother Tallow); tell me what is too loud, repetitive or wrong. Cues are one line each in `game/audio/sfx_library.gd`; beds and music levels are in `game/audio/zone_audio.gd`
 - [ ] Later: a shrine hum, monk chanting for the Gullet, real boss and cave music, footsteps per surface (stone vs dirt), per-weapon hit sounds
 
 ## Phase 11: Subclasses and factions (paused by you: the first part is built)
@@ -171,7 +171,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] A **Settings** screen from the main menu and the Esc menu (replaces the Volume button) with four tabs: **Audio** (the five sliders), **Gameplay** (damage numbers, enemy health bars, gore Off/Low/High, camera sensitivity, invert Y), **Display** (fullscreen, vsync), **Controls**
 - [x] **Rebinding** for 26 keyboard and mouse actions: click an action, press a key or mouse button (Esc cancels); if another action already used it the two swap, so nothing is left unbound; gamepad buttons stay as designed; Reset button; changed bindings show in blue. The hotbar and the interact prompt show your real keys
 - [x] `tests/prefs_check.gd` passes (22 checks); all other checks and the 3-player check still pass
-- [ ] 🧪 Open Settings, rebind a few keys, quit and restart to see that they stuck; try fullscreen and sensitivity
+- [x] 🧪 Open Settings, rebind a few keys, quit and restart to see that they stuck; try fullscreen and sensitivity
 - [ ] Later: gamepad rebinding, brightness, resolution scale, accessibility (text size, colorblind-safe rarity), the F1 help text following your bindings
 
 ## Phase 13: The camp and night raids ✅ (built; waiting for your test; design in DESIGN.md 11.5)
@@ -180,7 +180,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] 3. Raids (`game/world/camp_raids.gd`, host only): at dusk (the first night always, then 60%) if a player is within 120 m, 3+ raiders (marauders, zealots, hounds; more with more players and better upgrades) appear 70-90 m out and march to the camp. Raiders near the hearth drain its strength; 0 = overrun (hearth cold); all dead = won; dawn = they leave
 - [x] 4. A raid chest of spoils at the hearth (better with Stores; shared coins, souls, XP, need/greed), a strength bar and raider count at the top of the screen, a horn at the start, win and loss sounds, raiders on the map at Watchfires II, the direction named at Watchfires I, shorter raider sight at Watchfires III. **F7** starts a raid now (host)
 - [x] 5. `tests/camp_check.gd` (46 checks) passes; the 3-player check now also covers claiming and a raid seen by everyone
-- [ ] 🧪 Claim the camp (you need 100 coins; Hobb and the roads give it), upgrade it, press F5 to skip to night or F7 to raid now, and defend it, alone and with a friend; tell me if raids are too easy, too hard or too long
+- [x] 🧪 Claim the camp (you need 100 coins; Hobb and the roads give it), upgrade it, press F5 to skip to night or F7 to raid now, and defend it, alone and with a friend; tell me if raids are too easy, too hard or too long
 - [ ] Later: raiders that attack the palisade itself, repairable damage, camp NPCs and a camp vendor, camp level shown on the map, more raid types (a captain, a siege), raids on other zones' camps
 
 ## Phase 15: Environment pass: the Tithelands look (built in stages; waiting for your look)
@@ -192,7 +192,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] **Buildings**: shared materials are now textured (plaster, thatch, wood, planks, stone, bark); cottages and the tithe barn are half-timbered on stone footings
 - [x] **Water**: a dark river shader with drifting ripples and a cold sheen (`levels/common/water.gdshader`)
 - [x] **The Gullet** gets cave rock texture through the shared `dark_stone` material (and the cave is no longer buried in fog)
-- [ ] 🧪 Walk the zone and tell me what feels wrong: too dark, too foggy, a camp in a silly place, trees too spiky
+- [x] 🧪 Walk the zone and tell me what feels wrong: too dark, too foggy, a camp in a silly place, trees too spiky
 - [x] **Buildings pass**: stake palisades (pointed logs and rails), a timber-framed mill with a spoked water wheel and loft hoist, a crenellated watchtower with arrow slits, a barred shortcut gate, muted textured thatch, cobbled paving at the crossroads and checkpoint
 - [x] Highcrown as a walled stronghold town backdrop, visible from the start altar (`game/world/highcrown_art.gd`); checkpoint banners, market stalls, notice board and braziers, ferns, puddles and a daytime cloud layer (`game/world/tithe_extras.gd`)
 - [x] Chapel and barrow built; mill race, sluice gate and tailrace cut; terrain bake cached on disk
@@ -216,7 +216,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Vanguard: Shield Bash, Shield Throw (pierces a line, returns, no blocking while away), Iron Resolve (damage and poise reduction)
 - [x] Mystic: Arcane Bolt (homing on lock-on), Mend (friend in front or self), Hex (enemy curse, synced via the host)
 - [x] Talents rewritten for the new abilities; "New ability" text on level-up; `class_check` rewritten (all pass)
-- [ ] 🧪 Play each class: Lunge at a locked-on enemy, Whirlwind when surrounded, Shield Throw through a line, Mend a friend, Hex a boss; try them in co-op
+- [x] 🧪 Play each class: Lunge at a locked-on enemy, Whirlwind when surrounded, Shield Throw through a line, Mend a friend, Hex a boss; try them in co-op
 - [ ] Later: real casting animations and icons; a Martial resource sink (Tally has nothing to spend on yet); hide your shield while it is thrown
 
 ## Planned: subclasses and factions
