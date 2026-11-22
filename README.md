@@ -43,12 +43,21 @@ powershell -ExecutionPolicy Bypass -File tests\run_net_check.ps1
 Weapons, shields and enemies are in `data/weapons/`, `data/shields/` and `data/enemies/` (open an attack inside them to change its damage, speed or reach). All the movement and stamina numbers are in `data/balance/player_tuning.tres`. Double-click it in the FileSystem panel; the numbers show up in the **Inspector** on the right, each with a short description. Change one, press F5, feel the difference. (git remembers the old values.)
 
 ## What's where
+**AI helpers (Claude Code, ChatGPT) reading this repo:** start with `HANDOFF.md`, then `PRIORITIES.md`, then `SPEC.md`. Claude Code's working rules are in `CLAUDE.md`.
+
 | Folder / file | What it is |
 |---|---|
-| `SPEC.md` | Your original brief |
-| `DESIGN.md` | The full game design + technical plan |
-| `TODO.md` | Phase-by-phase checklist (what's done, what's next, what to test) |
+| `SPEC.md` | Your original brief: the game's vision. Never edited |
 | `HANDOFF.md` | Where we are right now, and how to resume in a new session or account |
+| `PRIORITIES.md` | What to do next, in order |
+| `CLAUDE.md` | Rules Claude Code reads at the start of every session |
+| `DESIGN_INBOX.md` | Design and art-direction decisions from ChatGPT, waiting for Claude Code to file and build them |
+| `DESIGN.md` | The full game design + technical plan (art direction and palette: section 12.1) |
+| `TODO.md` | Phase-by-phase checklist (what's done, what's next, what to test) |
+| `ZONES_DESIGN.md` | Layout and story for zones 1-3: the Tithelands, Highcrown, the Barrow Fells (maps: `ZONE*_MAP.png`, `ZONES_OVERVIEW.png`) |
+| `ZONE1_OVERHAUL.md` | Zone 1 rebuild and performance plan |
+| `GREENWOOD_OVERHAUL.md` | Zone 1 Greenwood look: trees, limestone, plants, light |
+| `GULLET_DESIGN.md` | The Gullet dungeon and Harl the Delver (map: `GULLET_MAP.svg`) |
 | `CLASS_PLAN.md` | Plan for the Martial / Vanguard / Mystic classes, nine subclasses and the three factions (not built yet) |
 | `ART_NEEDS.md` | Art & audio shopping list |
 | `assets/` | Art and sound. Every file is logged in `assets/CREDITS.md` |
