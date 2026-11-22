@@ -1,6 +1,7 @@
 # KINGDOM: priority checklist
 
 *Started 2026-11-22 from a read-through of the project: docs, git history, and the main code files. I didn't run the game or the checks for this.*
+*P0 done 2026-11-22: test keys locked to debug builds, tree committed and clean, all 15 checks and the 3-player check pass, to-do docs merged (NEXT_STEPS retired, HANDOFF is now one screen).*
 
 **The short version:** you've built a huge amount in about 48 hours (100+ commits, Phases 1 to 15). But there are **15 open 🧪 playtest items**. The milestone in `SPEC.md` (3 friends clear the zone and the dungeon) has not happened yet. The friends build is several big changes out of date. Most recent sessions went into art passes. The best next move is to **stop adding, stabilize, and play.**
 
@@ -10,10 +11,10 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 
 ## P0: Stabilize first (small, do these before anything new)
 
-- [ ] **CC: Lock the test shortcuts out of the friends build.** PageUp (level up), PageDown, the reset key and the gear-cycle key work for *any* player in the exported game (`game/player/player.gd`, around line 1138). A friend can jump to max level and skip all progression. Make them work only in the editor (`OS.is_debug_build()`), and do the same for F5/F6/F7 (time, rain, raid).
-- [ ] **CC: One session per area, and a clean `git status`.** Two Claude sessions have been editing in parallel (HANDOFF warns that "another session owns gullet.gd"). `ZONE1_OVERHAUL.md` and `sculpted_terrain.gd` changed minutes before this list was written. Finish or close one session, commit everything left over, and confirm nothing is loose (for example the `Bandit_Sword.glb` import note in ZONE1_OVERHAUL).
-- [ ] **CC: Run every check plus the 3-player check.** The last "all pass" note is from before the equipment system, the chapel and barrow, and the terrain cache. Run them one at a time (they share port 31499).
-- [ ] **CC: Merge the to-do docs into one.** `TODO.md`, `NEXT_STEPS.md`, the "Next up" part of `HANDOFF.md` and the stages in `ZONE1_OVERHAUL.md` overlap and contradict each other. Every new session reads them, so stale lines send it the wrong way. What's stale now:
+- [x] **CC: Lock the test shortcuts out of the friends build.** PageUp (level up), PageDown, the reset key and the gear-cycle key work for *any* player in the exported game (`game/player/player.gd`, around line 1138). A friend can jump to max level and skip all progression. Make them work only in the editor (`OS.is_debug_build()`), and do the same for F5/F6/F7 (time, rain, raid).
+- [x] **CC: One session per area, and a clean `git status`.** Two Claude sessions have been editing in parallel (HANDOFF warns that "another session owns gullet.gd"). `ZONE1_OVERHAUL.md` and `sculpted_terrain.gd` changed minutes before this list was written. Finish or close one session, commit everything left over, and confirm nothing is loose (for example the `Bandit_Sword.glb` import note in ZONE1_OVERHAUL).
+- [x] **CC: Run every check plus the 3-player check.** The last "all pass" note is from before the equipment system, the chapel and barrow, and the terrain cache. Run them one at a time (they share port 31499).
+- [x] **CC: Merge the to-do docs into one.** `TODO.md`, `NEXT_STEPS.md`, the "Next up" part of `HANDOFF.md` and the stages in `ZONE1_OVERHAUL.md` overlap and contradict each other. Every new session reads them, so stale lines send it the wrong way. What's stale now:
   - TODO Phase 14 is still marked 🚧, and "Gold renamed to coins" is unticked. Both are done.
   - NEXT_STEPS lists "terrain bake cache" (done today) and says the chapel builder is uncommitted (it was committed 11-21).
   - ZONE1_OVERHAUL's header says "hold the chapel and barrow sites empty". They're built.

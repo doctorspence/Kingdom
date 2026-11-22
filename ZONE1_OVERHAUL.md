@@ -1,6 +1,6 @@
 # ZONE 1 OVERHAUL: audit and redesign proposal
 
-*Written 2026-11-21. Decisions (2026-11-21): 1 yes (CC0 downloads OK), 2 yes (new layout), 3 yes (brighter baseline), 4 hold the chapel and barrow sites empty for now.*
+*Written 2026-11-21. Decisions (2026-11-21): 1 yes (CC0 downloads OK), 2 yes (new layout), 3 yes (brighter baseline), 4 hold the chapel and barrow sites empty for now (since built, see the Progress table).*
 
 ## Progress
 
@@ -57,7 +57,7 @@ The zone has a good skeleton (a river valley, a road north to Highcrown, a sensi
 | 15 | P3 | **Performance.** Up to **17 million triangles and 6,300 draw calls** in one frame looking north from the spawn; 22 to 28 FPS at the farms and spawn on this PC. Trees have no distance versions (LODs) | Audit FPS lines | Tree LODs and far billboards, merging small props into batches, distance fading for clutter. Target 60 FPS at the spawn |
 | 16 | P3 | Small things: a palisade "beacon" pole of light over the Gullet door looks like a stick in the sky (a10); the cobble patch at the Crossroads floats 1.8 m on one side; Signpost 2 stands in the river | a10, audit | Fixed during the re-lay |
 
-**Not caused by the zone, but seen during the audit:** loading the Tithelands headless showed `Bandit_Sword.glb` has not been imported yet (it is new, uncommitted work in `assets/characters/bandit/`), so bandit spawns error out until the editor imports it. Opening the project in the editor once should fix it. I did not touch it.
+**Resolved:** `Bandit_Sword.glb` is now imported and committed (2026-11-22).
 
 ---
 

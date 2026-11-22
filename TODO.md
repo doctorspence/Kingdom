@@ -6,7 +6,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 
 **First milestone: 3 friends can clear one zone and one dungeon.**
 
-> **Where we are (2026-11-21):** Phases 1-9 are built (gray-block pass) and all automated checks pass. Waiting on **your playtest**: the Tithelands (now much more detailed), the new bandit Gullet and Harl the Delver, and the 3-friends milestone. You said movement and combat now feel good. **Next up:** the class overhaul in [`CLASS_PLAN.md`](CLASS_PLAN.md), starting at Priority 1 (planned only, nothing built). See [`HANDOFF.md`](HANDOFF.md) for how to resume.
+> **Where we are (2026-11-22):** Phases 1-15 are built and all automated checks pass. Waiting on **your playtest** (every 🧪 line below) and the 3-friends milestone. The order of work is in [`PRIORITIES.md`](PRIORITIES.md); how to resume is in [`HANDOFF.md`](HANDOFF.md). The class overhaul in [`CLASS_PLAN.md`](CLASS_PLAN.md) is paused after the first three subclasses.
 
 ---
 
@@ -195,6 +195,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Walk the zone and tell me what feels wrong: too dark, too foggy, a camp in a silly place, trees too spiky
 - [x] **Buildings pass**: stake palisades (pointed logs and rails), a timber-framed mill with a spoked water wheel and loft hoist, a crenellated watchtower with arrow slits, a barred shortcut gate, muted textured thatch, cobbled paving at the crossroads and checkpoint
 - [x] Highcrown as a walled stronghold town backdrop, visible from the start altar (`game/world/highcrown_art.gd`); checkpoint banners, market stalls, notice board and braziers, ferns, puddles and a daytime cloud layer (`game/world/tithe_extras.gd`)
+- [x] Chapel and barrow built; mill race, sluice gate and tailrace cut; terrain bake cached on disk
 - [ ] Later: a walkable Highcrown (needs the zone extended north), LODs for distant trees
 
 ## Later (after the milestone)
@@ -228,10 +229,10 @@ Full notes and priority order are in [`CLASS_PLAN.md`](CLASS_PLAN.md). Not built
 - [ ] P6 Initiation events once quests exist
 - [ ] P7 Per-subclass talents, visuals, balance
 
-## Phase 14: The new Gullet (bandit quarry) 🚧 in progress
+## Phase 14: The new Gullet (bandit quarry) ✅ built, gray-block (waiting for your test)
 Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces the candle-monk Gullet (Brother Tallow stays as unused data). Levels 3-6.
 - [x] 1. Docs updated and design committed
-- [ ] 2. Gold renamed to coins everywhere (saves convert old data)
+- [x] 2. Gold renamed to coins everywhere (saves convert old data)
 - [x] 3. Items and loot: food, potions, bronze/iron/steel gear, iron dagger, steel pickaxe, Blackstone amulet, Harl's unique weapon, loot tables with 1-in-N odds
 - [x] 4. Enemies: Bandit (sword, pick), Bandit Captain, Bandit Archer
 - [x] 5. Powder barrels
@@ -240,4 +241,5 @@ Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces th
 - [x] 8. Boss: Harl the Delver
 - [x] 9. Retire the old Gullet (Tallow kept, saves migrate)
 - [x] 10. Atmosphere: torch and fire light, campfire, deep gloom (the existing cave sound bed and boss track play; quarry-specific audio later)
-- [ ] 11. Tests, 3-player check, friends build, handoff
+- [x] 11a. Tests and 3-player check pass (2026-11-22)
+- [ ] 11b. Re-export the friends build (see PRIORITIES.md P1)
