@@ -61,7 +61,7 @@ var PLACES := {
 	"GulletDoor": [-166.5, -98, 90, {}],
 	"QuarryRock1": [-160, -90, 20, {"scale": 1.8}],
 	"QuarryRock2": [-156, -106, 70, {"scale": 1.5}],
-	"QuarryRock3": [-149, -108, 140, {"scale": 1.2}],
+	"QuarryRock3": [-163, -77, 140, {"scale": 1.2}],
 	"QuarryRock4": [-146, -90, 10, {"scale": 1.0}],
 	"QuarryRock5": [-131, -86, 100, {"scale": 1.4}],
 	"RoadCart1": [15, 64, 175, {}],

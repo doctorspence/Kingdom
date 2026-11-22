@@ -67,7 +67,13 @@ var tracks := [
 # ---- cuts: the quarry floor carved into the scarp, a bench along its north
 # wall, and a cart ramp up to the bench.
 var cuts := [
-	{"center": Vector2(-150, -100), "half": Vector2(21, 16), "floor": 12.0, "edge": 1.6, "mode": "carve", "rock": 0.55, "rough": 3.0},
+	{"center": Vector2(-150, -100), "half": Vector2(21, 16), "floor": 12.0, "edge": 1.6, "mode": "carve", "rock": 0.55, "rough": 1.2, "round": 6.0},
+	# Worked terraces (Greenwood stage 5): a 3 m step below the north bench, a high step in the
+	# north-west corner, a low half-cut step in the south-west corner. The west wall round the
+	# Gullet's door and the south wall with the ladder stay as they are.
+	{"center": Vector2(-155, -108.6), "half": Vector2(12, 1.6), "floor": 15.0, "edge": 0.5, "mode": "fill", "rock": 0.75},
+	{"center": Vector2(-168.5, -112), "half": Vector2(2.6, 5.0), "floor": 16.0, "edge": 0.5, "mode": "fill", "rock": 0.75},
+	{"center": Vector2(-167.5, -87.5), "half": Vector2(2.8, 3.2), "floor": 14.5, "edge": 0.5, "mode": "fill", "rock": 0.75},
 	{"center": Vector2(-155, -113.5), "half": Vector2(15, 3.4), "floor": 18.0, "edge": 0.8, "mode": "fill", "rock": 0.7},
 	{"center": Vector2(-135, -114), "half": Vector2(6.5, 2.6), "floor": 18.0, "floor_end": 12.2, "edge": 1.0, "mode": "fill", "rock": 0.5},
 	# The mill race (cut after the pads; the walls come with the mill model, see building_landmarks.gd):
@@ -213,6 +219,9 @@ func natural(x: float, z: float) -> float:
 	# The west scarp: a cliff band, highest in the north, softening into a wooded slope in the south.
 	var sx := scarp_x(z)
 	var tall := lerpf(13.5, 4.0, smoothstep(40.0, 120.0, z))
+	# Where the quarry's side walls cut through the scarp, the noses are worn down into shoulders.
+	for nose: Vector2 in [Vector2(-133, -84), Vector2(-133, -116)]:
+		tall *= 1.0 - 0.55 * exp(-Vector2(x, z).distance_squared_to(nose) / 70.0)
 	# Limestone steps: an upper face, a ledge 2 to 4 m wide, a lower face; a ragged, broken
 	# brow; and a scree apron of fallen rock at the foot.
 	var u := x - sx - noise.get_noise_2d(19.0, z * 4.0) * 1.4
@@ -249,6 +258,8 @@ func natural(x: float, z: float) -> float:
 		var hdist := Vector2(x, z).distance_to(hc)
 		var knob := maxf(0.0, (1.0 - absf(noise.get_noise_2d(x * 3.5 + 700.0, z * 3.5))) - 0.72) / 0.28
 		h += 3.2 * knob * (1.0 - smoothstep(14.0, 28.0, hdist)) * smoothstep(14.0, 22.0, absf(x))
+	# The spoil heap: quarry waste tipped at the foot of the scarp beside the cart ramp.
+	h += 2.0 * exp(-Vector2(x + 128.0, z + 121.0).length_squared() / 110.0)
 	# The brook: a stony channel from the east ridge down past the crag into the river.
 	var bd := _line_dist(Vector2(x, z), brook)
 	h -= 1.0 * (1.0 - smoothstep(0.9, 4.5, bd.x))
@@ -287,7 +298,7 @@ func forest(x: float, z: float) -> float:
 
 ## Extra ground data for the terrain shader: (leaf litter under the broadleaf
 ## canopy 0..1, sandstone share of the rock 0..1; the rest is limestone).
-func ground_extra(x: float, z: float) -> Vector2:
+func ground_extra(x: float, z: float) -> Vector3:
 	var f := forest(x, z)
 	var litter := smoothstep(0.2, 0.65, f) * (0.75 + 0.25 * noise.get_noise_2d(x * 2.0 + 40.0, z * 2.0))
 	# Warm sandstone: low down in the south of the scarp, the crag's skirt, the gorge banks.
@@ -298,7 +309,10 @@ func ground_extra(x: float, z: float) -> Vector2:
 	if x > 85.0:
 		sand = maxf(sand, 0.6 * (1.0 - smoothstep(8.0, 16.0, absf(z - river_z(x)))))
 	sand *= 0.7 + 0.3 * noise.get_noise_2d(x * 1.3, z * 1.3 + 200.0)
-	return Vector2(clampf(litter, 0.0, 1.0), clampf(sand, 0.0, 1.0))
+	# Worked stone: the quarry's cut faces and floor (block scars, pick marks, fresh pale stone).
+	var qd := maxf(absf(x + 150.0) - 21.0, absf(z + 100.0) - 16.0)
+	var worked := 1.0 - smoothstep(1.0, 5.0, qd)
+	return Vector3(clampf(litter, 0.0, 1.0), clampf(sand * (1.0 - worked), 0.0, 1.0), worked)
 
 
 ## Fallen boulders: under the scarp, around the crag, along the gorge, a few elsewhere.
@@ -336,6 +350,20 @@ func weeds(x: float, z: float) -> float:
 	var dr := absf(z - river_z(x))
 	var bank := smoothstep(5.0, 8.0, dr) - smoothstep(10.0, 16.0, dr)
 	return 0.12 + 0.3 * undergrowth(x, z) + 0.35 * bank
+
+
+## Scree and rubble: the foot of the scarp, the quarry floor along its walls and round the spoil
+## heap, the crag's skirt, the brook's stony bed.
+func scree(x: float, z: float) -> float:
+	var sx := scarp_x(z)
+	var s := 0.45 * (smoothstep(sx + 1.0, sx + 4.0, x) - smoothstep(sx + 8.0, sx + 14.0, x)) * (1.0 - smoothstep(30.0, 100.0, z))
+	var qd := maxf(absf(x + 150.0) - 21.0, absf(z + 100.0) - 16.0)
+	s = maxf(s, 0.5 * (smoothstep(-7.0, -3.0, qd) - smoothstep(-1.0, 1.0, qd)))
+	s = maxf(s, 0.6 * (1.0 - smoothstep(4.0, 9.0, Vector2(x, z).distance_to(Vector2(-128, -121)))))
+	var cq := Vector2((x - 105.0) / 30.0, (z - 26.0) / 28.0).length()
+	s = maxf(s, 0.2 * (smoothstep(0.85, 1.0, cq) - smoothstep(1.1, 1.35, cq)))
+	s = maxf(s, 0.35 * (1.0 - smoothstep(0.5, 2.5, _line_dist(Vector2(x, z), brook).x)))
+	return s
 
 
 ## Rock faces on steep ground (the scatter keeps only the steep spots).

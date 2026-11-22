@@ -63,6 +63,7 @@
 [ext_resource type="Script" path="res://game/world/tithe_extras.gd" id="tithe_extras"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/trophy_pole.tscn" id="trophy_scene"]
 [ext_resource type="Script" path="res://game/world/underground_cull.gd" id="ucull"]
+[ext_resource type="Script" path="res://game/world/quarry_works.gd" id="qworks"]
 [ext_resource type="Script" path="res://game/world/distance_cull.gd" id="dcull"]
 [ext_resource type="Script" path="res://game/world/shadow_budget.gd" id="sbudget"]
 [ext_resource type="Script" path="res://game/world/vendor.gd" id="vendor"]
@@ -415,7 +416,7 @@ transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, 25, 0, -
 transform = Transform3D(0.93969256, 0, 0.3420201, 0, 1, 0, -0.3420201, 0, 0.93969256, -96, 0, 14)
 
 [node name="QuarryRock3" parent="Places" unique_id=1071207027 instance=ExtResource("rock")]
-transform = Transform3D(-0.91925335, 0, 0.7713452, 0, 1.2, 0, -0.7713452, 0, -0.91925335, -149, 0, -108)
+transform = Transform3D(-0.91925335, 0, 0.7713452, 0, 1.2, 0, -0.7713452, 0, -0.91925335, -163, 0, -77)
 
 [node name="QuarryRock4" parent="Places" unique_id=2138668838 instance=ExtResource("rock")]
 transform = Transform3D(0.9848077, 0, 0.17364818, 0, 1, 0, -0.17364818, 0, 0.9848077, -146, 0, -90)
@@ -899,11 +900,11 @@ code_ferns = false
 [node name="UndergroundCull" type="Node" parent="." unique_id=1034587490]
 script = ExtResource("ucull")
 underground = Array[NodePath]([NodePath("../Gullet")])
-surface = Array[NodePath]([NodePath("../Woods"), NodePath("../Oaks"), NodePath("../Grass"), NodePath("../Clutter"), NodePath("../Rocks"), NodePath("../Highcrown"), NodePath("../StoneWalls"), NodePath("../Dressing"), NodePath("../Shrubs"), NodePath("../Ferns"), NodePath("../Weeds"), NodePath("../Boulders"), NodePath("../CliffFaces"), NodePath("../Deadwood")])
+surface = Array[NodePath]([NodePath("../Scree"), NodePath("../QuarryWorks"), NodePath("../Woods"), NodePath("../Oaks"), NodePath("../Grass"), NodePath("../Clutter"), NodePath("../Rocks"), NodePath("../Highcrown"), NodePath("../StoneWalls"), NodePath("../Dressing"), NodePath("../Shrubs"), NodePath("../Ferns"), NodePath("../Weeds"), NodePath("../Boulders"), NodePath("../CliffFaces"), NodePath("../Deadwood")])
 
 [node name="DistanceCull" type="Node" parent="."]
 script = ExtResource("dcull")
-roots = Array[NodePath]([NodePath("../Places"), NodePath("../Dressing"), NodePath("../TitheExtras"), NodePath("../StoneWalls"), NodePath("../Clutter"), NodePath("../Rocks")])
+roots = Array[NodePath]([NodePath("../Places"), NodePath("../QuarryWorks"), NodePath("../Dressing"), NodePath("../TitheExtras"), NodePath("../StoneWalls"), NodePath("../Clutter"), NodePath("../Rocks")])
 
 [node name="ShadowBudget" type="Node" parent="."]
 script = ExtResource("sbudget")
@@ -961,6 +962,7 @@ keep_off_tracks = 5.0
 sink = 0.15
 collide = true
 seen_from = 170.0
+tint = Color(1.12, 1.1, 1.02, 1)
 
 [node name="CliffFaces" type="Node3D" parent="." unique_id=16305905 node_paths=PackedStringArray("terrain")]
 script = ExtResource("66_17ghg")
@@ -974,7 +976,7 @@ keep_off_roads = 5.0
 keep_off_tracks = 5.0
 cliff = 0.7
 seen_from = 230.0
-tint = Color(0.5, 0.5, 0.52, 1)
+tint = Color(1.08, 1.06, 0.98, 1)
 
 [node name="Deadwood" type="Node3D" parent="." unique_id=1312721759 node_paths=PackedStringArray("terrain")]
 script = ExtResource("66_17ghg")
@@ -1001,3 +1003,21 @@ max_slope = 0.7
 beyond_edge = 40.0
 leaf_shadows = true
 species_from_land = true
+
+[node name="QuarryWorks" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("qworks")
+terrain = NodePath("../Terrain")
+
+[node name="Scree" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("66_17ghg")
+terrain = NodePath("../Terrain")
+models = PackedStringArray("kit:rubble", "kit:slab", "kit:block_broken")
+layer = "scree"
+spacing = 2.6
+scatter_seed = 919
+scale_range = Vector2(0.6, 1.3)
+keep_off_roads = 3.0
+keep_off_tracks = 2.0
+sink = 0.12
+max_slope = 1.3
+seen_from = 85.0

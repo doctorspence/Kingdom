@@ -159,6 +159,13 @@ func _build() -> void:
 func _load_parts() -> void:
 	_parts.clear()
 	for id in models:
+		if String(id).begins_with("kit:"):
+			# Code-built stone from QuarryKit ("kit:rubble", "kit:slab", "kit:block_broken"), four variants each.
+			for v in 4:
+				var km := QuarryKit.mesh(String(id).substr(4), v)
+				var kb := km.get_aabb()
+				_parts.append([km, Transform3D(Basis(), -Vector3(kb.get_center().x, kb.position.y, kb.get_center().z)), kb.size])
+			continue
 		var ps := load("res://assets/nature/%s/%s.gltf" % [id, id]) as PackedScene
 		if ps == null:
 			push_warning("PlantScatter: missing model %s" % id)

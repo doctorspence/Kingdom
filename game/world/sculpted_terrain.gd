@@ -521,6 +521,8 @@ func _apply_cut(c: Dictionary, pre: PackedFloat32Array) -> void:
 	var mode: String = c.get("mode", "carve")
 	var rock := float(c.get("rock", 0.6))
 	var rough := float(c.get("rough", 0.0))
+	# Rounded corners (meters): no spikes where two steep cut walls meet.
+	var round_r := clampf(float(c.get("round", 0.0)), 0.0, maxf(0.0, minf(half.x, half.y) - 0.5))
 	var reach := half.length() + edge + 2.0 + rough
 	var x0 := maxi(0, int((center.x - reach + _half) / cell))
 	var x1 := mini(_n - 1, int((center.x + reach + _half) / cell) + 1)
@@ -529,7 +531,8 @@ func _apply_cut(c: Dictionary, pre: PackedFloat32Array) -> void:
 	for iz in range(z0, z1 + 1):
 		for ix in range(x0, x1 + 1):
 			var p := Vector2(-_half + ix * cell, -_half + iz * cell)
-			var sd := _rect_sd(p, center, half, yaw)
+			var sd := _rect_sd(p, center, half - Vector2(round_r, round_r), yaw)
+			sd.x -= round_r
 			# Ragged, quarried edges instead of a ruler-straight box.
 			sd.x += _noise.get_noise_2d(p.x * 9.0 + 300.0, p.y * 9.0) * rough + _noise.get_noise_2d(p.x * 31.0, p.y * 31.0 + 70.0) * rough * 0.35
 			var m := 1.0 - smoothstep(-edge, 0.0, sd.x)
@@ -718,6 +721,7 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 	var norms := PackedVector3Array()
 	var cols := PackedColorArray()
 	var uvs := PackedVector2Array()
+	var uv2s := PackedVector2Array()
 	for iz in zs:
 		for ix in xs:
 			var i := iz * _n + ix
@@ -731,7 +735,9 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 			norms.append(nrm)
 			var slope := Vector2(hr - hl, hd - hu).length() / (2.0 * cell)
 			cols.append(_weights_at(i, v, slope))
-			uvs.append(_extra_at(ix, iz))
+			var ex := _extra_at(ix, iz)
+			uvs.append(Vector2(ex.x, ex.y))
+			uv2s.append(Vector2(ex.z, 0.0))
 	var idx := PackedInt32Array()
 	for z in hgt - 1:
 		for x in w - 1:
@@ -761,6 +767,7 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 				norms.append(norms[src])
 				cols.append(cols[src])
 				uvs.append(uvs[src])
+				uv2s.append(uv2s[src])
 			for j in run[1] - 1:
 				var a2: int = edge[run[0] + j]
 				var b2: int = edge[run[0] + j + 1]
@@ -773,6 +780,7 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 	arrays[Mesh.ARRAY_NORMAL] = norms
 	arrays[Mesh.ARRAY_COLOR] = cols
 	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_TEX_UV2] = uv2s
 	arrays[Mesh.ARRAY_INDEX] = idx
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
@@ -824,7 +832,7 @@ func _brook() -> Node3D:
 	return ws
 
 
-var _extra := PackedVector2Array()  # per 2 m cell: (leaf litter 0..1, sandstone 0..1)
+var _extra := PackedVector3Array()  # per 2 m cell: (leaf litter, sandstone, worked stone), each 0..1
 var _extra_n := 0
 
 
@@ -839,12 +847,13 @@ func _bake_extra() -> void:
 		for jx in _extra_n:
 			var x := -_half + jx * 2.0 * cell
 			var z := -_half + jz * 2.0 * cell
-			_extra[jz * _extra_n + jx] = land.call("ground_extra", x, z) if has else Vector2.ZERO
+			var e: Variant = land.call("ground_extra", x, z) if has else Vector3.ZERO
+			_extra[jz * _extra_n + jx] = Vector3(e.x, e.y, 0.0) if e is Vector2 else e
 
 
-func _extra_at(ix: int, iz: int) -> Vector2:
+func _extra_at(ix: int, iz: int) -> Vector3:
 	if _extra.is_empty():
-		return Vector2.ZERO
+		return Vector3.ZERO
 	return _extra[mini(iz / 2, _extra_n - 1) * _extra_n + mini(ix / 2, _extra_n - 1)]
 
 
