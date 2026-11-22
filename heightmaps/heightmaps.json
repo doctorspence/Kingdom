@@ -1,0 +1,29 @@
+{
+  "zone1": {
+    "file": "zone1_height.png",
+    "size_m": 364.0,
+    "pixels": 365,
+    "meters_per_pixel": 1.0,
+    "min_height_m": -7.03,
+    "max_height_m": 35.34,
+    "note": "16-bit grey: height = min + value/65535 * (max - min). Row 0 is north (-z), column 0 is west (-x)."
+  },
+  "zone2": {
+    "file": "zone2_height.png",
+    "size_m": 420.0,
+    "pixels": 421,
+    "meters_per_pixel": 1.0,
+    "min_height_m": 2.4,
+    "max_height_m": 107.88,
+    "note": "16-bit grey: height = min + value/65535 * (max - min). Row 0 is north (-z), column 0 is west (-x)."
+  },
+  "zone3": {
+    "file": "zone3_height.png",
+    "size_m": 480.0,
+    "pixels": 481,
+    "meters_per_pixel": 1.0,
+    "min_height_m": 44.33,
+    "max_height_m": 285.67,
+    "note": "16-bit grey: height = min + value/65535 * (max - min). Row 0 is north (-z), column 0 is west (-x)."
+  }
+}
