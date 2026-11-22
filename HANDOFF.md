@@ -13,7 +13,7 @@ KINGDOM (working title) is a dark fantasy co-op action RPG in Godot 4.7.2 (GDScr
 ## Where we are
 Phases 1-15 are built: movement, combat, multiplayer, three classes with talents, loot and death, the Tithelands (terrain, buildings, chapel and barrow, mill race, camp and raids, day/night), the bandit Gullet with Harl the Delver, audio, settings and rebinding, equipment, three subclasses. Art is a detailed environment with mannequin characters. **The milestone (3 friends clear the Tithelands and the Gullet) has not happened.** The next job is to stabilize, play and fix, not to add. All checks, including the 3-player check, passed on 2026-11-22.
 
-**Greenwood overhaul (branch `greenwood`, 2026-11-22):** the owner's Greenwood biome brief is being applied to the Tithelands; plan and progress in `GREENWOOD_OVERHAUL.md`. Stages 0-5 done (ground shader, five-species tree library, firs removed, landmark trees, canopy light, terrain shaping with the brook and the chapel lane, worked limestone quarry with a timber-shored Gullet entrance, ground plants, props and story dressing). Next: stage 8, lighting and atmosphere. Not merged to `main` yet.
+**Greenwood overhaul (branch `greenwood`, 2026-11-22):** the owner's Greenwood biome brief is being applied to the Tithelands; plan and progress in `GREENWOOD_OVERHAUL.md`. Stages 0-5 done (ground shader, five-species tree library, firs removed, landmark trees, canopy light, terrain shaping with the brook and the chapel lane, worked limestone quarry with a timber-shored Gullet entrance, ground plants, props and story dressing, lighting and atmosphere). Next: stage 9, final validation. Not merged to `main` yet.
 
 ## Which file is which
 | File | Use |

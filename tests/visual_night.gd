@@ -30,6 +30,9 @@ func _run() -> void:
 		["time_night_farm_back", ds + 0.1, false, -37, 79, 0, 4],
 		["time_rain", 0.3, true, -70, 110, 40, 8],
 		["time_rain_hamlet", 0.3, true, -49, 77, 40, 6],
+		["time_dawn_dell", ds * 0.05, false, 140, 40, -120, 6],
+		["time_night_woods", ds + 0.1, false, 94, 92, 180, 6],
+		["time_rain_woods", 0.3, true, 94, 92, 180, 6],
 	]
 	for a in OS.get_cmdline_user_args().slice(1):
 		shots = shots.filter(func(s): return s[0] in OS.get_cmdline_user_args())

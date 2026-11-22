@@ -466,6 +466,27 @@ func deadwood(x: float, z: float) -> float:
 
 # ---- The Greenwood's trees (see GREENWOOD_OVERHAUL.md 7.1) ---------------------------
 
+## Atmosphere by place, for DayNight: (deep woods, quarry, chapel and barrow), each 0..1.
+func mood(x: float, z: float) -> Vector3:
+	var canopy := smoothstep(0.25, 0.75, woodland(x, z))
+	var qd := maxf(absf(x + 150.0) - 21.0, absf(z + 100.0) - 16.0)
+	var quarry := 1.0 - smoothstep(4.0, 18.0, qd)
+	var p := Vector2(x, z)
+	var omen := maxf(1.0 - smoothstep(14.0, 34.0, p.distance_to(Vector2(-50, 160))), 1.0 - smoothstep(14.0, 34.0, p.distance_to(Vector2(150, -140))))
+	return Vector3(canopy * (1.0 - omen), quarry, omen)
+
+
+## Local mist (FogVolumes): [x, z, radius, height, density]. Hollows in the East Woods, along the
+## brook, the barrow and the churchyard, the river by the mill pond, dust in the quarry. Not everywhere.
+var mist_spots := [
+	[148.0, 42.0, 22.0, 5.0, 0.05], [152.0, -36.0, 22.0, 4.5, 0.045], [82.0, 62.0, 15.0, 4.0, 0.04],
+	[166.0, 64.0, 12.0, 3.5, 0.05], [134.0, 16.0, 10.0, 3.5, 0.045],
+	[150.0, -140.0, 24.0, 4.0, 0.06], [-50.0, 163.0, 18.0, 3.5, 0.05],
+	[-150.0, -32.0, 26.0, 3.0, 0.035], [30.0, -14.0, 18.0, 2.5, 0.03],
+	[-150.0, -100.0, 18.0, 6.0, 0.018],
+]
+
+
 ## Woodland density for the Woods scatter (the old forest map, all broadleaf now).
 func woodland(x: float, z: float) -> float:
 	return forest(x, z) * smoothstep(2.5, 4.5, _line_dist(Vector2(x, z), brook).x)

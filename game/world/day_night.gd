@@ -43,7 +43,8 @@ var _glow: Material
 var wet_ground := 0.0
 ## 0 in the open .. 1 deep in the woods (eased as the camera moves).
 var canopy := 0.0
-var _canopy_target := 0.0
+var mood := Vector3.ZERO  ## (deep woods, quarry, chapel and barrow), eased as the camera moves
+var _mood_target := Vector3.ZERO
 var _canopy_timer := 0.0
 var _land: Object
 var _rng := RandomNumberGenerator.new()
@@ -58,8 +59,10 @@ func _ready() -> void:
 		_env = environment.environment.duplicate(true)
 		environment.environment = _env
 		_sky = _env.sky.sky_material as ProceduralSkyMaterial if _env.sky else null
+		_env.adjustment_color_correction = palette_grade()
 		_day = {
 			"ambient": _env.ambient_light_energy,
+			"exposure": _env.tonemap_exposure,
 			"fog_color": _env.fog_light_color,
 			"fog_energy": _env.fog_light_energy,
 			"fog_density": _env.fog_density,
@@ -129,8 +132,9 @@ func _process(delta: float) -> void:
 	_canopy_timer -= delta
 	if _canopy_timer <= 0.0 and cam:
 		_canopy_timer = 0.25
-		_canopy_target = _woodland_at(cam.global_position)
-	canopy = move_toward(canopy, _canopy_target, delta * 0.6)
+		_mood_target = _mood_at(cam.global_position)
+	mood = mood.move_toward(_mood_target, delta * 0.6)
+	canopy = mood.x
 	_apply()
 
 
@@ -207,12 +211,28 @@ func _apply() -> void:
 		# Deep woodland: the light under the canopy is a lifted green, never black
 		# (brief: shadows lean to #354536), with a little more haze for light shafts.
 		var cw := canopy * (1.0 - night)
+		# Eyes adjust under the trees: exposure rises gently with the canopy (readable, still dim).
+		_env.tonemap_exposure = float(_day.exposure) * (1.0 + 0.45 * cw)
 		if cw > 0.0:
 			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.45, 0.53, 0.42), cw)
 			_env.ambient_light_sky_contribution = lerpf(_env.ambient_light_sky_contribution, 0.35, cw)
 			_env.ambient_light_energy *= 1.0 + 0.85 * cw
 			_env.volumetric_fog_density *= 1.0 + 0.5 * cw
 			_env.volumetric_fog_albedo = _env.volumetric_fog_albedo.lerp(Color(0.62, 0.7, 0.6), 0.5 * cw)
+		# The quarry: pale stone throws light back, dust hangs in the air.
+		var qw := mood.y * (1.0 - night)
+		if qw > 0.0:
+			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.66, 0.65, 0.6), 0.45 * qw)
+			_env.ambient_light_energy *= 1.0 + 0.2 * qw
+			_env.volumetric_fog_albedo = _env.volumetric_fog_albedo.lerp(Color(0.8, 0.77, 0.7), 0.6 * qw)
+			_env.volumetric_fog_density *= 1.0 + 0.4 * qw
+		# The chapel and the barrow: colder, quieter light and a mist close to the ground.
+		var ow := mood.z
+		if ow > 0.0:
+			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.42, 0.47, 0.56), 0.5 * ow)
+			_env.ambient_light_energy *= 1.0 - 0.12 * ow
+			_env.fog_light_color = _env.fog_light_color.lerp(Color(0.5, 0.56, 0.62), 0.4 * ow)
+			_env.volumetric_fog_density *= 1.0 + 0.7 * ow
 		if _sky:
 			_sky.sky_top_color = (_day.sky_top as Color).lerp(Color(0.4, 0.42, 0.58), gold * 0.5).lerp(Color(0.05, 0.06, 0.1), night).darkened(0.25 * wet)
 			_sky.sky_horizon_color = (_day.sky_horizon as Color).lerp(Color(0.95, 0.58, 0.38), gold * 0.8).lerp(Color(0.13, 0.15, 0.21), night).darkened(0.25 * wet)
@@ -329,16 +349,56 @@ func load_dict(d: Dictionary) -> void:
 	_apply()
 
 
-func _woodland_at(p: Vector3) -> float:
+func _mood_at(p: Vector3) -> Vector3:
 	if _land == null:
 		var t := get_tree().get_first_node_in_group(&"zone_terrain")
 		if t == null or t.get("land") == null:
-			return 0.0
+			return Vector3.ZERO
 		_land = t.get("land")
-	if not _land.has_method("woodland"):
-		return 0.0
+	if not _land.has_method("mood"):
+		return Vector3.ZERO
 	# Average a few points around the camera, so one gap in the trees doesn't flicker.
-	var s := 0.0
+	var s := Vector3.ZERO
 	for o: Vector2 in [Vector2.ZERO, Vector2(8, 0), Vector2(-8, 0), Vector2(0, 8), Vector2(0, -8)]:
-		s += float(_land.call("woodland", p.x + o.x, p.z + o.y))
-	return smoothstep(0.25, 0.75, s / 5.0)
+		s += _land.call("mood", p.x + o.x, p.z + o.y)
+	return s / 5.0
+
+
+static var _grade: ImageTexture3D
+
+## The Greenwood colour grade (brief section 9), as a 17x17x17 lookup table:
+## shadows never go pure black but lean to deep woodland green (#354536),
+## yellow-greens are calmed (no neon foliage), the few strong colours (flowers,
+## berries, banners, fire) keep their saturation, highlights warm a touch.
+static func palette_grade() -> ImageTexture3D:
+	if _grade:
+		return _grade
+	var n := 17
+	var layers: Array[Image] = []
+	for b in n:
+		var img := Image.create(n, n, false, Image.FORMAT_RGB8)
+		for g in n:
+			for r in n:
+				var c := Color(r / float(n - 1), g / float(n - 1), b / float(n - 1))
+				var lum := c.r * 0.299 + c.g * 0.587 + c.b * 0.114
+				# Lift the deepest shadows toward a dark woodland green instead of black.
+				var lift := pow(1.0 - lum, 4.0)
+				c = Color(c.r + 0.018 * lift, c.g + 0.03 * lift, c.b + 0.022 * lift)
+				# Calm the yellow-greens; keep reds, purples and blues where they are.
+				var h := c.h
+				var s := c.s
+				if h > 0.12 and h < 0.32:
+					var k := smoothstep(0.12, 0.17, h) * (1.0 - smoothstep(0.27, 0.32, h))
+					s *= 1.0 - 0.18 * k
+					h += 0.012 * k
+				elif h > 0.7 or h < 0.06:
+					s = minf(s * 1.08, 1.0)
+				c = Color.from_hsv(h, s, c.v)
+				# Warm, soft highlights.
+				var hi := smoothstep(0.62, 1.0, lum)
+				c = Color(c.r + 0.012 * hi, c.g + 0.004 * hi, c.b - 0.01 * hi)
+				img.set_pixel(r, g, Color(clampf(c.r, 0.0, 1.0), clampf(c.g, 0.0, 1.0), clampf(c.b, 0.0, 1.0)))
+		layers.append(img)
+	_grade = ImageTexture3D.new()
+	_grade.create(Image.FORMAT_RGB8, n, n, n, false, layers)
+	return _grade
