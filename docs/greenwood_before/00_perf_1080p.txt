@@ -1,0 +1,28 @@
+LOAD zone ready in 6616 ms
+TRIS Terrain            416k
+TRIS Gullet             656k
+TRIS Places             318k
+TRIS Woods             2982k
+TRIS Enemies            611k
+TRIS Clutter             65k
+TRIS Grass              403k
+TRIS StoneWalls          97k
+TRIS Dressing            52k
+TRIS Shrubs            8859k
+TRIS Ferns            11038k
+TRIS Weeds            11262k
+TRIS Boulders           921k
+TRIS CliffFaces        2267k
+TRIS Deadwood         13099k
+TRIS Oaks              1258k
+TRIS Terrain/Built 416k
+PERF spawn_north       81.3 FPS ( 12.3 ms)  1972 draw calls   2853k primitives
+PERF spawn_south      128.3 FPS (  7.8 ms)   582 draw calls   2007k primitives
+PERF farms            105.9 FPS (  9.4 ms)  1061 draw calls   3118k primitives
+PERF river_bank        91.6 FPS ( 10.9 ms)  1667 draw calls   2243k primitives
+PERF mill              99.8 FPS ( 10.0 ms)  1306 draw calls   3741k primitives
+PERF hobb_camp         95.9 FPS ( 10.4 ms)  1333 draw calls   3086k primitives
+PERF raider_camp      101.6 FPS (  9.8 ms)  1000 draw calls   2859k primitives
+PERF road_checkpoint   89.3 FPS ( 11.2 ms)  1585 draw calls   2150k primitives
+PERF east_woods       103.0 FPS (  9.7 ms)  1147 draw calls   1919k primitives
+PERF camp_hearth      103.9 FPS (  9.6 ms)  1134 draw calls   3515k primitives
