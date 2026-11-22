@@ -1,0 +1,18 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/Materials/tex/chainmail_color.png" id="1_fdcq8"]
+[ext_resource type="Texture2D" path="res://assets/equipment/Materials/tex/chainmail_normal.png" id="2_gjbs0"]
+[ext_resource type="Texture2D" path="res://assets/equipment/Materials/tex/chainmail_rough.png" id="3_utlng"]
+
+[resource]
+resource_name = "chainmail"
+cull_mode = 2
+albedo_texture = ExtResource("1_fdcq8")
+metallic = 0.6
+roughness_texture = ExtResource("3_utlng")
+normal_enabled = true
+normal_scale = 0.8
+normal_texture = ExtResource("2_gjbs0")
+uv1_scale = Vector3(0.7692308, 0.7692308, 0.7692308)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 4.0

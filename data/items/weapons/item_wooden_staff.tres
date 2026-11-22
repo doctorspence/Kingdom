@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Weapons/item_wooden_staff.png" id="1_g1jn0"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_xxlqn"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_wooden_staff.tres" id="2_g1jn0"]
+
+[resource]
+script = ExtResource("1_xxlqn")
+id = &"item_wooden_staff"
+display_name = "Wooden Staff"
+flavor = "A walking staff that has learned a second trade."
+slot = 12
+grid_size = Vector2i(1, 4)
+weight = 3.0
+value = 12
+icon_color = Color(0.45, 0.33, 0.22, 1)
+icon = ExtResource("1_g1jn0")
+tier = &"wood"
+weapon = ExtResource("2_g1jn0")

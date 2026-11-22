@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ShieldData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/shield_data.gd" id="1_arrqo"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Weapons/Shields/bronze_shield.scn" id="2_np2x6"]
+
+[resource]
+script = ExtResource("1_arrqo")
+id = &"shield_bronze"
+display_name = "Bronze Shield"
+visual_scene = ExtResource("2_np2x6")
+stamina_per_damage = 0.62

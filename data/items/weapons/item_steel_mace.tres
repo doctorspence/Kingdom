@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Weapons/item_steel_mace.png" id="1_1r28f"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_kkm22"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_steel_mace.tres" id="2_1r28f"]
+
+[resource]
+script = ExtResource("1_kkm22")
+id = &"item_steel_mace"
+display_name = "Steel Mace"
+flavor = "Armor splits better than it parries."
+slot = 10
+grid_size = Vector2i(1, 3)
+weight = 4.8
+value = 100
+icon_color = Color(0.68, 0.7, 0.75, 1)
+icon = ExtResource("1_1r28f")
+required_level = 10
+tier = &"steel"
+weapon = ExtResource("2_1r28f")

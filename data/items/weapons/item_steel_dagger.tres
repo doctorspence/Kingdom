@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Weapons/item_steel_dagger.png" id="1_8in31"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_yakv1"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_steel_dagger.tres" id="2_8in31"]
+
+[resource]
+script = ExtResource("1_yakv1")
+id = &"item_steel_dagger"
+display_name = "Steel Dagger"
+flavor = "Short, quick, and always within reach."
+slot = 10
+grid_size = Vector2i(1, 2)
+weight = 1.2
+value = 70
+icon_color = Color(0.68, 0.7, 0.75, 1)
+icon = ExtResource("1_8in31")
+required_level = 10
+tier = &"steel"
+weapon = ExtResource("2_8in31")

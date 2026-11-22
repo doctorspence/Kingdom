@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Armor/item_plate_legs.png" id="1_3am0a"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Armor/Plate/plate_legs.scn" id="1_aqflc"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="2_3am0a"]
+
+[resource]
+script = ExtResource("2_3am0a")
+id = &"item_plate_legs"
+display_name = "Plate Legs"
+flavor = "Plate over mail, from hip to ankle."
+slot = 5
+grid_size = Vector2i(2, 3)
+weight = 9.0
+value = 160
+icon_color = Color(0.68, 0.7, 0.75, 1)
+icon = ExtResource("1_3am0a")
+model_scene = ExtResource("1_aqflc")
+required_level = 10
+tier = &"steel"
+armor = 15.0
+stats = {
+"vitality": 1
+}

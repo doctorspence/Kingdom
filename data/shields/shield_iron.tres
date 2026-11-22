@@ -1,13 +1,11 @@
 [gd_resource type="Resource" script_class="ShieldData" format=3]
 
 [ext_resource type="Script" path="res://game/combat/shield_data.gd" id="1_shield"]
-[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/shield_placeholder.tscn" id="2_visual"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Weapons/Shields/iron_shield.scn" id="2_8qwvr"]
 
 [resource]
 script = ExtResource("1_shield")
 id = &"shield_iron"
 display_name = "Iron Shield"
-visual_scene = ExtResource("2_visual")
-block_reduction = 1.0
+visual_scene = ExtResource("2_8qwvr")
 stamina_per_damage = 0.5
-parry_window = 0.18

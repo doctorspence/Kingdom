@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_ahleq"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Weapons/item_bronze_2h_sword.png" id="1_sw1rm"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_bronze_2h_sword.tres" id="2_sw1rm"]
+
+[resource]
+script = ExtResource("1_ahleq")
+id = &"item_bronze_2h_sword"
+display_name = "Bronze 2H Sword"
+flavor = "Needs both hands and a good deal of room."
+slot = 12
+grid_size = Vector2i(1, 4)
+weight = 6.5
+value = 30
+icon_color = Color(0.62, 0.4, 0.22, 1)
+icon = ExtResource("1_sw1rm")
+required_level = 2
+tier = &"bronze"
+weapon = ExtResource("2_sw1rm")

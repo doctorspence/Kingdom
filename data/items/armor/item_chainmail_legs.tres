@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Armor/item_chainmail_legs.png" id="1_iprv8"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Armor/Chainmail/chainmail_legs.scn" id="1_qi6ou"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="2_iprv8"]
+
+[resource]
+script = ExtResource("2_iprv8")
+id = &"item_chainmail_legs"
+display_name = "Chainmail Legs"
+flavor = "Chausses of dark steel rings."
+slot = 5
+grid_size = Vector2i(2, 3)
+weight = 6.0
+value = 80
+icon_color = Color(0.45, 0.33, 0.22, 1)
+icon = ExtResource("1_iprv8")
+model_scene = ExtResource("1_qi6ou")
+required_level = 5
+tier = &"chainmail"
+armor = 10.0
+stats = {
+"vitality": 1
+}

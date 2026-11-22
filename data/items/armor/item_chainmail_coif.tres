@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/equipment/Armor/Chainmail/chainmail_coif.scn" id="1_6h3na"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Armor/item_chainmail_coif.png" id="1_yv2e1"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="2_yv2e1"]
+
+[resource]
+script = ExtResource("2_yv2e1")
+id = &"item_chainmail_coif"
+display_name = "Chainmail Coif"
+flavor = "Rings on rings on rings."
+slot = 1
+grid_size = Vector2i(2, 2)
+weight = 1.8
+value = 40
+icon_color = Color(0.45, 0.33, 0.22, 1)
+icon = ExtResource("1_yv2e1")
+model_scene = ExtResource("1_6h3na")
+required_level = 5
+tier = &"chainmail"
+armor = 6.0
+stats = {
+"vitality": 1
+}

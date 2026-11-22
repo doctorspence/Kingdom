@@ -1,0 +1,17 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/Materials/tex/iron_color.png" id="1_rakuw"]
+[ext_resource type="Texture2D" path="res://assets/equipment/Materials/tex/iron_normal.png" id="2_t11q1"]
+[ext_resource type="Texture2D" path="res://assets/equipment/Materials/tex/iron_rough.png" id="3_rpb04"]
+
+[resource]
+resource_name = "iron"
+albedo_texture = ExtResource("1_rakuw")
+metallic = 0.55
+roughness_texture = ExtResource("3_rpb04")
+normal_enabled = true
+normal_scale = 0.8
+normal_texture = ExtResource("2_t11q1")
+uv1_scale = Vector3(3.3333333, 3.3333333, 3.3333333)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 4.0

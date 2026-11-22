@@ -1,0 +1,119 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/attack_data.gd" id="1_5ixhq"]
+[ext_resource type="Script" path="res://game/combat/weapon_data.gd" id="2_y6bna"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Weapons/Bows/bronze_bow.scn" id="3_ptpoa"]
+
+[sub_resource type="Resource" id="Resource_bo8cv"]
+script = ExtResource("1_5ixhq")
+display_name = "Drawn shot (hold)"
+anim = &"Spell_Simple_Shoot"
+anim_speed = 0.8
+windup_until = 0.2
+hit_start = 0.3
+hit_end = 0.32
+chain_time = 9.0
+cancel_time = 0.5
+end_time = 0.75
+extra_hits = PackedVector2Array()
+damage_mult = 2.0
+poise_mult = 1.5
+stamina_cost = 18.0
+hit_stop = 0.07
+reach = 1.0
+arc_degrees = 30.0
+lunge_distance = 0.0
+lunge_end = 0.0
+projectile_speed = 50.0
+
+[sub_resource type="Resource" id="Resource_wx1t5"]
+script = ExtResource("1_5ixhq")
+display_name = "Quick shot"
+anim = &"Spell_Simple_Shoot"
+hit_start = 0.22
+hit_end = 0.24
+cancel_time = 0.32
+end_time = 0.55
+extra_hits = PackedVector2Array()
+poise_mult = 0.6
+stamina_cost = 10.0
+hit_stop = 0.04
+reach = 1.0
+arc_degrees = 30.0
+lunge_distance = 0.0
+lunge_end = 0.0
+projectile_speed = 38.0
+
+[sub_resource type="Resource" id="Resource_rhb15"]
+script = ExtResource("1_5ixhq")
+display_name = "Riposte"
+anim = &"ual2/Sword_Regular_C"
+hit_start = 0.56
+hit_end = 0.72
+chain_time = 9.0
+cancel_time = 1.4
+end_time = 1.5
+extra_hits = PackedVector2Array()
+damage_mult = 3.0
+poise_mult = 5.0
+stamina_cost = 0.0
+hit_stop = 0.15
+reach = 2.6
+arc_degrees = 90.0
+lunge_distance = 0.0
+lunge_end = 0.0
+
+[sub_resource type="Resource" id="Resource_r7wnt"]
+script = ExtResource("1_5ixhq")
+display_name = "Rolling shot"
+anim = &"Spell_Simple_Shoot"
+anim_speed = 1.1
+hit_end = 0.22
+cancel_time = 0.32
+end_time = 0.5
+extra_hits = PackedVector2Array()
+poise_mult = 0.6
+stamina_cost = 10.0
+hit_stop = 0.04
+reach = 1.0
+arc_degrees = 30.0
+lunge_distance = 0.0
+lunge_end = 0.0
+projectile_speed = 38.0
+
+[sub_resource type="Resource" id="Resource_pi2vy"]
+script = ExtResource("1_5ixhq")
+display_name = "Running shot"
+anim = &"Spell_Simple_Shoot"
+hit_start = 0.22
+hit_end = 0.24
+chain_time = 0.5
+cancel_time = 0.4
+end_time = 0.6
+extra_hits = PackedVector2Array()
+damage_mult = 0.9
+poise_mult = 0.6
+stamina_cost = 12.0
+hit_stop = 0.04
+reach = 1.0
+arc_degrees = 30.0
+lunge_distance = 0.6
+lunge_end = 0.2
+projectile_speed = 38.0
+
+[resource]
+script = ExtResource("2_y6bna")
+id = &"weapon_bronze_bow"
+display_name = "Bronze Bow"
+visual_scene = ExtResource("3_ptpoa")
+damage = 14.0
+poise_damage = 8.0
+block_reduction = 0.3
+scaling_strength = 0.1
+scaling_agility = 0.8
+two_handed = true
+light_combo = Array[ExtResource("1_5ixhq")]([SubResource("Resource_wx1t5")])
+heavy = SubResource("Resource_bo8cv")
+running_attack = SubResource("Resource_pi2vy")
+rolling_attack = SubResource("Resource_r7wnt")
+riposte = SubResource("Resource_rhb15")

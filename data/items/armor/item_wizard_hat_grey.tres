@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/equipment/Armor/Wizard/wizard_hat_grey.scn" id="1_avx5s"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Armor/item_wizard_hat_grey.png" id="1_k33gp"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="2_k33gp"]
+
+[resource]
+script = ExtResource("2_k33gp")
+id = &"item_wizard_hat_grey"
+display_name = "Grey Wizard Hat"
+flavor = "Pointed, floppy, and quietly smug."
+slot = 1
+grid_size = Vector2i(2, 2)
+weight = 0.6
+value = 18
+icon_color = Color(0.45, 0.33, 0.22, 1)
+icon = ExtResource("1_k33gp")
+model_scene = ExtResource("1_avx5s")
+tier = &"cloth"
+armor = 1.0
+stats = {
+"intellect": 1
+}

@@ -1,0 +1,18 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/Materials/tex/cloth_color.png" id="1_1k0jt"]
+[ext_resource type="Texture2D" path="res://assets/equipment/Materials/tex/cloth_normal.png" id="2_2p4hn"]
+[ext_resource type="Texture2D" path="res://assets/equipment/Materials/tex/cloth_rough.png" id="3_e0aei"]
+
+[resource]
+resource_name = "cloth_grey"
+cull_mode = 2
+albedo_color = Color(0.32, 0.32, 0.34, 1)
+albedo_texture = ExtResource("1_1k0jt")
+roughness_texture = ExtResource("3_e0aei")
+normal_enabled = true
+normal_scale = 0.8
+normal_texture = ExtResource("2_2p4hn")
+uv1_scale = Vector3(3.3333333, 3.3333333, 3.3333333)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 4.0

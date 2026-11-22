@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Weapons/item_steel_bow.png" id="1_7nkvj"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_qbvdf"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_steel_bow.tres" id="2_7nkvj"]
+
+[resource]
+script = ExtResource("1_qbvdf")
+id = &"item_steel_bow"
+display_name = "Steel Bow"
+flavor = "A plain wooden longbow, fitted in metal."
+slot = 12
+grid_size = Vector2i(2, 3)
+weight = 2.6
+value = 110
+icon_color = Color(0.68, 0.7, 0.75, 1)
+icon = ExtResource("1_7nkvj")
+required_level = 10
+tier = &"steel"
+weapon = ExtResource("2_7nkvj")

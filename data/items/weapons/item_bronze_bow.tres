@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Weapons/item_bronze_bow.png" id="1_0gh7y"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_bkj2l"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_bronze_bow.tres" id="2_0gh7y"]
+
+[resource]
+script = ExtResource("1_bkj2l")
+id = &"item_bronze_bow"
+display_name = "Bronze Bow"
+flavor = "A plain wooden longbow, fitted in metal."
+slot = 12
+grid_size = Vector2i(2, 3)
+weight = 2.6
+value = 22
+icon_color = Color(0.62, 0.4, 0.22, 1)
+icon = ExtResource("1_0gh7y")
+tier = &"bronze"
+weapon = ExtResource("2_0gh7y")

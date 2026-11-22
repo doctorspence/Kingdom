@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_88xc4"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Weapons/item_iron_bow.png" id="1_pg8g0"]
+[ext_resource type="Resource" path="res://data/weapons/weapon_iron_bow.tres" id="2_pg8g0"]
+
+[resource]
+script = ExtResource("1_88xc4")
+id = &"item_iron_bow"
+display_name = "Iron Bow"
+flavor = "A plain wooden longbow, fitted in metal."
+slot = 12
+grid_size = Vector2i(2, 3)
+weight = 2.6
+value = 48
+icon_color = Color(0.4, 0.4, 0.43, 1)
+icon = ExtResource("1_pg8g0")
+required_level = 5
+tier = &"iron"
+weapon = ExtResource("2_pg8g0")

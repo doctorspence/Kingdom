@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://levels/sandbox/equipment_gallery.gd" id="1_gal"]
+
+[node name="EquipmentGallery" type="Node3D"]
+script = ExtResource("1_gal")

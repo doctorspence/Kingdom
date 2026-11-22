@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_ob5jd"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Weapons/item_bronze_shield.png" id="1_ppc7k"]
+[ext_resource type="Resource" path="res://data/shields/shield_bronze.tres" id="2_ppc7k"]
+
+[resource]
+script = ExtResource("1_ob5jd")
+id = &"item_bronze_shield"
+display_name = "Bronze Shield"
+flavor = "A heater shield, wood-cored and edged in metal."
+slot = 11
+grid_size = Vector2i(2, 3)
+weight = 6.0
+value = 24
+icon_color = Color(0.62, 0.4, 0.22, 1)
+icon = ExtResource("1_ppc7k")
+tier = &"bronze"
+shield = ExtResource("2_ppc7k")

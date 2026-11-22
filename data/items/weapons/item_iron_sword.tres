@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Weapons/item_iron_sword.png" id="1_prrlw"]
 [ext_resource type="Resource" path="res://data/weapons/weapon_iron_sword.tres" id="2_ref"]
 
 [resource]
@@ -12,7 +13,8 @@ slot = 10
 grid_size = Vector2i(1, 3)
 weight = 4.0
 value = 40
-icon_color = Color(0.55, 0.55, 0.58, 1)
-armor = 0.0
-stats = {}
+icon_color = Color(0.4, 0.4, 0.43, 1)
+icon = ExtResource("1_prrlw")
+required_level = 5
+tier = &"iron"
 weapon = ExtResource("2_ref")

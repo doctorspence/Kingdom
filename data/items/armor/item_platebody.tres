@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/equipment/Armor/Plate/platebody.scn" id="1_1ee6x"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Armor/item_platebody.png" id="1_c2io8"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="2_c2io8"]
+
+[resource]
+script = ExtResource("2_c2io8")
+id = &"item_platebody"
+display_name = "Platebody"
+flavor = "Plain steel plate. It will do."
+slot = 3
+grid_size = Vector2i(2, 3)
+weight = 14.0
+value = 240
+icon_color = Color(0.68, 0.7, 0.75, 1)
+icon = ExtResource("1_c2io8")
+model_scene = ExtResource("1_1ee6x")
+required_level = 10
+tier = &"steel"
+armor = 28.0
+stats = {
+"strength": 1,
+"vitality": 2
+}

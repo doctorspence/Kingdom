@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ShieldData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/shield_data.gd" id="1_mgb43"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Weapons/Shields/steel_shield.scn" id="2_qu75n"]
+
+[resource]
+script = ExtResource("1_mgb43")
+id = &"shield_steel"
+display_name = "Steel Shield"
+visual_scene = ExtResource("2_qu75n")
+stamina_per_damage = 0.42

@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="PackedScene" path="res://assets/equipment/Armor/Leather/leather_breeches.scn" id="1_d4fhc"]
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Armor/item_leather_breeches.png" id="1_wa3kp"]
 
 [resource]
 script = ExtResource("1_item")
@@ -9,7 +11,11 @@ display_name = "Leather Breeches"
 slot = 5
 grid_size = Vector2i(2, 2)
 weight = 3.0
-value = 10
-icon_color = Color(0.4, 0.3, 0.2, 1)
+icon_color = Color(0.45, 0.33, 0.22, 1)
+icon = ExtResource("1_wa3kp")
+model_scene = ExtResource("1_d4fhc")
+tier = &"leather"
 armor = 4.0
-stats = {"agility": 1}
+stats = {
+"agility": 1
+}

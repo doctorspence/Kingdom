@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/equipment/Armor/Chainmail/chainmail_body.scn" id="1_l6vgd"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Armor/item_chainmail_body.png" id="1_uc2pl"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="2_uc2pl"]
+
+[resource]
+script = ExtResource("2_uc2pl")
+id = &"item_chainmail_body"
+display_name = "Chainmail Body"
+flavor = "Heavy on the shoulders, light on the blade."
+slot = 3
+grid_size = Vector2i(2, 3)
+weight = 9.0
+value = 110
+icon_color = Color(0.45, 0.33, 0.22, 1)
+icon = ExtResource("1_uc2pl")
+model_scene = ExtResource("1_l6vgd")
+required_level = 5
+tier = &"chainmail"
+armor = 17.0
+stats = {
+"vitality": 2
+}
