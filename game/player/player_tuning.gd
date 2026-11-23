@@ -116,6 +116,11 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var evade_bonus_time := 0.9
 @export var evade_damage_mult := 1.3
 @export var evade_balance_mult := 2.0
+## Step-in: perfect-dodge *toward* a red (unblockable) attack and the attacker loses this
+## share of its full balance ...
+@export_range(0.0, 1.0) var step_in_balance := 0.45
+## ... and recoils this long (seconds; bosses don't recoil).
+@export var step_in_recoil := 0.7
 ## Attack out of a roll from this far through it (0-1; earlier after a perfect dodge).
 @export_range(0.0, 1.0) var roll_attack_from := 0.6
 ## Guard out of a roll from this far through it (0-1).

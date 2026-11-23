@@ -89,6 +89,7 @@ func _ready() -> void:
 		player = get_tree().get_first_node_in_group(&"local_player") as Player
 	player.health_changed.connect(_health_bar.set_values)
 	player.stamina_changed.connect(_stamina_bar.set_values)
+	player.tempo_cue.connect(_on_tempo_cue)
 	player.flasks_changed.connect(_on_flasks_changed)
 	player.died.connect(_on_died)
 	player.respawned.connect(_on_respawned)
@@ -874,3 +875,14 @@ func _make_label(font_size: int) -> Label:
 	l.add_theme_constant_override("outline_size", 6)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return l
+
+
+## Timing cues on the stamina bar: a pale outline when Steady is ready, bright when it lands.
+func _on_tempo_cue(kind: StringName) -> void:
+	match kind:
+		&"window":
+			_stamina_bar.flash(Color(0.7, 0.85, 1.0, 0.7), player.tuning.tempo_window)
+		&"steady":
+			_stamina_bar.flash(Color(0.85, 0.95, 1.0, 1.0), 0.35)
+		&"evaded":
+			_stamina_bar.flash(Color(1.0, 1.0, 1.0, 1.0), 0.45)

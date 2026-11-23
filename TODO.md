@@ -155,6 +155,8 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Enemy strings (a second attack straight after the first) and delayed swings (a held wind-up), per enemy
 - [x] **Steady**: tap guard at the small blue glint as your swing recovers, get 60% of its stamina back
 - [x] Perfect dodge ("Evaded"): stamina back, the next blow hits harder and shakes balance more; attack or guard out of the end of a roll; a blocked blow shoves you back
+- [x] **Step-in**: perfect-dodge a red attack by rolling toward the attacker and it loses 45% of its balance and recoils; **counter hits** (striking during a wind-up) do ×1.5 balance damage
+- [x] The stamina bar outlines itself when Steady is ready, and flashes when Steady or a perfect dodge lands
 - [x] `tests/combat_check.gd` covers all of it; `tests/visual_tempo.gd` takes screenshots
 - [ ] 🧪 Fight the Marauder and a group of bandits: deflect a two-hit string in rhythm, break a bandit's balance and riposte, try Steady during a combo, perfect-dodge a Captain swing. Tell me if the windows feel too tight or too loose, and whether enemies guard too often (numbers: `data/balance/player_tuning.tres` "Timing and rhythm", each enemy file "Balance and tempo")
 

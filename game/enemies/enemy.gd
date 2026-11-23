@@ -33,6 +33,8 @@ const HEALTH_PER_EXTRA_PLAYER := 0.6
 const POISE_PER_EXTRA_PLAYER := 0.25
 ## At most this many enemies attack the same player at once; the rest circle.
 const MAX_ATTACKERS := 2
+## A blow that lands while it is winding up a swing does this much more balance damage.
+const COUNTER_HIT_BALANCE := 1.5
 ## Night makes everyone harder to see (set by the day/night cycle).
 static var sight_mult := 1.0
 ## This enemy sees farther or shorter than normal (camp Watchfires level 3
@@ -444,6 +446,9 @@ func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 		hit.poise_damage *= 0.75
 		_guard_hits += 1
 		model.play(&"ual2/Sword_Block", 0.04, 1.6, true)
+	# Counter hit: struck while winding up a swing, its balance takes the blow harder.
+	if state == State.ATTACK and _attack.attack and not _attack.past(_attack.attack.hit_start):
+		hit.poise_damage *= COUNTER_HIT_BALANCE
 	var damage := hit.damage * effects.damage_taken_mult()
 	health = maxf(0.0, health - damage)
 	_bar_timer = HEALTH_BAR_SHOW_TIME
@@ -504,6 +509,36 @@ func _recoil(seconds: float) -> void:
 	_set_state(State.STAGGER)
 	model.set_overlay("")
 	model.play_fitted(CharacterModel.ANIM_HIT, seconds, 0.04)
+
+
+## A player shook our balance without a weapon hit (a Step-in through a red attack).
+## Works from any machine: friends' games ask the host.
+func shake_balance(amount: float, recoil: float) -> void:
+	if _is_host():
+		_shake_balance(amount, recoil)
+	else:
+		_net_shake_balance.rpc_id(1, amount, recoil)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _net_shake_balance(amount: float, recoil: float) -> void:
+	if _is_host():
+		_shake_balance(amount, recoil)
+
+
+func _shake_balance(amount: float, recoil: float) -> void:
+	if state in [State.DEAD, State.PARRIED, State.RIPOSTED, State.CALL]:
+		return
+	_poise -= amount
+	_poise_timer = data.poise_regen_delay
+	if _poise <= 0.0:
+		if data.boss:
+			_poise = max_poise
+			_stance_break()
+		else:
+			_break_balance()
+	elif recoil > 0.0 and not data.boss:
+		_recoil(recoil)
 
 
 ## Does the attack in progress still have a blow to come after the one at `t`?

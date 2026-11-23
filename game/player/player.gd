@@ -25,6 +25,8 @@ extends CharacterBody3D
 
 signal health_changed(current: float, maximum: float)
 signal stamina_changed(current: float, maximum: float)
+## Timing cues for the HUD: &"window" (tap guard now for Steady), &"steady" (it worked), &"evaded" (perfect dodge).
+signal tempo_cue(kind: StringName)
 signal flasks_changed(current: int, maximum: int)
 signal leveled_up(level: int)
 signal died
@@ -454,20 +456,34 @@ func _try_steady() -> void:
 	restore_stamina(back)
 	CombatFx.glint(global_position + Vector3.UP * 1.2 + model.forward() * 0.35, Color(0.7, 0.88, 1.0), null, 0.6)
 	CombatFx.word(global_position + Vector3.UP * 2.1, "Steady")
+	tempo_cue.emit(&"steady")
 	Audio.sfx(&"steady", global_position + Vector3.UP)
 
 
-## Perfect dodge: a blow reached you right at the start of a roll.
-func _perfect_dodge() -> void:
+## Perfect dodge: a blow reached you right at the start of a roll. Rolling *into*
+## a red (unblockable) attack is a Step-in: it rocks the attacker's balance too.
+func _perfect_dodge(hit: HitInfo) -> void:
 	if _evaded_this_roll:
 		return
 	_evaded_this_roll = true
 	_evade_timer = tuning.evade_bonus_time
 	restore_stamina(tuning.roll_stamina)
-	CombatFx.word(global_position + Vector3.UP * 2.1, "Evaded")
+	var to_attacker := hit.origin - global_position
+	to_attacker.y = 0.0
+	var step_in := hit.unblockable and not _roll_backward and to_attacker.length() > 0.01 \
+			and _roll_dir.dot(to_attacker.normalized()) > 0.3
+	var enemy := hit.attacker as Enemy
+	if step_in and enemy and is_instance_valid(enemy):
+		enemy.shake_balance(enemy.max_poise * tuning.step_in_balance, tuning.step_in_recoil)
+		CombatFx.word(global_position + Vector3.UP * 2.1, "Step-in!")
+		CombatFx.sparks(global_position + Vector3.UP * 1.2 + to_attacker.normalized() * 0.5, to_attacker, true)
+		camera_rig.add_shake(0.25)
+	else:
+		CombatFx.word(global_position + Vector3.UP * 2.1, "Evaded")
+		camera_rig.add_shake(0.1)
 	CombatFx.glint(global_position + Vector3.UP * 1.2, Color(0.85, 0.95, 1.0), null, 0.8)
+	tempo_cue.emit(&"evaded")
 	Audio.sfx(&"steady", global_position + Vector3.UP)
-	camera_rig.add_shake(0.1)
 
 
 ## Is your shield on your arm? (Not while Shield Throw has it in the air.)
@@ -488,7 +504,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	var chest := global_position + Vector3.UP * 1.3
 	if is_invulnerable():
 		if state == State.ROLL and _state_time <= tuning.perfect_dodge_time:
-			_perfect_dodge()
+			_perfect_dodge(hit)
 		return HitInfo.Result.DODGED
 	var to_attacker := hit.origin - global_position
 	to_attacker.y = 0.0
@@ -1695,6 +1711,7 @@ func _state_attack(delta: float) -> void:
 			_tempo_used = true
 		else:
 			_tempo_open_at = _clock
+			tempo_cue.emit(&"window")
 			if not Input.is_action_pressed("block"):
 				CombatFx.glint(global_position + Vector3.UP * 1.25 + model.forward() * 0.3, Color(0.6, 0.8, 1.0), null, 0.35)
 	if _attack.past(a.cancel_time) and not _is_riposte and not _air_attack:

@@ -243,6 +243,35 @@ func _run() -> void:
 			player.health == hp and evaded and player.stamina >= 50.0)
 	await _seconds(1.5)
 
+	# Step-in: a perfect dodge *toward* a red attack rocks the attacker.
+	await _setup_duel()
+	hp = player.health
+	await _force_attack(CRUSH)
+	await _wait_until_hit_in(0.08)
+	Input.action_press("move_forward")
+	await _tap("dodge_sprint")
+	var rocked := false
+	for i in 30:
+		await get_tree().physics_frame
+		rocked = rocked or enemy.state == Enemy.State.STAGGER or enemy.state == Enemy.State.PARRIED
+	Input.action_release("move_forward")
+	_check_true("Step-in: rolling into the red crushing blow (no damage) rocks the Marauder (state %s, balance %.0f / %.0f)" % [Enemy.State.keys()[enemy.state], enemy._poise, enemy.max_poise],
+			player.health == hp and rocked and enemy._poise <= enemy.max_poise * (1.0 - player.tuning.step_in_balance) + 0.5)
+	await _seconds(1.5)
+
+	# Counter hit: strike it while it winds up a swing.
+	await _setup_duel()
+	await _force_attack(OVERHEAD)
+	await _tap("light_attack")
+	for i in 30:
+		await get_tree().physics_frame
+		if enemy._poise < enemy.max_poise:
+			break
+	var lost := enemy.max_poise - enemy._poise
+	_check_true("a blow during its wind-up is a counter hit (balance -%.0f, a normal hit is -%.0f)" % [lost, player.weapon.poise_damage],
+			lost >= player.weapon.poise_damage * 1.4)
+	await _seconds(2.0)
+
 	# Combos: an enemy that strings attacks goes straight into a second one.
 	await _setup_duel()
 	var cc := enemy.data.combo_chance

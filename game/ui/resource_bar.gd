@@ -16,6 +16,17 @@ var value := 1.0
 var max_value := 1.0
 var _chip := 1.0
 var _chip_wait := 0.0
+var _flash := 0.0
+var _flash_len := 0.3
+var _flash_color := Color.WHITE
+
+
+## Briefly outline the bar (Steady: the moment to tap guard, and the stamina coming back).
+func flash(color: Color, seconds := 0.3) -> void:
+	_flash_color = color
+	_flash_len = maxf(seconds, 0.01)
+	_flash = _flash_len
+	queue_redraw()
 
 
 func set_values(current: float, maximum: float) -> void:
@@ -32,6 +43,9 @@ func set_values(current: float, maximum: float) -> void:
 
 
 func _process(delta: float) -> void:
+	if _flash > 0.0:
+		_flash -= delta
+		queue_redraw()
 	var ratio := value / maxf(max_value, 0.001)
 	if _chip > ratio:
 		if _chip_wait > 0.0:
@@ -50,3 +64,7 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, Vector2(size.x * clampf(_chip, 0.0, 1.0), size.y)), chip_color)
 	draw_rect(Rect2(Vector2.ZERO, Vector2(size.x * ratio, size.y)), fill_color)
 	draw_rect(r, border_color, false, 1.0)
+	if _flash > 0.0:
+		var c := _flash_color
+		c.a *= clampf(_flash / _flash_len, 0.0, 1.0)
+		draw_rect(r.grow(2.0), c, false, 2.0)
