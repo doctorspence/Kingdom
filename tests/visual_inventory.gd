@@ -101,6 +101,14 @@ func _run() -> void:
 		get_window().size = res
 		await _frames(10)
 		await _shot("inv_%dx%d" % [res.x, res.y])
+	# Tab opens the inventory and closes it again
+	get_window().size = Vector2i(1920, 1080)
+	hud._close_panels()
+	await _frames(5)
+	await _tap(KEY_TAB)
+	print("tab opens the inventory: ", hud._book.visible and hud._book.page == "inventory")
+	await _tap(KEY_TAB)
+	print("tab closes it: ", not hud._book.visible)
 	get_tree().quit()
 
 
@@ -120,3 +128,13 @@ func _shot(shot_name: String) -> void:
 func _frames(n: int) -> void:
 	for i in n:
 		await get_tree().process_frame
+
+
+func _tap(key: Key) -> void:
+	for down in [true, false]:
+		var e := InputEventKey.new()
+		e.physical_keycode = key
+		e.keycode = key
+		e.pressed = down
+		Input.parse_input_event(e)
+		await _frames(3)

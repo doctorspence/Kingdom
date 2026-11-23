@@ -20,7 +20,7 @@ Riposte: light attack on a reeling enemy after a parry
 Drink flask: R / X        Interact / rest: E / Y
 Revive a downed friend: hold E / Y next to them (costs a flask)
 Abilities: 1-6 / hold LT + A, B, X, Y, RB, RT
-Talents: T / D-pad left    Inventory: I / View    Swap weapon set: X / D-pad right
+Talents: T / D-pad left    Inventory: I or Tab / View    Swap weapon set: X / D-pad right
 In the inventory: Q E / LB RB change tab, drag items (right-click or R turns them), Z sorts
 Thrown abilities land where the center dot points
 Chat: Enter        Menu (leave game): Esc

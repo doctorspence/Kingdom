@@ -12,7 +12,7 @@ extends Control
 ##   (or double-click) equips or uses. Hover shows the item card.
 ## Keyboard / gamepad: arrows / D-pad move; Enter / A equips; hold Enter / A to
 ##   pick an item up, then A puts it down, R / Y turns it, Esc / B cancels.
-##   Q E / LB RB change tab, Tab / LT RT change filter, C / X compare,
+##   I or Tab / View opens and closes it; Q E / LB RB change tab, [ ] / LT RT change filter, C / X compare,
 ##   Del / Y drop, J / L3 mark junk, Z / R3 sort, X (key) swaps weapon sets.
 
 signal page_requested(page: String)
@@ -339,7 +339,7 @@ func _equipped_like(it: ItemInstance) -> ItemInstance:
 func _pad_label(action: String) -> String:
 	if not _pad:
 		return {"equip": "Enter", "compare": "C", "drop": "Del", "sort": "Z", "junk": "J", "rotate": "R",
-				"cancel": "Esc", "tab_prev": "Q", "tab_next": "E", "filter_prev": "", "filter_next": "Tab"}[action]
+				"cancel": "Esc", "tab_prev": "Q", "tab_next": "E", "filter_prev": "[", "filter_next": "]"}[action]
 	if _ps_pad:
 		return {"equip": "✕", "compare": "□", "drop": "△", "sort": "R3", "junk": "L3", "rotate": "△",
 				"cancel": "○", "tab_prev": "L1", "tab_next": "R1", "filter_prev": "L2", "filter_next": "R2"}[action]
@@ -573,6 +573,15 @@ func _input(event: InputEvent) -> void:
 		_cycle_page(1)
 		get_viewport().set_input_as_handled()
 		return
+	# I / Tab / View: close from the Inventory page, jump to it from any other page.
+	# (Caught here, before Tab would move the focus between buttons.)
+	if event.is_action_pressed("inventory") and not Net.typing:
+		if page == "inventory":
+			close_requested.emit()
+		else:
+			page_requested.emit("inventory")
+		get_viewport().set_input_as_handled()
+		return
 	if not (page in OWN_PAGES):
 		return
 	var handled := true
@@ -585,7 +594,7 @@ func _input(event: InputEvent) -> void:
 	elif event.is_action_pressed("menu_filter_prev"):
 		_cycle_filter(-1)
 	elif event.is_action_pressed("menu_filter_next"):
-		_cycle_filter(-1 if event is InputEventKey and event.shift_pressed else 1)
+		_cycle_filter(1)
 	elif event.is_action_pressed("inv_rotate") and _carry:
 		_rotate_carry()
 	elif event.is_action_pressed("inv_drop"):
@@ -964,14 +973,19 @@ func _draw_footer() -> void:
 func _draw_character_sheet() -> void:
 	var s := player.stats
 	var x0 := LEFT.position.x + 60
-	UiStyle.text(_stage, Vector2(x0, 160), player.player_name if player.player_name != "" else "Nameless", 40)
-	var line := s.class_data.display_name + ("  ·  " + s.subclass.display_name if s.subclass else "")
+	# Level and class lead; the name sits under them, labelled, so a default
+	# name like "Player 1" can't be read as a level.
+	var title := "Level %d %s" % [s.level, s.class_data.display_name]
+	UiStyle.text(_stage, Vector2(x0, 160), title, 40)
+	var line := "Known as %s" % (player.player_name if player.player_name != "" else "no one")
+	if s.subclass:
+		line += "  ·  " + s.subclass.display_name
 	UiStyle.text(_stage, Vector2(x0, 200), line, 24, UiStyle.GOLD)
 	UiStyle.rule(_stage, Vector2(LEFT.position.x + 40, 228), Vector2(LEFT.end.x - 40, 228))
 	var load_names := ["Light (quick rolls)", "Medium", "Heavy (slow rolls)", "Overloaded"]
 	var w := player.weapon
 	var rows := [
-		["Level", "%d   (%d / %d xp)" % [s.level, s.xp, s.xp_to_next()]],
+		["Experience", "%d / %d to level %d" % [s.xp, s.xp_to_next(), s.level + 1]],
 		["Talent points", "%d free of %d" % [s.talent_points_free(), s.talent_points_total()]],
 		["Weapon damage", "%d" % roundi(player.weapon_damage())],
 		["Critical chance", "%.1f%%" % (s.crit_chance(w) * 100.0)],
