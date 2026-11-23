@@ -1,0 +1,14 @@
+LOAD zone ready in 10594 ms
+PERF spawn_north       54.5 FPS ( 18.3 ms)  2206 draw calls   4859k primitives
+PERF spawn_south       90.7 FPS ( 11.0 ms)   525 draw calls   2877k primitives
+PERF farms             84.0 FPS ( 11.9 ms)  1075 draw calls   2862k primitives
+PERF river_bank        68.7 FPS ( 14.5 ms)  1740 draw calls   2562k primitives
+PERF mill              74.9 FPS ( 13.3 ms)  1305 draw calls   3696k primitives
+PERF hobb_camp         60.1 FPS ( 16.6 ms)  1544 draw calls   4007k primitives
+PERF raider_camp       70.4 FPS ( 14.2 ms)   948 draw calls   6726k primitives
+PERF road_checkpoint   65.5 FPS ( 15.3 ms)  1704 draw calls   2369k primitives
+PERF east_woods        76.3 FPS ( 13.1 ms)  1357 draw calls   4039k primitives
+PERF camp_hearth       72.4 FPS ( 13.8 ms)   969 draw calls   4855k primitives
+PERF deep_woods        53.1 FPS ( 18.8 ms)  1979 draw calls   6861k primitives
+PERF quarry_floor      86.0 FPS ( 11.6 ms)   816 draw calls   2459k primitives
+PERF barrow            82.3 FPS ( 12.2 ms)   542 draw calls   6612k primitives

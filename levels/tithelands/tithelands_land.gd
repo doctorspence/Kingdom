@@ -61,7 +61,7 @@ var tracks := [
 		Vector2(82, 15), Vector2(94, 10), Vector2(104, 11)])},                                                                       # the long way up the crag
 	{"points": PackedVector2Array([Vector2(-150, -78), Vector2(-157, -56), Vector2(-160, -30), Vector2(-158, -4), Vector2(-152, 16)])}, # cliff-top path to the overlook
 	{"points": PackedVector2Array([Vector2(8, -50), Vector2(16, -50)])},                                                           # into the tithe yard
-	{"points": PackedVector2Array([Vector2(-45, 131), Vector2(-44, 138), Vector2(-45, 145), Vector2(-47, 151), Vector2(-49, 156)])},           # the sunken lane up to the chapel
+	{"points": PackedVector2Array([Vector2(-45, 131), Vector2(-42, 138), Vector2(-41, 145), Vector2(-45, 151), Vector2(-49, 156)])},           # the sunken lane up to the chapel
 ]
 
 # ---- cuts: the quarry floor carved into the scarp, a bench along its north
@@ -117,7 +117,7 @@ var flats := PackedVector4Array([
 	Vector4(102, -51, 6, 4),      # woods camp north
 	Vector4(40, 127, 7, 4),       # the camp hearth's yard
 	Vector4(-152, 16, 5, 3),      # the overlook on the cliff top
-	Vector4(-48, 160, 11, 12),    # ruined chapel (built: props/chapel.tscn)
+	Vector4(-48, 160, 11, 18),    # ruined chapel (built: props/chapel.tscn)
 	Vector4(150, -140, 9, 12),    # old barrow (built: props/barrow.tscn)
 ])
 
@@ -156,7 +156,7 @@ func river_z(x: float) -> float:
 # ---- the brook in the East Woods (west end joins the river) and the chapel's sunken lane.
 var brook := PackedVector2Array([Vector2(186, 74), Vector2(171, 66), Vector2(159, 58), Vector2(149, 46),
 	Vector2(142, 32), Vector2(135, 18), Vector2(129, 6), Vector2(126, -5)])
-var holloway := PackedVector2Array([Vector2(-45, 131), Vector2(-44, 138), Vector2(-45, 145), Vector2(-47, 151), Vector2(-49, 156)])
+var holloway := PackedVector2Array([Vector2(-45, 131), Vector2(-42, 138), Vector2(-41, 145), Vector2(-45, 151), Vector2(-49, 156)])
 
 
 ## (distance to a polyline, position along it 0..1).
@@ -268,7 +268,7 @@ func natural(x: float, z: float) -> float:
 	h -= 1.0 * (1.0 - smoothstep(0.9, 4.5, bd.x))
 	# The sunken lane to the chapel, worn deep into the ridge (deepest halfway up).
 	var hl := _line_dist(Vector2(x, z), holloway)
-	h -= 1.6 * sin(PI * clampf(hl.y, 0.0, 1.0)) * (1.0 - smoothstep(1.3, 5.0, hl.x))
+	h -= 1.3 * sin(PI * clampf(hl.y, 0.0, 1.0)) * (1.0 - smoothstep(2.2, 6.0, hl.x))
 	# Beyond the playable square: hills close the horizon (but not across the north road,
 	# where Highcrown stands, nor where the river leaves).
 	var out := maxf(absf(x), absf(z)) - 182.0

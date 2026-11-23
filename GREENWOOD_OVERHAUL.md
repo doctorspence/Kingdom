@@ -17,7 +17,52 @@
 | 6. Ground plants | **Done.** Quarry walls: the block-course pattern removed at the owner's request (pale fresh stone with natural strata and faint tool marks); the Gullet entrance surround is now rough natural rock masses instead of cut-block courses. New `game/world/plant_kit.gd`: bracken, bramble, holly, bluebell, foxglove, wild garlic, wood sorrel, ivy carpets, mushrooms and bracket fungus, all code-drawn painterly cards. Placement rules in `tithelands_land.gd` from shade, wood edge, damp (river, brook) and disturbed ground (camps, ruins, burned hamlet, quarry margins); brambles keep to a band beside paths (`PlantScatter.road_band`); nettles now favour disturbed ground. Ivy climbs the old and ancient oaks and one stag-headed oak. Ancient oaks keep their leaves above 3.4 m so you can stand and fight under them. Grass thins and shortens under the canopy and its tips are less yellow. Puddles are soft damp patches that only shine when wet (no more grey discs). Plant densities cached per 4 m (load time); short draw ranges and small batches for small plants. Gallery: `tools/preview_plants.gd`. Checks pass; audit unchanged; FPS equal to stage 5 measured the same moment; load about 10.7 s (stage 5: 9.4 s). |
 | 7. Props and story dressing | **Done.** Roads: wheel ruts (two darker bands either side of the centre that hold water after rain) and a grass strip down the middle of the narrow lanes (terrain shader, road distance in UV2.y). New `game/world/story_props.gd` (StoryProps node): two wayside shrines (oak post, carved cross, shingled pent roof, stone step with offerings) on the Tithe Road south entrance and Mill Lane, four mile stones along the Tithe Road, a hunters' high seat at the East Woods edge, a cart tipped in the ruts by the ford track, ivy climbing the chapel walls and the watchtower's west base. Two tumbled boundary walls running into the East Woods (`stone_walls.gd` gets a `ruin` option: gaps and runs of different heights). Each prop is its own mesh so distance culling works. Checks pass; FPS unchanged from stage 6. |
 | 8. Lighting and atmosphere | **Done.** `DayNight` blends three area moods from `land.mood()` as the camera moves: deep woods (lifted green ambient, never black; exposure rises up to 45% like eyes adjusting; a little more haze for light shafts), the quarry (pale bounced light, dusty haze), the chapel and barrow (colder light, more mist). New `Mist` node (`game/world/mist.gd`): 10 local fog volumes from `land.mist_spots` (East Woods dells, brook, barrow, churchyard, river by the mill pond, ford, quarry dust), thicker at night and in rain; no global height fog. Palette colour grade: a 17x17x17 lookup built by `DayNight.palette_grade()` (shadows lean to deep woodland green, yellow-greens calmed, flowers and berries keep their colour, warm highlights); global saturation 0.8 to 0.9 since the grade is selective. `tests/visual_night.gd` gained woods shots at dawn, night and in rain. Checks pass; FPS no worse than stage 7 measured the same moment. |
-| 9 | Not started. |
+| 9. Validation | **Done.** Final report below. |
+
+### Final report (stage 9, 2026-11-22)
+
+**Before and after.** Same 20 gameplay-camera spots: before in `docs/greenwood_before/`, after in `docs/greenwood_after/`, side by side in `docs/greenwood_after/compare_1.jpg` to `compare_4.jpg` (left before, right after).
+
+**Gameplay validation**
+| What | Result |
+|---|---|
+| All 15 checks (movement, combat, moves, enemy, death, loot, class, subclass, boss, camp, gullet, zone, audio, sound, prefs) + save_check | **All pass.** (Another session had uncommitted combat and enemy edits in this folder while they ran.) |
+| 3-player network check | **Passes** (3 players, hits, downed and revive, loot roll, camp claim and raid). |
+| Placement audit (`tools/zone1_audit.gd`) | **No new flags.** Every building, camp, shrine, vendor, door, gate, ladder and spawn is where it was. Trees: nothing in or against buildings. Enemy spawns: only the old "Checkpoint inside CheckpointPaving" note. |
+| Routes (new `tools/route_check.gd`: a person-sized capsule every meter along every road and track) | Same as before the overhaul, with two improvements: Mill Lane no longer clips a terrain spike at the quarry mouth, and the Gullet door is no longer crowded by the old entrance blocks. The only route blockers are the intended ones (checkpoint barricade, raiders' barricade, zone edges, the bridge deck the road crosses) plus an old hay bale on Hobb's track. The new chapel lane is fully walkable (the chapel yard's edge was softened for it). |
+| Access points (shrines, vendors, Gullet door, shortcut gate) | All clear. The quarry ladder touches the quarry wall, as it should. |
+| Spawns, enemies, quests | No spawn or enemy placement moved; 5 m clearance round every enemy spawn for trees, rocks and plants. There is no quest system yet (PRIORITIES P4), so no quest triggers to break. No navigation mesh is used (enemies steer directly), so the route and access checks cover navigation. |
+| Collision | Tree trunks sized per tree; quarry blocks, crane, adit, shrines, mile stones and the high seat have colliders; small plants and scree have none, as before. |
+
+**Performance** (1920x1080, this PC, the original and the final version measured back to back; your Godot was running, so absolute numbers swing by 10-20% between runs)
+| Spot | Original | Final |
+|---|---|---|
+| spawn north | 79 | 54 |
+| spawn south | 114 | 83 |
+| farms | 103 | 77 |
+| river bank | 88 | 70 |
+| mill | 96 | 77 |
+| Hobb's camp | 84 | 68 |
+| raider camp | 90 | 71 |
+| road checkpoint | 79 | 64 |
+| east woods | 86 | 76 |
+| camp hearth | 100 | 75 |
+| deep woods (new spot) | 77 | 57 |
+| quarry floor (new spot) | 114 | 78 |
+| barrow (new spot) | 117 | 78 |
+
+The overhaul costs roughly **20-30% frame rate**; two spots are **below the 60 FPS target** on this PC (looking north from the spawn, inside the deep woods). The scene draws 1.5 to 3.5x more triangles (broadleaf crowns, ivy, plants, scree); GPU time measured only about 1 ms more per frame, so part of the cost is on the processor side and I could not pin it down today because the PC's load kept changing. Zone load: **8.2 s → 10.6 s** (15 s on the first load after the land script changes, while the terrain cache rebuilds).
+
+**Remaining issues**
+1. **Performance** (above): needs its own optimization pass: bake trees and plants to files (load time), trim leaf-card counts on yews and ancient oaks, flat "card" trees for the far distance, and a proper profile with nothing else running.
+2. **Bracken up close** reads as flat striped cards (fine from a few meters).
+3. **A few very dark views** remain where the camera is pressed against a slope or under a low crown.
+4. **Old, not caused by the overhaul, but found by the route check:** the cliff-top path crosses the river gorge at about (-159, -45) on ground of 69-77° (not walkable); the long track up the watchtower hill is 45-48° near (77, 18); Mill Lane has a 56-63° step at the quarry mouth (-130, -96).
+5. The scanned rock outcrop on the chapel ridge still looks odd; the chapel gravestones look like stumps (old models).
+6. The look mixes photo-scanned textures with the new painterly trees and plants; it reads as one place, but a full repaint would unify it.
+7. This branch also carries another session's "Safer saves" commit (63c09ed). Nothing is merged into `main` yet.
+
+**Files.** New: `game/world/tree_species.gd`, `plant_kit.gd`, `quarry_kit.gd`, `quarry_adit.gd`, `quarry_works.gd`, `story_props.gd`, `mist.gd`, `tools/preview_trees.gd`, `tools/preview_plants.gd`, `tools/route_check.gd`, `assets/textures/leaf_litter/` (Poly Haven, CC0, in CREDITS). Changed: `game/world/sculpted_terrain.gd`, `forest_scatter.gd`, `plant_scatter.gd`, `stone_walls.gd`, `grass_field.gd`, `tithe_extras.gd`, `day_night.gd`, `levels/common/terrain_pbr.gdshader`, `grass.gdshader`, `materials/terrain_pbr.tres`, `tithelands_env.tres`, `levels/tithelands/tithelands.tscn`, `tithelands_land.gd`, `tithelands_dressing.gd`, `props/gullet_mouth.tscn`, `tools/relayout_tithelands.gd`, `tests/perf_zone.gd` (3 extra spots, CPU/GPU split, `noproc:`), `tests/visual_night.gd` (woods shots), docs. **Terrain areas changed:** west scarp (steps, ragged brow, two combes, scree), quarry (three terraces, rounded corners, spoil heap), Knight's Gap shoulders, watchtower hill north-east face, East Woods (rolling ground, three dells, the brook), the chapel lane and yard edge.
 
 **Checks after stage 3:** `zone_check`, `camp_check`, `gullet_check` pass; placement audit shows no trees in or against buildings (the building flags it lists are unchanged from before). FPS at 1920x1080: 78 to 116 at the 10 spots (before: 81 to 128); zone load 8.1 s (before 6.6 s; trees are built at load, baking them to files is the fix if it matters). Pictures: `docs/greenwood_progress/`.
 

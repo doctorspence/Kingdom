@@ -33,6 +33,11 @@ func _run() -> void:
 				var node := scene.get_node_or_null(n) as Node3D
 				if node:
 					node.visible = false
+		elif String(a).begins_with("noproc:"):
+			for n in String(a).substr(7).split(","):
+				var node := scene.get_node_or_null(n)
+				if node:
+					node.process_mode = Node.PROCESS_MODE_DISABLED
 		elif String(a).begins_with("only:"):
 			only = String(a).substr(5)
 	for c in scene.get_children():
@@ -68,6 +73,10 @@ func _run() -> void:
 		["road_checkpoint", 2.0, 40.0, 0.0],
 		["east_woods", 90.0, 20.0, 90.0],
 		["camp_hearth", 24.0, 124.0, -90.0],
+		# Added for the Greenwood overhaul (after the original ten, so those stay comparable):
+		["deep_woods", 120.0, 70.0, 0.0],
+		["quarry_floor", -140.0, -96.0, 90.0],
+		["barrow", 135.0, -125.0, -45.0],
 	]
 	for spot in spots:
 		if only != "" and spot[0] != only:
@@ -82,11 +91,14 @@ func _run() -> void:
 		player.camera_rig.global_position = player.global_position + Vector3.UP * 1.55
 		for i in 40:
 			await get_tree().process_frame
+		RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), true)
 		var t := Time.get_ticks_usec()
 		for i in 90:
 			await get_tree().process_frame
 		var ms := (Time.get_ticks_usec() - t) / 90000.0
 		print("PERF %-16s %5.1f FPS (%5.1f ms)  %4d draw calls  %5dk primitives" % [spot[0], 1000.0 / ms, ms, Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME) / 1000])
+		var vp := get_viewport().get_viewport_rid()
+		print("      cpu render %.1f ms, gpu %.1f ms, scripts %.1f ms, physics %.1f ms" % [RenderingServer.viewport_get_measured_render_time_cpu(vp) + RenderingServer.get_frame_setup_time_cpu(), RenderingServer.viewport_get_measured_render_time_gpu(vp), Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0])
 	get_tree().quit()
 
 

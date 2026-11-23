@@ -186,12 +186,14 @@ static func _material(name: String) -> StandardMaterial3D:
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
 	m.roughness = 0.6 if name == "holly" else 0.9
 	m.metallic_specular = 0.35 if name == "holly" else 0.15
-	m.backlight_enabled = name != "holly"
+	m.backlight_enabled = name != "holly" and name != "bracken"
 	m.backlight = Color(0.18, 0.22, 0.08)
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	m.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER
-	m.distance_fade_min_distance = 0.4
-	m.distance_fade_max_distance = 1.2
+	# Big fronds and shrubs fade out well before they fill the camera; small plants only very close.
+	var big := name in ["bracken", "bramble", "holly", "foxglove"]
+	m.distance_fade_min_distance = 1.6 if big else 0.4
+	m.distance_fade_max_distance = 3.4 if big else 1.2
 	_mats[name] = m
 	return m
 
@@ -204,7 +206,7 @@ static func _texture(name: String) -> ImageTexture:
 	match name:
 		"bracken":
 			# The whole card is one frond: base at the bottom (widest), tip at the top.
-			_frond(img, Vector2(128, 252), Vector2(128, 4), 118.0, Color(0.28, 0.37, 0.16), Color(0.46, 0.5, 0.23), rng, 0.15)
+			_frond(img, Vector2(128, 252), Vector2(128, 4), 118.0, Color(0.2, 0.3, 0.13), Color(0.32, 0.41, 0.18), rng, 0.08)
 		"bramble":
 			# A cane with alternate toothed leaves, a few blackberries and white flowers.
 			_line(img, Vector2(128, 255), Vector2(128, 2), 2.5, Color(0.3, 0.17, 0.15))
