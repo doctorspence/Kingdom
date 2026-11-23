@@ -1010,6 +1010,8 @@ func _state_attack(delta: float) -> void:
 	# Warning: white glint (parryable) or red glow (unblockable).
 	if not _telegraphed and _attack.past(a.telegraph_time):
 		_telegraphed = true
+		if a.burst_radius > 0.0:
+			_start_bursts(a)
 		if a.unblockable:
 			model.set_overlay("danger", Color(1.0, 0.1, 0.05, 0.35))
 		elif a.parryable:
@@ -1357,6 +1359,44 @@ func _free_adds() -> void:
 		if is_instance_valid(e):
 			e.queue_free()
 	_adds.clear()
+
+
+## Stone Eruption (host): ring after ring of black stone is marked under every player in the arena.
+## More players mean more rings at once, and from three players a fourth wave: the arena fills up and
+## nobody can just stand behind the tank. Each wave picks where each player stands at that moment.
+func _start_bursts(a: AttackData) -> void:
+	var waves := a.burst_waves + (1 if _party_size >= 3 else 0)
+	for w in waves:
+		if w == 0:
+			_burst_wave(a)
+		else:
+			get_tree().create_timer(a.burst_gap * w).timeout.connect(_burst_wave.bind(a))
+
+
+func _burst_wave(a: AttackData) -> void:
+	if state == State.DEAD or not is_inside_tree():
+		return
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p == null or p.is_dead() or not _in_arena(p):
+			continue
+		var at := p.global_position
+		# Aim a little ahead of a running player, so a straight sprint does not simply outrun it.
+		var v := p.velocity
+		v.y = 0.0
+		at += v * minf(a.burst_delay, 1.0) * 0.45
+		_net_burst.rpc(at, a.burst_radius, a.burst_delay, a.burst_damage)
+
+
+@rpc("authority", "call_local", "reliable")
+func _net_burst(at: Vector3, radius: float, delay: float, damage: float) -> void:
+	var b := StoneBurst.new()
+	b.radius = radius
+	b.delay = delay
+	b.damage = damage
+	var root := get_parent().get_parent() if get_parent() and get_parent().get_parent() else get_tree().root
+	root.add_child(b)
+	b.global_position = at
 
 
 @rpc("authority", "call_local", "reliable")

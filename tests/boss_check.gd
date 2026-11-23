@@ -78,11 +78,37 @@ func _run() -> void:
 
 	# --- His moves ---------------------------------------------------------------------------------
 	var names := boss.data.attacks.map(func(a: AttackData) -> String: return a.display_name)
-	_check("phase 1 moves: sweep, heavy strike, slam, shard, grip %s" % str(names), boss.data.attacks.size() == 5)
+	_check("phase 1 moves: sweep, heavy strike, slam, shard, grip, charge, eruption %s" % str(names), boss.data.attacks.size() == 7)
 	var shard: AttackData = boss.data.attacks[3]
 	_check("Black Shard is blockable, slows, and only used from a distance", not shard.unblockable and shard.slow > 0.0 and shard.min_use_distance > 3.0)
 	_check("Ground Slam is red (unblockable)", boss.data.attacks[2].unblockable)
 	_check("Heavy Strike is parryable with a long wind-up", boss.data.attacks[1].parryable and boss.data.attacks[1].windup_speed_mult < 0.4)
+
+	# --- The reworked fight: Delver's Charge and Stone Eruption ---------------------------------------
+	var charge: AttackData = boss.data.attacks[5]
+	var burst: AttackData = boss.data.attacks[6]
+	_check("Delver's Charge closes the gap (lunge %.0f m, used from %.0f m+) and can be parried" % [charge.lunge_distance, charge.min_use_distance],
+			charge.lunge_distance >= 6.0 and charge.min_use_distance >= 4.0 and charge.parryable)
+	_check("Stone Eruption deals no melee damage but marks rings (%d wave, phase 2: %d)" % [burst.burst_waves, boss.data.phase2_attacks[6].burst_waves],
+			burst.burst_radius > 1.5 and burst.base_damage == 0.0 and boss.data.phase2_attacks[6].burst_waves >= 3)
+	boss._set_state(Enemy.State.CHASE)
+	boss.target = player
+	player.global_position = boss.global_position + Vector3(6, 0.3, 0)
+	await _frames(3)
+	var health_before := player.health
+	boss.start_attack(6)
+	await _seconds(1.0)
+	var rings := get_tree().get_nodes_in_group(&"player").size()
+	var found_bursts := 0
+	for n in get_tree().root.find_children("*", "Node3D", true, false):
+		if n is StoneBurst:
+			found_bursts += 1
+	_check("a ring of black stone is marked under the player (%d ring)" % found_bursts, found_bursts >= rings and player.health == health_before)
+	await _seconds(burst.burst_delay + 0.4)
+	_check("...and the spikes hurt a player who stays in it (%.0f -> %.0f)" % [health_before, player.health], player.health < health_before)
+	boss._set_state(Enemy.State.CHASE)
+	boss._cooldown = 1.0e9
+	player.health = health_before
 
 	# --- Poise: stance break, parry chip ----------------------------------------------------------
 	boss._set_state(Enemy.State.CHASE)

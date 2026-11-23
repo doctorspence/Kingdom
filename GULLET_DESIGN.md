@@ -176,6 +176,14 @@ Notes: the Captain's small unique-weapon chance makes the whole route matter, no
 - The fight should last about 2.5 minutes, which fits the 5-minute farming loop from the halfway shrine.
 - The arena (the Deep Chamber) has pillars and rubble for cover against Black Shard, and smooth walls.
 
+
+### Fight rework (2026-11-22): the stone makes everyone move
+Two moves were added so the fight is about *movement* and *scaling*, not just trading blows with whoever holds threat:
+- **Delver's Charge** (both phases, used from 5 to 8 m): he lowers the pick, a slow tell, then crosses about 8 m in half a second. Parryable (a parry is a big poise chip), or sidestep it. It punishes standing at mid range, where only the shard used to reach you.
+- **Stone Eruption** (both phases): he drives the pick into the floor and a red ring of black stone marks the ground **under every player in the arena**, aimed a little ahead of anyone who is running. About 1.4 s later spikes burst through (36 damage, unblockable: roll through it or leave the ring). In phase 2 it is **three rings in a row** that chase each player (1.15 s warning, 0.8 s apart, 40 damage), so a straight sprint or standing still both get hit. Harl is planted for about a second afterward: that is the punish window.
+- **Scaling with players:** health still rises 0.8 per extra player, but the eruption now marks every player at once, and from **three players there is one extra wave**. A group can no longer stack behind the tank: everyone has to read their own ring, and the people on the ground take the ring while the person at his feet stays on the pick. Charge and sweep still go to the top of the threat table, so the tank decides where he runs.
+- Code: `burst_*` fields in `attack_data.gd`, `_start_bursts` in `enemy.gd`, `game/enemies/stone_burst.gd` (the ring and spikes), `tests/boss_check.gd`.
+
 ### After the kill
 - The ledger, the list of missing workers and the drawing of the black stone are **readable objects** beside the formation, not loot, so anyone can read them on any run.
 - One ledger entry: *We were ordered to seal the lower passage. The foreman said there was nothing beneath the quarry worth retrieving. Three men refused to leave. I have not seen them since.*

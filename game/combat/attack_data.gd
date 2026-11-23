@@ -85,3 +85,14 @@ extends Resource
 @export var min_use_distance := 0.0
 ## Enemy only: this move deals no damage but charges the next attack (Corrupted Grip). A broken stance cancels it.
 @export var grip := false
+
+@export_group("Stone Eruption (Harl)")
+## Enemy only: at the telegraph moment a ring of black stone is marked under every player in the
+## arena (radius > 0), and spikes burst up through it `burst_delay` seconds later.
+@export var burst_radius := 0.0
+@export var burst_delay := 1.3
+@export var burst_damage := 38.0
+## Marks per player: after the first, each new ring is placed `burst_gap` seconds later under
+## wherever that player has run to, so standing still, or running in a straight line, gets punished.
+@export var burst_waves := 1
+@export var burst_gap := 0.75
