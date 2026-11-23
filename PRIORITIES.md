@@ -24,7 +24,7 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 
 ## P1: Reach the milestone (this is the real goal)
 
-- [ ] **You: Answer the scale question now** ("make doors, corridors and props bigger against the player?"). Every new building and cave pass makes changing scale more expensive. Decide before more art.
+- [x] **You: Answer the scale question now** *(Decided 2026-11-23: the scale is good as it is. Doors, corridors and props stay their current size against the player.)* ("make doors, corridors and props bigger against the player?"). Every new building and cave pass makes changing scale more expensive. Decide before more art.
 - [x] **CC: Get the frame rate playable.** *(Done 2026-11-22: worst of the 10 spots 45 -> 72 FPS at 1920x1080 via terrain LODs, size-based prop draw distance and a shadow budget for point lights; tree LODs not needed, trees already batch and cull at 175 m. Measure again with `tests/perf_zone.gd`.)* Original note: The audit measured 22–28 FPS at the spawn and the farms. Hiding the underground Gullet has helped since then, but trees still have no distance versions (LODs). Trees, shrubs and boulders cost 1.5–4 M primitives in busy views, and the zone takes 8.7 s to load. Target 60 FPS at the spawn. Measure at the 10 fixed spots from ZONE1_OVERHAUL stage 7. Friends' PCs may be slower than yours.
 - [x] **CC: Re-export the friends build** *(2026-11-22, 176 MB)* (`build/Kingdom-windows.zip`). The current one is from before the camp, the environment pass, the new Gullet and the equipment system.
 - [ ] **You: The playtest round, solo.** In this order:
