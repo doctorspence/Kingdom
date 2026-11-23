@@ -175,7 +175,9 @@ The fight is a conversation: you strike, they answer, you deflect, you strike ag
 - **Deflect rhythm** *(pass 3)*: deflects in a row (each within 1.2 s of the last) clang a little higher each time (+6%, up to 5 steps), so a well-read string sounds like a rising run of notes.
 - **Flawless** *(pass 3)*: deflect **every** blow of a multi-blow string and the last deflect hits its balance **twice** as hard.
 - **Breaking balance lands hard** *(pass 3)*: a heavy crack under the clang, and the screen of anyone within 10 m jolts with a short freeze.
-- All of these numbers are in `data/balance/player_tuning.tres` ("Timing and rhythm") and the enemy files ("Balance and tempo").
+- **Attack reach** *(pass 4)*: a melee swing aimed at an enemy (your lock-on, or the soft target) that stands a step out of reach closes up to **1.2 m** extra during its wind-up (no faster than 7 m/s), so blows land instead of falling just short. It never pulls you from far away (more than ~2.7 m beyond comfortable reach) or through the enemy.
+- **It reads a turtle** *(pass 4)*: **block** (not deflect) two of an enemy's blows in a row and its next attack is **6× likelier** to be its red one, or, if it has none, its heaviest guard-draining swing. Deflects and clean hits reset the count. Bosses keep their own patterns. (`read_guard_after`, `read_guard_mult` in each enemy file.)
+- All of these numbers are in `game/player/player_tuning.gd` defaults (overridable in `data/balance/player_tuning.tres`, "Timing and rhythm") and the enemy files ("Balance and tempo").
 
 ### 5.6 Hit feel
 - **Hit-stop**: a tiny freeze on impact (0.05 s light, 0.09 s heavy, 0.15 s critical) plus camera shake.

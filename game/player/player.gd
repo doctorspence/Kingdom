@@ -129,6 +129,8 @@ var _evade_timer := 0.0
 var _evaded_this_roll := false
 var _deflect_chain := 0
 var _last_deflect_at := -99.0
+var _attack_target: Node3D  # who this swing was aimed at (attack reach closes the gap to it)
+var _reach_used := 0.0       # how far attack reach has stepped us in this swing
 var _drink_healed := false
 ## Eating or drinking a potion reuses the flask drink: share of max health, how long, when the heal lands.
 var _drink_frac := 0.4
@@ -1631,6 +1633,8 @@ func _height_above_ground() -> float:
 
 
 func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
+	_attack_target = null
+	_reach_used = 0.0
 	if aim:
 		_aim_attack(dir)
 	_tempo_spent = a.stamina_cost * effects.product("stamina_cost")
@@ -1653,13 +1657,37 @@ func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
 ## Turn toward the locked target, or the best nearby enemy, or where you push.
 func _aim_attack(dir: Vector3) -> void:
 	if targeting.has_target():
+		_attack_target = targeting.target
 		model.face_instantly(targeting.target_point() - global_position)
 		return
 	var soft := targeting.find_soft_target(dir if dir.length() > 0.1 else model.forward())
 	if soft:
+		_attack_target = soft
 		model.face_instantly(soft.global_position - global_position)
 	elif dir.length() > 0.1:
 		model.face_instantly(dir)
+
+
+## Attack reach: during the wind-up of a melee swing aimed at someone just out of reach,
+## step in so the blow lands comfortably inside its reach (at most reach_assist extra).
+func _reach_speed(a: AttackData) -> float:
+	if a.projectile_speed > 0.0 or _attack.past(a.hit_start) or not is_instance_valid(_attack_target):
+		return 0.0
+	if _attack_target.has_method("can_be_locked") and not _attack_target.call(&"can_be_locked"):
+		return 0.0
+	var to := _attack_target.global_position - global_position
+	to.y = 0.0
+	if to.length() < 0.01 or model.forward().dot(to.normalized()) < 0.7:
+		return 0.0
+	var radius: float = _attack_target.call(&"hit_radius") if _attack_target.has_method("hit_radius") else 0.4
+	var gap := to.length() - radius - a.reach * 0.7
+	if gap <= 0.05 or gap > tuning.reach_assist + 1.5:
+		return 0.0  # already close enough, or too far to pretend
+	var left := maxf((a.hit_start - _attack.t) / (a.anim_speed * tuning.attack_speed), 0.08)
+	var room := minf(gap, tuning.reach_assist - _reach_used)
+	if room <= 0.0:
+		return 0.0
+	return minf(room / left, tuning.reach_assist_speed)
 
 
 func _state_attack(delta: float) -> void:
@@ -1687,6 +1715,11 @@ func _state_attack(delta: float) -> void:
 
 	# Lunge forward (but don't shove through whoever you're hitting).
 	var lunge := _attack.lunge_speed() * tuning.attack_speed * effects.product("attack_speed")
+	if not _air_attack:
+		var assist := _reach_speed(a)
+		if assist > lunge:
+			_reach_used += (assist - lunge) * delta
+			lunge = assist
 	if lunge > 0.0 and _something_close_in_front(1.1):
 		lunge = 0.0
 	if _air_attack:

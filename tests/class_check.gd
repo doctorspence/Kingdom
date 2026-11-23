@@ -148,9 +148,12 @@ func _run() -> void:
 	await _seconds(0.8)
 	var bulwark_threat: float = enemy.threat.get(1, 0.0)
 	await _setup("class_headsman", 5)
+	var crit_was := player.weapon.crit_chance
+	player.weapon.crit_chance = -10.0  # a random crit would spoil the comparison
 	await _tap("light_attack")
 	await _seconds(0.8)
 	var headsman_threat: float = enemy.threat.get(1, 0.0)
+	player.weapon.crit_chance = crit_was
 	_check("Vanguard makes far more threat per hit (%.0f vs %.0f)" % [bulwark_threat, headsman_threat], bulwark_threat > headsman_threat * 1.5)
 
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])

@@ -98,6 +98,7 @@ var _pressure := 0       # your hits in a row (it raises its guard after a few)
 var _pressure_timer := 0.0
 var _guard_hits := 0     # blows blocked during this guard
 var _chain := 0          # attacks strung together without a pause
+var _blocked_streak := 0  # its blows you blocked (not deflected) in a row: it reads a turtle
 var _stun_len := 1.0     # how long the current STAGGER lasts
 var _glinted := 0        # which follow-up blows of this attack have flashed their warning
 var _string_parries := 0  # blows of this attack that were deflected (all of them = Flawless)
@@ -674,6 +675,11 @@ func _on_hit_result(result: HitInfo.Result) -> void:
 		HitInfo.Result.HIT, HitInfo.Result.BLOCKED, HitInfo.Result.KILLED:
 			if state == State.ATTACK:
 				_hitstop = maxf(_hitstop, _attack.attack.hit_stop)
+	# Keep count of blows simply blocked in a row: a turtle gets a red attack.
+	if result == HitInfo.Result.BLOCKED:
+		_blocked_streak += 1
+	elif result != HitInfo.Result.DODGED and result != HitInfo.Result.IGNORED:
+		_blocked_streak = 0
 
 
 # --- Main loop ----------------------------------------------------------------
@@ -1032,20 +1038,37 @@ func _start_attack(dist: float) -> void:
 	if data.boss:
 		_boss_retarget()
 	var choices: Array[AttackData] = []
+	var weights: Array[float] = []
 	var total := 0.0
 	for a in _attacks():
 		if dist <= a.max_use_distance and dist >= a.min_use_distance and not (a.grip and _grip_ready):
 			choices.append(a)
-			total += a.weight
 	if choices.is_empty():
 		return
+	# Blocked a few in a row? It has read your guard: its red attack (or, without one,
+	# its heaviest, most guard-draining swing) gets much likelier.
+	var reads_guard := not data.boss and data.read_guard_after > 0 and _blocked_streak >= data.read_guard_after
+	var punish: AttackData = null
+	if reads_guard:
+		for a in choices:
+			if a.unblockable:
+				punish = a
+				break
+			if a.projectile_speed <= 0.0 and (punish == null or a.base_poise_damage > punish.base_poise_damage):
+				punish = a
+	for a in choices:
+		var w := a.weight * (data.read_guard_mult if a == punish else 1.0)
+		weights.append(w)
+		total += w
 	var roll := randf() * total
 	var pick := choices[0]
-	for a in choices:
-		roll -= a.weight
+	for i in choices.size():
+		roll -= weights[i]
 		if roll <= 0.0:
-			pick = a
+			pick = choices[i]
 			break
+	if pick == punish:
+		_blocked_streak = 0
 	start_attack(_attacks().find(pick))
 
 

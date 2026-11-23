@@ -42,6 +42,11 @@ extends Resource
 @export_range(0.0, 1.0) var delay_chance := 0.0
 ## ... and how slowly the held wind-up plays (0.5 = it takes twice as long).
 @export_range(0.2, 1.0) var delay_hold := 0.5
+## Reads a turtle: after you *block* (not deflect) this many of its blows in a row,
+## its next attack is far more likely to be a red (unblockable) one. 0 = never.
+@export var read_guard_after := 2
+## How much likelier its red attacks become then (x weight).
+@export var read_guard_mult := 6.0
 
 @export_group("Movement")
 @export var walk_speed := 1.4

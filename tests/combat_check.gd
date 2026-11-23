@@ -304,6 +304,43 @@ func _run() -> void:
 	_check_true("a delayed swing holds its wind-up longer (x%.2f vs x%.2f)" % [held, normal], held < 1.0 and normal == 1.0)
 	await _seconds(0.5)
 
+	# Attack reach: a swing aimed at someone a step out of reach closes the gap and lands.
+	await _setup_duel()
+	enemy.global_position = Vector3(0, 0, -3.3)
+	enemy.reset_physics_interpolation()
+	await _frames(3)
+	hp = enemy.health
+	var z0 := player.global_position.z
+	await _tap("light_attack")
+	await _seconds(0.6)
+	_check_true("attack reach: a light swing from 3.3 m steps in and lands (moved %.2f m, %.0f damage)" % [z0 - player.global_position.z, hp - enemy.health],
+			enemy.health < hp and z0 - player.global_position.z <= player.tuning.reach_assist + 0.8)
+	await _seconds(1.0)
+
+	# Reading a turtle: block two of its blows in a row and its red attack gets far likelier.
+	await _setup_duel()
+	enemy._blocked_streak = 0
+	enemy._on_hit_result(HitInfo.Result.BLOCKED)
+	enemy._on_hit_result(HitInfo.Result.BLOCKED)
+	var streak := enemy._blocked_streak
+	var reds_read := 0
+	var reds_plain := 0
+	for i in 60:
+		enemy._blocked_streak = 2
+		enemy._start_attack(1.5)
+		if enemy._attack.attack.unblockable:
+			reds_read += 1
+		enemy._set_state(Enemy.State.CHASE)
+		enemy._blocked_streak = 0
+		enemy._start_attack(1.5)
+		if enemy._attack.attack.unblockable:
+			reds_plain += 1
+		enemy._set_state(Enemy.State.CHASE)
+	enemy.model.set_overlay("")
+	_check_true("two blocks in a row are counted (%d), and then it goes for its red attack far more (%d / 60 vs %d / 60)" % [streak, reds_read, reds_plain],
+			streak == 2 and reds_read > reds_plain + 15)
+	await _seconds(0.5)
+
 	# Warnings you can hear: a white glint rings, a red attack rattles.
 	await _setup_duel()
 	Audio.recent_cues.clear()
