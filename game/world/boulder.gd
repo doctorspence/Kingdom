@@ -7,11 +7,11 @@ extends StaticBody3D
 
 @export var radius := 1.3
 ## Stretch before the noise: (wide, tall, deep).
-@export var squash := Vector3(1.0, 0.72, 0.9)
+@export var squash := Vector3(1.0, 0.8, 0.95)
 ## How lumpy it is (0 = a smooth ball).
 @export var roughness := 0.3
 ## How many times the sphere is split (2 is plenty for a boulder).
-@export_range(1, 4) var detail := 2
+@export_range(1, 4) var detail := 3
 @export var material: Material = preload("res://levels/common/materials/rock.tres")
 ## Extra shape variation added to the position-based seed.
 @export var shape_seed := 0
@@ -33,7 +33,15 @@ func _build() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	# Every rock gets its own proportions.
-	var stretch := Vector3(squash.x * rng.randf_range(0.8, 1.25), squash.y * rng.randf_range(0.8, 1.2), squash.z * rng.randf_range(0.8, 1.25))
+	var stretch := Vector3(squash.x * rng.randf_range(0.9, 1.15), squash.y * rng.randf_range(0.9, 1.1), squash.z * rng.randf_range(0.9, 1.15))
+	# A boulder is a rounded block: a sphere cut by a few flat faces (soft-edged, like a split
+	# stone), then lumped by noise. Each rock gets its own faces, so none repeat.
+	var cuts: Array[Vector3] = []
+	var offs := PackedFloat32Array()
+	for k in rng.randi_range(4, 6):
+		var n := Vector3(rng.randf_range(-1, 1), rng.randf_range(-0.55, 1.0), rng.randf_range(-1, 1)).normalized()
+		cuts.append(n)
+		offs.append(rng.randf_range(0.68, 0.86))
 	var mesh_data := _icosphere(detail)
 	var verts: PackedVector3Array = mesh_data[0]
 	var indices: PackedInt32Array = mesh_data[1]
@@ -41,8 +49,17 @@ func _build() -> void:
 	shaped.resize(verts.size())
 	for i in verts.size():
 		var d := verts[i]
-		var lump := 1.0 + noise.get_noise_3d(d.x * 2.0, d.y * 2.0, d.z * 2.0) * roughness * 2.2
-		var v := d * radius * lump * stretch
+		# Soft minimum of the distance to every cutting plane (the exponentials blend the edges).
+		var sum := 1.0 * exp(-16.0 * 1.0)
+		for k in cuts.size():
+			var dp := d.dot(cuts[k])
+			var lim := offs[k] / dp if dp > offs[k] else 1.0
+			sum += exp(-16.0 * lim)
+		var r := -log(sum) / 16.0
+		var big := noise.get_noise_3d(d.x * 1.3, d.y * 1.3, d.z * 1.3)
+		var fine := noise.get_noise_3d(d.x * 4.0 + 9.0, d.y * 4.0, d.z * 4.0)
+		var lump := 1.0 + big * roughness * 0.9 + fine * roughness * 0.18
+		var v := d * radius * r * lump * stretch
 		if v.y < -radius * 0.25:
 			v.y = -radius * 0.25 + (v.y + radius * 0.25) * 0.2  # a flat, buried base
 		shaped[i] = v
