@@ -100,6 +100,7 @@ var _guard_hits := 0     # blows blocked during this guard
 var _chain := 0          # attacks strung together without a pause
 var _stun_len := 1.0     # how long the current STAGGER lasts
 var _glinted := 0        # which follow-up blows of this attack have flashed their warning
+var _string_parries := 0  # blows of this attack that were deflected (all of them = Flawless)
 
 @onready var model: CharacterModel = $Visual
 
@@ -500,6 +501,27 @@ func _break_balance() -> void:
 	model.play_fitted(CharacterModel.ANIM_GUARD_BREAK, data.riposte_window, 0.05)
 	_status_fx("Off balance!", 0.0)
 	_net_status_fx.rpc("Off balance!", 0.0)
+	_broken_fx()
+	_net_broken_fx.rpc()
+
+
+## The moment balance breaks lands hard: a crack, and the screen of anyone close jolts.
+func _broken_fx() -> void:
+	Audio.sfx(&"break_balance", global_position + Vector3.UP * 1.3 * data.scale)
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p and p.is_multiplayer_authority() and p.global_position.distance_to(global_position) <= 10.0:
+			p.camera_rig.add_shake(0.5)
+			p.freeze(0.12)
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_broken_fx() -> void:
+	_broken_fx()
+
+
+func _danger_sound() -> void:
+	Audio.sfx(&"warn_danger", global_position + Vector3.UP * 1.3 * data.scale)
 
 
 ## A short knock (deflect recoil, Shield Bash...) that interrupts whatever it was doing.
@@ -638,6 +660,13 @@ func _on_hit_result(result: HitInfo.Result) -> void:
 				_poise -= data.parry_poise_damage
 				_poise_timer = data.poise_regen_delay
 				_hitstop = maxf(_hitstop, 0.1)
+				_string_parries += 1
+				# Flawless: every blow of a string deflected, the last one rocks it twice as hard.
+				var blows := 1 + _attack.attack.extra_hits.size()
+				if blows >= 2 and _string_parries >= blows and not _more_blows_to_come():
+					_poise -= data.parry_poise_damage
+					_status_fx("Flawless", 0.0)
+					_net_status_fx.rpc("Flawless", 0.0)
 				if _poise <= 0.0:
 					_break_balance()
 				elif not _more_blows_to_come():
@@ -734,6 +763,8 @@ func _mirror(delta: float) -> void:
 		model.set_tint(data.phase2_tint)
 	collision_layer = 0 if state == State.DEAD else 4
 	if net_overlay != model.overlay_kind():
+		if net_overlay == "danger":
+			_danger_sound()
 		model.set_overlay(net_overlay, Color(0.35, 0.1, 0.55, 0.4) if net_overlay == "grip" else Color(1.0, 0.1, 0.05, 0.35))
 
 
@@ -1023,6 +1054,7 @@ func start_attack(index: int) -> void:
 	_telegraphed = false
 	_shot = false
 	_glinted = 0
+	_string_parries = 0
 	var chosen: AttackData = _attacks()[index]
 	_grip_active = _grip_ready and not chosen.grip
 	if _grip_active:
@@ -1049,6 +1081,7 @@ func _state_attack(delta: float) -> void:
 			_start_bursts(a)
 		if a.unblockable:
 			model.set_overlay("danger", Color(1.0, 0.1, 0.05, 0.35))
+			_danger_sound()
 		elif a.parryable:
 			_glint()
 			_net_glint.rpc()
@@ -1152,6 +1185,7 @@ func _net_glint() -> void:
 
 func _glint() -> void:
 	CombatFx.glint(Vector3.ZERO, Color(1.0, 0.97, 0.85), _weapon_tip())
+	Audio.sfx(&"warn_glint", global_position + Vector3.UP * 1.5 * data.scale)
 
 
 func _state_wait(delta: float, duration: float) -> void:

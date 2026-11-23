@@ -53,6 +53,8 @@ func _run() -> void:
 	# --- Tempo: mash and it raises its guard, then strikes back ----------------------------
 	await _setup_duel()
 	enemy.data.counter_chance = 1.0
+	var crit_was := player.weapon.crit_chance
+	player.weapon.crit_chance = -10.0  # a random crit would spoil the damage total
 	hp = enemy.health
 	var saw_guard := false
 	var saw_counter := false
@@ -76,6 +78,7 @@ func _run() -> void:
 		saw_counter = enemy.state == Enemy.State.ATTACK
 	_check_true("...and then it strikes back out of its guard", saw_counter)
 	enemy.data.counter_chance = 0.65
+	player.weapon.crit_chance = crit_was
 	await _seconds(2.0)
 
 	var crit_before := player.weapon.crit_chance
@@ -300,6 +303,96 @@ func _run() -> void:
 	enemy._set_state(Enemy.State.CHASE)
 	_check_true("a delayed swing holds its wind-up longer (x%.2f vs x%.2f)" % [held, normal], held < 1.0 and normal == 1.0)
 	await _seconds(0.5)
+
+	# Warnings you can hear: a white glint rings, a red attack rattles.
+	await _setup_duel()
+	Audio.recent_cues.clear()
+	await _force_attack(SWEEP)
+	await _wait_until_hit_in(0.05)
+	_check_true("a white glint plays its warning sound", &"warn_glint" in Audio.recent_cues)
+	await _seconds(1.5)
+	await _setup_duel()
+	Audio.recent_cues.clear()
+	await _force_attack(CRUSH)
+	await _wait_until_hit_in(0.05)
+	_check_true("a red attack plays its low warning", &"warn_danger" in Audio.recent_cues)
+	await _seconds(1.5)
+
+	# Deflects in a row ring higher.
+	await _setup_duel()
+	player._last_deflect_at = -99.0
+	for i in 2:
+		await _force_attack(SWEEP)
+		await _wait_until_hit_in(0.08)
+		Input.action_press("block")
+		await _seconds(0.25)
+		Input.action_release("block")
+		enemy._poise = enemy.max_poise
+		enemy._set_state(Enemy.State.CHASE)
+		await _seconds(0.3)
+	_check_true("a second deflect in a row rings higher (step %d, pitch x%.2f)" % [player._deflect_chain, 1.0 + player.tuning.deflect_chain_pitch * player._deflect_chain],
+			player._deflect_chain == 1)
+
+	# Flawless: deflect every blow of a string and the last one hits its balance twice.
+	await _setup_duel()
+	var string_attack := (enemy.data.attacks[SWEEP] as AttackData).duplicate() as AttackData
+	string_attack.extra_hits = PackedVector2Array([Vector2(string_attack.hit_end + 0.1, string_attack.hit_end + 0.2)])
+	enemy._set_state(Enemy.State.ATTACK)
+	enemy._attack.start(string_attack, enemy.model)
+	enemy._string_parries = 0
+	enemy._poise = 100.0  # plenty, so the check sees the drop rather than a break
+	enemy._attack.t = string_attack.hit_start + 0.01
+	enemy._on_hit_result(HitInfo.Result.PARRIED)
+	var after_first := enemy._poise
+	enemy._attack.t = string_attack.hit_end + 0.15
+	enemy._on_hit_result(HitInfo.Result.PARRIED)
+	var last_drop := after_first - enemy._poise
+	_check_true("Flawless: deflecting every blow of a string, the last one rocks it twice as hard (-%.0f, a deflect is -%.0f)" % [last_drop, enemy.data.parry_poise_damage],
+			last_drop >= enemy.data.parry_poise_damage * 2.0 - 0.5)
+	await _seconds(1.0)
+
+	# Breaking balance lands hard: a crack you hear.
+	await _setup_duel()
+	Audio.recent_cues.clear()
+	enemy._poise = 5.0
+	enemy._poise_timer = 99.0
+	await _force_attack(SWEEP)
+	await _wait_until_hit_in(0.08)
+	Input.action_press("block")
+	await _seconds(0.25)
+	Input.action_release("block")
+	_check_true("breaking its balance plays the crack (state %s)" % Enemy.State.keys()[enemy.state],
+			enemy.state == Enemy.State.PARRIED and &"break_balance" in Audio.recent_cues)
+	await _seconds(2.0)
+
+	# Flinch: swing into their blade and your light attack is knocked away.
+	await _setup_duel()
+	await _tap("light_attack")
+	for i in 10:
+		if player.state == Player.State.ATTACK:
+			break
+		await get_tree().physics_frame
+	var poke := enemy.make_hit(SWEEP)
+	poke.poise_damage = 1.0
+	poke.damage = 1.0
+	player.receive_hit(poke)
+	_check_true("a clean hit during your light attack's wind-up interrupts it (state %s)" % Player.State.keys()[player.state],
+			player.state == Player.State.STAGGER)
+	await _seconds(0.8)
+	await _setup_duel()
+	enemy.global_position = Vector3(0, 0, -8.0)
+	await _tap("heavy_attack")
+	for i in 10:
+		if player.state == Player.State.ATTACK:
+			break
+		await get_tree().physics_frame
+	poke = enemy.make_hit(SWEEP)
+	poke.poise_damage = 1.0
+	poke.damage = 1.0
+	player.receive_hit(poke)
+	_check_true("...a heavy swing powers through it (state %s)" % Player.State.keys()[player.state],
+			player.state == Player.State.ATTACK)
+	await _seconds(2.0)
 
 	# Guard break when out of stamina
 	await _setup_duel()

@@ -56,12 +56,15 @@ var _last_file := {}
 var _voices := 0
 ## Counts what was played (the automated checks read this).
 var played_count := 0
+## The last few cues that played, and the last pitch nudge (for the checks).
+var recent_cues: Array[StringName] = []
+var last_pitch_mult := 1.0
 
 
 ## Play a sound cue (see SfxLibrary). With `where` it comes from that spot in the
 ## world and gets quieter with distance; without it, it plays flat (menus).
 ## `db` adjusts the volume for this one play. Returns true if it played.
-func sfx(cue: StringName, where := Vector3.INF, db := 0.0) -> bool:
+func sfx(cue: StringName, where := Vector3.INF, db := 0.0, pitch_mult := 1.0) -> bool:
 	var data := SfxLibrary.cue(cue)
 	if data.is_empty():
 		return false
@@ -90,7 +93,7 @@ func sfx(cue: StringName, where := Vector3.INF, db := 0.0) -> bool:
 		p3.stream = stream
 		p3.bus = data["bus"]
 		p3.volume_db = volume
-		p3.pitch_scale = randf_range(pitch.x, pitch.y)
+		p3.pitch_scale = randf_range(pitch.x, pitch.y) * pitch_mult
 		p3.max_distance = hear
 		p3.unit_size = 7.0 * hear / HEARING_RANGE
 		scene.add_child(p3)
@@ -101,13 +104,17 @@ func sfx(cue: StringName, where := Vector3.INF, db := 0.0) -> bool:
 		p2.stream = stream
 		p2.bus = data["bus"]
 		p2.volume_db = volume
-		p2.pitch_scale = randf_range(pitch.x, pitch.y)
+		p2.pitch_scale = randf_range(pitch.x, pitch.y) * pitch_mult
 		add_child(p2)
 		player = p2
 	_last_played[cue] = now
 	_last_file[cue] = path
 	_voices += 1
 	played_count += 1
+	recent_cues.append(cue)
+	if recent_cues.size() > 16:
+		recent_cues.pop_front()
+	last_pitch_mult = pitch_mult
 	var released := [false]
 	var release := func() -> void:
 		if not released[0]:
@@ -119,7 +126,7 @@ func sfx(cue: StringName, where := Vector3.INF, db := 0.0) -> bool:
 	player.tree_exited.connect(release)  # the scene changed under it
 	player.call(&"play")
 	for layer in data.get("layers", []):
-		sfx(layer, where, db)
+		sfx(layer, where, db, pitch_mult)
 	return true
 
 

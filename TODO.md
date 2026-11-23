@@ -158,7 +158,8 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] **Step-in**: perfect-dodge a red attack by rolling toward the attacker and it loses 45% of its balance and recoils; **counter hits** (striking during a wind-up) do ×1.5 balance damage
 - [x] The stamina bar outlines itself when Steady is ready, and flashes when Steady or a perfect dodge lands
 - [x] `tests/combat_check.gd` covers all of it; `tests/visual_tempo.gd` takes screenshots
-- [ ] 🧪 Fight the Marauder and a group of bandits: deflect a two-hit string in rhythm, break a bandit's balance and riposte, try Steady during a combo, perfect-dodge a Captain swing. Tell me if the windows feel too tight or too loose, and whether enemies guard too often (numbers: `data/balance/player_tuning.tres` "Timing and rhythm", each enemy file "Balance and tempo")
+- [x] **Pass 3:** warning sounds on white glints and red attacks; deflects in a row clang higher; **Flawless** (deflect every blow of a string, the last one hits balance twice); breaking balance cracks and jolts the screen; a clean hit during your light attack's wind-up **interrupts** it (heavies power through)
+- [ ] 🧪 Fight the Marauder and a group of bandits (with sound on): deflect a two-hit string in rhythm and listen for the rising clang, break a bandit's balance and riposte, try Steady during a combo, perfect-dodge a Captain swing. Tell me if the windows feel too tight or too loose, and whether enemies guard too often (numbers: `data/balance/player_tuning.tres` "Timing and rhythm", each enemy file "Balance and tempo")
 
 ---
 

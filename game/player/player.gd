@@ -127,6 +127,8 @@ var _tempo_spent := 0.0
 var _tempo_used := true
 var _evade_timer := 0.0
 var _evaded_this_roll := false
+var _deflect_chain := 0
+var _last_deflect_at := -99.0
 var _drink_healed := false
 ## Eating or drinking a potion reuses the flask drink: share of max health, how long, when the heal lands.
 var _drink_frac := 0.4
@@ -513,7 +515,13 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	var damage := hit.damage * (1.0 - HitInfo.armor_reduction(armor(), hit.attacker_level)) * effects.damage_taken_mult()
 	if (is_blocking or holding_line) and in_front and not hit.unblockable:
 		if hit.parryable and is_parrying():
-			CombatFx.sparks(chest + model.forward() * 0.4, to_attacker, true)
+			# Deflects in a row ring higher each time: the rhythm you can hear.
+			if _clock - _last_deflect_at <= tuning.deflect_chain_time:
+				_deflect_chain = mini(_deflect_chain + 1, 5)
+			else:
+				_deflect_chain = 0
+			_last_deflect_at = _clock
+			CombatFx.sparks(chest + model.forward() * 0.4, to_attacker, true, 1.0 + tuning.deflect_chain_pitch * _deflect_chain)
 			_share_fx(2, chest + model.forward() * 0.4, to_attacker)
 			CombatFx.word(chest + Vector3.UP * 0.5, "Deflect!")
 			freeze(0.1)
@@ -568,7 +576,21 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	if _poise <= 0.0:
 		_poise = max_poise()
 		_stagger(tuning.stagger_time)
+	elif _caught_winding_up():
+		# Swung into their blade: a light attack still winding up is knocked away.
+		_stagger(tuning.flinch_time)
+		CombatFx.word(chest + Vector3.UP * 0.5, "Interrupted")
 	return HitInfo.Result.HIT
+
+
+## A light (combo or rolling) attack that hasn't reached its blow yet.
+func _caught_winding_up() -> bool:
+	if state != State.ATTACK or _is_riposte or _ability_strike or _air_attack:
+		return false
+	var a := _attack.attack
+	if a == null or not (a in weapon.light_combo or a == weapon.rolling_attack):
+		return false
+	return not _attack.past(a.hit_start)
 
 
 func _apply_status(status: Effects.Status, amount: float) -> void:

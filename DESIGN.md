@@ -170,12 +170,17 @@ The fight is a conversation: you strike, they answer, you deflect, you strike ag
 - **Step-in:** perfect-dodge a **red** attack by rolling **toward** the attacker and it loses 45% of its balance and recoils for 0.7 s (bosses only lose the balance). The answer to unblockables is courage, not distance.
 - **Counter hit:** a blow that lands while an enemy is winding up a swing does ×1.5 balance damage. Strike into their tempo, not after it.
 - **Roll cancels:** attack out of a roll from 60% of the way through (a rolling or backstep attack), guard from 70%.
+- **Interrupted** *(rhythm pass 3)*: a clean hit while your **light** attack (or rolling attack) is still winding up knocks it away (0.3 s). Heavy swings power through. You can't trade blows by mashing: strike in their gaps, or into their wind-up before their blade moves.
+- **Warnings you can hear** *(pass 3)*: every white glint rings with a thin blade "shing", and a red attack rattles low as it glows. You can deflect by ear.
+- **Deflect rhythm** *(pass 3)*: deflects in a row (each within 1.2 s of the last) clang a little higher each time (+6%, up to 5 steps), so a well-read string sounds like a rising run of notes.
+- **Flawless** *(pass 3)*: deflect **every** blow of a multi-blow string and the last deflect hits its balance **twice** as hard.
+- **Breaking balance lands hard** *(pass 3)*: a heavy crack under the clang, and the screen of anyone within 10 m jolts with a short freeze.
 - All of these numbers are in `data/balance/player_tuning.tres` ("Timing and rhythm") and the enemy files ("Balance and tempo").
 
 ### 5.6 Hit feel
 - **Hit-stop**: a tiny freeze on impact (0.05 s light, 0.09 s heavy, 0.15 s critical) plus camera shake.
 - **Blood**: spurts at the hit point and splatter decals on the ground and walls (they fade after a few minutes). A gore option in settings: Off / Low / High (default High). Dismemberment comes later.
-- **Floating damage numbers**, WoW-style: white (your damage), big yellow (crits), orange (status bursts), green (heals), gray words ("Blocked", "Deflect!", "Guarded", "Off balance!", "Steady", "Evaded"). Toggle in settings.
+- **Floating damage numbers**, WoW-style: white (your damage), big yellow (crits), orange (status bursts), green (heals), gray words ("Blocked", "Deflect!", "Guarded", "Off balance!", "Flawless", "Steady", "Evaded", "Step-in!", "Interrupted"). Toggle in settings.
 - **Enemy health bars** above heads appear once an enemy is hurt or targeted. Toggle in settings.
 
 ### 5.7 Targeting

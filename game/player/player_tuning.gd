@@ -125,6 +125,13 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export_range(0.0, 1.0) var roll_attack_from := 0.6
 ## Guard out of a roll from this far through it (0-1).
 @export_range(0.0, 1.0) var roll_guard_from := 0.7
+## Deflects in a row (each within this long of the last) ring higher and higher.
+@export var deflect_chain_time := 1.2
+## Pitch step per deflect in a row (0.06 = 6% higher each time, up to 5 steps).
+@export var deflect_chain_pitch := 0.06
+## Flinch: a clean hit during your light attack's wind-up knocks you out of it for
+## this long (seconds). Heavy swings power through. Swing into their blade and you lose.
+@export var flinch_time := 0.3
 
 @export_group("Flasks")
 @export var flask_count := 4

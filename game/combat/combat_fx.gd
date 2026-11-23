@@ -130,8 +130,8 @@ func _splat(where: Vector3, size: float) -> void:
 # --- Sparks and glints --------------------------------------------------------
 
 ## Metal sparks for blocks and parries.
-func sparks(where: Vector3, direction: Vector3, big := false) -> void:
-	Audio.sfx(&"clang_parry" if big else &"clang_block", where)
+func sparks(where: Vector3, direction: Vector3, big := false, pitch := 1.0) -> void:
+	Audio.sfx(&"clang_parry" if big else &"clang_block", where, 0.0, pitch)
 	_burst(where, direction, 26 if big else 12, _spark_mesh, 3.0, 7.0, 0.35, Vector3(0, -6, 0))
 	var light := OmniLight3D.new()
 	light.light_color = Color(1.0, 0.75, 0.4)

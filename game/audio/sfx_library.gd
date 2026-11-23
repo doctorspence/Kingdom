@@ -70,6 +70,12 @@ static func _build() -> void:
 	_add(&"shield_clack", metal, &"Effects", -2.0, 1.1, 1.25)
 	## Steady (well-timed guard after a swing) and perfect dodges: a soft bright ring.
 	_add(&"steady", [SFX + "kenney_rpg/metalClick.ogg"] + _nums("rpg80", "item_gem_", 1, 1), &"Effects", -9.0, 1.5, 1.7)
+	## Warnings you can deflect by ear: a thin blade "shing" on every white glint,
+	## a low rattle under a red (unblockable) attack.
+	_add(&"warn_glint", [SFX + "kenney_rpg/drawKnife1.ogg", SFX + "kenney_rpg/drawKnife2.ogg", SFX + "kenney_rpg/drawKnife3.ogg"], &"Effects", -5.0, 1.35, 1.5, [], 30.0)
+	_add(&"warn_danger", _nums("rpg80", "chain_", 1, 3), &"Effects", 0.0, 0.5, 0.58, [], 35.0)
+	## An enemy's balance breaks: a heavy crack under the clang.
+	_add(&"break_balance", _nums("hits", "bfh1_breaking_", 1, 3), &"Effects", 1.0, 0.75, 0.85, [&"clang_parry"])
 
 	# --- Moving ---
 	_add(&"footstep", steps, &"Effects", -11.0, 0.9, 1.1)
