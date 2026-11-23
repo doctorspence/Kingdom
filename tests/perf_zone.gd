@@ -26,6 +26,9 @@ func _run() -> void:
 	var t0 := Time.get_ticks_msec()
 	get_tree().root.add_child(scene)
 	await get_tree().process_frame
+	# Measure uncapped, whatever the player's settings say (v-sync would pin everything at 60).
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	Engine.max_fps = 0
 	print("LOAD zone ready in %d ms" % (Time.get_ticks_msec() - t0))
 	for i in 90:
 		await get_tree().process_frame
@@ -122,7 +125,77 @@ func _run() -> void:
 		print("      cpu render %.1f ms avg, gpu %.1f ms best" % [cpu / 120.0, best_gpu])
 		if "drawcalls" in args:
 			await _draw_breakdown(scene)
+		for a in args:
+			if String(a).begins_with("ab:"):
+				await _ab(scene, String(a).substr(3).split(","))
 	get_tree().quit()
+
+
+## Same-run A/B: for each item ("proc=Node" stops its processing, "hide=Node" hides it,
+## "plants" hides every PlantScatter), measures with it, without it, and with it again,
+## and prints how many ms per frame it costs. Far steadier than comparing two runs.
+##   perf_zone only:deep_woods ab:proc=DayNight,hide=Woods,plants
+func _ab(scene: Node, items: PackedStringArray) -> void:
+	for item in items:
+		var kv := item.split("=")
+		var nodes: Array = []
+		if kv[0] == "plants":
+			nodes = scene.find_children("*", "PlantScatter", true, false)
+		elif kv[0] == "enemyanim":
+			# Only the enemies' animation players/trees and skeletons (stopped, like "proc").
+			for t in ["AnimationPlayer", "AnimationTree", "Skeleton3D"]:
+				nodes.append_array(scene.get_node("Enemies").find_children("*", t, true, false))
+			print("      AB enemy animation nodes: %d" % nodes.size())
+			kv = PackedStringArray(["proc"])
+		elif kv[0] == "farenemies":
+			# Enemies farther than N meters from the player (stopped, like "proc").
+			var states := {}
+			for e in get_tree().get_nodes_in_group(&"enemies"):
+				var en := e as Node3D
+				var st := str(e.get("state"))
+				states[st] = states.get(st, 0) + 1
+				if en.global_position.distance_to(player.global_position) > float(kv[1]):
+					nodes.append(en)
+			print("      AB enemies: %d in all, by state %s; %d beyond %s m" % [get_tree().get_nodes_in_group(&"enemies").size(), states, nodes.size(), kv[1]])
+			kv = PackedStringArray(["proc"])
+		elif kv.size() > 1:
+			for n in kv[1].split("+"):
+				var nd := scene.get_node_or_null(n)
+				if nd:
+					nodes.append(nd)
+		if nodes.is_empty():
+			print("      AB %-22s (not found)" % item)
+			continue
+		var on1 := await _best_ms()
+		for n: Node in nodes:
+			if kv[0] == "proc":
+				n.process_mode = Node.PROCESS_MODE_DISABLED
+			else:
+				(n as Node3D).visible = false
+		for i in 10:
+			await get_tree().process_frame
+		var off := await _best_ms()
+		for n: Node in nodes:
+			if kv[0] == "proc":
+				n.process_mode = Node.PROCESS_MODE_INHERIT
+			else:
+				(n as Node3D).visible = true
+		for i in 10:
+			await get_tree().process_frame
+		var on2 := await _best_ms()
+		var on := (on1 + on2) * 0.5
+		print("      AB %-22s with %5.1f ms, without %5.1f ms: costs %5.2f ms/frame" % [item, on, off, on - off])
+
+
+## Best frame time (ms) of three 30-frame windows.
+func _best_ms() -> float:
+	var best := 1e9
+	for w in 3:
+		var t := Time.get_ticks_usec()
+		for i in 30:
+			await get_tree().process_frame
+		best = minf(best, (Time.get_ticks_usec() - t) / 30000.0)
+	return best
 
 
 ## Hides each top-level node in turn for a few frames and prints how many draw

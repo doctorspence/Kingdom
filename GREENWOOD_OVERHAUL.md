@@ -54,7 +54,7 @@
 The overhaul costs roughly **20-30% frame rate**; two spots are **below the 60 FPS target** on this PC (looking north from the spawn, inside the deep woods). The scene draws 1.5 to 3.5x more triangles (broadleaf crowns, ivy, plants, scree); GPU time measured only about 1 ms more per frame, so part of the cost is on the processor side and I could not pin it down today because the PC's load kept changing. Zone load: **8.2 s → 10.6 s** (15 s on the first load after the land script changes, while the terrain cache rebuilds).
 
 **Remaining issues**
-1. **Performance** (above): optimization pass done (see "Performance pass" below); still needs a clean measurement with nothing else running.
+1. **Performance**: done. Every spot is above 100 FPS and faster than the original zone (see "Performance pass" below).
 2. **Bracken up close** reads as flat striped cards (fine from a few meters).
 3. **A few very dark views** remain where the camera is pressed against a slope or under a low crown.
 4. **Old, not caused by the overhaul, but found by the route check:** the cliff-top path crosses the river gorge at about (-159, -45) on ground of 69-77° (not walkable); the long track up the watchtower hill is 45-48° near (77, 18); Mill Lane has a 56-63° step at the quarry mouth (-130, -96).
@@ -85,7 +85,25 @@ Results (1920x1080; your game was running from the editor the whole time, so fra
 
 Zone load: **10.6 s → 6.9 s** (the original was 8.2 s); the first load after a script change still takes the long way (~13-17 s) while the cache refills. Tools added: `tests/load_profile.gd` (load time per node), `perf_zone` now reports the best of four windows, a draw-call/triangle breakdown per node (`drawcalls`) and `set:Node.prop=value` A/B switches (also in `visual_env`, with `nodefaults`).
 
-Still open: a clean frame-rate measurement with nothing else running (the GPU numbers above are inflated by the game running alongside). Remaining extra GPU cost against the original is likely leaf-card overdraw in the woods and the heavier ground shader; Highcrown draws ~550 draw calls from everywhere (old, not the overhaul).
+**Clean measurement (2026-11-23, game closed, only the idle editor open).** With nothing else running, the GPU time per frame was already back to the original's (5-9 ms against 5-8 ms); the frame was limited by the processor. Measuring each part on and off within one run showed the cause: **the zone's ~50 enemies, all standing idle and most of them 100+ m away, cost 7-9 ms of every frame** (animation 3.5 ms, script and physics 3.7 ms, drawing 2.6 ms). That was true in the original zone too (7 ms); the trees and plants of the overhaul cost about 1 ms on top. Fix: **`game/world/enemy_sleep.gd`** (node EnemySleep in the zone). An idle enemy with no player within 90 m (twice the longest sight range, 45 m) stops thinking and animating; it wakes as soon as a player comes within 90 m or anything changes its state (a hit, an ally's call). Raiders never sleep (they walk to the camp while "idle"). Enemy models fade out beyond 130 m. It works from outside the enemy script, so `enemy.gd` is unchanged. Host / single player only (friends' machines copy the host). New check: `sleep_check` (sleeping, waking at 70 m and noticing the player, waking when pulled into a fight, raiders never sleep).
+
+| Spot | Original (two clean runs) | Now (two runs) |
+|---|---|---|
+| spawn north | 66 / 75 | 145 / 128 |
+| spawn south | 111 / 116 | 171 / 168 |
+| farms | 88 / 103 | 167 / 154 |
+| river bank | 78 / 87 | 150 / 131 |
+| mill | 84 / 104 | 144 / 139 |
+| Hobb's camp | 81 / 95 | 138 / 141 |
+| raider camp | 90 / 100 | 122 / 124 |
+| road checkpoint | 73 / 88 | 120 / 104 |
+| east woods | 82 / 98 | 150 / 141 |
+| camp hearth | 89 / 103 | 138 / 141 |
+| deep woods | 73 / 86 | 100 / 101 |
+| quarry floor | 91 / 114 | 131 / 126 |
+| barrow | 91 / 120 | 128 / 128 |
+
+Every spot is now faster than the original zone and above 100 FPS at 1080p on this PC. Zone load 6.3 s (original 8.2 s). `perf_zone` now switches v-sync off itself (the settings default turns it on, which pinned every spot at 60) and has `ab:` same-run on/off measurements (`proc=Node`, `hide=Node`, `plants`, `enemyanim`, `farenemies=N`).
 
 **Checks after stage 3:** `zone_check`, `camp_check`, `gullet_check` pass; placement audit shows no trees in or against buildings (the building flags it lists are unchanged from before). FPS at 1920x1080: 78 to 116 at the 10 spots (before: 81 to 128); zone load 8.1 s (before 6.6 s; trees are built at load, baking them to files is the fix if it matters). Pictures: `docs/greenwood_progress/`.
 

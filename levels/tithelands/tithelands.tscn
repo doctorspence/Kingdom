@@ -66,6 +66,7 @@
 [ext_resource type="Script" path="res://game/world/quarry_works.gd" id="qworks"]
 [ext_resource type="Script" path="res://game/world/story_props.gd" id="sprops"]
 [ext_resource type="Script" path="res://game/world/mist.gd" id="mist"]
+[ext_resource type="Script" path="res://game/world/enemy_sleep.gd" id="enemy_sleep"]
 [ext_resource type="Script" path="res://game/world/distance_cull.gd" id="dcull"]
 [ext_resource type="Script" path="res://game/world/shadow_budget.gd" id="sbudget"]
 [ext_resource type="Script" path="res://game/world/vendor.gd" id="vendor"]
@@ -1164,3 +1165,6 @@ terrain = NodePath("../Terrain")
 [node name="Mist" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
 script = ExtResource("mist")
 terrain = NodePath("../Terrain")
+
+[node name="EnemySleep" type="Node" parent="."]
+script = ExtResource("enemy_sleep")
