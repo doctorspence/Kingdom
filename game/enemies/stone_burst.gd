@@ -10,57 +10,55 @@ var damage := 38.0
 
 var _age := 0.0
 var _burst := false
-var _ring: MeshInstance3D
-var _fill: MeshInstance3D
-var _fill_mat: StandardMaterial3D
+var _decal: Decal
 var _spikes: Node3D
 
 
 func _ready() -> void:
-	_fill_mat = StandardMaterial3D.new()
-	_fill_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_fill_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_fill_mat.albedo_color = Color(0.7, 0.08, 0.04, 0.0)
-	_fill_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var disc := CylinderMesh.new()
-	disc.top_radius = radius
-	disc.bottom_radius = radius
-	disc.height = 0.03
-	disc.radial_segments = 28
-	disc.material = _fill_mat
-	_fill = MeshInstance3D.new()
-	_fill.mesh = disc
-	_fill.position.y = 0.06
-	_fill.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(_fill)
-	# The edge ring stays solid so the whole danger area reads at a glance.
-	var ring := TorusMesh.new()
-	ring.inner_radius = radius - 0.07
-	ring.outer_radius = radius + 0.07
-	ring.rings = 28
-	ring.ring_segments = 4
-	var rm := StandardMaterial3D.new()
-	rm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	rm.albedo_color = Color(1.0, 0.18, 0.08)
-	rm.emission_enabled = true
-	rm.emission = Color(1.0, 0.15, 0.05)
-	rm.emission_energy_multiplier = 1.4
-	ring.material = rm
-	_ring = MeshInstance3D.new()
-	_ring.mesh = ring
-	_ring.scale = Vector3(1, 0.2, 1)
-	_ring.position.y = 0.06
-	_ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(_ring)
+	# The warning is a decal, so it wraps onto slopes and ruts instead of being cut by them.
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array([0.0, 0.78, 0.88, 0.93, 0.985, 1.0])
+	g.colors = PackedColorArray([
+		Color(1.0, 0.12, 0.05, 0.22), Color(1.0, 0.12, 0.05, 0.4), Color(1.0, 0.2, 0.08, 0.6),
+		Color(1.0, 0.3, 0.12, 1.0), Color(1.0, 0.3, 0.12, 1.0), Color(1.0, 0.2, 0.08, 0.0)])
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	tex.width = 256
+	tex.height = 256
+	# Emission ignores alpha, so it gets its own copy of the ring that fades to black instead.
+	var ge := Gradient.new()
+	ge.offsets = g.offsets
+	var ecols := PackedColorArray()
+	for c in g.colors:
+		ecols.append(Color(c.r * c.a, c.g * c.a, c.b * c.a, 1.0))
+	ge.colors = ecols
+	var etex := GradientTexture2D.new()
+	etex.gradient = ge
+	etex.fill = GradientTexture2D.FILL_RADIAL
+	etex.fill_from = Vector2(0.5, 0.5)
+	etex.fill_to = Vector2(1.0, 0.5)
+	etex.width = 256
+	etex.height = 256
+	_decal = Decal.new()
+	_decal.size = Vector3(radius * 2.0, 2.6, radius * 2.0)
+	_decal.texture_albedo = tex
+	_decal.texture_emission = etex
+	_decal.emission_energy = 1.2
+	_decal.cull_mask = 1
+	_decal.modulate = Color(1, 1, 1, 0.3)
+	add_child(_decal)
 
 
 func _physics_process(delta: float) -> void:
 	_age += delta
 	if not _burst:
 		var t := clampf(_age / delay, 0.0, 1.0)
-		_fill_mat.albedo_color.a = 0.12 + 0.4 * t * t
-		var pulse := 1.0 + 0.04 * sin(_age * 22.0) * t
-		_ring.scale = Vector3(pulse, 0.2, pulse)
+		_decal.modulate.a = 0.3 + 0.7 * t * t
+		var pulse := 1.0 + 0.03 * sin(_age * 22.0) * t
+		_decal.size = Vector3(radius * 2.0 * pulse, 2.6, radius * 2.0 * pulse)
 		if _age >= delay:
 			_erupt()
 	elif _age >= delay + 1.4:
@@ -68,18 +66,17 @@ func _physics_process(delta: float) -> void:
 	elif _spikes:
 		var s := _age - delay
 		_spikes.scale.y = maxf(0.001, 1.0 - smoothstep(0.35, 1.3, s)) * minf(1.0, s * 14.0)
-		_fill_mat.albedo_color.a = 0.5 * (1.0 - smoothstep(0.0, 0.6, s))
+		_decal.modulate.a = 1.0 - smoothstep(0.0, 0.5, s)
 
 
 func _erupt() -> void:
 	_burst = true
-	_fill_mat.albedo_color = Color(0.1, 0.07, 0.06, 0.5)
 	_spikes = Node3D.new()
 	add_child(_spikes)
 	var rock := StandardMaterial3D.new()
-	rock.albedo_color = Color(0.07, 0.065, 0.075)
+	rock.albedo_color = Color(0.1, 0.095, 0.11)
 	rock.roughness = 0.8
-	rock.emission_enabled = true
+	rock.emission_enabled = false
 	rock.emission = Color(0.5, 0.12, 0.05)
 	rock.emission_energy_multiplier = 0.25
 	var rng := RandomNumberGenerator.new()
@@ -95,6 +92,7 @@ func _erupt() -> void:
 		cone.material = rock
 		var mi := MeshInstance3D.new()
 		mi.mesh = cone
+		mi.layers = 2  # the ground decal only paints layer 1, so it never tints the spikes
 		mi.position = Vector3(cos(a) * d, cone.height * 0.5 - 0.1, sin(a) * d)
 		mi.rotation = Vector3(rng.randf_range(-0.2, 0.2), rng.randf() * TAU, rng.randf_range(-0.2, 0.2))
 		_spikes.add_child(mi)
