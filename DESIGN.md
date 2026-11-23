@@ -365,10 +365,14 @@ Bonus rolls (section 9) can also add: crit chance, poise, stamina regen, bleed/p
 - **Drop rates** *(start)*: ordinary enemies sometimes drop an item (mostly Common/Uncommon, rarely Rare+); elites always drop something; named rares drop their unique plus a Rare+; bosses drop 2–3 items, at least one Rare+, with a small Legendary chance.
 
 ### 9.2 Gear slots (inspired by Champions of Norrath's paperdoll)
-Head, Shoulders, Chest, Hands, Legs, Feet, Cloak, Neck, Ring ×2, and **two weapon sets** (main hand + off hand each), swapped with a key.
+Head, Shoulders, Chest, Hands, Legs, Feet, Neck, **one Ring**, Utility (holds the cloak), and **two weapon sets** (main hand + off hand each), swapped with a key. The off hand takes shields and other off-hand items. *(Changed 2026-11-23 by the owner's inventory brief: one ring slot instead of two, the cloak moves to the Utility slot, no belt slot for now. Old saves with a second ring wear it if the slot is free, otherwise it goes to the backpack.)*
+
+**The inventory screen** *(2026-11-23)*: one screen with the backpack grid on the left, your character on a pedestal in the middle with the slots around it (left: helmet, shoulders, chest, gloves, legs, boots; right: necklace, ring, main hand, off hand, utility, weapon-set switch), and your stats on the right (level and XP; Strength, Agility, Intellect, Vitality; Attack, Defense, Ability Power, Critical; Health, Stamina and your class resource). Tabs on top: Character, Inventory, Map, Talents, Quests, System (Q / E or LB / RB). Look: aged-gold frames, ivory serif text, a torch-lit stone backdrop.
 
 ### 9.3 Grid inventory
-- Items take up shapes on a grid: a ring is 1×1, a sword 1×3, a shield 2×2, a chest piece 2×3. Backpack 10×6 *(start)*.
+- Items take up shapes on a grid: a ring is 1×1, a dagger 1×2, a sword 1×3, a greatsword or staff 1×4, a shield or helm 2×2, a chest piece 2×3. Backpack 10×6 *(start)*.
+- Long items can be **turned on their side** (a 1×3 sword lies as 3×1). Drag and drop with the mouse, or hold A to pick up with a gamepad. Potions and food **stack**. **Sort** tidies the backpack. Items can be **marked as junk**: they sort last and a merchant buys them all with one button. The border color shows rarity. Filters: weapons, off hand, armor, jewelry, consumables, junk.
+- The weight shown is your **equip load** against what you can carry (60 + half your Strength); it sets how fast you roll. Backpack items don't count.
 - **Bank** at every shrine: a bigger grid (12×10 *(start)*), per character, safe from death.
 
 ### 9.4 Group loot & trading
@@ -466,7 +470,7 @@ Quests and public quests, more zones and an open world, world bosses, New Game+.
 
 ### 12.3 HUD & menus (minimal, Souls-style)
 - **On screen**: health, stamina and class resource bars; flask count; ability hotbar with cooldown sweeps; party frames (name, health, class, downed); boss bar; status buildup meters; floating numbers; enemy health bars (toggle); chat (fades out).
-- **Menus**: main menu (Play/Host, Join, Characters, Settings, Quit), character creator, grid inventory + paperdoll + stats, talents, map, shrine menu (rest, travel, bank, vendors), loot roll pop-ups, settings (graphics, audio, controls, gameplay toggles).
+- **Menus**: main menu (Play/Host, Join, Characters, Settings, Quit), character creator, the menu book (tabs Character, Inventory, Map, Talents, Quests, System; see 9.2), talents, map, shrine menu (rest, travel, bank, vendors), loot roll pop-ups, settings (graphics, audio, controls, gameplay toggles).
 
 ---
 

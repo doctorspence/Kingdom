@@ -213,6 +213,13 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Chapel and barrow built; mill race, sluice gate and tailrace cut; terrain bake cached on disk
 - [ ] Later: a walkable Highcrown (needs the zone extended north), LODs for distant trees
 
+## Inventory and character screen ✅ built 2026-11-23 (waiting for your test; DESIGN.md 9.2-9.3)
+- [x] One screen: backpack grid, your character on a pedestal with the slots around it, your stats; tabs Character, Inventory, Map, Talents, Quests, System (Q / E, LB / RB)
+- [x] Drag and drop, turning long items (right-click, wheel or R; Y on a gamepad), stacks, sort (Z), mark junk (J) and "Sell all junk" at merchants, filters (Tab / LT RT), item cards with Compare (C)
+- [x] One ring slot, the cloak in the Utility slot, no belt slot; icons for all 71 items
+- [ ] 🧪 Press I and try it with the mouse: drag a sword onto the main-hand slot, turn the bow, sort, mark junk and sell it at Old Wenna, switch tabs with Q and E. Then with a gamepad if you have one (hold A to pick up). Tell me what feels clumsy or looks wrong
+- [ ] Later: helms, gloves, boots, shoulders and cloaks only show on the character once they get worn 3D models (today only head, chest and legs pieces with a model do); a real quest list for the Quests tab; the new menu keys are not in the rebinding list yet
+
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
 - Quests and public quests

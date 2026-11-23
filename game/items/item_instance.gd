@@ -25,6 +25,8 @@ var rarity := Rarity.COMMON
 ## Rolled bonuses: stat name -> amount.
 var bonuses := {}
 var count := 1
+## Marked as junk by its owner (sorted last, sold in one go at a merchant).
+var junk := false
 
 
 static func make(item: ItemData, item_level: int, item_rarity: int) -> ItemInstance:
@@ -71,8 +73,22 @@ func weight() -> float:
 	return base.weight
 
 
+## Swing speed of a weapon, from how fast its light attacks play: "Fast", "Average" or "Slow" ("" if not a weapon).
+func attack_speed() -> String:
+	if base.weapon == null or base.weapon.light_combo.is_empty():
+		return ""
+	var total := 0.0
+	for a in base.weapon.light_combo:
+		total += a.anim_speed / maxf(a.end_time, 0.1)
+	var pace := total / base.weapon.light_combo.size()
+	return "Fast" if pace >= 1.3 else ("Average" if pace >= 0.95 else "Slow")
+
+
 func to_dict() -> Dictionary:
-	return {"uid": uid, "id": String(base.id), "ilvl": ilvl, "rarity": rarity, "bonuses": bonuses, "count": count}
+	var d := {"uid": uid, "id": String(base.id), "ilvl": ilvl, "rarity": rarity, "bonuses": bonuses, "count": count}
+	if junk:
+		d["junk"] = true
+	return d
 
 
 static func from_dict(d: Dictionary) -> ItemInstance:
@@ -86,6 +102,7 @@ static func from_dict(d: Dictionary) -> ItemInstance:
 	it.rarity = int(d.get("rarity", 0)) as Rarity
 	it.bonuses = d.get("bonuses", {})
 	it.count = int(d.get("count", 1))
+	it.junk = bool(d.get("junk", false))
 	return it
 
 

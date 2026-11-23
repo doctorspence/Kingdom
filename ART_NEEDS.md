@@ -65,10 +65,10 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 ## Phase 6: Loot
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|
-| **Item icons** (lots) | Every weapon, armor piece, ring, amulet, consumable; same lighting and angle | n/a | ⭐⭐ | ⬜ |
-| Rarity frames | White, green, blue, purple, orange borders and glows | n/a | ⭐ | ⬜ |
-| Inventory and paperdoll | Grid background, slot silhouettes, character panel | Kenney UI, recolored | ⭐ | ⬜ |
-| Gold and soul icons | Coin, soul wisp | n/a | ⭐ | ⬜ |
+| **Item icons** (lots) | Every weapon, armor piece, ring, amulet, consumable; same lighting and angle | n/a | ⭐⭐ | 🟨 all 71 items have one, rendered from 3D (`tools/render_equipment_icons.gd`, and stand-in models in `tools/render_extra_icons.gd`); replace with real art when items get real models |
+| Rarity frames | White, green, blue, purple, orange borders and glows | n/a | ⭐ | 🟨 drawn in code (`game/ui/ui_style.gd`) |
+| Inventory and paperdoll | Grid background, slot silhouettes, character panel | drawn in code: gold frames, serif text, torch-lit stone, 3D pedestal and arch (2026-11-23). Hand-painted frame art could replace it later | ⭐ | 🟨 |
+| Coin and soul icons | Coin, soul wisp | n/a | ⭐ | 🟨 drawn in code |
 | Vendors | Old Wenna (gold), the Soul Broker (hooded, no face) | Humanoid + outfits | ⭐ concept | ⬜ |
 | Weapon models | Axe, mace, greatsword, spear, bow, staff (several variants each by tier) | KayKit / Quaternius weapons | ⭐ textures | ⬜ |
 | Weapon animations | A moveset per weapon type | Animation libraries | | ⬜ |

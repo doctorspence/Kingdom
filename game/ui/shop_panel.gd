@@ -10,6 +10,7 @@ var _wallet: Label
 var _list: VBoxContainer
 var _info: RichTextLabel
 var _action: Button
+var _sell_junk: Button
 var _tabs: Array[Button] = []
 var _mode := "buy"
 var _selected: ItemInstance
@@ -56,6 +57,10 @@ func _ready() -> void:
 	_action.custom_minimum_size = Vector2(0, 40)
 	_action.pressed.connect(_on_action)
 	right.add_child(_action)
+	_sell_junk = Button.new()
+	_sell_junk.custom_minimum_size = Vector2(0, 40)
+	_sell_junk.pressed.connect(_on_sell_junk)
+	right.add_child(_sell_junk)
 	var close_b := Button.new()
 	close_b.text = "Close (Esc)"
 	close_b.pressed.connect(close)
@@ -101,7 +106,7 @@ func refresh() -> void:
 	for it in items:
 		var b := Button.new()
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.text = "%s   —   %d %s" % [it.display_name(), _price(it), _currency()]
+		b.text = "%s%s   —   %d %s" % [it.display_name(), "  (junk)" if it.junk and _mode == "sell" else "", _price(it), _currency()]
 		b.modulate = it.color()
 		b.pressed.connect(_select.bind(it))
 		b.focus_entered.connect(_select.bind(it))
@@ -112,6 +117,10 @@ func refresh() -> void:
 		_list.add_child(l)
 	_action.text = {"buy": "Buy", "sell": "Sell", "buyback": "Buy back"}[_mode]
 	_action.disabled = _selected == null
+	var junk := player.inventory.junk_items()
+	_sell_junk.visible = _mode == "sell" and vendor.data.buys_items
+	_sell_junk.disabled = junk.is_empty()
+	_sell_junk.text = "Sell all junk (%d)" % junk.size()
 	_show()
 
 
@@ -156,5 +165,17 @@ func _on_action() -> void:
 		CombatFx.word(player.global_position + Vector3.UP * 2.0, why)
 	else:
 		Audio.sfx(&"coins")
+	_selected = null
+	refresh()
+
+
+## Sell everything marked as junk in the inventory, in one go.
+func _on_sell_junk() -> void:
+	var total := 0
+	for it in player.inventory.junk_items():
+		total += player.inventory.sell(it.uid)
+	if total > 0:
+		Audio.sfx(&"coins")
+		CombatFx.word(player.global_position + Vector3.UP * 2.0, "+%d coins" % total)
 	_selected = null
 	refresh()

@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
 [ext_resource type="Resource" path="res://data/shields/shield_buckler.tres" id="2_ref"]
+[ext_resource type="Texture2D" uid="uid://5jsnuqnrkdt3" path="res://assets/equipment/InventoryIcons/Weapons/item_iron_buckler.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
+icon = ExtResource("9_icon")
 id = &"item_iron_buckler"
 display_name = "Iron Buckler"
 flavor = "For those who would rather not be hit at all."

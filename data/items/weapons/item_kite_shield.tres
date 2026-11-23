@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
 [ext_resource type="Resource" path="res://data/shields/shield_kite.tres" id="2_ref"]
+[ext_resource type="Texture2D" uid="uid://d1x368vk7afqk" path="res://assets/equipment/InventoryIcons/Weapons/item_kite_shield.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
+icon = ExtResource("9_icon")
 id = &"item_kite_shield"
 display_name = "Kite Shield"
 flavor = "Heavy, steady, slow to parry with."

@@ -60,6 +60,19 @@ func is_weapon() -> bool:
 	return weapon != null
 
 
+enum Category { WEAPON, OFF_HAND, ARMOR, JEWELRY, CONSUMABLE, OTHER }
+
+## What kind of thing this is, for the inventory filters and sorting.
+func category() -> Category:
+	match slot:
+		Slot.MAIN_HAND, Slot.TWO_HAND: return Category.WEAPON
+		Slot.OFF_HAND: return Category.OFF_HAND
+		Slot.HEAD, Slot.SHOULDERS, Slot.CHEST, Slot.HANDS, Slot.LEGS, Slot.FEET, Slot.CLOAK: return Category.ARMOR
+		Slot.NECK, Slot.RING: return Category.JEWELRY
+		Slot.CONSUMABLE: return Category.CONSUMABLE
+	return Category.OTHER
+
+
 static func slot_name(s: Slot) -> String:
-	return ["—", "Head", "Shoulders", "Chest", "Hands", "Legs", "Feet", "Cloak", "Neck", "Ring",
+	return ["—", "Head", "Shoulders", "Chest", "Hands", "Legs", "Feet", "Cloak (utility)", "Neck", "Ring",
 			"Main hand", "Off hand", "Two-handed", "Consumable"][s]

@@ -1483,7 +1483,7 @@ func _state_move(delta: float) -> void:
 			thing.call(&"interact", self)
 
 	# Blocking
-	var wants_block := Input.is_action_pressed("block")
+	var wants_block := Input.is_action_pressed("block") and not Net.in_menu  # LB / right-click work the menus
 	if wants_block and not is_blocking:
 		_begin_guard()
 	elif not wants_block and is_blocking:

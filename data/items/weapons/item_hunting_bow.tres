@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
 [ext_resource type="Resource" path="res://data/weapons/weapon_hunting_bow.tres" id="2_ref"]
+[ext_resource type="Texture2D" uid="uid://ddyg0xi4bqd8w" path="res://assets/equipment/InventoryIcons/Weapons/item_hunting_bow.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
+icon = ExtResource("9_icon")
 id = &"item_hunting_bow"
 display_name = "Hunting Bow"
 flavor = "Arrows come cheap. Aim does not."

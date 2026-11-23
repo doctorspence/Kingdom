@@ -1,9 +1,11 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" uid="uid://c84p6q2osc6l" path="res://assets/equipment/InventoryIcons/Items/item_bread.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
+icon = ExtResource("9_icon")
 id = &"item_bread"
 display_name = "Bread"
 flavor = "Hard, but it is food."

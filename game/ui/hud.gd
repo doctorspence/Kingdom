@@ -21,6 +21,7 @@ Drink flask: R / X        Interact / rest: E / Y
 Revive a downed friend: hold E / Y next to them (costs a flask)
 Abilities: 1-6 / hold LT + A, B, X, Y, RB, RT
 Talents: T / D-pad left    Inventory: I / View    Swap weapon set: X / D-pad right
+In the inventory: Q E / LB RB change tab, drag items (right-click or R turns them), Z sorts
 Thrown abilities land where the center dot points
 Chat: Enter        Menu (leave game): Esc
 (These are the default keys; change them in Menu > Settings > Controls)
@@ -64,7 +65,7 @@ var _effects_label: Label
 var _banner: Label
 var _banner_time := 0.0
 var _talents: TalentPanel
-var _inventory_panel: InventoryPanel
+var _book: CharacterScreen
 var _shop_panel: ShopPanel
 var _bank_panel: BankPanel
 var _shrine_menu: PanelContainer
@@ -120,21 +121,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			if _menu.visible:
 				(_menu.find_child("Resume", true, false) as Button).grab_focus()
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("talents") and not Net.typing and player:
-		var was := _talents.visible
-		_close_panels()
-		if not was:
-			_talents.toggle()
+	elif event.is_action_pressed("talents") and not Net.typing and player and _book_shortcut_ok(event):
+		_toggle_book("talents")
 	elif event.is_action_pressed("inventory") and not Net.typing and player:
-		var was_open := _inventory_panel.visible
-		_close_panels()
-		if not was_open:
-			_inventory_panel.open(player)
-	elif event.is_action_pressed("map") and not Net.typing and player:
-		var map_was_open := _map_panel.visible
-		_close_panels()
-		if not map_was_open and player.zone():
-			_map_panel.open(player)
+		_toggle_book("inventory")
+	elif event.is_action_pressed("map") and not Net.typing and player and _book_shortcut_ok(event):
+		_toggle_book("map")
 	elif event.is_action_pressed("debug_raid") and multiplayer.is_server():
 		var c := get_tree().get_first_node_in_group(&"camp") as Camp
 		if c == null:
@@ -184,6 +176,7 @@ func _process(delta: float) -> void:
 	_update_prompt()
 	_update_party()
 	_money_label.text = "Coins %d   Souls %d" % [player.inventory.coins, player.inventory.souls]
+	_sync_book()
 	# While a menu is open: free mouse, the character stands still.
 	var ui_open := _any_panel_open() or _menu.visible
 	Net.in_menu = ui_open
@@ -303,15 +296,75 @@ func _on_leveled_up(new_level: int) -> void:
 	_banner_time = 4.0
 
 
+# --- The menu book: Character, Inventory, Map, Talents, Quests, System tabs ----------
+
+## Inside the book the D-pad moves the cursor, so it doesn't jump to the map or talents.
+func _book_shortcut_ok(event: InputEvent) -> bool:
+	return not (_book.visible and event is InputEventJoypadButton)
+
+
+func _toggle_book(page: String) -> void:
+	if _book.visible and _book.page == page:
+		_close_panels()
+		return
+	if page == "map" and player.zone() == null:
+		show_banner("No map here", 2.0)
+		return
+	_show_book_page(page)
+
+
+## Open the book on a page. Map, Talents and System are the existing panels laid
+## over the book's backdrop, under its tab bar.
+func _show_book_page(page: String) -> void:
+	if not _book.visible:
+		_close_panels()
+		_book.open(player, page)
+	else:
+		if _talents.visible:
+			_talents.toggle()
+		_map_panel.close()
+		if _settings_panel.visible:
+			_settings_panel.close_panel()
+		_menu.visible = false
+		_book.set_page(page)
+	match page:
+		"talents":
+			_talents.toggle()
+		"map":
+			if player.zone():
+				_map_panel.open(player)
+			else:
+				show_banner("No map here", 2.0)
+		"system":
+			_menu.visible = true
+			(_menu.find_child("Resume", true, false) as Button).grab_focus()
+
+
+## A page's own panel was closed with its own button: close the book with it.
+func _sync_book() -> void:
+	if not _book.visible:
+		return
+	match _book.page:
+		"talents":
+			if not _talents.visible:
+				_book.close()
+		"map":
+			if not _map_panel.visible and player and player.zone():
+				_book.close()
+		"system":
+			if not _menu.visible and not _settings_panel.visible:
+				_book.close()
+
+
 # --- Menus: inventory, shrine, merchants, bank, loot rolls -------------------------
 
 func _any_panel_open() -> bool:
-	return _inventory_panel.visible or _shop_panel.visible or _bank_panel.visible \
+	return _book.visible or _shop_panel.visible or _bank_panel.visible \
 			or _shrine_menu.visible or _talents.visible or _map_panel.visible or _subclass_panel.visible or _settings_panel.visible or _camp_panel.visible
 
 
 func _close_panels() -> void:
-	_inventory_panel.close()
+	_book.close()
 	_shop_panel.close()
 	_bank_panel.close()
 	_shrine_menu.visible = false
@@ -782,10 +835,13 @@ func _build() -> void:
 	leave.pressed.connect(func() -> void: Net.leave())
 	menu_box.add_child(leave)
 	root.add_child(_menu)
+	# The book sits under the menu, map and talent panels, which open on top of it.
+	_book = CharacterScreen.new()
+	_book.page_requested.connect(_show_book_page)
+	_book.close_requested.connect(_close_panels)
+	root.add_child(_book)
+	root.move_child(_book, _menu.get_index())
 
-	_inventory_panel = InventoryPanel.new()
-	_place(_inventory_panel, Control.PRESET_CENTER, Rect2(-560, -330, 1120, 660))
-	root.add_child(_inventory_panel)
 	_shop_panel = ShopPanel.new()
 	_place(_shop_panel, Control.PRESET_CENTER, Rect2(-400, -290, 800, 580))
 	root.add_child(_shop_panel)
@@ -851,8 +907,12 @@ func _build() -> void:
 		show_banner("You follow the path of the %s\nNew abilities are on your hotbar" % player.stats.subclass.display_name))
 	root.add_child(_subclass_panel)
 
+	# The panels that open as book pages share the book's gold-and-serif look.
+	for page_panel: Control in [_talents, _map_panel, _menu, _settings_panel]:
+		page_panel.theme = UiStyle.theme()
+
 	# Panels rustle open and shut (a book for the inventory, talents and map).
-	for panel: Control in [_inventory_panel, _shop_panel, _bank_panel, _shrine_menu, _menu, _talents, _map_panel, _subclass_panel, _settings_panel, _camp_panel]:
+	for panel: Control in [_book, _shop_panel, _bank_panel, _shrine_menu, _menu, _talents, _map_panel, _subclass_panel, _settings_panel, _camp_panel]:
 		panel.visibility_changed.connect(func() -> void:
 			if is_inside_tree():
 				Audio.sfx(&"ui_open" if panel.visible else &"ui_close"))

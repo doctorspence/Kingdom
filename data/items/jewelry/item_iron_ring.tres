@@ -1,9 +1,11 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" uid="uid://662buphpsa7y" path="res://assets/equipment/InventoryIcons/Items/item_iron_ring.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
+icon = ExtResource("9_icon")
 id = &"item_iron_ring"
 display_name = "Iron Ring"
 slot = 9

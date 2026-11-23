@@ -86,12 +86,10 @@ func _draw() -> void:
 	for uid in grid.items:
 		var it: ItemInstance = grid.items[uid]
 		var p: Vector2i = grid.positions[uid]
-		var r := Rect2(top + Vector2(p) * CELL, Vector2(it.base.grid_size) * CELL).grow(-3)
+		var r := Rect2(top + Vector2(p) * CELL, Vector2(grid.size_of(uid)) * CELL).grow(-3)
 		draw_rect(r, it.base.icon_color.darkened(0.6) if it.base.icon else it.base.icon_color.darkened(0.3))
 		if it.base.icon:
-			# the icon, as large as fits in the item's cells, centered
-			var s := minf(r.size.x, r.size.y)
-			draw_texture_rect(it.base.icon, Rect2(r.position + (r.size - Vector2(s, s)) * 0.5, Vector2(s, s)), false)
+			UiStyle.item_icon(self, it.base.icon, r)
 		draw_rect(r, it.color(), false, 2.0)
 		if it.base.icon == null:
 			var short := it.display_name().get_slice(" ", it.display_name().get_slice_count(" ") - 1).left(7)
@@ -102,5 +100,5 @@ func _draw() -> void:
 		var c := Rect2(top + Vector2(cursor) * CELL, Vector2(CELL, CELL))
 		var it := current()
 		if it:
-			c = Rect2(top + Vector2(grid.positions[it.uid]) * CELL, Vector2(it.base.grid_size) * CELL)
+			c = Rect2(top + Vector2(grid.positions[it.uid]) * CELL, Vector2(grid.size_of(it.uid)) * CELL)
 		draw_rect(c, Color(1.0, 0.9, 0.5), false, 3.0)
