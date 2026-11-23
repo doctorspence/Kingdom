@@ -54,7 +54,7 @@
 The overhaul costs roughly **20-30% frame rate**; two spots are **below the 60 FPS target** on this PC (looking north from the spawn, inside the deep woods). The scene draws 1.5 to 3.5x more triangles (broadleaf crowns, ivy, plants, scree); GPU time measured only about 1 ms more per frame, so part of the cost is on the processor side and I could not pin it down today because the PC's load kept changing. Zone load: **8.2 s → 10.6 s** (15 s on the first load after the land script changes, while the terrain cache rebuilds).
 
 **Remaining issues**
-1. **Performance** (above): needs its own optimization pass: bake trees and plants to files (load time), trim leaf-card counts on yews and ancient oaks, flat "card" trees for the far distance, and a proper profile with nothing else running.
+1. **Performance** (above): optimization pass done (see "Performance pass" below); still needs a clean measurement with nothing else running.
 2. **Bracken up close** reads as flat striped cards (fine from a few meters).
 3. **A few very dark views** remain where the camera is pressed against a slope or under a low crown.
 4. **Old, not caused by the overhaul, but found by the route check:** the cliff-top path crosses the river gorge at about (-159, -45) on ground of 69-77° (not walkable); the long track up the watchtower hill is 45-48° near (77, 18); Mill Lane has a 56-63° step at the quarry mouth (-130, -96).
@@ -63,6 +63,29 @@ The overhaul costs roughly **20-30% frame rate**; two spots are **below the 60 F
 7. This branch also carries another session's "Safer saves" commit (63c09ed). Nothing is merged into `main` yet.
 
 **Files.** New: `game/world/tree_species.gd`, `plant_kit.gd`, `quarry_kit.gd`, `quarry_adit.gd`, `quarry_works.gd`, `story_props.gd`, `mist.gd`, `tools/preview_trees.gd`, `tools/preview_plants.gd`, `tools/route_check.gd`, `assets/textures/leaf_litter/` (Poly Haven, CC0, in CREDITS). Changed: `game/world/sculpted_terrain.gd`, `forest_scatter.gd`, `plant_scatter.gd`, `stone_walls.gd`, `grass_field.gd`, `tithe_extras.gd`, `day_night.gd`, `levels/common/terrain_pbr.gdshader`, `grass.gdshader`, `materials/terrain_pbr.tres`, `tithelands_env.tres`, `levels/tithelands/tithelands.tscn`, `tithelands_land.gd`, `tithelands_dressing.gd`, `props/gullet_mouth.tscn`, `tools/relayout_tithelands.gd`, `tests/perf_zone.gd` (3 extra spots, CPU/GPU split, `noproc:`), `tests/visual_night.gd` (woods shots), docs. **Terrain areas changed:** west scarp (steps, ragged brow, two combes, scree), quarry (three terraces, rounded corners, spoil heap), Knight's Gap shoulders, watchtower hill north-east face, East Woods (rolling ground, three dells, the brook), the chapel lane and yard edge.
+
+### Performance pass (after stage 9)
+
+What was done (the look is unchanged: matching before/after pictures checked at six spots):
+- **Per-tree detail switch** (`ForestScatter.per_tree_lod`, Woods and Oaks): before, full-detail trees were switched per 64 m patch, so trees up to ~125 m away were drawn in full. Now each tree switches to its cheap far shape at 40 m, a few patches checked per frame.
+- **Shadow shape** (`ForestScatter.shadow_proxy`, `TreeSpecies` "shadow"): trees cast their sun shadow from the main limbs plus half the leaf cards at full size, out to the same 80 m patches as before. (A first try with the far shape's big cards closed the canopy gaps and lost the sunny patches on the ground; full-size cards keep them.)
+- **Shared corners**: tree, plant and quarry-kit meshes are indexed (each corner computed once instead of once per triangle). Thinnest twigs use 3 sides instead of 4 (tree shapes unchanged).
+- **Load-time cache** (`game/world/bake_cache.gd`, in `user://bake_cache/`, ~10 MB): code-painted leaf/bark/plant textures, tree shapes, where trees and plants stand, and the terrain meshes are saved after the first load. Keys include the source of every script involved and the settings, so editing the land, a builder or a scatter's settings simply rebuilds once. Exported builds bake every time (no script source), like the terrain grid.
+
+Results (1920x1080; your game was running from the editor the whole time, so frame times swing a lot; triangle counts and GPU time are steadier):
+
+| Spot | Triangles: original / before pass / after | GPU ms (best): before pass / after |
+|---|---|---|
+| spawn north | 3.0M / 4.8M / 3.9M | 9.5 / 7.7 |
+| deep woods | 3.5M / 6.9M / 4.3M | 19.7 / 13.2 |
+| raider camp | 3.0M / 6.8M / 3.6M | 15.4 / 10.7 |
+| camp hearth | 3.1M / 5.0M / 3.0M | 16.9 / 9.4 |
+| barrow | 1.9M / 6.7M / 2.8M | 16.2 / 11.4 |
+| east woods | 2.1M / 4.1M / 3.0M | 10.6 / 8.7 |
+
+Zone load: **10.6 s → 6.9 s** (the original was 8.2 s); the first load after a script change still takes the long way (~13-17 s) while the cache refills. Tools added: `tests/load_profile.gd` (load time per node), `perf_zone` now reports the best of four windows, a draw-call/triangle breakdown per node (`drawcalls`) and `set:Node.prop=value` A/B switches (also in `visual_env`, with `nodefaults`).
+
+Still open: a clean frame-rate measurement with nothing else running (the GPU numbers above are inflated by the game running alongside). Remaining extra GPU cost against the original is likely leaf-card overdraw in the woods and the heavier ground shader; Highcrown draws ~550 draw calls from everywhere (old, not the overhaul).
 
 **Checks after stage 3:** `zone_check`, `camp_check`, `gullet_check` pass; placement audit shows no trees in or against buildings (the building flags it lists are unchanged from before). FPS at 1920x1080: 78 to 116 at the 10 spots (before: 81 to 128); zone load 8.1 s (before 6.6 s; trees are built at load, baking them to files is the fix if it matters). Pictures: `docs/greenwood_progress/`.
 

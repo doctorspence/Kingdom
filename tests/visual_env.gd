@@ -14,6 +14,14 @@ func _ready() -> void:
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://shots"))
 	var scene: Node = load("res://levels/tithelands/tithelands.tscn").instantiate()
+	# "set:Woods.near_until=40.0" changes an export before the zone builds (A/B pictures).
+	for a in OS.get_cmdline_user_args():
+		if String(a).begins_with("set:"):
+			var kv := String(a).substr(4).split("=")
+			var np := kv[0].rsplit(".", true, 1)
+			var target := scene.get_node_or_null(np[0])
+			if target:
+				target.set(np[1], str_to_var(kv[1]))
 	get_tree().root.add_child(scene)
 	await get_tree().process_frame
 	await _frames(60)
@@ -28,6 +36,8 @@ func _run() -> void:
 		["env_road_crossroads", 2.0, 128.0, 180.0],
 		["env_river_bank", 20.0, 14.0, 0.0],
 	]
+	if "nodefaults" in OS.get_cmdline_user_args():
+		spots.clear()
 	for a in OS.get_cmdline_user_args().slice(1):
 		var bits := String(a).split(",")
 		if bits.size() == 4:

@@ -57,6 +57,68 @@ func _build() -> void:
 	_load_parts()
 	if _parts.is_empty():
 		return
+	# Where everything stands never changes unless the land, the models or these
+	# settings do: read it from the disk cache when possible (load time).
+	var ck := _placement_key()
+	var saved: Variant = BakeCache.fetch(_cache_name(), ck) if ck != "" else null
+	if not (saved is Dictionary):
+		saved = _place(land)
+		BakeCache.store(_cache_name(), ck, saved)
+	placed = saved.placed
+	if OS.is_debug_build() and OS.get_cmdline_user_args().has("plant_counts"):
+		print("PLANTS %-12s %d" % [name, placed])
+	if collide:
+		var body := StaticBody3D.new()
+		body.name = "Colliders"
+		add_child(body)
+		for c: Array in saved.cols:
+			var shape := BoxShape3D.new()
+			shape.size = c[0]
+			var cs := CollisionShape3D.new()
+			cs.shape = shape
+			cs.position = c[1]
+			cs.rotation.y = c[2]
+			body.add_child(cs)
+	var groups: Dictionary = saved.groups
+	for key in groups:
+		var pick := int((key as String).split("|")[0])
+		var buf: PackedFloat32Array = groups[key]
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = _parts[pick][0]
+		mm.instance_count = buf.size() / 12
+		mm.buffer = buf
+		var mmi := MultiMeshInstance3D.new()
+		mmi.multimesh = mm
+		if tint != Color(1, 1, 1):
+			mmi.material_override = _tinted(_parts[pick][0])
+		mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mmi.visibility_range_end = seen_from
+		mmi.visibility_range_end_margin = 10.0
+		mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		add_child(mmi)
+
+
+func _cache_name() -> String:
+	return "plants_%s_%s" % [owner.scene_file_path.get_file().get_basename() if owner else "", name]
+
+
+## Everything the placement depends on; "" when it can't be cached (exported game).
+func _placement_key() -> String:
+	var tk := terrain._cache_key()
+	if tk == "":
+		return ""
+	var part_info: Array = []
+	for pt: Array in _parts:
+		part_info.append([pt[1], pt[2]])
+	return BakeCache.key(["res://game/world/plant_scatter.gd"], [tk, models, layer, spacing, density, scatter_seed,
+		target_size, scale_range, keep_off_roads, keep_off_tracks, sink, max_slope, cliff, cliff_max, road_band,
+		collide, patch_size, part_info, global_position])
+
+
+## Works out where every plant stands: {groups: {"part|patch x|patch z": multimesh
+## buffer}, cols: [[box size, position, yaw]] (when collide), placed: count}.
+func _place(land: Object) -> Dictionary:
 	var keep: PackedVector3Array = land.get("keep_clear") if land.get("keep_clear") != null else PackedVector3Array()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = scatter_seed
@@ -64,11 +126,8 @@ func _build() -> void:
 	var patch := patch_size
 	var groups := {}
 	var dens_cache := {}
-	var body: StaticBody3D = null
-	if collide:
-		body = StaticBody3D.new()
-		body.name = "Colliders"
-		add_child(body)
+	var cols: Array = []
+	var count := 0
 	var z := -half
 	while z < half:
 		var x := -half
@@ -137,37 +196,20 @@ func _build() -> void:
 			if not groups.has(key):
 				groups[key] = []
 			groups[key].append(Transform3D(xf.basis, xf.origin - global_position))
-			if body:
+			if collide:
 				var sz2: Vector3 = part[2] * s
-				var shape := BoxShape3D.new()
-				shape.size = Vector3(sz2.x * 0.8, sz2.y * 0.85, sz2.z * 0.8)
-				var cs := CollisionShape3D.new()
-				cs.shape = shape
-				cs.position = Vector3(p.x, base + sz2.y * 0.4, p.y) - global_position
-				cs.rotation.y = rot
-				body.add_child(cs)
-			placed += 1
+				cols.append([Vector3(sz2.x * 0.8, sz2.y * 0.85, sz2.z * 0.8), Vector3(p.x, base + sz2.y * 0.4, p.y) - global_position, rot])
+			count += 1
 		z += spacing
-	if OS.is_debug_build() and OS.get_cmdline_user_args().has("plant_counts"):
-		print("PLANTS %-12s %d" % [name, placed])
+	var bufs := {}
 	for key in groups:
-		var pick := int((key as String).split("|")[0])
-		var xfs: Array = groups[key]
-		var mm := MultiMesh.new()
-		mm.transform_format = MultiMesh.TRANSFORM_3D
-		mm.mesh = _parts[pick][0]
-		mm.instance_count = xfs.size()
-		for i in xfs.size():
-			mm.set_instance_transform(i, xfs[i])
-		var mmi := MultiMeshInstance3D.new()
-		mmi.multimesh = mm
-		if tint != Color(1, 1, 1):
-			mmi.material_override = _tinted(_parts[pick][0])
-		mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		mmi.visibility_range_end = seen_from
-		mmi.visibility_range_end_margin = 10.0
-		mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-		add_child(mmi)
+		# MultiMesh buffer layout: the 3x4 matrix row by row (basis row, then origin).
+		var buf := PackedFloat32Array()
+		for t: Transform3D in groups[key]:
+			var b := t.basis
+			buf.append_array([b.x.x, b.y.x, b.z.x, t.origin.x, b.x.y, b.y.y, b.z.y, t.origin.y, b.x.z, b.y.z, b.z.z, t.origin.z])
+		bufs[key] = buf
+	return {"groups": bufs, "cols": cols, "placed": count}
 
 
 ## Every mesh part of every model, moved so its base center sits at the origin.

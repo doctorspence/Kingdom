@@ -39,6 +39,7 @@ static func mesh(kind: String, variant: int) -> ArrayMesh:
 				var p := Vector3(rng.randf_range(-0.7, 0.7), s.y * 0.35, rng.randf_range(-0.7, 0.7))
 				rock_box(st, p, s, rng.randf() * TAU, rng, 0.22)
 	st.generate_normals()
+	st.index()
 	st.set_material(stone_material())
 	var m := st.commit()
 	_cache[key] = m

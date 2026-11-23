@@ -20,6 +20,7 @@ const KINDS := {
 const BARK_TEX := "res://assets/textures/bark/color.jpg"
 const BARK_NRM := "res://assets/textures/bark/normal.jpg"
 const BARK_RGH := "res://assets/textures/bark/rough.jpg"
+const SELF := "res://game/world/tree_species.gd"
 
 static var _cache := {}
 static var _mats := {}
@@ -36,21 +37,39 @@ static func build(kind: String, index: int) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(key) + 4711
 	var p := _params(kind, index, rng)
+	var bark_m := _bark_mat(p.bark)
+	var leaf_m := _leaf_mat(p.leaf)
+	var mats := {"bark": bark_m, "leaf": leaf_m, "ivy": PlantKit._material("ivy")}
+	# The shapes are the same every time: read them from the disk cache when possible.
+	var ck := BakeCache.key([SELF], key)
+	var saved: Variant = BakeCache.fetch("tree_" + key, ck)
+	if saved is Dictionary:
+		var near: Array = []
+		for part: Array in saved.near:
+			near.append(BakeCache.mesh_from(part[1], [mats[part[0]]]))
+		var cached := {"near": near, "far": BakeCache.mesh_from(saved.far, [bark_m, leaf_m]),
+			"shadow": BakeCache.mesh_from(saved.shadow, [bark_m, leaf_m]), "radius": saved.radius, "height": saved.height}
+		_cache[key] = cached
+		return cached
 	var b := _Builder.new()
 	b.p = p
 	b.rng = rng
 	b.grow()
+	var parts: Array = [["bark", b.bark_mesh(bark_m)], ["leaf", b.leaf_mesh(leaf_m, false)]]
+	if float(p.ivy) > 0.0:
+		parts.append(["ivy", b.ivy_mesh()])
+	parts = parts.filter(func(pt: Array) -> bool: return pt[1] != null)
 	var out := {
-		"near": [b.bark_mesh(_bark_mat(p.bark)), b.leaf_mesh(_leaf_mat(p.leaf), false)],
-		"ivy": b.ivy_mesh() if float(p.ivy) > 0.0 else null,
-		"far": b.far_mesh(_bark_mat(p.bark), _leaf_mat(p.leaf)),
+		"near": parts.map(func(pt: Array) -> Mesh: return pt[1]),
+		"far": b.far_mesh(bark_m, leaf_m),
+		"shadow": null,
 		"radius": float(p.trunk_r) * 0.85,
 		"height": b.top,
 	}
-	if out.near[1] == null:
-		out.near = [out.near[0]]
-	if out.ivy != null:
-		out.near.append(out.ivy)
+	out.shadow = b.shadow_mesh(out.far, leaf_m)
+	BakeCache.store("tree_" + key, ck, {
+		"near": parts.map(func(pt: Array) -> Array: return [pt[0], BakeCache.mesh_data(pt[1])]),
+		"far": BakeCache.mesh_data(out.far), "shadow": BakeCache.mesh_data(out.shadow), "radius": out.radius, "height": out.height})
 	_cache[key] = out
 	return out
 
@@ -322,7 +341,8 @@ class _Builder:
 				d.y = maxf(d.y, 0.35)  # limbs never dive into the ground
 			d = d.normalized()
 			pos += d * use_len / segs
-		_tube(pts, rad, maxi(4, int(p.sides) - 3 - depth * 2), depth)
+		# Twigs (depth 2+) hide inside the leaf cards: three sides is enough.
+		_tube(pts, rad, 3 if depth >= 2 else maxi(4, int(p.sides) - 3 - depth * 2), depth)
 		top = maxf(top, pos.y)
 		var end := pts[segs]
 		var sz: float = p.scale
@@ -401,13 +421,14 @@ class _Builder:
 
 	func bark_mesh(mat: Material) -> ArrayMesh:
 		bark.generate_normals()
+		bark.index()
 		bark.set_material(mat)
 		return bark.commit()
 
 	## Leaf cards: each cluster is a squashed ball of crossed cards. Cards deep in
 	## the crown are darker (light can't reach them), the top is lighter, and the
 	## normals bend out from the crown so it shades as one soft mass.
-	func leaf_mesh(mat: Material, far: bool) -> ArrayMesh:
+	func leaf_mesh(mat: Material, far: bool, shadow := false) -> ArrayMesh:
 		if clusters.is_empty():
 			return null
 		var st := SurfaceTool.new()
@@ -425,10 +446,13 @@ class _Builder:
 			reach = maxf(reach, Vector2((c[0] as Vector3).x - crown.x, (c[0] as Vector3).z - crown.z).length() + float(c[1]))
 		var lrng := RandomNumberGenerator.new()
 		lrng.seed = rng.seed + (99 if far else 7)
+		# The shadow version: the same card size as up close, about half as many cards
+		# (the gaps the sun comes through stay; the far version's big cards would close them).
+		var share := 0.22 if far else (0.5 if shadow else 1.0)
 		for c in clusters:
 			var center: Vector3 = c[0]
 			var r: float = c[1]
-			var cards := int(r * r * float(p.card_density) * (0.22 if far else 1.0)) + (2 if far else 5)
+			var cards := int(r * r * float(p.card_density) * share) + (2 if far else (3 if shadow else 5))
 			for k in cards:
 				var u := Vector3(lrng.randf_range(-1, 1), lrng.randf_range(-0.8, 1), lrng.randf_range(-1, 1)).normalized()
 				var pos := center + Vector3(u.x, u.y * float(p.flat), u.z) * r * lrng.randf_range(0.35, 1.0)
@@ -459,6 +483,7 @@ class _Builder:
 					st.set_color(tint)
 					st.set_uv(uvs[idx])
 					st.add_vertex(corners[idx])
+		st.index()
 		st.set_material(mat)
 		return st.commit()
 
@@ -496,17 +521,31 @@ class _Builder:
 				st.set_color(tint)
 				st.set_uv(uvs[idx])
 				st.add_vertex(corners[idx])
+		st.index()
 		st.set_material(PlantKit._material("ivy"))
 		return st.commit()
 
 	func far_mesh(bark_mat: Material, leaf_mat: Material) -> ArrayMesh:
 		far_bark.generate_normals()
+		far_bark.index()
 		far_bark.set_material(bark_mat)
 		var m := far_bark.commit()
 		var leaves := leaf_mesh(leaf_mat, true)
 		if leaves:
 			m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, leaves.surface_get_arrays(0))
 			m.surface_set_material(m.get_surface_count() - 1, leaf_mat)
+		return m
+
+	## What a nearby tree casts its sun shadow with: the far version's main limbs and
+	## the half-density, full-size leaf cards. Call after far_mesh.
+	func shadow_mesh(far: ArrayMesh, leaf_mat: Material) -> ArrayMesh:
+		var m := ArrayMesh.new()
+		m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, far.surface_get_arrays(0))
+		m.surface_set_material(0, far.surface_get_material(0))
+		var leaves := leaf_mesh(leaf_mat, false, true)
+		if leaves:
+			m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, leaves.surface_get_arrays(0))
+			m.surface_set_material(1, leaf_mat)
 		return m
 
 
@@ -558,6 +597,10 @@ static func _bark_mat(kind: String) -> StandardMaterial3D:
 
 
 static func _beech_tex() -> ImageTexture:
+	return ImageTexture.create_from_image(BakeCache.image("beech_bark", [SELF], func() -> Image: return _beech_img()))
+
+
+static func _beech_img() -> Image:
 	var w := 256
 	var img := Image.create(w, w, true, Image.FORMAT_RGBA8)
 	var n := FastNoiseLite.new()
@@ -577,10 +620,14 @@ static func _beech_tex() -> ImageTexture:
 				c = c.lerp(Color(0.3, 0.31, 0.3), (0.22 - f) * 2.5)
 			img.set_pixel(x, y, c)
 	img.generate_mipmaps()
-	return ImageTexture.create_from_image(img)
+	return img
 
 
 static func _birch_tex() -> ImageTexture:
+	return ImageTexture.create_from_image(BakeCache.image("birch_bark", [SELF], func() -> Image: return _birch_img()))
+
+
+static func _birch_img() -> Image:
 	var w := 256
 	var img := Image.create(w, w, true, Image.FORMAT_RGBA8)
 	var n := FastNoiseLite.new()
@@ -612,7 +659,7 @@ static func _birch_tex() -> ImageTexture:
 				if absf(float(dx) / rx) + absf(float(dy) / ry) <= 1.0 + rng.randf_range(-0.15, 0.1):
 					img.set_pixel((cx + dx + w) % w, (cy + dy + w) % w, Color(0.1, 0.09, 0.09))
 	img.generate_mipmaps()
-	return ImageTexture.create_from_image(img)
+	return img
 
 
 static func _leaf_mat(kind: String) -> StandardMaterial3D:
@@ -643,6 +690,10 @@ static func _leaf_mat(kind: String) -> StandardMaterial3D:
 ## Colors from the brief: forest green #465A40, oak green #64734D, moss #89916A,
 ## deep woodland #354536, with selective saturation (beech and birch a touch fresher).
 static func _leaf_tex(kind: String) -> ImageTexture:
+	return ImageTexture.create_from_image(BakeCache.image("leaf_" + kind, [SELF], func() -> Image: return _leaf_img(kind)))
+
+
+static func _leaf_img(kind: String) -> Image:
 	var w := 256
 	var img := Image.create(w, w, true, Image.FORMAT_RGBA8)
 	var rng := RandomNumberGenerator.new()
@@ -689,7 +740,7 @@ static func _leaf_tex(kind: String) -> ImageTexture:
 			_:
 				_leaf(img, Vector2(cx, cy), rot, rng.randf_range(length.x, length.y), col, kind)
 	img.generate_mipmaps()
-	return ImageTexture.create_from_image(img)
+	return img
 
 
 ## One leaf. t runs from -1 (stalk) to 1 (tip); the half-width at t gives the outline.

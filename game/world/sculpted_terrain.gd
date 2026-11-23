@@ -655,29 +655,47 @@ func _rebuild() -> void:
 		_built.queue_free()
 	_built = Node3D.new()
 	_built.name = "Built"
-	_bake_extra()
-	# Ground mesh in chunks (so off-screen parts are skipped when drawing).
+	var t_bake := Time.get_ticks_msec() - t0
+	# Ground mesh in chunks (so off-screen parts are skipped when drawing). Farther
+	# chunks are drawn with every 2nd, then every 4th, grid cell. The meshes only
+	# change with the grid, so they come from the disk cache when it is current.
+	var lods: Array = [1] if DisplayServer.get_name() == "headless" else [1, 2, 4]
+	var gk := _cache_key()
+	var mkey := "" if gk == "" else BakeCache.key([], [gk, lods, LOD1_FROM, LOD2_FROM])
+	var saved: Variant = BakeCache.fetch("terrain_mesh_" + name, mkey)
+	var from_cache := saved is Array
+	var made: Array = []
+	if not from_cache:
+		_bake_extra()
+	var t_extra := Time.get_ticks_msec() - t0 - t_bake
 	var chunk := 52
+	var j := 0
 	var c0 := 0
 	while c0 < _n - 1:
 		var r0 := 0
 		while r0 < _n - 1:
 			var c1 := mini(c0 + chunk, _n - 1)
 			var r1 := mini(r0 + chunk, _n - 1)
-			var near := _chunk_mesh(c0, r0, c1, r1)
-			_built.add_child(near)
-			if DisplayServer.get_name() != "headless":
-				# Farther chunks are drawn with every 2nd, then every 4th, grid cell.
-				near.visibility_range_end = LOD1_FROM
-				var mid := _chunk_mesh(c0, r0, c1, r1, 2)
-				mid.visibility_range_begin = LOD1_FROM - 10.0
-				mid.visibility_range_end = LOD2_FROM
-				_built.add_child(mid)
-				var far := _chunk_mesh(c0, r0, c1, r1, 4)
-				far.visibility_range_begin = LOD2_FROM - 10.0
-				_built.add_child(far)
+			for step: int in lods:
+				var arrays: Array = saved[j] if from_cache else _chunk_arrays(c0, r0, c1, r1, step)
+				j += 1
+				if not from_cache:
+					made.append(arrays)
+				var mi := _chunk_instance(arrays, step)
+				if lods.size() > 1:
+					match step:
+						1:
+							mi.visibility_range_end = LOD1_FROM
+						2:
+							mi.visibility_range_begin = LOD1_FROM - 10.0
+							mi.visibility_range_end = LOD2_FROM
+						_:
+							mi.visibility_range_begin = LOD2_FROM - 10.0
+				_built.add_child(mi)
 			r0 += chunk
 		c0 += chunk
+	if not from_cache:
+		BakeCache.store("terrain_mesh_" + name, mkey, made)
 	# Collision: a height field (fast and exact for this grid).
 	var body := StaticBody3D.new()
 	var hs := HeightMapShape3D.new()
@@ -695,13 +713,28 @@ func _rebuild() -> void:
 	if DisplayServer.get_name() != "headless":
 		_built.add_child(_backdrop_mesh())
 	add_child(_built)
-	print("SculptedTerrain: built %dx%d in %d ms" % [_n, _n, Time.get_ticks_msec() - t0])
+	print("SculptedTerrain: built %dx%d in %d ms (grid %d, ground extras %d, meshes %d)" % [_n, _n, Time.get_ticks_msec() - t0, t_bake, t_extra, Time.get_ticks_msec() - t0 - t_bake - t_extra])
 
 
 ## One chunk of ground at the given LOD: step 1 = every grid cell, 2 = every other
 ## cell, 4 = every fourth. Coarser versions sit a hair lower and get a skirt so
 ## the seams against neighbours of another detail level stay closed.
 func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInstance3D:
+	return _chunk_instance(_chunk_arrays(cx0, cz0, cx1, cz1, step), step)
+
+
+func _chunk_instance(arrays: Array, step: int) -> MeshInstance3D:
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = material
+	if step > 1:
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if step > 2 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	return mi
+
+
+func _chunk_arrays(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> Array:
 	var xs := PackedInt32Array()
 	var zs := PackedInt32Array()
 	var k := cx0
@@ -783,14 +816,7 @@ func _chunk_mesh(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> MeshInsta
 	arrays[Mesh.ARRAY_TEX_UV] = uvs
 	arrays[Mesh.ARRAY_TEX_UV2] = uv2s
 	arrays[Mesh.ARRAY_INDEX] = idx
-	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	var mi := MeshInstance3D.new()
-	mi.mesh = mesh
-	mi.material_override = material
-	if step > 1:
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if step > 2 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	return mi
+	return arrays
 
 
 ## A small brook (land.brook): a shallow water ribbon laid along its carved bed,

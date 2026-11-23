@@ -585,6 +585,9 @@ scale_range = Vector2(0.85, 1.2)
 max_slope = 0.8
 beyond_edge = 40.0
 leaf_shadows = true
+shadow_proxy = true
+per_tree_lod = true
+near_until = 40.0
 species_from_land = true
 landmarks = true
 
@@ -1004,6 +1007,9 @@ scale_range = Vector2(0.85, 1.25)
 max_slope = 0.7
 beyond_edge = 40.0
 leaf_shadows = true
+shadow_proxy = true
+per_tree_lod = true
+near_until = 40.0
 species_from_land = true
 
 [node name="QuarryWorks" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]

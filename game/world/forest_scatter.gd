@@ -37,6 +37,13 @@ extends Node3D
 @export var landmarks := false
 ## TreeSpecies trees: full detail up to this distance, then the cheap far version.
 @export var near_until := 80.0
+## Decide near/far tree by tree (from the camera, a few patches per frame) instead
+## of a whole 64 m patch at once. Then near_until is the real per-tree distance.
+@export var per_tree_lod := false
+## TreeSpecies trees cast their sun shadow from a cheaper shadow shape (main limbs and
+## half the leaf cards, at full size so the sun still comes through the same gaps).
+## Always on with per_tree_lod.
+@export var shadow_proxy := false
 @export var rebuild := false:
 	set(v):
 		_scatter()
@@ -44,6 +51,10 @@ extends Node3D
 var placed := 0
 var _trees: Array = []
 var _kinds: PackedStringArray = []
+## Per-tree LOD groups: {center: Vector2, pos: PackedVector2Array, chunks: Array of
+## PackedFloat32Array (12 floats each), near: [MultiMeshInstance3D], far, mask: PackedByteArray}.
+var _lod: Array = []
+var _lod_next := 0
 
 
 func _ready() -> void:
@@ -79,6 +90,16 @@ func _scatter() -> void:
 		else:
 			as_trees = false
 		probe.free()
+	# Where the trees stand never changes unless the land or these settings do: use the disk cache.
+	var ck := _placement_key() if as_trees else ""
+	if ck != "":
+		var saved: Variant = BakeCache.fetch(_cache_name(), ck)
+		if saved is Dictionary:
+			_trees = saved.trees
+			placed = saved.placed
+			if not Engine.is_editor_hint():
+				_build_trees()
+			return
 	var z := -half
 	while z < half:
 		var x := -half
@@ -143,8 +164,24 @@ func _scatter() -> void:
 			var lz: float = lt[2]
 			_trees.append([lt[0], Vector3(lx, terrain.height_at(lx, lz) - sink, lz), deg_to_rad(float(lt[3])), float(lt[4]), int(lt[5])])
 			placed += 1
+	if ck != "":
+		BakeCache.store(_cache_name(), ck, {"trees": _trees, "placed": placed})
 	if as_trees and not Engine.is_editor_hint():
 		_build_trees()
+
+
+func _cache_name() -> String:
+	return "scatter_%s_%s" % [owner.scene_file_path.get_file().get_basename() if owner else "", name]
+
+
+## Everything the tree placement depends on; "" when it can't be cached (exported game).
+func _placement_key() -> String:
+	var tk := terrain._cache_key()
+	if tk == "":
+		return ""
+	return BakeCache.key(["res://game/world/forest_scatter.gd"], [tk, layer, spacing, scatter_seed, keep_off_roads,
+		keep_off_tracks, keep_off_river, keep_off_pads, scale_range, density, max_slope, beyond_edge, sink,
+		weights, _kinds, species_from_land, landmarks, global_position])
 
 
 ## Trees drawn in batches: one MultiMesh per patch, tree shape and part. Greenwood
@@ -154,6 +191,8 @@ func _scatter() -> void:
 func _build_trees() -> void:
 	var patch := 64.0
 	var groups := {}
+	_lod.clear()
+	_lod_next = 0
 	var body := StaticBody3D.new()
 	body.name = "Trunks"
 	add_child(body)
@@ -197,21 +236,121 @@ func _build_trees() -> void:
 		if TreeSpecies.KINDS.has(kind):
 			var d := TreeSpecies.build(kind, int(bits[1]))
 			var near: Array = d.near
+			var near_mmis: Array = []
+			# Per-tree switching always shadows from the shadow shape: the detailed batches
+			# then hold every tree of the patch, and shadows must not depend on the switch.
+			var proxy := (shadow_proxy or per_tree_lod) and d.shadow != null
 			for pi in near.size():
-				var mmi := _batch(near[pi], xfs, pi == 0 or leaf_shadows)
-				mmi.visibility_range_end = near_until
-				mmi.visibility_range_end_margin = 8.0
-				mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+				var mmi := _batch(near[pi], xfs, (pi == 0 or leaf_shadows) and not proxy)
+				near_mmis.append(mmi)
+				if not per_tree_lod:
+					mmi.visibility_range_end = near_until
+					mmi.visibility_range_end_margin = 8.0
+					mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			if proxy:
+				# The same trees cast shadows as with full detail (patches out to 80 m).
+				var sh := _batch(d.shadow, xfs, true)
+				sh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
+				sh.visibility_range_end = 80.0
+				sh.visibility_range_end_margin = 8.0
+				sh.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 			var far := _batch(d.far, xfs, false)
-			far.visibility_range_begin = near_until
-			far.visibility_range_begin_margin = 8.0
 			far.visibility_range_end = GeneratedTree.SEEN_FROM + 120.0
-			far.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			if per_tree_lod:
+				_add_lod_group(xfs, near_mmis, far)
+			else:
+				far.visibility_range_begin = near_until
+				far.visibility_range_begin_margin = 8.0
+				far.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 		else:
 			var parts: Array = GeneratedTree._variant(kind, int(bits[1]))
 			for pi in parts.size():
 				var mmi := _batch(parts[pi], xfs, pi == 0 or leaf_shadows)
 				mmi.visibility_range_end = GeneratedTree.SEEN_FROM + patch * 0.7
+
+
+## One patch-and-shape group under per-tree LOD. Starts all far (no near trees).
+func _add_lod_group(xfs: Array, near_mmis: Array, far: MultiMeshInstance3D) -> void:
+	var pos := PackedVector2Array()
+	var center := Vector2.ZERO
+	var chunks: Array = []
+	var buf: PackedFloat32Array = far.multimesh.buffer
+	for i in xfs.size():
+		var o: Vector3 = (xfs[i] as Transform3D).origin + global_position
+		pos.append(Vector2(o.x, o.z))
+		center += Vector2(o.x, o.z)
+		chunks.append(buf.slice(i * 12, i * 12 + 12))
+	center /= maxf(1.0, xfs.size())
+	var reach := 0.0
+	for p in pos:
+		reach = maxf(reach, p.distance_to(center))
+	for mmi: MultiMeshInstance3D in near_mmis:
+		mmi.multimesh.visible_instance_count = 0
+	var mask := PackedByteArray()
+	mask.resize(xfs.size())
+	_lod.append({"center": center, "reach": reach, "pos": pos, "chunks": chunks, "near": near_mmis, "far": far, "mask": mask, "any": false})
+
+
+func _process(_delta: float) -> void:
+	if _lod.is_empty() or Engine.is_editor_hint():
+		return
+	var cam := get_viewport().get_camera_3d()
+	if cam == null:
+		return
+	var c3 := cam.global_position
+	var c := Vector2(c3.x, c3.z)
+	# A few groups per frame: the whole zone is revisited about every quarter second.
+	var per_frame := maxi(4, ceili(_lod.size() / 15.0))
+	for k in per_frame:
+		_update_lod_group(_lod[_lod_next], c)
+		_lod_next = (_lod_next + 1) % _lod.size()
+
+
+func _update_lod_group(g: Dictionary, cam: Vector2) -> void:
+	var center: Vector2 = g.center
+	var reach: float = g.reach
+	var mask: PackedByteArray = g.mask
+	var dist := center.distance_to(cam)
+	var r := near_until
+	if dist - reach > r + 4.0:
+		if not g.any:
+			return  # far from the camera and already all far
+		mask.fill(0)
+	else:
+		var pos: PackedVector2Array = g.pos
+		var changed := false
+		for i in pos.size():
+			var d := pos[i].distance_to(cam)
+			# A little hysteresis so a tree at the edge doesn't flicker between shapes.
+			var want := 1 if d < (r + 3.0 if mask[i] == 1 else r) else 0
+			if want != mask[i]:
+				mask[i] = want
+				changed = true
+		if not changed:
+			return
+	g.mask = mask
+	var chunks: Array = g.chunks
+	var near_buf := PackedFloat32Array()
+	var far_buf := PackedFloat32Array()
+	var n_near := 0
+	for i in mask.size():
+		if mask[i] == 1:
+			near_buf.append_array(chunks[i])
+			n_near += 1
+		else:
+			far_buf.append_array(chunks[i])
+	g.any = n_near > 0
+	# Each buffer holds every tree, the ones to show first; visible_instance_count cuts the rest.
+	var near_all := near_buf.duplicate()
+	near_all.append_array(far_buf)
+	var far_all := far_buf
+	far_all.append_array(near_buf)
+	for mmi: MultiMeshInstance3D in g.near:
+		mmi.multimesh.buffer = near_all
+		mmi.multimesh.visible_instance_count = n_near
+	var far: MultiMeshInstance3D = g.far
+	far.multimesh.buffer = far_all
+	far.multimesh.visible_instance_count = mask.size() - n_near
 
 
 func _batch(mesh: Mesh, xfs: Array, shadows: bool) -> MultiMeshInstance3D:

@@ -79,6 +79,7 @@ static func mesh(name: String, variant: int) -> ArrayMesh:
 				_card(st, p, rng.randf_range(0.6, 0.9), rng, Vector3(rng.randf_range(-0.2, 0.2), 1.0, rng.randf_range(-0.2, 0.2)).normalized())
 		"fungi":
 			_fungi(st, rng, variant)
+	st.index()
 	st.set_material(fungi_material() if name == "fungi" else _material(name))
 	var m := st.commit()
 	_cache[key] = m
@@ -199,6 +200,10 @@ static func _material(name: String) -> StandardMaterial3D:
 
 
 static func _texture(name: String) -> ImageTexture:
+	return ImageTexture.create_from_image(BakeCache.image("plant_" + name, ["res://game/world/plant_kit.gd"], func() -> Image: return _image(name)))
+
+
+static func _image(name: String) -> Image:
 	var w := 256
 	var img := Image.create(w, w, true, Image.FORMAT_RGBA8)
 	var rng := RandomNumberGenerator.new()
@@ -269,7 +274,7 @@ static func _texture(name: String) -> ImageTexture:
 				var c := Vector2(128, 128) + Vector2.from_angle(rng.randf() * TAU) * pow(rng.randf(), 0.7) * 108.0
 				_ivy_leaf(img, c, rng.randf() * TAU, rng.randf_range(10, 15), Color(0.08, 0.15, 0.08).lerp(Color(0.18, 0.27, 0.12), rng.randf()))
 	img.generate_mipmaps()
-	return ImageTexture.create_from_image(img)
+	return img
 
 
 static func _line(img: Image, a: Vector2, b: Vector2, width: float, col: Color) -> void:

@@ -15,6 +15,14 @@ func _ready() -> void:
 
 func _run() -> void:
 	var scene: Node = load("res://levels/tithelands/tithelands.tscn").instantiate()
+	# "set:Woods.near_until=55" changes an export before the zone builds (for A/B tests).
+	for a in OS.get_cmdline_user_args():
+		if String(a).begins_with("set:"):
+			var kv := String(a).substr(4).split("=")
+			var np := kv[0].rsplit(".", true, 1)
+			var target := scene.get_node_or_null(np[0])
+			if target:
+				target.set(np[1], str_to_var(kv[1]))
 	var t0 := Time.get_ticks_msec()
 	get_tree().root.add_child(scene)
 	await get_tree().process_frame
@@ -92,14 +100,53 @@ func _run() -> void:
 		for i in 40:
 			await get_tree().process_frame
 		RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), true)
-		var t := Time.get_ticks_usec()
-		for i in 90:
-			await get_tree().process_frame
-		var ms := (Time.get_ticks_usec() - t) / 90000.0
-		print("PERF %-16s %5.1f FPS (%5.1f ms)  %4d draw calls  %5dk primitives" % [spot[0], 1000.0 / ms, ms, Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME) / 1000])
 		var vp := get_viewport().get_viewport_rid()
-		print("      cpu render %.1f ms, gpu %.1f ms, scripts %.1f ms, physics %.1f ms" % [RenderingServer.viewport_get_measured_render_time_cpu(vp) + RenderingServer.get_frame_setup_time_cpu(), RenderingServer.viewport_get_measured_render_time_gpu(vp), Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0])
+		# Four windows of 30 frames; the best one is reported, since other programs on the
+		# PC only ever make a window slower (the average of all is shown too).
+		var best := 1e9
+		var best_gpu := 1e9
+		var all := 0.0
+		var cpu := 0.0
+		for w in 4:
+			var t := Time.get_ticks_usec()
+			var gpu := 0.0
+			for i in 30:
+				await get_tree().process_frame
+				gpu += RenderingServer.viewport_get_measured_render_time_gpu(vp)
+				cpu += RenderingServer.viewport_get_measured_render_time_cpu(vp) + RenderingServer.get_frame_setup_time_cpu()
+			var wms := (Time.get_ticks_usec() - t) / 30000.0
+			all += wms / 4.0
+			best = minf(best, wms)
+			best_gpu = minf(best_gpu, gpu / 30.0)
+		print("PERF %-16s %5.1f FPS best (%5.1f ms, avg %5.1f ms)  %4d draw calls  %5dk primitives" % [spot[0], 1000.0 / best, best, all, Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME) / 1000])
+		print("      cpu render %.1f ms avg, gpu %.1f ms best" % [cpu / 120.0, best_gpu])
+		if "drawcalls" in args:
+			await _draw_breakdown(scene)
 	get_tree().quit()
+
+
+## Hides each top-level node in turn for a few frames and prints how many draw
+## calls disappear with it (rough: what that node costs from this camera).
+func _draw_breakdown(scene: Node) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var base := int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+	var base_p := int(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME))
+	var parts: PackedStringArray = []
+	for c in scene.get_children():
+		if not c is Node3D or not (c as Node3D).visible:
+			continue
+		(c as Node3D).visible = false
+		for i in 3:
+			await get_tree().process_frame
+		var d := base - int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+		var dp := base_p - int(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME))
+		(c as Node3D).visible = true
+		if d >= 20 or dp >= 100000:
+			parts.append("%s %d/%dk" % [c.name, d, dp / 1000])
+	for i in 3:
+		await get_tree().process_frame
+	print("      draw calls by node: ", ", ".join(parts))
 
 
 func _hide_scatter(scene: Node) -> void:
