@@ -127,7 +127,11 @@ func _process(delta: float) -> void:
 			_sync_timer = 10.0
 			_net_sync.rpc(time, raining)
 	var cam := get_viewport().get_camera_3d()
-	cave = move_toward(cave, 1.0 if cam and cam.global_position.y < CAVE_BELOW else 0.0, delta * 1.5)
+	# Underground = deep below the ground (the Gullet) or inside the quarry descent, where the light fades in with every stride.
+	var cave_target := 0.0
+	if cam:
+		cave_target = 1.0 if cam.global_position.y < CAVE_BELOW else QuarryDescent.depth_cave(cam.global_position)
+	cave = move_toward(cave, cave_target, delta * 1.0)
 	# Under the trees: how thick the woods are where the camera is (land script woodland map).
 	_canopy_timer -= delta
 	if _canopy_timer <= 0.0 and cam:

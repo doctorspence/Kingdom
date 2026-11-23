@@ -81,6 +81,14 @@ var cuts := [
 	{"center": Vector2(-104, -1.3), "half": Vector2(3.4, 1.0), "floor": 6.3, "edge": 0.25, "mode": "carve", "rock": 0.8, "late": true},
 	{"center": Vector2(-106, -3.0), "half": Vector2(0.8, 0.7), "floor": 6.3, "edge": 0.25, "mode": "carve", "rock": 0.8, "late": true},
 	{"center": Vector2(-98.2, -1.3), "half": Vector2(2.8, 1.0), "floor": 5.85, "edge": 0.25, "mode": "carve", "rock": 0.8, "late": true},
+	# The quarry descent (quarry_descent.gd) enters the cliff here: flatten the apron right up to the face,
+	# and the ground surface is left out (see `holes`) where the doorway passes through the cliff.
+	{"center": Vector2(-170.25, -98.0), "half": Vector2(1.25, 2.2), "floor": 12.0, "edge": 0.5, "mode": "carve", "rock": 0.6, "late": true},
+]
+
+## Rectangles (world meters) where the ground surface is left out so a tunnel can pass through a cliff.
+var holes := [
+	{"x0": -172.7, "z0": -100.4, "x1": -169.9, "z1": -95.6},  # the quarry descent through the Gullet door cliff
 ]
 
 # ---- fields: ploughed strips (ridge and furrow) and pasture, each walled in

@@ -32,6 +32,7 @@ script = ExtResource("7_door")
 door_name = "the Tithelands"
 verb = "Climb out into"
 arrive_offset = Vector3(0, 0, -2.5)
+disabled = true
 other = NodePath("../../Places/GulletDoor")
 
 [node name="GulletShrine" parent="." instance=ExtResource("2_shrine")]

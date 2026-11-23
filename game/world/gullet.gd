@@ -35,6 +35,7 @@ const CARVES := [
 	[47, 3.5, 51, 24, 3.8],           #   corridor south to the fog gate
 	[6, 23.2, 59, 41, 9.0],           # 6 deep chamber
 	[-43.5, 28.5, 6.5, 31.5, 3.6],    #   shortcut back to the entrance (opens after the boss)
+	[-62.5, 20.85, -57.5, 24.15, 3.6], #   the way in: the quarry descent (quarry_descent.gd) arrives here, open on its west end
 ]
 ## Rock around everything: center x, y, z, then size.
 const ROCK := [0.0, 6.0, 0.0, 150.0, 18.0, 100.0]
@@ -462,6 +463,8 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 				collide.append_array(PackedVector3Array([a, b, c]))
 				continue
 			if _on_outer_shell(a, b, c):
+				continue
+			if _is_descent_cap(a, b, c):
 				continue
 			var n := ns[ia]
 			var sign_ := 1.0 if (b - a).cross(c - a).dot(n) >= 0.0 else -1.0
@@ -1724,3 +1727,13 @@ func _soft_dot() -> GradientTexture2D:
 	t.gradient = Gradient.new()
 	t.gradient.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0)])
 	return t
+
+
+## The west end of the doorway the quarry descent comes through is left open: the tunnel
+## (quarry_descent.gd) carries on from there, so its end wall must not be drawn or collide.
+func _is_descent_cap(a: Vector3, b: Vector3, c: Vector3) -> bool:
+	var cap: Array = CARVES[CARVES.size() - 1]
+	for v in [a, b, c]:
+		if absf(v.x - cap[0]) > 0.02 or v.z < cap[1] - 0.02 or v.z > cap[3] + 0.02 or v.y < -0.1 or v.y > cap[4] + 0.1:
+			return false
+	return true

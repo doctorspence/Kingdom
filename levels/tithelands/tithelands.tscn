@@ -16,6 +16,7 @@
 [ext_resource type="Script" path="res://game/world/camp.gd" id="camp_script"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/cart.tscn" id="cart"]
 [ext_resource type="Script" path="res://game/world/cave_door.gd" id="cavedoor"]
+[ext_resource type="Script" path="res://game/world/quarry_descent.gd" id="descent"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/cobble_patch.tscn" id="cobble_scene"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/cottage.tscn" id="cottage"]
 [ext_resource type="PackedScene" path="res://levels/tithelands/props/crate.tscn" id="crate_scene"]
@@ -83,6 +84,18 @@ size = Vector3(364, 80, 0.7)
 
 [sub_resource type="BoxShape3D" id="edge_W"]
 size = Vector3(0.7, 80, 364)
+
+[sub_resource type="BoxShape3D" id="edge_Wa"]
+size = Vector3(0.7, 80, 81.8)
+
+[sub_resource type="BoxShape3D" id="edge_Wb"]
+size = Vector3(0.7, 80, 277.8)
+
+[sub_resource type="BoxShape3D" id="edge_Wc"]
+size = Vector3(0.7, 43.4, 4.4)
+
+[sub_resource type="BoxShape3D" id="edge_Wd"]
+size = Vector3(0.7, 31.0, 4.4)
 
 [sub_resource type="BoxShape3D" id="edge_E"]
 size = Vector3(0.7, 80, 364)
@@ -338,11 +351,15 @@ metadata/pad_blend = 2.0
 [node name="GulletMouth" parent="Places" unique_id=884747160 instance=ExtResource("gullet_mouth")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -169, 0, -98)
 
+[node name="QuarryDescent" type="Node3D" parent="."]
+script = ExtResource("descent")
+
 [node name="GulletDoor" type="Node3D" parent="Places" unique_id=1867100316]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -166.5, 0, -98)
 script = ExtResource("cavedoor")
 other = NodePath("../../Gullet/WayUp")
 arrive_offset = Vector3(0, 0, 2.5)
+disabled = true
 
 [node name="QuarryRock1" parent="Places" unique_id=1987928056 instance=ExtResource("rock")]
 transform = Transform3D(1.6914467, 0, 0.6156362, 0, 1.8, 0, -0.6156362, 0, 1.6914467, -160, 0, -90)
@@ -855,10 +872,28 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 178.5)
 shape = SubResource("edge_S")
 
 [node name="EdgeW" type="StaticBody3D" parent="." unique_id=2137569121]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, 20, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, 20, -141.1)
 
 [node name="Shape" type="CollisionShape3D" parent="EdgeW" unique_id=1151630457]
-shape = SubResource("edge_W")
+shape = SubResource("edge_Wa")
+
+[node name="EdgeW2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, 20, 43.1)
+
+[node name="Shape" type="CollisionShape3D" parent="EdgeW2"]
+shape = SubResource("edge_Wb")
+
+[node name="EdgeW3" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, 38.3, -98)
+
+[node name="Shape" type="CollisionShape3D" parent="EdgeW3"]
+shape = SubResource("edge_Wc")
+
+[node name="EdgeW4" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, -4.5, -98)
+
+[node name="Shape" type="CollisionShape3D" parent="EdgeW4"]
+shape = SubResource("edge_Wd")
 
 [node name="EdgeE" type="StaticBody3D" parent="." unique_id=449736446]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 178.5, 20, 0)

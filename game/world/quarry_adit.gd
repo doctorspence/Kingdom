@@ -34,7 +34,7 @@ func _ready() -> void:
 		var mi := MeshInstance3D.new()
 		mi.mesh = st.commit()
 		add_child(mi)
-	_darkness()
+	# (the tunnel carries on: quarry_descent.gd continues it, so no dark curtain at the end)
 	_collision()
 	_props()
 
@@ -136,7 +136,7 @@ func _collision() -> void:
 		[Vector3(0, H + 2.2, -1.9), Vector3(W + 0.2, 4.4, 2.6)],          # over the opening
 		[Vector3(-(W * 0.5 + 0.5), H * 0.5, -DEPTH * 0.5), Vector3(1.0, H, DEPTH)],
 		[Vector3(W * 0.5 + 0.5, H * 0.5, -DEPTH * 0.5), Vector3(1.0, H, DEPTH)],
-		[Vector3(0, H * 0.5, -DEPTH + 0.3), Vector3(W, H, 0.6)],
+		[Vector3(0, -0.2, -4.9), Vector3(W + 1.0, 0.4, 9.6)],            # the floor (the ground surface is cut away here, see tithelands_land.gd holes)
 	]
 	for b in boxes:
 		var cs := CollisionShape3D.new()
@@ -154,6 +154,8 @@ func _props() -> void:
 		for i in 6:
 			var t := track.instantiate() as Node3D
 			t.position = Vector3(0, 0.02, 3.0 - i * 2.0)
+			for body in t.find_children("*", "CollisionObject3D", true, false):
+				(body as CollisionObject3D).collision_layer = 0  # rails are for looking at: you walk right over them
 			add_child(t)
 	var rubble := load("res://assets/hideout/Mining_Equipment/rubble_small.scn") as PackedScene
 	if rubble:

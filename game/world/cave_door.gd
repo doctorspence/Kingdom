@@ -14,9 +14,13 @@ extends Node3D
 ## A glowing pillar of light and a lamp, so the entrance can be seen from afar (and shows on the map).
 @export var beacon := false
 
+## A door nobody can use any more (the way is now a walkable tunnel); kept so old checks and the map still find it.
+@export var disabled := false
+
 
 func _ready() -> void:
-	add_to_group(&"interactables")
+	if not disabled:
+		add_to_group(&"interactables")
 	if beacon:
 		_build_beacon()
 

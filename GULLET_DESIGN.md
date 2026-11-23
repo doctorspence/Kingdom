@@ -42,6 +42,7 @@ The matching floor plan with legend and enemy positions is the "The Gullet: Dung
 
 - **Shortcuts:** after the first boss kill, a corridor opens from the Deep Chamber back to the Entrance Yard (closed until then). A **barricade** in the Old Tunnels is lifted from the far (camp) side and gives a short path from the long hall straight to the camp, skipping the western loop (the second patrol pair and the hidden chest route).
 - **Farming loop:** from the halfway shrine, a boss attempt is about 5 minutes (Excavation, approach, boss). A full run from the entrance is about 10.
+- **The way in (2026-11-23):** there is no door. The quarry's timber-framed adit leads straight into a hewn incline (`game/world/quarry_descent.gd`): about 130 m of ramp with timber cleats, oak frames and lanterns, three corners with flat landings, 52 m down from the quarry floor to the Entrance Yard, which it enters through a doorway in the yard's west wall. The light fades in with distance along the tunnel (`QuarryDescent.depth_cave`, read by `DayNight.cave`, the cave sounds, the player's lantern and the level-of-detail switch), so daylight, ambient light and sound change gradually instead of at a height. The old teleport doors (`CaveDoor`, "Descend" and "Climb out") are kept but disabled.
 - **Route options:** the camp's upper walkway links over the rope bridge to the Excavation's north and west galleries, so players can skip part of the ground fight at the cost of facing archers.
 
 ---

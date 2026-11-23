@@ -2444,7 +2444,7 @@ func lantern_lit() -> bool:
 
 
 func _update_lantern(delta: float) -> void:
-	var want := maxf(smoothstep(0.35, 0.8, DayNight.night), 0.85 if global_position.y < DayNight.CAVE_BELOW else 0.0) * (0.0 if state == State.DEAD else 1.6)
+	var want := maxf(smoothstep(0.35, 0.8, DayNight.night), 0.85 * smoothstep(0.2, 0.8, DayNight.cave)) * (0.0 if state == State.DEAD else 1.6)
 	_lantern_glow = move_toward(_lantern_glow, want, delta * 1.5)
 	_lantern.visible = _lantern_glow > 0.01
 	# A gentle flicker.
