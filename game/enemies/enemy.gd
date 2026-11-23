@@ -12,6 +12,12 @@ extends CharacterBody3D
 ##   RETURN   walking home after you ran too far away
 ##   DEAD     dead until someone rests at a shrine
 ##   CALL     blowing a horn / howling for help (callers only)
+##   GUARD    guard raised after taking a few hits in a row; strikes back out of it
+##
+## Balance (poise): every hit and every deflect you land drains it, and it only
+## refills gradually after a pause (slower when the enemy is hurt). When it runs
+## out the enemy is thrown off balance (PARRIED state): open to a critical hit.
+## A deflect of the last blow of an attack makes it recoil briefly (STAGGER).
 ##
 ## Multiplayer: the host runs every enemy and shares its state. Players report
 ## their hits to the host; the host sends enemy blows to the player's own game,
@@ -19,7 +25,7 @@ extends CharacterBody3D
 
 signal died
 
-enum State { IDLE, CHASE, ATTACK, STAGGER, PARRIED, RIPOSTED, RETURN, DEAD, CALL }
+enum State { IDLE, CHASE, ATTACK, STAGGER, PARRIED, RIPOSTED, RETURN, DEAD, CALL, GUARD }
 
 const HEALTH_BAR_SHOW_TIME := 6.0
 ## Group scaling (DESIGN.md 8.4): extra health and poise per extra player.
@@ -84,6 +90,14 @@ var _engaged := false
 var _adds: Array[Node] = []
 ## Boss: true while it is fighting (shared so fog gates and bars work for everyone).
 var net_engaged := false
+## How much balance it has lost (0 = steady, 1 = about to break), shared for the HUD.
+var net_balance := 0.0
+var _pressure := 0       # your hits in a row (it raises its guard after a few)
+var _pressure_timer := 0.0
+var _guard_hits := 0     # blows blocked during this guard
+var _chain := 0          # attacks strung together without a pause
+var _stun_len := 1.0     # how long the current STAGGER lasts
+var _glinted := 0        # which follow-up blows of this attack have flashed their warning
 
 @onready var model: CharacterModel = $Visual
 
@@ -133,6 +147,8 @@ func _reset() -> void:
 	_fury = false
 	_grip_ready = false
 	_grip_active = false
+	_pressure = 0
+	_chain = 0
 	_phase = 1
 	net_engaged = false
 	_set_engaged(false)
@@ -164,6 +180,24 @@ func can_be_riposted() -> bool:
 
 func health_ratio() -> float:
 	return health / max_health
+
+
+## Balance lost, 0 (steady) to 1 (about to break). Shown under the health bar.
+func balance_ratio() -> float:
+	if not _is_host():
+		return net_balance
+	if state == State.PARRIED or state == State.RIPOSTED:
+		return 1.0
+	return clampf(1.0 - _poise / maxf(max_poise, 0.001), 0.0, 1.0)
+
+
+## Is it guarding against a blow from `origin` right now?
+func is_guarding_against(origin: Vector3) -> bool:
+	if state != State.GUARD:
+		return false
+	var from := origin - global_position
+	from.y = 0.0
+	return rad_to_deg(model.forward().angle_to(from)) < 75.0
 
 
 ## Show the health bar above its head? (When hurt recently.)
@@ -292,7 +326,7 @@ func _update_target(delta: float) -> void:
 
 ## Is it fighting someone right now? (Resting is blocked near angry enemies.)
 func is_fighting() -> bool:
-	return target != null and state in [State.CHASE, State.ATTACK, State.STAGGER, State.PARRIED, State.RIPOSTED]
+	return target != null and state in [State.CHASE, State.ATTACK, State.STAGGER, State.PARRIED, State.RIPOSTED, State.GUARD]
 
 
 ## Tougher with more players (host only; health keeps the same percentage).
@@ -377,6 +411,12 @@ func _show_hit(damage: float, is_crit: bool, origin: Vector3) -> void:
 	var chest := global_position + Vector3.UP * 1.3 * data.scale
 	var away := global_position - origin
 	away.y = 0.0
+	if is_guarding_against(origin):
+		# Steel on steel: the blow is caught on its guard.
+		CombatFx.sparks(chest + model.forward() * 0.45, -away)
+		CombatFx.word(chest + Vector3.UP * 0.7, "Guarded")
+		_bar_timer = HEALTH_BAR_SHOW_TIME
+		return
 	CombatFx.blood(chest, away.normalized(), 1.6 if is_crit else 1.0)
 	CombatFx.damage_number(chest + Vector3.UP * 0.6, damage,
 			CombatFx.NumberKind.CRIT if is_crit else CombatFx.NumberKind.NORMAL)
@@ -396,6 +436,14 @@ func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 			_net_status_fx.rpc("Blocked", 0.0)
 			CombatFx.sparks(global_position + Vector3.UP * 1.3 + model.forward() * 0.5, from)
 			model.play(&"ual2/Sword_Block", 0.05, 1.5, true)
+	# Guard raised (after a few hits in a row): blows from the front only chip it,
+	# but still wear down its balance. Two blocked blows and it strikes back.
+	var guarded := not hit.is_riposte and is_guarding_against(hit.origin)
+	if guarded:
+		hit.damage *= 0.1
+		hit.poise_damage *= 0.75
+		_guard_hits += 1
+		model.play(&"ual2/Sword_Block", 0.04, 1.6, true)
 	var damage := hit.damage * effects.damage_taken_mult()
 	health = maxf(0.0, health - damage)
 	_bar_timer = HEALTH_BAR_SHOW_TIME
@@ -416,19 +464,60 @@ func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 	if data.boss:
 		_boss_after_hit(hit)
 		return HitInfo.Result.HIT
+	if state == State.PARRIED:
+		return HitInfo.Result.HIT  # already off balance: the opening stays open
 	_poise -= hit.poise_damage
 	_poise_timer = data.poise_regen_delay
 	if _poise <= 0.0:
-		_poise = max_poise
-		_set_state(State.STAGGER)
-		model.set_overlay("")
-		model.play_fitted(CharacterModel.ANIM_STAGGER, data.stagger_time, 0.05)
+		_break_balance()
+	elif guarded:
+		if _guard_hits >= 2:
+			_end_guard(true)
 	elif state != State.ATTACK:
 		model.play(CharacterModel.ANIM_HIT, 0.05, 1.0, true)
+		# A flinch: its next swing comes a moment later. Keep pressing and it raises its guard.
+		_cooldown = maxf(_cooldown, 0.35)
+		_pressure += 1
+		_pressure_timer = 1.2
 		if state == State.IDLE:
 			if target:
 				_aggro(target)
 	return HitInfo.Result.HIT
+
+
+## Balance gone: thrown off balance, open to a critical hit (riposte).
+func _break_balance() -> void:
+	_poise = max_poise
+	_pressure = 0
+	_chain = 0
+	_set_state(State.PARRIED)
+	model.set_overlay("")
+	model.play_fitted(CharacterModel.ANIM_GUARD_BREAK, data.riposte_window, 0.05)
+	_status_fx("Off balance!", 0.0)
+	_net_status_fx.rpc("Off balance!", 0.0)
+
+
+## A short knock (deflect recoil, Shield Bash...) that interrupts whatever it was doing.
+func _recoil(seconds: float) -> void:
+	_stun_len = seconds
+	_chain = 0
+	_set_state(State.STAGGER)
+	model.set_overlay("")
+	model.play_fitted(CharacterModel.ANIM_HIT, seconds, 0.04)
+
+
+## Does the attack in progress still have a blow to come after the one at `t`?
+func _more_blows_to_come() -> bool:
+	var a := _attack.attack
+	if a == null:
+		return false
+	var now := _attack.t
+	if a.hit_start > now + 0.02:
+		return true
+	for w in a.extra_hits:
+		if w.x > now + 0.02:
+			return true
+	return false
 
 
 ## Host: status buildup from a hit; bursts when the meter fills.
@@ -509,9 +598,15 @@ func _on_hit_result(result: HitInfo.Result) -> void:
 			if data.boss and state == State.ATTACK:
 				_boss_parried()
 			elif state == State.ATTACK:
-				_set_state(State.PARRIED)
-				model.set_overlay("")
-				model.play_fitted(CharacterModel.ANIM_GUARD_BREAK, data.riposte_window, 0.05)
+				# Deflected: its balance takes the blow. Break it and it's open to a critical;
+				# deflect the last blow of a string and it recoils (your turn to strike).
+				_poise -= data.parry_poise_damage
+				_poise_timer = data.poise_regen_delay
+				_hitstop = maxf(_hitstop, 0.1)
+				if _poise <= 0.0:
+					_break_balance()
+				elif not _more_blows_to_come():
+					_recoil(data.deflect_recoil_time)
 		HitInfo.Result.HIT, HitInfo.Result.BLOCKED, HitInfo.Result.KILLED:
 			if state == State.ATTACK:
 				_hitstop = maxf(_hitstop, _attack.attack.hit_stop)
@@ -533,8 +628,13 @@ func _physics_process(delta: float) -> void:
 	_state_time += delta
 	_cooldown -= delta
 	_poise_timer -= delta
-	if _poise_timer <= 0.0:
-		_poise = max_poise
+	# Balance comes back gradually after a pause, slower the more hurt it is.
+	if _poise_timer <= 0.0 and _poise < max_poise and state != State.PARRIED:
+		var rate := max_poise * data.balance_regen * (0.35 + 0.65 * health / maxf(max_health, 1.0))
+		_poise = minf(max_poise, _poise + rate * delta)
+	_pressure_timer -= delta
+	if _pressure_timer <= 0.0:
+		_pressure = 0
 	if state != State.DEAD:
 		var dot := effects.tick(delta)
 		if dot > 0.0:
@@ -542,7 +642,7 @@ func _physics_process(delta: float) -> void:
 			_bar_timer = HEALTH_BAR_SHOW_TIME
 			if health <= 0.0:
 				_die()
-	if state in [State.CHASE, State.ATTACK]:
+	if state in [State.CHASE, State.ATTACK, State.GUARD]:
 		_update_target(delta)
 
 	match state:
@@ -553,7 +653,9 @@ func _physics_process(delta: float) -> void:
 		State.ATTACK:
 			_state_attack(delta)
 		State.STAGGER:
-			_state_wait(delta, data.stagger_time)
+			_state_wait(delta, _stun_len)
+		State.GUARD:
+			_state_guard(delta)
 		State.PARRIED:
 			_state_wait(delta, data.stance_time if data.boss else data.riposte_window)
 		State.RIPOSTED:
@@ -568,10 +670,11 @@ func _physics_process(delta: float) -> void:
 
 
 func _write_net_state() -> void:
-	var now := target != null and state in [State.CHASE, State.ATTACK, State.STAGGER, State.PARRIED, State.RIPOSTED, State.CALL]
+	var now := target != null and state in [State.CHASE, State.ATTACK, State.STAGGER, State.PARRIED, State.RIPOSTED, State.CALL, State.GUARD]
 	if data.boss and now != _engaged:
 		_set_engaged(now)
 	net_phase = _phase
+	net_balance = snappedf(balance_ratio(), 0.02)  # in steps, so the network isn't flooded
 	net_pos = global_position
 	net_yaw = model.rotation.y
 	net_anim = model.current_anim()
@@ -690,6 +793,11 @@ func _state_chase(delta: float) -> void:
 	var dist := to.length()
 	model.turn_toward(to, deg_to_rad(data.turn_speed) * delta)
 	var archer := data.keep_distance > 0.0
+	# Taken a few hits in a row: raise the guard (then strike back out of it).
+	if _pressure >= data.guard_after_hits and data.guard_after_hits > 0 and not data.boss and not archer \
+			and dist <= data.attack_range * 1.6:
+		_start_guard()
+		return
 	var can_swing := _attackers_on(target) < MAX_ATTACKERS or archer
 	if archer and dist < data.keep_distance and dist > 2.6 and _step_back(to, delta):
 		return
@@ -721,6 +829,45 @@ func _state_chase(delta: float) -> void:
 			var side := to.normalized().cross(Vector3.UP) * _strafe_dir
 			_move(side * data.walk_speed * 0.4, delta)
 		model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
+
+
+func _start_guard() -> void:
+	_pressure = 0
+	_guard_hits = 0
+	_set_state(State.GUARD)
+	model.set_overlay("")
+	model.play(CharacterModel.ANIM_BLOCK, 0.08)
+
+
+## Guard up: face the target and shuffle back a little, then lower it or strike back.
+func _state_guard(delta: float) -> void:
+	if target == null or not is_instance_valid(target) or target.is_out_of_fight():
+		_set_state(State.CHASE)
+		return
+	var to := target.global_position - global_position
+	to.y = 0.0
+	model.turn_toward(to, deg_to_rad(data.turn_speed) * 1.5 * delta)
+	_move(-to.normalized() * data.walk_speed * 0.35 if to.length() < 1.6 else Vector3.ZERO, delta)
+	if model.current_anim() != &"ual2/Sword_Block":
+		model.play(CharacterModel.ANIM_BLOCK, 0.1)
+	if to.length() > data.attack_range * 2.0:
+		_end_guard(false)
+	elif _state_time >= data.guard_time:
+		_end_guard(randf() < data.counter_chance)
+
+
+## Lower the guard. `counter`: strike straight back (ignoring the usual pause).
+func _end_guard(counter: bool) -> void:
+	_set_state(State.CHASE)
+	if counter and target:
+		var to := target.global_position - global_position
+		to.y = 0.0
+		if to.length() <= data.attack_range + 0.4:
+			model.face_instantly(to)
+			_start_attack(to.length())
+			if state == State.ATTACK:
+				return
+	_cooldown = maxf(_cooldown, 0.25)
 
 
 ## Archers: back away from a player who is too close. False when cornered (then they stab).
@@ -760,7 +907,7 @@ func _assign_slots(on: Player) -> Dictionary:
 	var mates: Array = []
 	for n in get_tree().get_nodes_in_group(&"enemies"):
 		var e := n as Enemy
-		if e and e.target == on and e.state in [State.CHASE, State.ATTACK, State.STAGGER, State.PARRIED, State.RIPOSTED]:
+		if e and e.target == on and e.state in [State.CHASE, State.ATTACK, State.STAGGER, State.PARRIED, State.RIPOSTED, State.GUARD]:
 			mates.append(e)
 	var out := {}
 	var count := mates.size()
@@ -840,6 +987,7 @@ func _start_attack(dist: float) -> void:
 func start_attack(index: int) -> void:
 	_telegraphed = false
 	_shot = false
+	_glinted = 0
 	var chosen: AttackData = _attacks()[index]
 	_grip_active = _grip_ready and not chosen.grip
 	if _grip_active:
@@ -847,6 +995,9 @@ func start_attack(index: int) -> void:
 	_fire_dropped = false
 	_set_state(State.ATTACK)
 	_attack.start(_attacks()[index], model)
+	# Now and then it holds the wind-up a beat longer: read the swing, don't guess.
+	if chosen.windup_until > 0.05 and chosen.parryable and randf() < data.delay_chance:
+		_attack.windup_scale = data.delay_hold
 
 
 func _state_attack(delta: float) -> void:
@@ -864,6 +1015,14 @@ func _state_attack(delta: float) -> void:
 		elif a.parryable:
 			_glint()
 			_net_glint.rpc()
+	# Each follow-up blow of a parryable string flashes just before it lands, so it
+	# can be read and deflected in rhythm.
+	if a.parryable and not a.unblockable:
+		for i in mini(a.extra_hits.size(), 30):
+			if not (_glinted & (1 << i)) and _attack.past(a.extra_hits[i].x - 0.16):
+				_glinted |= 1 << i
+				_glint()
+				_net_glint.rpc()
 	if model.overlay_kind() == "danger" and _attack.past(a.hit_end):
 		model.set_overlay("")
 	var lunge := _attack.lunge_speed()
@@ -894,8 +1053,18 @@ func _state_attack(delta: float) -> void:
 		elif _grip_active:
 			_grip_active = false
 			model.set_overlay("")
-		_cooldown = randf_range(data.attack_cooldown_min, data.attack_cooldown_max) * (0.6 if _fury else 1.0)
 		_set_state(State.CHASE)
+		# Sometimes it strings a second attack straight on (a change of tempo to read).
+		if not a.grip and _chain < 1 and data.combo_chance > 0.0 and target and randf() < data.combo_chance:
+			var to := target.global_position - global_position
+			to.y = 0.0
+			if to.length() <= data.attack_range and _facing_error(to) < 60.0:
+				_chain += 1
+				_start_attack(to.length())
+				if state == State.ATTACK:
+					return
+		_chain = 0
+		_cooldown = randf_range(data.attack_cooldown_min, data.attack_cooldown_max) * (0.6 if _fury else 1.0)
 
 
 ## Archers: loose an arrow at where the target is now (it flies, so a roll or a sidestep beats it).

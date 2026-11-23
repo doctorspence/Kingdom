@@ -147,6 +147,17 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] `tests/moves_check.gd` (extra attacks, lock-on flick, enemy spacing) added; every check passes, including the 3-player run
 - [x] 🧪 Try the new attacks and enemy spacing against a group of enemies, with a friend
 
+## Combat rhythm pass (Sekiro / Nioh 2-style timing) ✅ built 2026-11-22 (waiting for your test; rules in DESIGN.md 5.4-5.5.1)
+- [x] Deflect = a timed guard, one press per blow; mashing shrinks the window, a clean deflect resets it and gives 8 stamina back
+- [x] Enemy **balance** bar (amber, under the health bar and the boss bar); hits and deflects drain it, it refills slowly after a pause (slower when hurt); empty = off balance, open to a riposte (gold diamond)
+- [x] Deflecting the last blow of an enemy attack makes it recoil (your opening); every blow of a string glints white
+- [x] Enemies raise their guard after 2 hits in a row and strike back out of it; flanking gets past the guard; a hit delays the enemy's next swing a moment
+- [x] Enemy strings (a second attack straight after the first) and delayed swings (a held wind-up), per enemy
+- [x] **Steady**: tap guard at the small blue glint as your swing recovers, get 60% of its stamina back
+- [x] Perfect dodge ("Evaded"): stamina back, the next blow hits harder and shakes balance more; attack or guard out of the end of a roll; a blocked blow shoves you back
+- [x] `tests/combat_check.gd` covers all of it; `tests/visual_tempo.gd` takes screenshots
+- [ ] 🧪 Fight the Marauder and a group of bandits: deflect a two-hit string in rhythm, break a bandit's balance and riposte, try Steady during a combo, perfect-dodge a Captain swing. Tell me if the windows feel too tight or too loose, and whether enemies guard too often (numbers: `data/balance/player_tuning.tres` "Timing and rhythm", each enemy file "Balance and tempo")
+
 ---
 
 ## Phase 10: Audio ✅ (built; waiting for your listening test)

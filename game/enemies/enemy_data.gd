@@ -13,14 +13,35 @@ extends Resource
 @export var xp := 60
 ## What it drops when it dies (items, coins, souls).
 @export var loot_table: LootTable
-## Hits it can take before staggering (refills after a pause).
+## Balance: how much it takes (hits and deflects) before it is thrown off balance.
+## It starts refilling `poise_regen_delay` seconds after the last blow.
 @export var poise := 40.0
 @export var poise_regen_delay := 3.0
+## (Unused since the 2026-11-22 balance pass: a broken balance opens a riposte instead.)
 @export var stagger_time := 1.0
-## How long it stays open to a riposte after being parried (seconds).
+## How long it stays open to a riposte after its balance breaks (seconds).
 @export var riposte_window := 1.5
 ## Knocked down this long after a riposte (if it survives).
 @export var riposted_time := 1.8
+
+@export_group("Balance and tempo")
+## Once its balance (poise) starts refilling, this share of the full bar comes back per second.
+## Hurt enemies refill slower (at 0 health about a third of this).
+@export var balance_regen := 0.25
+## Recoils this long when you deflect the last blow of its attack (your opening to strike back).
+@export var deflect_recoil_time := 0.55
+## Raises its guard after this many of your hits in a row (0 = never guards).
+@export var guard_after_hits := 2
+## Holds its guard this long, or until it has blocked two blows, then strikes back.
+@export var guard_time := 0.9
+## Chance that it strikes back straight out of its guard (otherwise it just lowers it).
+@export_range(0.0, 1.0) var counter_chance := 0.65
+## Chance to follow an attack straight up with another (a string of blows to deflect in rhythm).
+@export_range(0.0, 1.0) var combo_chance := 0.0
+## Chance that a swing with a wind-up is held a beat longer (a delayed swing that punishes guessing) ...
+@export_range(0.0, 1.0) var delay_chance := 0.0
+## ... and how slowly the held wind-up plays (0.5 = it takes twice as long).
+@export_range(0.2, 1.0) var delay_hold := 0.5
 
 @export_group("Movement")
 @export var walk_speed := 1.4
@@ -84,8 +105,8 @@ extends Resource
 @export var adds_count := 2
 ## Kneels this long after its poise breaks.
 @export var stance_time := 3.0
-## Poise lost when one of its attacks is parried.
-@export var parry_poise_damage := 40.0
+## Balance (poise) lost when you deflect one of its blows (every enemy, not only bosses).
+@export var parry_poise_damage := 22.0
 ## Extra health per extra player in the arena (bosses: 0.8).
 @export var boss_health_per_player := 0.8
 ## Flag set the first time it dies (opens shortcuts for good).

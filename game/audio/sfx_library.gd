@@ -68,6 +68,8 @@ static func _build() -> void:
 	_add(&"clang_parry", clash + _nums("rpg80", "metal_", 1, 3), &"Effects", 2.0, 1.05, 1.2)
 	_add(&"shield_bash", wood + stones, &"Effects", 0.0, 0.8, 0.95)
 	_add(&"shield_clack", metal, &"Effects", -2.0, 1.1, 1.25)
+	## Steady (well-timed guard after a swing) and perfect dodges: a soft bright ring.
+	_add(&"steady", [SFX + "kenney_rpg/metalClick.ogg"] + _nums("rpg80", "item_gem_", 1, 1), &"Effects", -9.0, 1.5, 1.7)
 
 	# --- Moving ---
 	_add(&"footstep", steps, &"Effects", -11.0, 0.9, 1.1)

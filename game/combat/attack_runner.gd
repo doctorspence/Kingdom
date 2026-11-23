@@ -7,6 +7,8 @@ extends RefCounted
 var attack: AttackData
 var t := 0.0
 var hit_targets: Array[Node] = []
+## Extra slow-down of the wind-up for this one swing (enemies' delayed swings: below 1 = held longer).
+var windup_scale := 1.0
 ## Each combo hit can strike the same target again.
 var _last_window := -1
 
@@ -18,6 +20,7 @@ func start(a: AttackData, model: CharacterModel) -> void:
 	attack = a
 	_model = model
 	t = 0.0
+	windup_scale = 1.0
 	_in_recovery = false
 	hit_targets.clear()
 	_last_window = -1
@@ -28,7 +31,7 @@ func start(a: AttackData, model: CharacterModel) -> void:
 func step(delta: float, extra_mult := 1.0) -> void:
 	var mult := extra_mult
 	if t < attack.windup_until:
-		mult *= attack.windup_speed_mult
+		mult *= attack.windup_speed_mult * windup_scale
 	var speed := attack.anim_speed * mult
 	t += delta * speed
 	_model.set_speed(speed)

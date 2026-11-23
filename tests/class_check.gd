@@ -84,8 +84,8 @@ func _run() -> void:
 	await _setup("class_bulwark", 20)
 	_check("Vanguard has a shield and sword", player.shield != null and player.weapon.id == &"weapon_rusty_sword")
 	player.caster.try_use(0)  # Shield Bash
-	await _wait_state(Enemy.State.STAGGER, 1.2)
-	_check("Shield Bash staggers the Marauder (%s)" % Enemy.State.keys()[enemy.state], enemy.state == Enemy.State.STAGGER)
+	await _wait_state(Enemy.State.PARRIED, 1.2)
+	_check("Shield Bash knocks the Marauder off balance, open to a riposte (%s)" % Enemy.State.keys()[enemy.state], enemy.state == Enemy.State.PARRIED)
 	await _setup("class_bulwark", 20)
 	enemy.global_position = Vector3(0, 0, -6.0)
 	enemy2.global_position = Vector3(0, 0, -9.0)

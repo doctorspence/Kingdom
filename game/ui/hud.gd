@@ -523,6 +523,8 @@ func _draw_marker() -> void:
 			var r := Rect2(p - Vector2(w * 0.5, 0), Vector2(w, 7))
 			_marker.draw_rect(r.grow(1.0), Color(0, 0, 0, 0.8))
 			_marker.draw_rect(Rect2(r.position, Vector2(w * ratio, 7)), Color(0.62, 0.08, 0.06))
+			if e.has_method(&"balance_ratio"):
+				_draw_balance(Rect2(r.position + Vector2(0, 10), Vector2(w, 4)), e.call(&"balance_ratio"))
 			var ed = e.get(&"data")
 			if ed is EnemyData and (ed as EnemyData).named:
 				var font: Font = ThemeDB.fallback_font
@@ -530,6 +532,20 @@ func _draw_marker() -> void:
 				var tw: float = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
 				_marker.draw_string(font, p + Vector2(-tw * 0.5 + 1, -5), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0, 0, 0, 0.8))
 				_marker.draw_string(font, p + Vector2(-tw * 0.5, -6), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.95, 0.8, 0.45))
+	# Off balance and close enough: a bright diamond says "strike now for a critical".
+	for n in get_tree().get_nodes_in_group(&"hittable"):
+		var e := n as Node3D
+		if e == null or not e.has_method(&"can_be_riposted") or not e.call(&"can_be_riposted"):
+			continue
+		var at: Vector3 = e.call(&"get_lock_point")
+		if cam.is_position_behind(at) or player.global_position.distance_to(e.global_position) > 12.0:
+			continue
+		var c := cam.unproject_position(at)
+		var s := 9.0 * (0.75 + 0.25 * sin(Time.get_ticks_msec() * 0.02))
+		var pts := PackedVector2Array([c + Vector2(0, -s), c + Vector2(s, 0), c + Vector2(0, s), c + Vector2(-s, 0)])
+		_marker.draw_colored_polygon(pts, Color(1.0, 0.82, 0.35, 0.9))
+		pts.append(pts[0])
+		_marker.draw_polyline(pts, Color(0.2, 0.05, 0.0, 0.9), 1.5)
 	if not player.targeting.has_target():
 		return
 	var point := player.targeting.target_point()
@@ -566,6 +582,17 @@ func _draw_raid_status() -> void:
 	_marker.draw_string(font, Vector2((size.x - tw) * 0.5, r.position.y - 6), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.93, 0.8, 0.55))
 
 
+## Balance lost, as a bar that grows out from the middle: amber, then white-hot near breaking.
+func _draw_balance(r: Rect2, ratio: float) -> void:
+	if ratio <= 0.02:
+		return
+	ratio = clampf(ratio, 0.0, 1.0)
+	_marker.draw_rect(r.grow(1.0), Color(0, 0, 0, 0.7))
+	var fill := r.size.x * ratio
+	var col := Color(0.85, 0.55, 0.15).lerp(Color(1.0, 0.93, 0.7), clampf((ratio - 0.6) / 0.4, 0.0, 1.0))
+	_marker.draw_rect(Rect2(r.position + Vector2((r.size.x - fill) * 0.5, 0), Vector2(fill, r.size.y)), col)
+
+
 ## The boss bar at the bottom of the screen while a boss is fighting you.
 func _draw_boss_bar() -> void:
 	for n in get_tree().get_nodes_in_group(&"bosses"):
@@ -582,6 +609,7 @@ func _draw_boss_bar() -> void:
 		_marker.draw_rect(Rect2(r.position, Vector2(w * clampf(b.health_ratio(), 0.0, 1.0), r.size.y)), Color(0.66, 0.1, 0.07))
 		if b.data.phase2_at > 0.0:
 			_marker.draw_rect(Rect2(r.position + Vector2(w * b.data.phase2_at - 1.0, -2.0), Vector2(2, r.size.y + 4.0)), Color(0.9, 0.8, 0.5, 0.8))
+		_draw_balance(Rect2(r.position + Vector2(w * 0.2, 17), Vector2(w * 0.6, 5)), b.balance_ratio())
 		var font: Font = ThemeDB.fallback_font
 		var label: String = b.data.display_name
 		var tw: float = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x

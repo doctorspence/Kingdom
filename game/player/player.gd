@@ -113,8 +113,18 @@ var _poise := 30.0
 var _poise_timer := 0.0
 var _hitstop := 0.0
 var _block_started := -99.0
-var _block_released := -99.0
 var _clock := 0.0
+## Timing and rhythm (see PlayerTuning "Timing and rhythm").
+var _deflect_window := 0.15
+var _last_guard_press := -99.0
+var _guard_spam := 0
+var _guard_pressed_at := -99.0
+var _guard_react := 0.0
+var _tempo_open_at := -99.0
+var _tempo_spent := 0.0
+var _tempo_used := true
+var _evade_timer := 0.0
+var _evaded_this_roll := false
 var _drink_healed := false
 ## Eating or drinking a potion reuses the flask drink: share of max health, how long, when the heal lands.
 var _drink_frac := 0.4
@@ -408,10 +418,56 @@ func armor() -> float:
 	return stats.armor() if stats else 0.0
 
 
-## Is the parry window open right now?
+## Is the deflect (parry) window open right now? It opens each time you raise your guard.
 func is_parrying() -> bool:
-	var window := (shield.parry_window if _shield_in_hand() else 0.12) + (stats.mod_add("parry_window_add") if stats else 0.0)
-	return is_blocking and _clock - _block_started <= window
+	return is_blocking and _clock - _block_started <= _deflect_window
+
+
+## Raise your guard. A fresh press opens the full deflect window; pressing again
+## in a hurry opens a smaller one each time (so mashing doesn't work, but a calm
+## press for every blow of a combo does).
+func _begin_guard() -> void:
+	is_blocking = true
+	var base := (shield.parry_window if _shield_in_hand() else tuning.deflect_window_weapon) \
+			+ (stats.mod_add("parry_window_add") if stats else 0.0)
+	if _clock - _last_guard_press < tuning.deflect_spam_time:
+		_guard_spam += 1
+	else:
+		_guard_spam = 0
+	_deflect_window = base * pow(tuning.deflect_spam_mult, _guard_spam)
+	_block_started = _clock
+	_last_guard_press = _clock
+	_try_steady()
+
+
+## Steady: guarding right as an attack's recovery begins gives back part of its stamina.
+func _try_steady() -> void:
+	if _tempo_used:
+		return
+	var late := _guard_pressed_at - _tempo_open_at
+	if late < -0.02 or late > tuning.tempo_window:
+		return
+	_tempo_used = true
+	var back := _tempo_spent * tuning.tempo_refund
+	if back <= 0.0:
+		return
+	restore_stamina(back)
+	CombatFx.glint(global_position + Vector3.UP * 1.2 + model.forward() * 0.35, Color(0.7, 0.88, 1.0), null, 0.6)
+	CombatFx.word(global_position + Vector3.UP * 2.1, "Steady")
+	Audio.sfx(&"steady", global_position + Vector3.UP)
+
+
+## Perfect dodge: a blow reached you right at the start of a roll.
+func _perfect_dodge() -> void:
+	if _evaded_this_roll:
+		return
+	_evaded_this_roll = true
+	_evade_timer = tuning.evade_bonus_time
+	restore_stamina(tuning.roll_stamina)
+	CombatFx.word(global_position + Vector3.UP * 2.1, "Evaded")
+	CombatFx.glint(global_position + Vector3.UP * 1.2, Color(0.85, 0.95, 1.0), null, 0.8)
+	Audio.sfx(&"steady", global_position + Vector3.UP)
+	camera_rig.add_shake(0.1)
 
 
 ## Is your shield on your arm? (Not while Shield Throw has it in the air.)
@@ -431,6 +487,8 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 		return HitInfo.Result.IGNORED
 	var chest := global_position + Vector3.UP * 1.3
 	if is_invulnerable():
+		if state == State.ROLL and _state_time <= tuning.perfect_dodge_time:
+			_perfect_dodge()
 		return HitInfo.Result.DODGED
 	var to_attacker := hit.origin - global_position
 	to_attacker.y = 0.0
@@ -441,10 +499,16 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 		if hit.parryable and is_parrying():
 			CombatFx.sparks(chest + model.forward() * 0.4, to_attacker, true)
 			_share_fx(2, chest + model.forward() * 0.4, to_attacker)
-			CombatFx.word(chest + Vector3.UP * 0.5, "Parry!")
-			freeze(0.12)
+			CombatFx.word(chest + Vector3.UP * 0.5, "Deflect!")
+			freeze(0.1)
 			camera_rig.add_shake(0.25)
 			caster.on_blocked()
+			restore_stamina(tuning.deflect_stamina_gain)
+			# A clean deflect re-arms you: the next calm press gets the full window again.
+			_guard_spam = 0
+			_last_guard_press = -99.0
+			_guard_react = 0.2
+			model.play(&"ual2/Sword_Block", 0.04, 1.6, true)
 			return HitInfo.Result.PARRIED
 		var held := _shield_in_hand()
 		var reduction := shield.block_reduction if held else weapon.block_reduction
@@ -455,6 +519,10 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 		freeze(hit.hit_stop)
 		camera_rig.add_shake(0.2)
 		caster.on_blocked()
+		# A blocked blow shoves you back (a deflect doesn't).
+		var shove := -to_attacker.normalized() * tuning.block_pushback * clampf(damage / 25.0, 0.5, 1.6)
+		velocity.x += shove.x
+		velocity.z += shove.z
 		var chip := damage * (1.0 - reduction)
 		if chip > 0.0:
 			_apply_damage(chip)
@@ -1256,6 +1324,8 @@ func _authority_update(delta: float) -> void:
 	_clock += delta
 	_buffer_timer = maxf(0.0, _buffer_timer - delta)
 	_read_dodge_button(delta)
+	if Input.is_action_just_pressed("block") and not (Net.typing or Net.in_menu):
+		_guard_pressed_at = _clock
 
 	# Hit-stop: everything about this character pauses for a moment.
 	if _hitstop > 0.0:
@@ -1267,6 +1337,8 @@ func _authority_update(delta: float) -> void:
 	_state_time += delta
 	_since_roll += delta
 	_iframe_timer = maxf(0.0, _iframe_timer - delta)
+	_evade_timer = maxf(0.0, _evade_timer - delta)
+	_guard_react = maxf(0.0, _guard_react - delta)
 	_cheat_death_cd = maxf(0.0, _cheat_death_cd - delta)
 	_poise_timer -= delta
 	if _poise_timer <= 0.0:
@@ -1373,9 +1445,7 @@ func _state_move(delta: float) -> void:
 	# Blocking
 	var wants_block := Input.is_action_pressed("block")
 	if wants_block and not is_blocking:
-		is_blocking = true
-		# No parry window if you only just let go of block (no mashing).
-		_block_started = _clock if _clock - _block_released > tuning.parry_lockout else -99.0
+		_begin_guard()
 	elif not wants_block and is_blocking:
 		_stop_blocking()
 
@@ -1422,7 +1492,8 @@ func _state_move(delta: float) -> void:
 		if stamina <= 0.0:
 			_sprint_locked = true
 	if is_blocking:
-		model.play(CharacterModel.ANIM_BLOCK, 0.12)
+		if _guard_react <= 0.0:
+			model.play(CharacterModel.ANIM_BLOCK, 0.12)
 	else:
 		model.update_locomotion(Vector3(velocity.x, 0.0, velocity.z).length(), is_sprinting, is_walking)
 
@@ -1446,8 +1517,6 @@ func _steer(horizontal: Vector3, target_velocity: Vector3, speed: float, keep_sp
 
 
 func _stop_blocking() -> void:
-	if is_blocking:
-		_block_released = _clock
 	is_blocking = false
 
 
@@ -1526,7 +1595,10 @@ func _height_above_ground() -> float:
 func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
 	if aim:
 		_aim_attack(dir)
-	_spend_stamina(a.stamina_cost * effects.product("stamina_cost"))
+	_tempo_spent = a.stamina_cost * effects.product("stamina_cost")
+	_tempo_used = false
+	_tempo_open_at = -99.0
+	_spend_stamina(_tempo_spent)
 	_charging = false
 	_charge = 0.0
 	_ability_strike = null
@@ -1617,6 +1689,14 @@ func _state_attack(delta: float) -> void:
 		_start_attack(weapon.heavy, _input_direction())
 		_charging = true
 		return
+	# Steady: the moment the recovery begins, a fresh tap of guard gives stamina back.
+	if _attack.past(a.cancel_time) and _tempo_open_at < 0.0 and not _tempo_used:
+		if _is_riposte or _air_attack or a.projectile_speed > 0.0 or _ability_strike:
+			_tempo_used = true
+		else:
+			_tempo_open_at = _clock
+			if not Input.is_action_pressed("block"):
+				CombatFx.glint(global_position + Vector3.UP * 1.25 + model.forward() * 0.3, Color(0.6, 0.8, 1.0), null, 0.35)
 	if _attack.past(a.cancel_time) and not _is_riposte and not _air_attack:
 		if _has_buffered(&"roll") and _can_roll():
 			_consume(&"roll")
@@ -1626,9 +1706,14 @@ func _state_attack(delta: float) -> void:
 		if slot >= 0:
 			_finish_attack()
 			return
-		if Input.is_action_pressed("block"):
-			_finish_attack()
-			return
+	# Guard cuts an attack short at its recovery point; a light attack's follow-through
+	# can be cut even sooner, right after the blade passes.
+	var guard_from := a.cancel_time
+	if a in weapon.light_combo or a == weapon.rolling_attack:
+		guard_from = minf(guard_from, a.hit_end + tuning.guard_cancel_after_hit)
+	if _attack.past(guard_from) and not _is_riposte and not _air_attack and Input.is_action_pressed("block"):
+		_finish_attack()
+		return
 	if _attack.done():
 		_finish_attack()
 
@@ -1742,6 +1827,11 @@ func _land_hit(target: Node3D, a: AttackData = null, charge := -1.0) -> void:
 		dmg *= stats.mod_mult("bleeding_target_damage_mult")
 	if target.has_method("armor"):
 		dmg *= 1.0 - HitInfo.armor_reduction(float(target.call(&"armor")) * (1.0 - weapon.armor_pierce), level())
+	# Counter after a perfect dodge: harder, and it shakes their balance.
+	if _evade_timer > 0.0 and not _is_riposte:
+		dmg *= tuning.evade_damage_mult
+		hit.poise_damage *= tuning.evade_balance_mult
+		_evade_timer = 0.0
 	hit.damage = dmg
 	hit.hit_stop = 0.15 if hit.is_crit else a.hit_stop
 	if _ability_strike and a == _ability_strike.attack:
@@ -1889,6 +1979,7 @@ func _start_roll(dir: Vector3) -> void:
 	_roll_distance = tuning.roll_distance[tier]
 	_iframe_timer = tuning.roll_iframes[tier]
 	_roll_backward = dir.length() <= 0.1
+	_evaded_this_roll = false
 	if _roll_backward:
 		# Standing still: roll straight back, still facing forward.
 		_roll_dir = -model.forward()
@@ -1906,6 +1997,28 @@ func _start_roll(dir: Vector3) -> void:
 
 func _state_roll(delta: float) -> void:
 	var u := _state_time / _roll_duration
+	# Strike out of the roll (a rolling or backstep attack); straight away after a perfect dodge.
+	var attack_from := 0.2 if _evade_timer > 0.0 else tuning.roll_attack_from
+	if u >= attack_from and is_on_floor() and stamina > 0.0 \
+			and (_has_buffered(&"light") or (_has_buffered(&"heavy") and weapon.heavy)):
+		var heavy := _has_buffered(&"heavy")
+		_consume(&"heavy" if heavy else &"light")
+		_since_roll = 0.0
+		_iframe_timer = minf(_iframe_timer, 0.05)
+		if heavy:
+			_start_heavy_attack(_input_direction())
+		else:
+			_start_light_attack(_input_direction())
+		return
+	# Guard out of the end of a roll.
+	if u >= tuning.roll_guard_from and Input.is_action_pressed("block"):
+		var keep := minf(tuning.run_speed, _roll_distance / _roll_duration) * 0.4
+		velocity.x = _roll_dir.x * keep
+		velocity.z = _roll_dir.z * keep
+		_since_roll = 0.0
+		_set_state(State.MOVE)
+		_state_move(delta)
+		return
 	# Chain rolls: a roll pressed in the last quarter starts the next one at once.
 	if u >= 0.75 and _has_buffered(&"roll") and _can_roll():
 		_consume(&"roll")

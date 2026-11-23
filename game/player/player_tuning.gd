@@ -86,14 +86,40 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var block_move_speed := 2.6
 ## Stamina refills at this fraction of normal speed while blocking.
 @export_range(0.0, 1.0) var block_regen_mult := 0.5
-## You only get a parry window if you weren't blocking this recently (seconds).
-@export var parry_lockout := 0.5
 ## Blocks work against blows from this wide in front of you (degrees).
 @export var block_arc := 120.0
 ## A light attack this soon after a roll becomes a rolling attack (seconds).
 @export var rolling_attack_window := 0.35
 ## How close you must be to a stunned enemy to riposte (meters).
 @export var riposte_range := 2.4
+## Pushed back this hard (m/s) by a blow you block (not by a deflect).
+@export var block_pushback := 3.0
+
+@export_group("Timing and rhythm")
+## Deflect window when you raise a weapon (no shield) to guard (seconds). Shields have their own.
+@export var deflect_window_weapon := 0.15
+## Press guard again this soon after the last press and the deflect window shrinks (no mashing).
+@export var deflect_spam_time := 0.45
+## Each rushed press multiplies the window by this (0.5 = half, then a quarter...).
+@export_range(0.1, 1.0) var deflect_spam_mult := 0.5
+## Stamina you get back from a clean deflect.
+@export var deflect_stamina_gain := 8.0
+## Steady: tap guard within this long after an attack's recovery point (seconds) ...
+@export var tempo_window := 0.25
+## ... and get back this share of the stamina that attack cost.
+@export_range(0.0, 1.0) var tempo_refund := 0.6
+## Light attacks: guard can cut the follow-through short this long after the blade passes (animation seconds).
+@export var guard_cancel_after_hit := 0.04
+## A blow that reaches you in the first this-many seconds of a roll is a perfect dodge.
+@export var perfect_dodge_time := 0.15
+## After a perfect dodge your next blow within this long hits harder and shakes their balance more.
+@export var evade_bonus_time := 0.9
+@export var evade_damage_mult := 1.3
+@export var evade_balance_mult := 2.0
+## Attack out of a roll from this far through it (0-1; earlier after a perfect dodge).
+@export_range(0.0, 1.0) var roll_attack_from := 0.6
+## Guard out of a roll from this far through it (0-1).
+@export_range(0.0, 1.0) var roll_guard_from := 0.7
 
 @export_group("Flasks")
 @export var flask_count := 4

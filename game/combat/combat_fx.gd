@@ -61,7 +61,7 @@ func damage_number(where: Vector3, amount: float, kind := NumberKind.NORMAL) -> 
 			_float_text(where, text, Color(0.95, 0.95, 0.92), 48)
 
 
-## Gray words like "Blocked", "Parry!", "Dodged".
+## Gray words like "Blocked", "Deflect!", "Off balance!", "Steady".
 func word(where: Vector3, text: String) -> void:
 	if show_damage_numbers:
 		_float_text(where, text, Color(0.75, 0.75, 0.72), 44)
@@ -145,7 +145,7 @@ func sparks(where: Vector3, direction: Vector3, big := false) -> void:
 
 
 ## A brief star of light: white = parryable attack coming, red = unblockable.
-func glint(where: Vector3, color: Color, parent: Node3D = null) -> void:
+func glint(where: Vector3, color: Color, parent: Node3D = null, strength := 1.0) -> void:
 	var mesh := SphereMesh.new()
 	mesh.radius = 0.09
 	mesh.height = 0.18
@@ -167,11 +167,11 @@ func glint(where: Vector3, color: Color, parent: Node3D = null) -> void:
 	mi.scale = Vector3.ONE * 0.1
 	var light := OmniLight3D.new()
 	light.light_color = color
-	light.light_energy = 3.0
+	light.light_energy = 3.0 * strength
 	light.omni_range = 3.0
 	mi.add_child(light)
 	var tween := mi.create_tween()
-	tween.tween_property(mi, "scale", Vector3.ONE * 1.6, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(mi, "scale", Vector3.ONE * 1.6 * strength, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(mi, "scale", Vector3.ONE * 0.01, 0.3)
 	tween.tween_callback(mi.queue_free)
 

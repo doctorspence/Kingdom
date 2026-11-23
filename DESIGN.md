@@ -1,7 +1,7 @@
 # KINGDOM: Design Document
 
 *Working title. A living document that we update as we build and playtest.*
-*Last updated: 2026-11-21 (Phase 9; Nioh 2 movement, extra attacks, enemy spacing).*
+*Last updated: 2026-11-22 (combat rhythm pass: deflects, enemy balance, guard and counter, Steady, perfect dodge).*
 
 > **How to read this.** Sections 1–12 describe the game: what players see and do. Section 13 is the technical plan: how we build it. Numbers marked *(start)* are first guesses. We tune them by playing.
 
@@ -21,7 +21,7 @@
 1. **The gear stat "Stamina" is renamed "Vitality"** (it adds health) so it isn't confused with the stamina bar.
 2. **Everyone on a server is one party** (up to 10). Separate parties can come later with PvP.
 3. **Any class can use any weapon or armor.** Stats and weight decide what suits you, Souls-style, so more drops matter to everyone. Shield abilities need a shield.
-4. **To parry, you raise your block at the last moment** (a tight timing window). There's no separate parry button. Mistime it and you just block.
+4. **To deflect (parry), you raise your guard at the last moment** (a tight timing window), once per blow. There's no separate parry button. Mistime it and you just block. (Since 2026-11-22 a deflect drains the enemy's balance instead of always opening it for a riposte; see 5.4.)
 5. **In co-op, resting respawns the whole zone**, except enemies near a player or already in a fight, so nothing pops in on top of your friends.
 6. **Dying does not respawn enemies.** Only resting does.
 7. **A friend can recover your loot pile for you**, and the items go straight back to you.
@@ -142,25 +142,38 @@ Every weapon also has these, made from its light and heavy attacks unless its da
 
 The weapon data holds these as optional `jump_light`, `jump_heavy`, `plunge`, `guard_counter`, `running_heavy`, `rolling_heavy` and `backstep_attack`.
 
-### 5.4 Block, parry, riposte
-- **Block** (hold): covers a 120° arc in front of you. Shields stop nearly all physical damage; weapons stop ~60%. Each blocked hit drains stamina based on the shield's stability.
-- **Parry**: the first ~0.18 s after you raise your block (up to ~0.25 s with light shields) *(start)*. A parry negates the hit.
-  - Normal enemies: staggered and open to a **riposte** for ~1.5 s.
-  - Elites: take heavy poise damage; a few parries stagger them.
-  - Bosses: only some attacks can be parried; each parry deals big poise damage.
-  - Mashing doesn't work: you only get a parry window if you weren't already blocking a moment ago.
-- **Riposte**: press light attack on a staggered enemy in front of you for a critical strike (~3× damage). You can't be hurt during the animation.
-- **Telegraph colors**: a white glint means the attack can be parried. A red glow means it's unblockable (a grab or a crushing blow), so dodge it.
+### 5.4 Guard, deflect, riposte *(rhythm pass 2026-11-22, Sekiro / Nioh 2-style timing)*
+- **Guard** (hold): covers a 120° arc in front of you. Shields stop nearly all physical damage; weapons stop ~60%. Each blocked hit drains stamina based on the shield's stability and **shoves you back** a little.
+- **Deflect** (the old parry): the first ~0.18 s after you raise your guard (~0.25 s with light shields, 0.15 s with only a weapon) *(start)*. A deflect stops the whole blow, **gives you 8 stamina back**, and knocks the attacker's **balance** (5.5).
+  - **Every blow needs its own press.** A calm press for each blow of a combo deflects them all, in rhythm. Mashing doesn't work: every press within 0.45 s of the last halves the window (0.18 → 0.09 → 0.045 s). A clean deflect resets that, so the next calm press gets the full window again.
+  - Deflect the **last blow** of an enemy's attack and it **recoils** for ~0.55 s: your opening to strike.
+  - A deflect that **empties its balance** throws it **off balance**: open to a riposte for ~1.5 s.
+  - Bosses: deflects chip their balance (40-90 per deflect); empty it for a stance break.
+- **Riposte**: press light attack on an off-balance enemy in front of you for a critical strike (~3× damage). A gold diamond over the enemy shows when you can. You can't be hurt during the animation.
+- **Telegraph colors**: a white glint means the attack can be deflected; strings of blows glint before **each** blow. A red glow means it's unblockable (a grab or a crushing blow), so dodge it.
 
-### 5.5 Poise & stagger
-- Everyone has **poise**. Each hit chips it; at 0 you're staggered and poise resets. It refills after ~3 s without being hit.
-- Players: base poise plus armor poise. Heavy weapons add temporary poise during heavy swings.
-- Bosses have huge poise. Breaking it causes a **stance break**: they kneel for ~3 s, open to a critical hit.
+### 5.5 Balance (poise) & stagger
+- Everyone has **poise**, called **balance** on enemies. Every hit and every deflect you land drains it.
+- **Enemies:** an amber bar under the health bar grows from the middle as their balance goes, turning white-hot near breaking (bosses: under the boss bar). It refills **gradually** after a ~3 s pause (25% of the bar per second *(start)*), and **slower the more hurt** the enemy is (about a third as fast near death). Empty = **off balance**, open to a riposte. So: pressure them, deflect them, and don't give them time to breathe.
+- **Players:** base poise plus armor poise; refills after ~3 s without being hit; at 0 you stagger. Heavy weapons add temporary poise during heavy swings.
+- Bosses have huge balance. Breaking it causes a **stance break**: they kneel for ~3 s, open to a critical hit.
+
+### 5.5.1 Tempo *(rhythm pass 2026-11-22)*
+The fight is a conversation: you strike, they answer, you deflect, you strike again.
+- **Flinch:** hitting an enemy that isn't attacking delays its next swing a moment (0.35 s).
+- **Guard and counter:** after **2 hits in a row** most humanoid enemies **raise their guard**. Blows on the guard only chip their health (10%) but still wear down balance (75%). After ~0.9 s, or two blocked blows, they **strike back** (65% of the time; captains and Rook 80%). Hit them from the side or behind and the guard doesn't cover it: flanking pays in co-op. Hounds, archers and bosses don't guard. (`guard_after_hits`, `guard_time`, `counter_chance` in each enemy's file.)
+- **Strings:** some enemies follow an attack straight up with another (Bandits 35%, Rook 45%, Captain 40%: `combo_chance`), so you can't just wait out the first one.
+- **Delayed swings:** some enemies now and then hold a wind-up a beat longer (Bandits 20%, Captain 25%, Rook 30%: `delay_chance`, `delay_hold`). Guard early on a guess and the window has closed: read the swing.
+- **Steady** (stamina back, like a breath between blows): a small blue glint shows the moment your attack's recovery begins. **Tap guard within 0.25 s** of it and you get back **60%** of that attack's stamina. Tap too early or too late and you just guard. Doesn't apply to ripostes, air attacks, bows or abilities.
+- **Snappy light attacks:** guard can cut a light attack's follow-through short right after the blade passes (before the Steady point, so no refund).
+- **Perfect dodge:** a blow that reaches you in the **first 0.15 s of a roll** is "Evaded": the roll's stamina comes back and your **next blow within 0.9 s** deals ×1.3 damage and ×2 balance damage. You can strike out of the roll at once.
+- **Roll cancels:** attack out of a roll from 60% of the way through (a rolling or backstep attack), guard from 70%.
+- All of these numbers are in `data/balance/player_tuning.tres` ("Timing and rhythm") and the enemy files ("Balance and tempo").
 
 ### 5.6 Hit feel
 - **Hit-stop**: a tiny freeze on impact (0.05 s light, 0.09 s heavy, 0.15 s critical) plus camera shake.
 - **Blood**: spurts at the hit point and splatter decals on the ground and walls (they fade after a few minutes). A gore option in settings: Off / Low / High (default High). Dismemberment comes later.
-- **Floating damage numbers**, WoW-style: white (your damage), big yellow (crits), orange (status bursts), green (heals), gray words ("Blocked", "Parry!"). Toggle in settings.
+- **Floating damage numbers**, WoW-style: white (your damage), big yellow (crits), orange (status bursts), green (heals), gray words ("Blocked", "Deflect!", "Guarded", "Off balance!", "Steady", "Evaded"). Toggle in settings.
 - **Enemy health bars** above heads appear once an enemy is hurt or targeted. Toggle in settings.
 
 ### 5.7 Targeting

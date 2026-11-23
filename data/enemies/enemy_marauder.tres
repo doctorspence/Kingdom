@@ -89,6 +89,7 @@ poise = 45.0
 leash_range = 40.0
 attack_cooldown_min = 0.8
 attack_cooldown_max = 1.8
+combo_chance = 0.3
 attacks = Array[ExtResource("2_attack")]([SubResource("Attack_sweep"), SubResource("Attack_overhead"), SubResource("Attack_crush")])
 body_tint = Color(0.22, 0.08, 0.06, 1)
 weapon_scene = ExtResource("3_axe")

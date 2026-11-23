@@ -26,6 +26,9 @@ func _run() -> void:
 	enemy = scene.get_node("Enemies/Marauder") as Enemy
 	var other := scene.get_node("Enemies/Marauder2") as Enemy
 	other.global_position = Vector3(60, 0, 60)
+	# Exact timings below: no surprise follow-up attacks or held wind-ups (tested on their own).
+	enemy.data.combo_chance = 0.0
+	enemy.data.delay_chance = 0.0
 
 	# --- Player attacks -----------------------------------------------------
 	await _setup_duel()
@@ -36,6 +39,8 @@ func _run() -> void:
 	_check_true("light attack hits the Marauder (%.0f damage)" % one_hit, one_hit >= _expected_hit() * 0.9)
 	await _seconds(0.6)
 
+	var guard_after := enemy.data.guard_after_hits
+	enemy.data.guard_after_hits = 0
 	await _setup_duel()
 	hp = enemy.health
 	for i in 3:
@@ -43,6 +48,35 @@ func _run() -> void:
 		await _seconds(0.4 if i < 2 else 1.3)
 	var combo_hits := hp - enemy.health
 	_check_true("3-hit light combo lands all three (%.0f damage)" % combo_hits, combo_hits >= _expected_hit() * 3.0)
+	enemy.data.guard_after_hits = guard_after
+
+	# --- Tempo: mash and it raises its guard, then strikes back ----------------------------
+	await _setup_duel()
+	enemy.data.counter_chance = 1.0
+	hp = enemy.health
+	var saw_guard := false
+	var saw_counter := false
+	var guarded_hit := 0.0
+	for i in 4:
+		await _tap("light_attack")
+		for f in 24:
+			await get_tree().physics_frame
+			if enemy.state == Enemy.State.GUARD:
+				saw_guard = true
+			if saw_guard and enemy.state == Enemy.State.ATTACK:
+				saw_counter = true
+		if saw_guard and guarded_hit == 0.0:
+			guarded_hit = hp - enemy.health
+	_check_true("after two hits in a row the Marauder raises its guard", saw_guard)
+	_check_true("...blows on its guard only chip it (%.0f total after 4 swings)" % (hp - enemy.health), hp - enemy.health < _expected_hit() * 3.0)
+	for f in 90:
+		if saw_counter:
+			break
+		await get_tree().physics_frame
+		saw_counter = enemy.state == Enemy.State.ATTACK
+	_check_true("...and then it strikes back out of its guard", saw_counter)
+	enemy.data.counter_chance = 0.65
+	await _seconds(2.0)
 
 	var crit_before := player.weapon.crit_chance
 	player.weapon.crit_chance = -10.0  # no random crits while comparing damage
@@ -104,14 +138,36 @@ func _run() -> void:
 	await _seconds(1.5)
 	_check_true("rolling through the sweep avoids damage", player.health == hp)
 
-	# Parry -> riposte
+	# Deflect: its balance drops and it recoils (the sweep is a single blow)
 	await _setup_duel()
+	await _force_attack(SWEEP)
+	await _wait_until_hit_in(0.08)
+	st = player.stamina
+	Input.action_press("block")
+	await _seconds(0.3)
+	Input.action_release("block")
+	_check_true("timed block deflects: no damage, it recoils (enemy state: %s)" % Enemy.State.keys()[enemy.state],
+			enemy.state == Enemy.State.STAGGER and player.health == player.max_health())
+	_check_true("...and its balance takes the blow (%.0f / %.0f)" % [enemy._poise, enemy.max_poise],
+			enemy._poise <= enemy.max_poise - enemy.data.parry_poise_damage + 0.5)
+	_check_true("...and a deflect gives stamina back instead of costing it (%.0f -> %.0f)" % [st, player.stamina], player.stamina >= st)
+	# Balance refills gradually after a pause, not all at once.
+	var low_bal := enemy._poise
+	await _seconds(enemy.data.poise_regen_delay + 0.5)
+	_check_true("balance refills gradually (%.0f -> %.0f of %.0f)" % [low_bal, enemy._poise, enemy.max_poise],
+			enemy._poise > low_bal and enemy._poise < enemy.max_poise)
+
+	# Deflect with its balance nearly gone -> off balance -> riposte
+	await _setup_duel()
+	enemy._poise = 5.0
+	enemy._poise_timer = 99.0
 	await _force_attack(SWEEP)
 	await _wait_until_hit_in(0.08)
 	Input.action_press("block")
 	await _seconds(0.3)
 	Input.action_release("block")
-	_check_true("timed block parries (enemy state: %s)" % Enemy.State.keys()[enemy.state], enemy.state == Enemy.State.PARRIED)
+	_check_true("deflect that breaks its balance throws it off balance (enemy state: %s)" % Enemy.State.keys()[enemy.state],
+			enemy.state == Enemy.State.PARRIED)
 	hp = enemy.health
 	await _seconds(0.2)
 	await _tap("light_attack")
@@ -126,7 +182,95 @@ func _run() -> void:
 	await _force_attack(SWEEP)
 	await _seconds(1.5)
 	Input.action_release("block")
-	_check_true("holding block early only blocks (no parry)", enemy.state != Enemy.State.PARRIED)
+	_check_true("holding block early only blocks (no deflect)", enemy.state != Enemy.State.PARRIED and enemy.state != Enemy.State.STAGGER)
+
+	# Mashing guard shrinks the deflect window; a calm press gets it all back.
+	await _setup_duel()
+	var windows: Array[float] = []
+	for i in 3:
+		Input.action_press("block")
+		await _frames(3)
+		windows.append(player._deflect_window)
+		Input.action_release("block")
+		await _frames(3)
+	_check_true("mashing guard shrinks the deflect window (%.3f, %.3f, %.3f)" % windows, windows[1] < windows[0] and windows[2] < windows[1])
+	await _seconds(0.6)
+	Input.action_press("block")
+	await _frames(3)
+	_check_true("...a calm press opens it fully again (%.3f)" % player._deflect_window, is_equal_approx(player._deflect_window, windows[0]))
+	Input.action_release("block")
+
+	# Steady: guard tapped as an attack's recovery begins gives stamina back.
+	await _setup_duel()
+	enemy.global_position = Vector3(0, 0, -8.0)
+	await _tap("light_attack")
+	for i in 10:
+		if player.state == Player.State.ATTACK:
+			break
+		await get_tree().physics_frame
+	var a1 := player._attack.attack
+	for i in 120:
+		await get_tree().physics_frame
+		if player._attack.past(a1.cancel_time):
+			break
+	st = player.stamina
+	Input.action_press("block")
+	await _frames(4)
+	_check_true("Steady: guarding right at the recovery point refunds stamina (%.1f -> %.1f)" % [st, player.stamina], player.stamina > st + 2.0)
+	Input.action_release("block")
+	await _setup_duel()
+	enemy.global_position = Vector3(0, 0, -8.0)
+	await _tap("light_attack")
+	await _seconds(0.9)
+	st = player.stamina
+	Input.action_press("block")
+	await _frames(4)
+	_check_true("...but not when you guard late (%.1f -> %.1f)" % [st, player.stamina], player.stamina <= st + 0.01)
+	Input.action_release("block")
+
+	# Perfect dodge: roll just as the blow lands.
+	await _setup_duel()
+	hp = player.health
+	await _force_attack(SWEEP)
+	await _wait_until_hit_in(0.08)
+	player.stamina = 50.0
+	await _tap("dodge_sprint")
+	var evaded := false
+	for i in 30:
+		await get_tree().physics_frame
+		evaded = evaded or player._evade_timer > 0.0
+	_check_true("a last-moment roll is a perfect dodge (no damage, counter armed, stamina back: %.0f)" % player.stamina,
+			player.health == hp and evaded and player.stamina >= 50.0)
+	await _seconds(1.5)
+
+	# Combos: an enemy that strings attacks goes straight into a second one.
+	await _setup_duel()
+	var cc := enemy.data.combo_chance
+	enemy.data.combo_chance = 1.0
+	player.global_position = Vector3(0, 0.05, -0.2)
+	await _force_attack(SWEEP)
+	var chained := false
+	for i in 240:
+		await get_tree().physics_frame
+		if enemy.state == Enemy.State.ATTACK and enemy._chain == 1:
+			chained = true
+			break
+	_check_true("an enemy that strings attacks follows straight up with another", chained)
+	enemy.data.combo_chance = cc
+	await _seconds(2.0)
+
+	# Delayed swings: some wind-ups are held a beat longer.
+	await _setup_duel()
+	enemy.data.delay_chance = 1.0
+	enemy.start_attack(OVERHEAD)
+	var held := enemy._attack.windup_scale
+	enemy._set_state(Enemy.State.CHASE)
+	enemy.data.delay_chance = 0.0
+	enemy.start_attack(OVERHEAD)
+	var normal := enemy._attack.windup_scale
+	enemy._set_state(Enemy.State.CHASE)
+	_check_true("a delayed swing holds its wind-up longer (x%.2f vs x%.2f)" % [held, normal], held < 1.0 and normal == 1.0)
+	await _seconds(0.5)
 
 	# Guard break when out of stamina
 	await _setup_duel()
