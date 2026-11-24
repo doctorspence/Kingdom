@@ -163,9 +163,9 @@ func _item(id: String) -> ItemData:
 func _build_wearers() -> void:
 	var sets := [
 		["item_iron_sword", "item_iron_shield"],
-		["item_steel_sword", "item_steel_shield", "item_chainmail_coif", "item_chainmail_body", "item_chainmail_legs"],
-		["item_steel_2h_sword", "item_platebody", "item_plate_helm", "item_plate_legs"],
-		["item_bronze_bow", "item_leather_hood", "item_leather_body", "item_leather_breeches"],
+		["item_steel_sword", "item_steel_shield", "item_chainmail_body", "item_chainmail_legs"],
+		["item_steel_2h_sword", "item_platebody", "item_plate_legs"],
+		["item_bronze_bow", "item_leather_body", "item_leather_breeches"],
 		["item_mystic_staff", "item_wizard_hat", "item_wizard_robe_top", "item_wizard_robe_bottom"],
 		["item_iron_dagger", "item_bronze_mace", "item_wizard_hat_grey", "item_wizard_robe_top", "item_wizard_robe_bottom"],
 	]

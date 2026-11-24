@@ -29,7 +29,7 @@ func _run() -> void:
 	var bag := [["item_executioners_greatsword", 3], ["item_woodcutters_axe", 2], ["item_lantern_staff", 1],
 			["item_kite_shield", 0], ["item_hunting_bow", 2], ["item_bronze_dagger", 1], ["item_platebody", 1],
 			["item_leather_boots", 0], ["item_mail_gauntlets", 2], ["item_copper_ring", 0], ["item_blackstone_amulet", 3],
-			["item_plate_helm", 4], ["item_rusty_sword", 0]]
+			["item_padded_cowl", 4], ["item_rusty_sword", 0]]
 	for b in bag:
 		inv.add_item(ItemDB.make_item(ItemDB.get_item(StringName(b[0])), 6, b[1]))
 	for c in [["item_health_potion", 4], ["item_antidote", 2], ["item_bread", 5], ["item_bandage", 3], ["item_warming_draught", 2]]:
@@ -51,7 +51,7 @@ func _run() -> void:
 	await _frames(20)
 	await _shot("inv_main")
 	book._compare = true
-	book._cursor = _find(inv, &"item_plate_helm")
+	book._cursor = _find(inv, &"item_padded_cowl")
 	book._redraw()
 	await _frames(5)
 	await _shot("inv_compare")

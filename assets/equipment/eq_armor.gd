@@ -369,19 +369,64 @@ static func _hip_band(m, mat, margin: float, ys: Array, p := 2.4) -> void:
 	m.loft(mat, rings, true, false, false)
 
 
+# ---- shared body-armor parts
+
+## A collar standing round the neck, from y0 to y1.
+static func _collar(m, mat, y0: float, y1: float, margin: float, steps := 3) -> void:
+	var rings: Array = []
+	for i in steps + 1:
+		var y := lerpf(y0, y1, float(i) / steps)
+		var nk := _neck_key(y)
+		rings.append(_ring(y, nk[0] + margin, nk[1] + margin, nk[2] - margin, 16, 2.2))
+	m.loft(mat, rings, true, false, false)
+
+
+## A domed shell (shoulder plate, spaulder): its axis points along dir, its rim is at the center.
+static func _dome(m, mat, center: Vector3, dir: Vector3, r: float, lift: float, seg := 12) -> void:
+	var basis := Basis(Quaternion(Vector3.UP, dir.normalized()))
+	m.lathe(mat, Transform3D(basis, center), [[r, 0.0], [r * 0.97, lift * 0.2], [r * 0.86, lift * 0.5], [r * 0.6, lift * 0.78], [r * 0.25, lift * 0.95], [0.0, lift]], seg, true, false)
+
+
+## A bulge over the chest: extra margin around y = 1.34.
+static func _chest(y: float, amount := 0.02) -> float:
+	return amount * exp(-pow((y - 1.34) / 0.08, 2.0))
+
+
+## Small round rivets in a row between two points.
+static func _rivets(m, mat, a: Vector3, b: Vector3, n: int, r := 0.0065) -> void:
+	for i in n:
+		m.sphere(mat, a.lerp(b, (i + 0.5) / n), r, 6, 4)
+
+
 # ------------------------------------------------------------------ the items
 
+## Chain tunic: a mail hauberk with short mail sleeves over padded dark sleeves, leather-trimmed, belted.
 static func chainmail_body() -> Node3D:
 	var m = _new_mesh([TORSO_BONES, ARM_BONES_L, ARM_BONES_R])
 	_hold_hem(m)
 	var mail = Kit.get_mat("chainmail")
 	var leather = Kit.get_mat("leather")
+	var dark = Kit.get_mat("leather_dark")
 	var iron = Kit.get_mat("iron")
-	# hauberk: hem at the hips, flaring a little, up over the shoulders to the neck
-	torso_tube(m, mail, 0.88, 1.52, 0.024, 12, 18, 2.4, func(y): return 0.04 * smoothstep(1.0, 0.88, y))
 	var ar := _ar()
+	# hauberk to the hip, flaring a little, with a chest curve
+	torso_tube(m, mail, 0.86, 1.54, 0.024, 14, 22, 2.4, func(y): return 0.04 * smoothstep(1.0, 0.86, y) + _chest(y, 0.014))
+	# leather trim at the hem and round the neck
+	var hem: Array = []
+	for y in [0.86, 0.888]:
+		var k := tk(y)
+		var mg := 0.028 + 0.04 * smoothstep(1.0, 0.86, y)
+		hem.append(_ring(y, k[0] + mg, k[1] + mg, k[2] - mg, 22, 2.4))
+	m.loft(dark, hem, false, false, false)
+	_collar(m, dark, 1.5, 1.58, 0.03)
 	for s in [1.0, -1.0]:
-		sleeve(m, mail, s, 0.0, 0.5, ar[0], ar[1], ar[2], 10, false, false, 0.008)
+		var sh := bp("upperarm_l")
+		var c := Vector3(sh.x * s, sh.y, sh.z)
+		m.sphere(mail, c + Vector3(0, 0.012, 0), ar[0] + 0.012, 10, 7)
+		# padded dark sleeve to the wrist, and the short mail sleeve over it
+		sleeve(m, dark, s, 0.0, 0.96, ar[0], ar[1], ar[2], 10, false, false, 0.0, -0.004)
+		sleeve(m, mail, s, 0.0, 0.4, ar[0], ar[1], ar[2], 10, false, false, 0.012, 0.01)
+		sleeve(m, leather, s, 0.385, 0.425, ar[0], ar[1], ar[2], 10, false, false, 0.0, 0.016)
 	_belt(m, leather, iron, 1.1, 0.034)
 	return _root("Armor_chainmail_body", m)
 
@@ -401,54 +446,7 @@ static func chainmail_legs() -> Node3D:
 	return _root("Armor_chainmail_legs", m)
 
 
-static func _coif_like(m, mat, hood := false) -> void:
-	var dz: float = P.head_dz
-	# lower neck / shoulder cowl (closed)
-	var lower := head_rings(1.40 if hood else 1.43, 1.60, 0.02, 6, 16, 0.07 if hood else 0.035)
-	m.loft(mat, lower, true, false, false)
-	# face opening: drop the front arc between 1.60 and 1.76 (open strip)
-	var mid := head_rings(1.60, 1.77, 0.02, 4, 16)
-	var open_mid: Array = []
-	var cents := PackedVector3Array()
-	for r in mid:
-		var sub := PackedVector3Array()
-		for k in range(7, 18):
-			sub.append(r[k % 16])
-		open_mid.append(sub)
-		cents.append(Vector3(0, r[0].y, dz))
-	m.loft(mat, open_mid, true, false, false, false, cents)
-	# crown (closed dome)
-	var top := head_rings(1.77, 1.856, 0.02, 3, 16)
-	m.loft(mat, top, true, false, true)
-
-
-static func chainmail_coif() -> Node3D:
-	var m = _new_mesh([HEAD_BONES])
-	var mail = Kit.get_mat("chainmail")
-	_coif_like(m, mail)
-	return _root("Armor_chainmail_coif", m)
-
-
-static func leather_hood() -> Node3D:
-	var m = _new_mesh([HEAD_BONES])
-	var leather = Kit.get_mat("leather")
-	var dark = Kit.get_mat("leather_dark")
-	_coif_like(m, leather, true)
-	var dz: float = P.head_dz
-	# pointed cowl at the back of the head and a stitched brim line
-	var back := Vector3(0, 1.80, dz - 0.134)
-	m.cone(leather, Vector3(0, 1.78, dz - 0.094), back + Vector3(0, -0.07, -0.1), 0.075, 8)
-	var rim: Array = []
-	for y in [1.74, 1.77]:
-		var rg := PackedVector3Array()
-		for k in range(7, 18):
-			var a := TAU * (k % 16) / 16.0
-			rg.append(Vector3(cos(a) * (P.head_hx + 0.02), y, dz + sin(a) * (P.head_hz + 0.011)))
-		rim.append(rg)
-	m.loft(dark, rim, false, false, false, false, PackedVector3Array([Vector3(0, 1.74, dz), Vector3(0, 1.77, dz)]))
-	return _root("Armor_leather_hood", m)
-
-
+## Leather jerkin: a laced front, layered spaulders, a hip skirt of strips, long sleeves with bracers, a belted pouch.
 static func leather_body() -> Node3D:
 	var m = _new_mesh([TORSO_BONES, ARM_BONES_L, ARM_BONES_R])
 	_hold_hem(m)
@@ -456,30 +454,50 @@ static func leather_body() -> Node3D:
 	var dark = Kit.get_mat("leather_dark")
 	var iron = Kit.get_mat("iron")
 	var cloth = Kit.get_mat("cloth_coarse")
-	# a gambeson-like undershirt (coarse cloth) with a leather jerkin over it and long sleeves
-	torso_tube(m, leather, 0.9, 1.5, 0.022, 12, 18, 2.4, func(y): return 0.04 * smoothstep(1.0, 0.9, y))
 	var ar := _ar([-0.002, -0.003, -0.008])
-	for s in [1.0, -1.0]:
-		sleeve(m, cloth, s, 0.0, 0.98, ar[0], ar[1], ar[2], 10, false, false, 0.0)
-		# leather bracer on the forearm with two straps
-		sleeve(m, leather, s, 0.62, 0.95, ar[0], ar[1], ar[2], 10, false, false, 0.0, 0.008)
-		for t in [0.7, 0.85]:
-			sleeve(m, dark, s, t, t + 0.045, ar[0], ar[1], ar[2], 10, false, false, 0.0, 0.014)
-	# crossed chest straps and a belt, lying on the front of the jerkin
-	var zs: float = tk(1.3)[1] + 0.022 + 0.006
-	for sgn in [-1.0, 1.0]:
-		var p0 := Vector3(sgn * 0.14, 1.44, zs)
-		var p1 := Vector3(-sgn * 0.12, 1.16, zs)
-		var mid := (p0 + p1) * 0.5
-		var dirv := (p1 - p0)
-		m.box(dark, mid, Vector3(0.045, dirv.length(), 0.012), Basis(Vector3.BACK, atan2(-dirv.x, dirv.y)))
-	m.box(iron, Vector3(0, 1.3, zs + 0.004), Vector3(0.035, 0.035, 0.012))
-	_belt(m, dark, iron, 1.08, 0.04)
-	# pauldron-style shoulder flaps
+	# jerkin, a little fuller over the chest, with a rolled collar
+	torso_tube(m, leather, 0.9, 1.54, 0.022, 14, 22, 2.4, func(y): return 0.022 * smoothstep(1.0, 0.9, y) + _chest(y, 0.012))
+	_collar(m, dark, 1.49, 1.57, 0.03)
+	# lacing down the chest: a dark panel strip and cross bars
+	var zf: float = tk(1.3)[1] + 0.022 + _chest(1.3, 0.012)
+	m.box(dark, Vector3(0, 1.34, zf + 0.002), Vector3(0.034, 0.2, 0.008))
+	for i in 5:
+		var y := 1.43 - i * 0.04
+		var zy: float = tk(y)[1] + 0.022 + _chest(y, 0.012)
+		m.box(leather, Vector3(0, y, zy + 0.006), Vector3(0.07, 0.01, 0.006))
+	# stitched bands across the chest and waist
+	for y in [1.2, 1.28]:
+		var rg: Array = []
+		for dy in [0.0, 0.012]:
+			var k := tk(y + dy)
+			var mg := 0.028 + _chest(y + dy, 0.012)
+			rg.append(_ring(y + dy, k[0] + mg, k[1] + mg, k[2] - mg, 22, 2.4))
+		m.loft(dark, rg, false, false, false)
+	# sleeves
 	for s in [1.0, -1.0]:
 		var sh := bp("upperarm_l")
-		var d := Vector3(sh.x * s + s * 0.03, sh.y + 0.05, sh.z)
-		tube(m, leather, [d + Vector3(-s * 0.06, 0.0, 0), d + Vector3(0, 0.008, 0), d + Vector3(s * 0.07, -0.035, 0)], [0.062, 0.078, 0.066], 10, true, false, false, Vector2(1.0, 1.0), Vector3.RIGHT)
+		var c := Vector3(sh.x * s, sh.y, sh.z)
+		m.sphere(leather, c + Vector3(0, 0.01, 0), ar[0] + 0.01, 10, 7)
+		sleeve(m, cloth, s, 0.0, 0.98, ar[0], ar[1], ar[2], 10, false, false, 0.0)
+		sleeve(m, leather, s, 0.6, 0.95, ar[0], ar[1], ar[2], 10, false, false, 0.0, 0.008)
+		for t in [0.68, 0.84]:
+			sleeve(m, dark, s, t, t + 0.04, ar[0], ar[1], ar[2], 10, false, false, 0.0, 0.015)
+		# layered spaulder: two leather shells and a strap
+		var dir := Vector3(s * 0.55, 1.0, 0.0)
+		_dome(m, leather, c + Vector3(s * 0.012, 0.02, 0), dir, 0.1, 0.07)
+		_dome(m, dark, c + Vector3(s * 0.024, -0.012, 0), dir, 0.112, 0.06)
+	# skirt of hanging strips round the hips, and the belt with a pouch
+	var k0 := tk(0.9)
+	var ring := _ring(0.9, k0[0] + 0.04, k0[1] + 0.04, k0[2] - 0.04, 14, 2.4)
+	for i in 14:
+		var p: Vector3 = ring[i]
+		var n := Vector3(p.x / (k0[0] + 0.04), 0, (p.z + 0.02) / ((k0[1] if p.z > 0 else -k0[2]) + 0.04)).normalized()
+		var th := atan2(n.x, n.z)
+		var mat = leather if i % 2 == 0 else dark
+		m.box(mat, Vector3(p.x, 0.82, p.z) + n * 0.006, Vector3(0.062, 0.14, 0.01), Basis(Vector3.UP, th) * Basis(Vector3.RIGHT, -0.08))
+	_belt(m, dark, iron, 1.06, 0.04)
+	m.box(leather, Vector3(0.17, 1.0, tk(1.0)[1] + 0.04), Vector3(0.075, 0.09, 0.04))
+	m.box(dark, Vector3(0.17, 1.045, tk(1.0)[1] + 0.056), Vector3(0.075, 0.02, 0.012))
 	return _root("Armor_leather_body", m)
 
 
@@ -572,6 +590,8 @@ static func wizard_hat(kind: String) -> Node3D:
 
 # ---- plate
 
+## Plate cuirass: a ridged breastplate over a mail shirt, a gorget, four overlapping fauld lames, big layered
+## pauldrons, rerebraces, couters and vambraces, with rivets and dark trim.
 static func platebody() -> Node3D:
 	var m = _new_mesh([TORSO_BONES, ARM_BONES_L, ARM_BONES_R])
 	_hold_hem(m)
@@ -579,69 +599,60 @@ static func platebody() -> Node3D:
 	var dark = Kit.get_mat("dark_steel")
 	var leather = Kit.get_mat("leather_dark")
 	var mail = Kit.get_mat("chainmail")
+	var iron = Kit.get_mat("iron")
 	var ar := _ar()
-	# mail shirt underneath showing at the waist and arms, then plate over the chest
-	torso_tube(m, mail, 0.92, 1.18, 0.024, 4, 18, 2.4)
-	for s in [1.0, -1.0]:
-		sleeve(m, mail, s, 0.0, 0.55, ar[0] - 0.006, ar[1] - 0.006, ar[2] - 0.004, 10, false, false, 0.0)
-	# breastplate and back plate: boxy, with a raised center ridge on the front
-	torso_tube(m, steel, 1.17, 1.52, 0.04, 8, 20, 3.0, Callable(), true, true, false)
-	m.box(steel, Vector3(0, 1.32, tk(1.32)[1] + 0.04 + 0.004), Vector3(0.03, 0.26, 0.03), Basis(Vector3.RIGHT, 0.12))
-	# faulds: overlapping plates below the belt
-	for i in 3:
-		var y := 1.17 - i * 0.075
+	# mail shirt underneath, showing at the waist and arms
+	torso_tube(m, mail, 0.86, 1.22, 0.024, 6, 20, 2.4, func(y): return 0.04 * smoothstep(1.0, 0.86, y))
+	# breastplate and back plate, boxy, with a chest swell; a ridge down the front
+	torso_tube(m, steel, 1.16, 1.55, 0.036, 10, 24, 3.0, func(y): return _chest(y, 0.022))
+	var zr: float = tk(1.34)[1] + 0.036 + _chest(1.34, 0.022)
+	m.box(steel, Vector3(0, 1.34, zr + 0.004), Vector3(0.028, 0.34, 0.026), Basis(Vector3.RIGHT, 0.1))
+	# dark edge bands at the waist of the breastplate and round the arm holes of the neck, with rivets
+	var edge: Array = []
+	for dy in [0.0, 0.022]:
+		var k := tk(1.16 + dy)
+		edge.append(_ring(1.16 + dy, k[0] + 0.042, k[1] + 0.042, k[2] - 0.042, 24, 3.0))
+	m.loft(dark, edge, false, false, false)
+	_rivets(m, iron, Vector3(-0.1, 1.2, tk(1.2)[1] + 0.045), Vector3(0.1, 1.2, tk(1.2)[1] + 0.045), 7)
+	# gorget: two stacked collar rings
+	_collar(m, steel, 1.49, 1.56, 0.042)
+	_collar(m, steel, 1.55, 1.62, 0.036)
+	# faulds: overlapping lames, each wider and lower, with a dark trim line on top
+	for i in 4:
+		var y := 1.16 - i * 0.07
 		var k := tk(y)
 		var rg: Array = []
-		for dy in [0.0, -0.085]:
-			var mg := 0.07 + i * 0.012 + (0.02 if dy < 0 else 0.0)
-			rg.append(_ring(y + dy, k[0] + mg, k[1] + mg, k[2] - mg, 20, 3.0))
+		for dy in [0.0, -0.08]:
+			var mg := 0.062 + i * 0.012 + (0.016 if dy < 0 else 0.0)
+			rg.append(_ring(y + dy, k[0] + mg, k[1] + mg, k[2] - mg, 22, 3.0))
 		m.loft(steel, rg, true, false, false)
-	# arms: pauldron (three lames), upper arm, elbow cop, vambrace
+		var trim: Array = []
+		for dy in [0.0, 0.012]:
+			var mg2 := 0.064 + i * 0.012
+			trim.append(_ring(y + dy, k[0] + mg2, k[1] + mg2, k[2] - mg2, 22, 3.0))
+		m.loft(dark, trim, false, false, false)
 	for s in [1.0, -1.0]:
 		var sh := bp("upperarm_l")
-		var c := Vector3(sh.x * s * 1.05, sh.y + 0.03, sh.z)
+		var c := Vector3(sh.x * s, sh.y, sh.z)
+		# mail sleeve and shoulder ball underneath
+		m.sphere(mail, c + Vector3(0, 0.01, 0), ar[0] + 0.01, 10, 7)
+		sleeve(m, mail, s, 0.0, 0.56, ar[0] - 0.006, ar[1] - 0.006, ar[2] - 0.004, 10, false, false, 0.0)
+		# pauldron: three overlapping domed lames
+		var dir := Vector3(s * 0.55, 1.0, 0.0).normalized()
 		for i in 3:
-			var rr := 0.115 - i * 0.012
-			m.lathe(steel, Transform3D(Basis(Vector3.BACK, -s * (0.35 + i * 0.12)), c + Vector3(s * (0.015 + i * 0.012), -i * 0.025, 0)), [[0.0, 0.0], [rr, -0.008], [rr * 1.02, -0.05]], 12, true, false)
-		sleeve(m, steel, s, 0.06, 0.3, ar[0], ar[1], ar[2], 10, false, false, 0.0, 0.006)
+			var cc := c + Vector3(s * (0.012 + i * 0.02), 0.034 - i * 0.034, 0)
+			_dome(m, steel, cc, dir, 0.1 + i * 0.014, 0.075 - i * 0.01)
+		# rerebrace (upper arm), couter (elbow cop with a wing), vambrace (forearm) and cuffs
+		sleeve(m, steel, s, 0.16, 0.42, ar[0], ar[1], ar[2], 12, false, false, 0.0, 0.012)
 		var el := bp("lowerarm_l")
-		m.sphere(dark, Vector3(el.x * s, el.y + 0.005, el.z), ar[1] + 0.008, 10, 6)
-		# vambrace: a little larger than the plain forearm so it sits over it
-		sleeve(m, steel, s, 0.58, 0.97, ar[0], ar[1] + 0.006, ar[2], 10, false, false, 0.0, 0.004)
-		sleeve(m, leather, s, 0.5, 0.56, ar[0], ar[1] + 0.006, ar[2], 10, false, false, 0.0, 0.012)
-	# leather straps over the shoulders, belt and buckle
-	for s in [1.0, -1.0]:
-		m.box(leather, Vector3(s * 0.12, 1.5, tk(1.5)[1] * 0.5 + tk(1.5)[2] * 0.5), Vector3(0.04, 0.012, (tk(1.5)[1] - tk(1.5)[2]) * 0.5 + 0.06))
-	_belt(m, leather, dark, 1.17, 0.052)
+		var e := Vector3(el.x * s, el.y, el.z)
+		m.sphere(steel, e, ar[1] + 0.02, 10, 7)
+		m.cone(steel, e + Vector3(0, 0, -0.02), e + Vector3(0, 0, -0.1), ar[1] + 0.012, 8)
+		sleeve(m, steel, s, 0.58, 0.97, ar[0], ar[1] + 0.006, ar[2], 12, false, false, 0.0, 0.01)
+		sleeve(m, dark, s, 0.55, 0.585, ar[0], ar[1] + 0.006, ar[2], 12, false, false, 0.0, 0.016)
+		sleeve(m, dark, s, 0.95, 0.985, ar[0], ar[1] + 0.006, ar[2], 12, false, false, 0.0, 0.014)
+	_belt(m, leather, dark, 1.14, 0.056)
 	return _root("Armor_platebody", m)
-
-
-static func plate_helm() -> Node3D:
-	var m = _new_mesh([HEAD_BONES])
-	var steel = Kit.get_mat("steel")
-	var dark = Kit.get_mat("dark_steel")
-	var dz: float = P.head_dz
-	var hx: float = P.head_hx
-	var hz: float = P.head_hz
-	# a rounded bascinet: skull dome down to the brow, cheek plates, a nose bar, a neck guard behind
-	var dome := head_rings(1.64, 1.865, 0.026, 6, 16)
-	m.loft(steel, dome, true, false, true)
-	var guard: Array = []
-	var cents := PackedVector3Array()
-	for y in [1.50, 1.56, 1.64]:
-		var r := _ring(y, hx + 0.008 + 0.04 * smoothstep(1.64, 1.5, y), dz + hz - 0.018, dz - hz - 0.004 - 0.05 * smoothstep(1.64, 1.5, y), 16, 2.2)
-		var sub := PackedVector3Array()
-		for k in range(8, 17):
-			sub.append(r[k % 16])
-		guard.append(sub)
-		cents.append(Vector3(0, y, dz))
-	m.loft(steel, guard, true, false, false, false, cents)
-	for s in [1.0, -1.0]:
-		m.box(steel, Vector3(s * (hx + 0.008), 1.62, dz + 0.045), Vector3(0.018, 0.14, 0.1), Basis(Vector3.UP, s * 0.2))
-	m.box(dark, Vector3(0, 1.69, dz + hz + 0.027), Vector3(0.024, 0.115, 0.012))
-	# brow band
-	m.lathe(dark, Transform3D(Basis.IDENTITY, Vector3(0, 1.735, dz)), [[hx + 0.013, -0.012], [hx + 0.028, -0.01], [hx + 0.028, 0.012], [hx + 0.013, 0.014]], 16, true, false)
-	return _root("Armor_plate_helm", m)
 
 
 static func plate_legs() -> Node3D:
@@ -788,21 +799,15 @@ static func wizard_cloak() -> Node3D:
 static func catalog() -> Array:
 	var out: Array = []
 	var cm := "Chainmail"
-	out.append({"id": "item_chainmail_coif", "name": "Chainmail Coif", "cat": cm, "folder": "Armor", "kind": "armor", "slot": 1, "tier": "chainmail", "build": "chainmail_coif",
-			"grid": Vector2i(2, 2), "weight": 1.8, "value": 40, "level": 5, "armor": 6.0, "stats": {"vitality": 1}, "flavor": "Rings on rings on rings."})
 	out.append({"id": "item_chainmail_body", "name": "Chainmail Body", "cat": cm, "folder": "Armor", "kind": "armor", "slot": 3, "tier": "chainmail", "build": "chainmail_body",
 			"grid": Vector2i(2, 3), "weight": 9.0, "value": 110, "level": 5, "armor": 17.0, "stats": {"vitality": 2}, "flavor": "Heavy on the shoulders, light on the blade."})
 	out.append({"id": "item_chainmail_legs", "name": "Chainmail Legs", "cat": cm, "folder": "Armor", "kind": "armor", "slot": 5, "tier": "chainmail", "build": "chainmail_legs",
 			"grid": Vector2i(2, 3), "weight": 6.0, "value": 80, "level": 5, "armor": 10.0, "stats": {"vitality": 1}, "flavor": "Chausses of dark steel rings."})
 	out.append({"id": "item_platebody", "name": "Platebody", "cat": "Plate", "folder": "Armor", "kind": "armor", "slot": 3, "tier": "steel", "build": "platebody",
 			"grid": Vector2i(2, 3), "weight": 14.0, "value": 240, "level": 10, "armor": 28.0, "stats": {"strength": 1, "vitality": 2}, "flavor": "Plain steel plate. It will do."})
-	out.append({"id": "item_plate_helm", "name": "Plate Helm", "cat": "Plate", "folder": "Armor", "kind": "armor", "slot": 1, "tier": "steel", "build": "plate_helm",
-			"grid": Vector2i(2, 2), "weight": 4.2, "value": 90, "level": 10, "armor": 10.0, "stats": {"vitality": 1}, "flavor": "A bascinet, dented from a fall."})
 	out.append({"id": "item_plate_legs", "name": "Plate Legs", "cat": "Plate", "folder": "Armor", "kind": "armor", "slot": 5, "tier": "steel", "build": "plate_legs",
 			"grid": Vector2i(2, 3), "weight": 9.0, "value": 160, "level": 10, "armor": 15.0, "stats": {"vitality": 1}, "flavor": "Plate over mail, from hip to ankle."})
 	# the project already has these three leather items: reuse their ids, give them the new model + icon
-	out.append({"id": "item_leather_hood", "name": "Leather Hood", "cat": "Leather", "folder": "Armor", "kind": "armor", "slot": 1, "tier": "leather", "build": "leather_hood",
-			"grid": Vector2i(2, 2), "weight": 1.5, "value": 10, "level": 1, "armor": 4.0, "stats": {"agility": 1}, "flavor": ""})
 	out.append({"id": "item_leather_body", "name": "Leather Body", "cat": "Leather", "folder": "Armor", "kind": "armor", "slot": 3, "tier": "leather", "build": "leather_body",
 			"grid": Vector2i(2, 3), "weight": 5.0, "value": 28, "level": 1, "armor": 9.0, "stats": {}, "flavor": ""})
 	out.append({"id": "item_leather_breeches", "name": "Leather Legs", "cat": "Leather", "folder": "Armor", "kind": "armor", "slot": 5, "tier": "leather", "build": "leather_legs",
@@ -827,13 +832,10 @@ static func catalog() -> Array:
 static func build(name: String, profile := "outcast") -> Node3D:
 	use_profile(profile)
 	match name:
-		"chainmail_coif": return chainmail_coif()
 		"chainmail_body": return chainmail_body()
 		"chainmail_legs": return chainmail_legs()
 		"platebody": return platebody()
-		"plate_helm": return plate_helm()
 		"plate_legs": return plate_legs()
-		"leather_hood": return leather_hood()
 		"leather_body": return leather_body()
 		"leather_legs": return leather_legs()
 		"wizard_robe_top": return wizard_robe_top()

@@ -14,7 +14,7 @@ const Kit := preload("res://assets/equipment/eq_kit.gd")
 
 ## Which armor slot hides which outfit piece (boots always show).
 const HIDDEN_BY := {"shirt": "chest", "belt": "chest", "cloak": "chest", "trousers": "legs", "hair": "head", "beard": "head",
-		"torso": "chest", "legs": "legs", "feet": "feet", "boots": "feet"}
+		"torso": "chest", "legs": "legs", "feet": "feet", "boots": "feet", "fill_torso": "chest", "fill_legs": "legs"}
 
 # (y, half width, front z, back z) of the bare slender torso (tools/measure_body.gd on Mannequin_F).
 const TORSO_F := [
@@ -52,7 +52,11 @@ static func _regions(name_: String) -> Array:
 	for s in src.get_surface_count():
 		var m := ArrayMesh.new()
 		m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, src.surface_get_arrays(s))
-		m.surface_set_material(0, mat if src.surface_get_name(s) != "cloak" else mat.duplicate())
+		var cm := mat
+		if src.surface_get_name(s) == "cloak":
+			cm = mat.duplicate()
+			cm.cull_mode = BaseMaterial3D.CULL_DISABLED
+		m.surface_set_material(0, cm)
 		var region := src.surface_get_name(s)
 		out.append([region if region != "" else "torso", m])
 	return out
@@ -73,8 +77,6 @@ static func parts(female: bool) -> Dictionary:
 		var has_bare := ResourceLoader.exists(MODEL_DIR + bare + ".res")
 		for region in _regions(bare if has_bare else name_):
 			var piece: String = region[0]
-			if not has_bare and piece == "cloak":
-				piece = "torso"
 			if has_bare and piece == "cloak":
 				continue
 			out[piece] = out.get(piece, []) + [[region[1], skin]]
@@ -84,6 +86,8 @@ static func parts(female: bool) -> Dictionary:
 					var cm: ArrayMesh = region[1]
 					(cm.surface_get_material(0) as StandardMaterial3D).cull_mode = BaseMaterial3D.CULL_DISABLED
 					out["cloak"] = [[cm, skin]]
+		out["fill_torso"] = [[fill_torso(), skin]]
+		out["fill_legs"] = [[fill_legs(), skin]]
 		_cache[female] = out
 		return out
 	out["shirt"] = [shirt(female)]
@@ -512,4 +516,30 @@ static func beard() -> ArrayMesh:
 	# moustache
 	var mz := c.z + r.z * 0.97
 	A.tube(m, mat, [Vector3(-0.03, c.y - r.y * 0.2, mz - 0.012), Vector3(0, c.y - r.y * 0.17, mz + 0.004), Vector3(0.03, c.y - r.y * 0.2, mz - 0.012)], [0.008, 0.011, 0.008], 6, true, true, true)
+	return m.finish()
+
+
+## Plain stand-ins for the parts of the body the cloak used to cover (the model has no back to its trousers or
+## shirt): shown whenever the cloak is hidden and no armor covers that part, so nothing is see-through.
+static func fill_torso() -> ArrayMesh:
+	A.use_profile("outcast")
+	var m = A._new_mesh([A.TORSO_BONES, A.ARM_BONES_L, A.ARM_BONES_R])
+	A._hold_hem(m)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.66, 0.62, 0.54)
+	mat.roughness = 0.95
+	A.torso_tube(m, mat, 0.9, 1.5, -0.012, 8, 18, 2.4)
+	return m.finish()
+
+
+static func fill_legs() -> ArrayMesh:
+	A.use_profile("outcast")
+	var m = A._new_mesh([A.LEG_BONES_L, A.LEG_BONES_R])
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.17, 0.17, 0.2)
+	mat.roughness = 0.95
+	var lr := A._lr([0.0, 0.0, 0.0])
+	A._hip_band(m, mat, 0.0, [0.86, 0.95, 1.02])
+	for s in [1.0, -1.0]:
+		A.leg(m, mat, s, 0.0, 0.96, lr[0], lr[1], lr[2], 10, false, 0.0, -0.01)
 	return m.finish()

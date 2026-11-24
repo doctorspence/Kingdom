@@ -5,9 +5,12 @@ extends Node
 
 const SETS := {
 	"none": [],
-	"chain": ["item_chainmail_coif", "item_chainmail_body", "item_chainmail_legs"],
-	"plate": ["item_plate_helm", "item_platebody", "item_plate_legs"],
-	"leather": ["item_leather_hood", "item_leather_body", "item_leather_breeches", "item_leather_gloves", "item_leather_boots"],
+	"b_chain": ["item_chainmail_body"],
+	"b_plate": ["item_platebody"],
+	"b_leather": ["item_leather_body"],
+	"chain": ["item_chainmail_body", "item_chainmail_legs"],
+	"plate": ["item_platebody", "item_plate_legs"],
+	"leather": ["item_leather_body", "item_leather_breeches", "item_leather_gloves", "item_leather_boots"],
 	"wizard": ["item_wizard_hat", "item_wizard_robe_top", "item_wizard_robe_bottom", "item_wizard_cloak"],
 }
 const SLOT := {1: "head", 3: "chest", 5: "legs", 4: "hands", 6: "feet", 7: "cloak"}
@@ -58,7 +61,8 @@ func _run() -> void:
 			"front": [Vector3(0, 1.1, 4.4), Vector3(0, 0.95, 0)],
 			"side": [Vector3(4.4, 1.1, 0), Vector3(0, 0.95, 0)],
 			"back": [Vector3(0, 1.1, -4.4), Vector3(0, 0.95, 0)],
-			"upper": [Vector3(2.2, 1.6, 2.2), Vector3(0, 1.3, 0)],
+			"upper": [Vector3(1.9, 1.5, 1.9), Vector3(0, 1.25, 0)],
+			"upper_front": [Vector3(0, 1.4, 2.6), Vector3(0, 1.2, 0)],
 		}
 		for k in shots:
 			cam.look_at_from_position(shots[k][0], shots[k][1])
