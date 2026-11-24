@@ -120,6 +120,32 @@ const ARM_BONES_L := ["spine_03", "clavicle_l", "upperarm_l", "lowerarm_l", "han
 const ARM_BONES_R := ["spine_03", "clavicle_r", "upperarm_r", "lowerarm_r", "hand_r"]
 
 
+static var _src := {}
+
+
+## The mannequin's own skinned vertices (positions, bone indices mapped to the skeleton, weights): armor
+## copies its weights from here (eq_mesh.gd weight_src) so it bends exactly like a body.
+static func body_source() -> Dictionary:
+	if not _src.is_empty():
+		return _src
+	var scene: Node = (load(RIG_SCENE) as PackedScene).instantiate()
+	var mi: MeshInstance3D = scene.find_children("*", "MeshInstance3D", true, false)[0]
+	var arr := mi.mesh.surface_get_arrays(0)
+	var skin: Skin = mi.skin
+	var map := PackedInt32Array()
+	for i in skin.get_bind_count():
+		var nm := String(skin.get_bind_name(i))
+		map.append(rig().bones[nm].i if rig().bones.has(nm) else skin.get_bind_bone(i))
+	var bs: PackedInt32Array = arr[Mesh.ARRAY_BONES]
+	var out_b := PackedInt32Array()
+	out_b.resize(bs.size())
+	for i in bs.size():
+		out_b[i] = map[bs[i]]
+	_src = {"v": arr[Mesh.ARRAY_VERTEX], "b": out_b, "w": arr[Mesh.ARRAY_WEIGHTS]}
+	scene.free()
+	return _src
+
+
 static func _new_mesh(bones: Array):
 	var m := Mesh_.new()
 	var segs_: Array = []
@@ -128,7 +154,14 @@ static func _new_mesh(bones: Array):
 	m.skin_bones = segs_
 	m.skin_max = 2
 	m.skin_power = 4.0
+	m.weight_src = body_source()
 	return m
+
+
+## Body-armor hems follow the pelvis like a belted tunic: below the waist the weights are looked up at the
+## waist instead, so a swinging thigh does not shear the hem apart.
+static func _hold_hem(m, y_from := 1.02, y_to := 0.88) -> void:
+	m.weight_query = func(p: Vector3) -> Vector3: return p.lerp(Vector3(p.x, y_from, p.z), smoothstep(y_from, y_to, p.y))
 
 
 static func _root(name: String, m) -> Node3D:
@@ -330,7 +363,8 @@ static func _hip_band(m, mat, margin: float, ys: Array, p := 2.4) -> void:
 	var rings: Array = []
 	for y in ys:
 		var k := tk(y)
-		var mg: float = margin + P.hip_extra
+		var top: float = smoothstep(0.93, 1.02, y)
+		var mg: float = margin + P.hip_extra * (1.0 - top) - 0.016 * top
 		rings.append(_ring(y, k[0] + mg, k[1] + margin, k[2] - margin, 18, p))
 	m.loft(mat, rings, true, false, false)
 
@@ -339,11 +373,12 @@ static func _hip_band(m, mat, margin: float, ys: Array, p := 2.4) -> void:
 
 static func chainmail_body() -> Node3D:
 	var m = _new_mesh([TORSO_BONES, ARM_BONES_L, ARM_BONES_R])
+	_hold_hem(m)
 	var mail = Kit.get_mat("chainmail")
 	var leather = Kit.get_mat("leather")
 	var iron = Kit.get_mat("iron")
 	# hauberk: hem at the hips, flaring a little, up over the shoulders to the neck
-	torso_tube(m, mail, 0.88, 1.52, 0.024, 12, 18, 2.4, func(y): return 0.02 * smoothstep(1.0, 0.88, y))
+	torso_tube(m, mail, 0.88, 1.52, 0.024, 12, 18, 2.4, func(y): return 0.04 * smoothstep(1.0, 0.88, y))
 	var ar := _ar()
 	for s in [1.0, -1.0]:
 		sleeve(m, mail, s, 0.0, 0.5, ar[0], ar[1], ar[2], 10, false, false, 0.008)
@@ -416,12 +451,13 @@ static func leather_hood() -> Node3D:
 
 static func leather_body() -> Node3D:
 	var m = _new_mesh([TORSO_BONES, ARM_BONES_L, ARM_BONES_R])
+	_hold_hem(m)
 	var leather = Kit.get_mat("leather")
 	var dark = Kit.get_mat("leather_dark")
 	var iron = Kit.get_mat("iron")
 	var cloth = Kit.get_mat("cloth_coarse")
 	# a gambeson-like undershirt (coarse cloth) with a leather jerkin over it and long sleeves
-	torso_tube(m, leather, 0.9, 1.5, 0.022, 12, 18, 2.4, func(y): return 0.018 * smoothstep(1.0, 0.9, y))
+	torso_tube(m, leather, 0.9, 1.5, 0.022, 12, 18, 2.4, func(y): return 0.04 * smoothstep(1.0, 0.9, y))
 	var ar := _ar([-0.002, -0.003, -0.008])
 	for s in [1.0, -1.0]:
 		sleeve(m, cloth, s, 0.0, 0.98, ar[0], ar[1], ar[2], 10, false, false, 0.0)
@@ -510,6 +546,7 @@ static func wizard_robe_bottom() -> Node3D:
 ## Wizard hat: a wide brim, a tall cone that bends over at the tip.
 static func wizard_hat(kind: String) -> Node3D:
 	var m = _new_mesh([["Head"]])
+	m.weight_src = {}
 	var cloth = Kit.get_mat("cloth_" + kind)
 	var trim = Kit.get_mat("leather_dark")
 	var dz: float = P.head_dz
@@ -537,6 +574,7 @@ static func wizard_hat(kind: String) -> Node3D:
 
 static func platebody() -> Node3D:
 	var m = _new_mesh([TORSO_BONES, ARM_BONES_L, ARM_BONES_R])
+	_hold_hem(m)
 	var steel = Kit.get_mat("steel")
 	var dark = Kit.get_mat("dark_steel")
 	var leather = Kit.get_mat("leather_dark")
@@ -555,7 +593,7 @@ static func platebody() -> Node3D:
 		var k := tk(y)
 		var rg: Array = []
 		for dy in [0.0, -0.085]:
-			var mg := 0.044 + i * 0.012 + (0.02 if dy < 0 else 0.0)
+			var mg := 0.07 + i * 0.012 + (0.02 if dy < 0 else 0.0)
 			rg.append(_ring(y + dy, k[0] + mg, k[1] + mg, k[2] - mg, 20, 3.0))
 		m.loft(steel, rg, true, false, false)
 	# arms: pauldron (three lames), upper arm, elbow cop, vambrace
@@ -636,7 +674,7 @@ static func leather_gloves() -> Node3D:
 		var w := Vector3(wr.x * s, wr.y, wr.z)
 		var dx := Vector3(s, 0, 0)
 		# cuff
-		tube(m, dark, [w - dx * 0.09, w - dx * 0.03, w + dx * 0.02], [0.046, 0.05, 0.056], 10, true, false, false, Vector2(1.0, 1.0))
+		tube(m, dark, [w - dx * 0.09, w - dx * 0.03, w + dx * 0.02], [0.04, 0.043, 0.047], 10, true, false, false, Vector2(1.0, 1.0))
 		# mitt over the hand (flat: wide in z, thin in y)
 		var pts: Array = []
 		var rad: Array = []
@@ -706,6 +744,8 @@ static func leather_boots() -> Node3D:
 ## Wizard cloak: a cape over the shoulders with the hood bunched at the neck, open at the front, falling to the calves.
 static func wizard_cloak() -> Node3D:
 	var m = _new_mesh([TORSO_BONES, ["clavicle_l", "clavicle_r"]])
+	# hangs from the shoulders and hips: below the chest it takes the hips' weights, not the legs'
+	m.weight_query = func(p: Vector3) -> Vector3: return p.lerp(Vector3(p.x * 0.4, 0.97, -0.05), smoothstep(1.25, 0.95, p.y))
 	var blue = Kit.get_mat("cloth_blue")
 	var trim = Kit.get_mat("cloth_trim")
 	var bronze = Kit.get_mat("bronze")

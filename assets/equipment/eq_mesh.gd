@@ -9,6 +9,12 @@ var _s := {}   # material -> {v, n}
 var skin_bones: Array = []
 var skin_max := 2
 var skin_power := 3.0
+## When set, vertex weights are copied from the nearest vertices of a skinned body mesh instead of being
+## computed from bone distances: {"v": positions, "b": bone indices (4 each), "w": weights (4 each)}.
+## weight_query (optional) maps a vertex to the point looked up on the body (for cloth hanging away from it).
+var weight_src := {}
+var weight_query := Callable()
+var weight_sigma := 0.035
 
 
 func _surf(mat: Material) -> Dictionary:
@@ -177,7 +183,7 @@ func finish() -> ArrayMesh:
 			var bones := PackedInt32Array()
 			var weights := PackedFloat32Array()
 			for p in s.v:
-				var w := _weights(p)
+				var w := _transfer(p) if not weight_src.is_empty() else _weights(p)
 				bones.append_array(w[0])
 				weights.append_array(w[1])
 			arr[Mesh.ARRAY_BONES] = bones
@@ -213,4 +219,48 @@ func _weights(p: Vector3) -> Array:
 	for i in n:
 		bones[i] = cand[i][0]
 		weights[i] = cand[i][1] / total
+	return [bones, weights]
+## Weights copied from the body mesh with a Gaussian blend of every body vertex near the point, so a
+## piece bends exactly like the body under it, with smooth weights (no sawtooth hems at the joints).
+func _transfer(p: Vector3) -> Array:
+	var q: Vector3 = weight_query.call(p) if weight_query.is_valid() else p
+	var sv: PackedVector3Array = weight_src.v
+	var sw: PackedFloat32Array = weight_src.w
+	var sb: PackedInt32Array = weight_src.b
+	var two_sigma2 := 2.0 * weight_sigma * weight_sigma
+	var reach := 9.0 * weight_sigma * weight_sigma
+	var acc := {}
+	var total := 0.0
+	var nearest := -1
+	var nearest_d := 1e9
+	for i in sv.size():
+		var d := q.distance_squared_to(sv[i])
+		if d < nearest_d:
+			nearest_d = d
+			nearest = i
+		if d > reach:
+			continue
+		var f := exp(-d / two_sigma2)
+		total += f
+		for j in 4:
+			var w: float = sw[i * 4 + j]
+			if w > 0.0:
+				acc[sb[i * 4 + j]] = acc.get(sb[i * 4 + j], 0.0) + w * f
+	if total <= 0.0:
+		for j in 4:
+			var w2: float = sw[nearest * 4 + j]
+			if w2 > 0.0:
+				acc[sb[nearest * 4 + j]] = w2
+	var list: Array = []
+	for b in acc:
+		list.append([b, acc[b]])
+	list.sort_custom(func(x, y): return x[1] > y[1])
+	var bones := PackedInt32Array([0, 0, 0, 0])
+	var weights := PackedFloat32Array([0.0, 0.0, 0.0, 0.0])
+	var sum := 0.0
+	for i in mini(4, list.size()):
+		sum += list[i][1]
+	for i in mini(4, list.size()):
+		bones[i] = list[i][0]
+		weights[i] = list[i][1] / sum
 	return [bones, weights]
