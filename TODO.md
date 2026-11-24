@@ -226,7 +226,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Mouse wheel zooms the camera in and out when you're not locked on
 - [ ] 🧪 Run around the Tithelands, then lock on to a bandit and circle and back away from it. Tell me if it feels too slow or floaty, and try the wheel zoom. Numbers: "Speeds" and "Weight and turning" in `data/balance/player_tuning.tres`
 - [x] Sidesteps: hips and legs turn toward the step, chest stays on the foe (no more sliding sideways); feet matched to the ground at walk, jog and sprint
-- [x] Locked-on strafing is a slow side-step (1.1 m/s): fighting stance kept, feet step out and close in, planted feet stay put (also when moving with guard up)
+- [x] Locked-on strafing is a slow side-step (1.3 m/s): fighting stance kept, feet step out and close in, planted feet stay put (also when moving with guard up)
 - [ ] 🧪 Lock on to a dummy or bandit and hold A or D: tell me if the side-step is too slow, too quick-footed, or too wide
 - [ ] Later: real backward and sideways walk/jog animations would still look better than the leg turn
 

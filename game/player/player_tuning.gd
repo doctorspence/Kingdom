@@ -20,7 +20,7 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export_range(0.3, 1.0) var stance_back_mult := 0.7
 ## ... and side-stepping is a slow, careful step at this speed (m/s), feet stepping
 ## out and in while you keep your fighting stance.
-@export var stance_side_speed := 1.1
+@export var stance_side_speed := 1.3
 ## Below this stick tilt (0–1) you walk instead of run.
 @export_range(0.1, 0.9) var walk_stick_threshold := 0.55
 
