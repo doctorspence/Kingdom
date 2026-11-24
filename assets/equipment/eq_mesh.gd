@@ -6,6 +6,7 @@ extends RefCounted
 ## gets blended weights from its nearest bone segments when finish() runs.
 
 var _s := {}   # material -> {v, n}
+const Paint := preload("res://assets/equipment/eq_paint.gd")
 var skin_bones: Array = []
 var skin_max := 2
 var skin_power := 3.0
@@ -264,3 +265,57 @@ func _transfer(p: Vector3) -> Array:
 		bones[i] = list[i][0]
 		weights[i] = list[i][1] / sum
 	return [bones, weights]
+
+
+## One surface with a unique hand-painted atlas (eq_paint.gd) instead of one surface per shared material.
+## style_of(material) names the paint style (a key of Paint.STYLES). Returns {mesh, paint, mask}.
+func finish_painted(style_of: Callable, size: int) -> Dictionary:
+	var P := PackedVector3Array()
+	var N := PackedVector3Array()
+	var S := PackedInt32Array()
+	var names: Array = []
+	for mat in _s:
+		var s: Dictionary = _s[mat]
+		if s.v.is_empty():
+			continue
+		var nm: String = style_of.call(mat)
+		var si := names.find(nm)
+		if si < 0:
+			names.append(nm)
+			si = names.size() - 1
+		P.append_array(s.v)
+		N.append_array(s.n)
+		for t in s.v.size() / 3:
+			S.append(si)
+	var baked: Dictionary = Paint.bake(P, N, S, names, size)
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = P
+	arr[Mesh.ARRAY_NORMAL] = N
+	arr[Mesh.ARRAY_TEX_UV] = baked.uv
+	var bones := PackedInt32Array()
+	var weights := PackedFloat32Array()
+	for p in P:
+		var w := _transfer(p) if not weight_src.is_empty() else _weights(p)
+		bones.append_array(w[0])
+		weights.append_array(w[1])
+	arr[Mesh.ARRAY_BONES] = bones
+	arr[Mesh.ARRAY_WEIGHTS] = weights
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	return {"mesh": mesh, "paint": baked.paint, "mask": baked.mask, "texel_mm": baked.texel_mm}
+
+
+## Adds a sculpted mesh's triangles as they are (winding and normals kept). zone(centroid) -> Material picks the
+## material of each triangle, so one sculpt can be painted as steel, leather, mail...
+func add_sculpt(mesh: ArrayMesh, zone: Callable) -> void:
+	var arr := mesh.surface_get_arrays(0)
+	var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+	var n: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+	var idx: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
+	for t in range(0, idx.size(), 3):
+		var c := (v[idx[t]] + v[idx[t + 1]] + v[idx[t + 2]]) / 3.0
+		var s := _surf(zone.call(c))
+		for k in 3:
+			s.v.append(v[idx[t + k]])
+			s.n.append(n[idx[t + k]])

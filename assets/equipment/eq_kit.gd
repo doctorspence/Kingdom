@@ -89,3 +89,11 @@ static func build(name: String) -> StandardMaterial3D:
 
 static func all_names() -> Array:
 	return DEFS.keys()
+
+
+## The name a shared material was built under, or "".
+static func name_of(mat: Material) -> String:
+	for k in _cache:
+		if _cache[k] == mat:
+			return k
+	return ""

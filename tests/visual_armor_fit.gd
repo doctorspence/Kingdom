@@ -7,6 +7,7 @@ const SETS := {
 	"none": [],
 	"b_chain": ["item_chainmail_body"],
 	"b_plate": ["item_platebody"],
+	"plate_set": ["item_platebody", "item_plate_legs"],
 	"b_leather": ["item_leather_body"],
 	"chain": ["item_chainmail_body", "item_chainmail_legs"],
 	"plate": ["item_platebody", "item_plate_legs"],

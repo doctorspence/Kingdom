@@ -160,8 +160,16 @@ static func _new_mesh(bones: Array):
 
 ## Body-armor hems follow the pelvis like a belted tunic: below the waist the weights are looked up at the
 ## waist instead, so a swinging thigh does not shear the hem apart.
-static func _hold_hem(m, y_from := 1.02, y_to := 0.88) -> void:
-	m.weight_query = func(p: Vector3) -> Vector3: return p.lerp(Vector3(p.x, y_from, p.z), smoothstep(y_from, y_to, p.y))
+static func _hold_hem(m, y_from := 1.02, y_to := 0.88, strength := 1.0) -> void:
+	m.weight_query = func(p: Vector3) -> Vector3: return p.lerp(Vector3(p.x, y_from, p.z), smoothstep(y_from, y_to, p.y) * strength)
+
+
+## Texture size (px) the next pieces are painted at; 0 = no painting (shared tiling materials).
+static var paint_size := 0
+static var big_mult := 2
+const PAINT_DIR := "res://assets/equipment/Textures/"
+## Pieces that cover a lot of surface get a bigger atlas.
+const BIG_PIECES := ["platebody", "chainmail_body", "leather_body", "plate_legs", "chainmail_legs", "leather_legs", "wizard_robe_top", "wizard_robe_bottom", "wizard_cloak", "leather_breeches"]
 
 
 static func _root(name: String, m) -> Node3D:
@@ -169,7 +177,44 @@ static func _root(name: String, m) -> Node3D:
 	root.name = name
 	var mi := MeshInstance3D.new()
 	mi.name = "Mesh"
-	mi.mesh = m.finish()
+	if paint_size > 0:
+		var size := paint_size * (big_mult if name.trim_prefix("Armor_") in BIG_PIECES else 1)
+		var r: Dictionary = m.finish_painted(func(mat): return Kit.name_of(mat), size)
+		mi.mesh = r.mesh
+		root.set_meta("paint", r.paint)
+		root.set_meta("mask", r.mask)
+		root.set_meta("texel_mm", r.texel_mm)
+	else:
+		mi.mesh = m.finish()
+	mi.skin = make_skin()
+	root.add_child(mi)
+	return root
+
+
+## A painted piece: the baked mesh (<id>.mesh.res) with its two textures from PAINT_DIR. null if not baked yet.
+static func painted_root(name: String, item_id: String, mesh_path: String) -> Node3D:
+	var paint_path := "%s%s_paint.png" % [PAINT_DIR, item_id]
+	var mask_path := "%s%s_mask.png" % [PAINT_DIR, item_id]
+	if not (ResourceLoader.exists(mesh_path) and ResourceLoader.exists(paint_path) and ResourceLoader.exists(mask_path)):
+		return null
+	var mesh: ArrayMesh = (load(mesh_path) as ArrayMesh).duplicate()
+	var mat := StandardMaterial3D.new()
+	mat.resource_name = item_id + "_painted"
+	mat.albedo_texture = load(paint_path)
+	mat.metallic = 1.0
+	mat.metallic_texture = load(mask_path)
+	mat.metallic_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.roughness = 1.0
+	mat.roughness_texture = load(mask_path)
+	mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_GREEN
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	mesh.surface_set_material(0, mat)
+	var root := Node3D.new()
+	root.name = name
+	var mi := MeshInstance3D.new()
+	mi.name = "Mesh"
+	mi.mesh = mesh
 	mi.skin = make_skin()
 	root.add_child(mi)
 	return root
@@ -590,9 +635,39 @@ static func wizard_hat(kind: String) -> Node3D:
 
 # ---- plate
 
+## The plate cuirass: the sculpted model (platebody.glb, simplified and fitted to the Outcast by
+## tools/prepare_glb_armor.gd), painted by zone: steel chest, mail sleeves, a leather belt, dark steel tassets.
+## Falls back to the built-from-primitives cuirass when the fitted sculpt does not exist.
+const PLATE_SCULPT := "res://assets/equipment/Armor/Plate/platebody_fit.res"
+
+
+static func platebody() -> Node3D:
+	if not ResourceLoader.exists(PLATE_SCULPT):
+		return platebody_procedural()
+	var m = _new_mesh([TORSO_BONES, ARM_BONES_L, ARM_BONES_R])
+	_hold_hem(m, 1.05, 0.8, 0.8)
+	var steel = Kit.get_mat("steel")
+	var dark = Kit.get_mat("dark_steel")
+	var mail = Kit.get_mat("chainmail")
+	var leather = Kit.get_mat("leather_dark")
+	m.add_sculpt(load(PLATE_SCULPT), func(c: Vector3):
+		if absf(c.x) > 0.215 and c.y > 1.26:
+			return mail
+		if c.y < 1.09:
+			return dark
+		if c.y < 1.235:
+			return leather
+		return steel)
+	# the sculpt's sleeves stop at mid-arm: carry them on in mail down to the elbow
+	var ar := _ar()
+	for s in [1.0, -1.0]:
+		sleeve(m, mail, s, 0.14, 0.58, ar[0], ar[1], ar[2], 10, false, false, 0.0, 0.01)
+	return _root("Armor_platebody", m)
+
+
 ## Plate cuirass: a ridged breastplate over a mail shirt, a gorget, four overlapping fauld lames, big layered
 ## pauldrons, rerebraces, couters and vambraces, with rivets and dark trim.
-static func platebody() -> Node3D:
+static func platebody_procedural() -> Node3D:
 	var m = _new_mesh([TORSO_BONES, ARM_BONES_L, ARM_BONES_R])
 	_hold_hem(m)
 	var steel = Kit.get_mat("steel")
@@ -655,7 +730,28 @@ static func platebody() -> Node3D:
 	return _root("Armor_platebody", m)
 
 
+## The plate legs: the sculpted model (platelegs.glb, simplified and fitted by tools/prepare_glb_armor.gd), painted
+## as steel with dark steel knees and a leather belt line. Falls back to the built-from-primitives legs.
+const PLATE_LEGS_SCULPT := "res://assets/equipment/Armor/Plate/platelegs_fit.res"
+
+
 static func plate_legs() -> Node3D:
+	if not ResourceLoader.exists(PLATE_LEGS_SCULPT):
+		return plate_legs_procedural()
+	var m = _new_mesh([LEG_BONES_L, LEG_BONES_R])
+	var steel = Kit.get_mat("steel")
+	var dark = Kit.get_mat("dark_steel")
+	var leather = Kit.get_mat("leather_dark")
+	m.add_sculpt(load(PLATE_LEGS_SCULPT), func(c: Vector3):
+		if c.y > 1.0:
+			return leather
+		if absf(c.y - 0.56) < 0.07:
+			return dark
+		return steel)
+	return _root("Armor_plate_legs", m)
+
+
+static func plate_legs_procedural() -> Node3D:
 	var m = _new_mesh([LEG_BONES_L, LEG_BONES_R])
 	var steel = Kit.get_mat("steel")
 	var dark = Kit.get_mat("dark_steel")

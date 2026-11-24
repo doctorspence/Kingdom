@@ -7,6 +7,7 @@ extends SceneTree
 
 const Kit := preload("res://assets/equipment/eq_kit.gd")
 const Catalog := preload("res://assets/equipment/eq_catalog.gd")
+const A := preload("res://assets/equipment/eq_armor.gd")
 const BASE := "res://assets/equipment/"
 
 var _only := PackedStringArray()
@@ -46,6 +47,11 @@ static func icon_path(e: Dictionary) -> String:
 
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
+	var bake := args.size() > 0 and (args[0] == "bake" or args[0] == "bake_fast")
+	if args.size() > 0 and args[0] == "bake_fast":
+		A.big_mult = 1
+	if bake:
+		args = args.slice(1)
 	if args.size() > 0 and args[0] != "all":
 		_only = args[0].split(",")
 	# 1. materials
@@ -64,7 +70,15 @@ func _run() -> void:
 	for e in all:
 		if not _only.is_empty() and not (String(e.id) in _only):
 			continue
-		var model := Catalog.build_model(e)
+		if bake:
+			if e.kind == "armor":
+				_bake(e)
+			continue
+		var model: Node3D = null
+		if e.kind == "armor":
+			model = A.painted_root("Armor_" + String(e.id).trim_prefix("item_"), String(e.id), _mesh_path(e))
+		if model == null:
+			model = Catalog.build_model(e)
 		if model == null:
 			push_error("no model for " + String(e.id))
 			continue
@@ -161,3 +175,29 @@ static func _tier_color(t: String) -> Color:
 		"iron": return Color(0.4, 0.4, 0.43)
 		"steel": return Color(0.68, 0.7, 0.75)
 	return Color(0.45, 0.33, 0.22)
+
+
+static func _mesh_path(e: Dictionary) -> String:
+	return scene_path(e).replace(".scn", ".mesh.res")
+
+
+## Bakes one armor piece: builds it with painting on, saves the painted textures and the UV'd mesh.
+## Run again without "bake" after an --import to assemble the scenes.
+func _bake(e: Dictionary) -> void:
+	A.paint_size = 1024
+	var model := A.build(e.build, "outcast")
+	A.paint_size = 0
+	if model == null:
+		push_error("no model for " + String(e.id))
+		return
+	DirAccess.make_dir_recursive_absolute(A.PAINT_DIR)
+	var paint: Image = model.get_meta("paint")
+	var mask: Image = model.get_meta("mask")
+	paint.save_png("%s%s_paint.png" % [A.PAINT_DIR, e.id])
+	mask.save_png("%s%s_mask.png" % [A.PAINT_DIR, e.id])
+	var mesh := (model.get_child(0) as MeshInstance3D).mesh
+	var path := _mesh_path(e)
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	ResourceSaver.save(mesh, path)
+	print("baked %s: %d tris, %dx%d, %.2f mm per texel" % [e.id, mesh.surface_get_array_len(0) / 3, paint.get_width(), paint.get_height(), model.get_meta("texel_mm")])
+	model.free()
