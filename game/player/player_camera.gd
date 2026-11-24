@@ -19,6 +19,13 @@ extends Node3D
 @export var vertical_sharpness := 8.0
 ## How fast the camera swings toward a locked target.
 @export var lock_turn_sharpness := 9.0
+## Mouse wheel zoom (when not locked on; locked on, the wheel switches target).
+## Closest and farthest camera distance (meters), and how far one wheel notch moves it.
+@export var zoom_min := 1.6
+@export var zoom_max := 6.0
+@export var zoom_step := 0.4
+## How smoothly the camera glides to the new distance (higher = quicker).
+@export var zoom_sharpness := 10.0
 
 var yaw := 0.0
 var pitch := deg_to_rad(-15.0)
@@ -28,6 +35,7 @@ var targeting: Targeting
 var _recenter_yaw := NAN
 var _shake := 0.0
 var _shake_time := 0.0
+var _zoom := 3.0
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
@@ -35,6 +43,7 @@ var _shake_time := 0.0
 
 func _ready() -> void:
 	top_level = true
+	_zoom = spring_arm.spring_length
 	# The camera moves every rendered frame, not on the physics clock.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 
@@ -56,6 +65,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			yaw -= event.relative.x * mouse_sensitivity * Prefs.look_sensitivity
 			pitch -= event.relative.y * mouse_sensitivity * Prefs.look_sensitivity * (-1.0 if invert_y != Prefs.invert_y else 1.0)
 			_recenter_yaw = NAN
+	elif Net.in_menu or Net.typing:
+		return  # the wheel turns items in the backpack, scrolls chat, etc.
+	elif not _is_locked() and event.is_action_pressed("target_next"):
+		_zoom = minf(_zoom + zoom_step, zoom_max)  # wheel down: pull back
+	elif not _is_locked() and event.is_action_pressed("target_prev"):
+		_zoom = maxf(_zoom - zoom_step, zoom_min)  # wheel up: move in
 
 
 ## Swing the camera behind the given direction (used when lock-on finds nothing).
@@ -104,6 +119,7 @@ func _process(delta: float) -> void:
 	p.z = lerpf(p.z, pivot.z, flat_t)
 	p.y = lerpf(p.y, pivot.y, up_t)
 	global_position = p
+	spring_arm.spring_length = lerpf(spring_arm.spring_length, _zoom, 1.0 - exp(-zoom_sharpness * delta))
 	_apply_shake(delta)
 
 

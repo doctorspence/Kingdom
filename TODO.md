@@ -220,6 +220,13 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Press I and try it with the mouse: drag a sword onto the main-hand slot, turn the bow, sort, mark junk and sell it at Old Wenna, switch tabs with Q and E. Then with a gamepad if you have one (hold A to pick up). Tell me what feels clumsy or looks wrong
 - [ ] Later: helms, gloves, boots, shoulders and cloaks only show on the character once they get worn 3D models (today only head, chest and legs pieces with a model do); a real quest list for the Quests tab; the new menu keys are not in the rebinding list yet
 
+## Movement redesign (hybrid) and camera zoom ✅ built 2026-11-23 (waiting for your test; DESIGN.md 5.2)
+- [x] Slower, weightier speed-up, stopping and turning; walk 2.0, run 5.8, sprint 8.0
+- [x] Combat stance (locked on or guard up): face the foe, slower backpedal and sidestep, legs run in reverse when backing off
+- [x] Mouse wheel zooms the camera in and out when you're not locked on
+- [ ] 🧪 Run around the Tithelands, then lock on to a bandit and circle and back away from it. Tell me if it feels too slow or floaty, and try the wheel zoom. Numbers: "Speeds" and "Weight and turning" in `data/balance/player_tuning.tres`
+- [ ] Later: real backward and sideways walk/jog animations (sidesteps still slide)
+
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
 - Quests and public quests

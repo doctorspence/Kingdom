@@ -133,15 +133,18 @@ func forward() -> Vector3:
 # --- Animation ----------------------------------------------------------------
 
 ## Pick idle / walk / run / sprint from how fast the character is actually moving.
-func update_locomotion(ground_speed: float, sprinting: bool, walking: bool) -> void:
+## `backward`: backpedalling in combat stance. Until real backward animations
+## exist, the walk/jog plays in reverse.
+func update_locomotion(ground_speed: float, sprinting: bool, walking: bool, backward := false) -> void:
+	var dir_sign := -1.0 if backward else 1.0
 	if ground_speed < 0.15:
 		play(idle_anim, 0.2)
 	elif sprinting:
 		play(ANIM_SPRINT, 0.2, clampf(ground_speed / sprint_anim_speed * leg_speed_mult, 0.6, 2.0))
 	elif walking or ground_speed < 2.6:
-		play(ANIM_WALK, 0.2, clampf(ground_speed / walk_anim_speed, 0.5, 1.6))
+		play(ANIM_WALK, 0.2, dir_sign * clampf(ground_speed / walk_anim_speed, 0.5, 1.6))
 	else:
-		play(ANIM_RUN, 0.2, clampf(ground_speed / run_anim_speed * leg_speed_mult, 0.6, 2.0))
+		play(ANIM_RUN, 0.2, dir_sign * clampf(ground_speed / run_anim_speed * leg_speed_mult, 0.6, 2.0))
 
 
 func play_roll(duration: float) -> void:

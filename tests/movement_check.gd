@@ -52,7 +52,8 @@ func _run() -> void:
 		reverse_time += 1.0 / Engine.physics_ticks_per_second
 		if player.velocity.z > t.run_speed * 0.9:
 			break
-	_check("seconds to reverse direction at full run", reverse_time, 0.15, 0.15)
+	# Weighty: a full about-turn at a run takes a moment (2026-11-23 movement redesign).
+	_check("seconds to reverse direction at full run", reverse_time, 0.45, 0.15)
 	# Roll while running: come out still running
 	await _tap("dodge_sprint")
 	await _seconds(t.roll_duration[0] + 0.05)
@@ -125,6 +126,20 @@ func _run() -> void:
 	var first := player.targeting.target
 	player.targeting.switch_target(1)
 	_check_true("switch target changes it (%s)" % player.targeting.target.name, player.targeting.target != first)
+	# Combat stance: backpedal and sidestep are slower than forward, and you keep facing the foe.
+	await _seconds(0.6)
+	Input.action_press("move_back")
+	await _seconds(1.2)
+	_check("locked-on backpedal speed", _speed(), t.lock_on_speed * t.stance_back_mult, 0.3)
+	var to_foe := _flat(player.targeting.target_point() - player.global_position).normalized()
+	_check_true("still facing the foe while backing off", player.model.forward().dot(to_foe) > 0.9)
+	_check_true("backpedal plays the legs in reverse", player.model.get_speed() < 0.0)
+	Input.action_release("move_back")
+	Input.action_press("move_right")
+	await _seconds(1.2)
+	_check("locked-on sidestep speed", _speed(), t.lock_on_speed * t.stance_side_mult, 0.35)
+	Input.action_release("move_right")
+	await _seconds(0.6)
 	player.targeting.toggle()
 	_check_true("lock-on toggles off", not player.targeting.has_target())
 

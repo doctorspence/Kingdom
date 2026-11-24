@@ -1506,21 +1506,30 @@ func _state_move(delta: float) -> void:
 		speed = tuning.lock_on_speed
 	speed *= effects.move_mult() * (1.0 + inventory.stat_total("move_speed")) * _water_mult()
 
+	# Combat stance (locked on, or guard up): the body faces the foe, or where the
+	# camera looks, and you sidestep and backpedal around that facing.
+	var stance := (locked or is_blocking) and not is_sprinting
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var target_velocity := Vector3.ZERO
 	if is_sprinting:
 		# Sprinting turns in wide arcs: you go where your body points.
 		model.turn_smooth(dir, 5.0, tuning.sprint_turn_speed * 0.5, delta)
 		target_velocity = model.forward() * speed
+	elif stance:
+		if locked:
+			model.turn_smooth(targeting.target_point() - global_position, 14.0, 180.0, delta)
+		else:
+			model.turn_smooth(camera_rig.flat_basis() * Vector3.FORWARD, tuning.turn_sharpness, 180.0, delta)
+		if amount > 0.0:
+			target_velocity = dir.normalized() * speed * _stance_speed_mult(dir)
 	else:
 		if amount > 0.0:
 			target_velocity = dir.normalized() * speed
-		if locked:
-			model.turn_smooth(targeting.target_point() - global_position, 14.0, 180.0, delta)
-		elif amount > 0.0:
-			model.turn_smooth(dir, 14.0, 180.0, delta)
+			model.turn_smooth(dir, tuning.turn_sharpness, 180.0, delta)
 
-	horizontal = _steer(horizontal, target_velocity, speed, amount > 0.0 and not is_sprinting, delta)
+	# In stance, changing direction slows through a stop instead of swinging round.
+	horizontal = _steer(horizontal, target_velocity, target_velocity.length() if stance else speed,
+			amount > 0.0 and not is_sprinting and not stance, delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 	if not is_on_floor():
@@ -1535,7 +1544,20 @@ func _state_move(delta: float) -> void:
 		if _guard_react <= 0.0:
 			model.play(CharacterModel.ANIM_BLOCK, 0.12)
 	else:
-		model.update_locomotion(Vector3(velocity.x, 0.0, velocity.z).length(), is_sprinting, is_walking)
+		var ground := Vector3(velocity.x, 0.0, velocity.z)
+		var backward := stance and ground.length() > 0.15 and ground.normalized().dot(model.forward()) < -0.5
+		model.update_locomotion(ground.length(), is_sprinting, is_walking, backward)
+
+
+## Combat stance: forward is full speed, backing off and sidestepping are slower.
+## Blends smoothly for diagonals.
+func _stance_speed_mult(dir: Vector3) -> float:
+	var d := dir.normalized()
+	var fwd := model.forward()
+	var ahead := d.dot(fwd)
+	var side := 1.0 - ahead * ahead  # share of the push that's sideways
+	var along := tuning.stance_back_mult if ahead < 0.0 else 1.0
+	return ahead * ahead * along + side * tuning.stance_side_mult
 
 
 ## Move the current velocity toward the wanted one. While walking or running,

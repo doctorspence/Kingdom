@@ -11,24 +11,30 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var max_health := 100.0
 
 @export_group("Speeds (meters per second)")
-@export var walk_speed := 2.6
-@export var run_speed := 6.8
-@export var sprint_speed := 9.6
-## Movement speed while locked on to a target (strafing).
+@export var walk_speed := 2.0
+@export var run_speed := 5.8
+@export var sprint_speed := 8.0
+## Movement speed while locked on to a target (strafing), going forward.
 @export var lock_on_speed := 5.0
+## Combat stance (locked on or guarding): backing away is this share of forward speed ...
+@export_range(0.3, 1.0) var stance_back_mult := 0.7
+## ... and stepping sideways this share.
+@export_range(0.3, 1.0) var stance_side_mult := 0.9
 ## Below this stick tilt (0–1) you walk instead of run.
 @export_range(0.1, 0.9) var walk_stick_threshold := 0.55
 
 @export_group("Weight and turning")
 ## How fast you reach your target speed (m/s per second).
-@export var acceleration := 60.0
+@export var acceleration := 16.0
 ## How fast you stop when you let go (m/s per second).
-@export var deceleration := 80.0
+@export var deceleration := 20.0
 ## How fast your body turns while walking/running (degrees per second).
-@export var turn_speed := 1080.0
+@export var turn_speed := 360.0
+## How quickly the body swings round to face where you push (higher = snappier).
+@export var turn_sharpness := 9.0
 ## How fast your movement swings to a new direction while walking/running (degrees per second).
 ## You keep your speed through the turn instead of slowing to a stop.
-@export var direction_change_speed := 1080.0
+@export var direction_change_speed := 360.0
 ## How fast you turn while sprinting. Low = wide, heavy turns.
 @export var sprint_turn_speed := 620.0
 ## How much you can steer in the air (0 = none, 1 = full).

@@ -49,6 +49,14 @@ _(nothing waiting)_
 - **Owner's answers (2026-11-23):** hand-painted textures for characters first; once one stands in Zone 1, decide whether the world follows (scanned world textures stay for now). This outfit is the **base under gear** (empty slots); starting armor is unchanged. A **female** version is wanted too: the owner already has a matching sheet (same clothes, long braid).
 - **Filed:** `DESIGN.md` 12.1 ("The base Outcast look", "Characters are hand-painted"); `ART_NEEDS.md` "Player body" row; male sheet saved as `docs/concept/outcast_male_sheet.webp`.
 
+### 2026-11-23: Movement redesign (grounded, "Gloria Victis" weight), hybrid
+- **Area:** combat / movement
+- **Decision:** Hybrid. Exploring stays camera-relative (push a direction and you turn and go that way). In **combat stance** (locked on, or guard raised) your body faces the foe (or the camera's direction when guarding with no target) and WASD moves relative to the body: real sidesteps and a slower backpedal. Getting going, stopping and turning all take noticeably longer than before.
+- **Details:** walk 2.0, run 5.8, sprint 8.0 m/s. In combat stance backward is 0.7× and sideways 0.9× the forward speed (locked on 5.0 → back 3.5, side 4.5). Full run in ~0.35 s, stop in ~0.3 s, direction changes and body turns at about a third of the old rate. Backpedalling plays the walk/jog in reverse until proper backward and sidestep animations exist (`ART_NEEDS.md`).
+- **Status:** decided (owner pasted a brief into Claude Code chat; it was cut off after "Exploration movement". The owner picked the hybrid with tuned speeds over the brief's fully character-relative controls and 5.0 run)
+- **Replaces:** `DESIGN.md` 5.2 speeds (walk 2.6, run 6.8, sprint 9.6) and the near-instant acceleration.
+- **Filed:** `DESIGN.md` 5.2; `game/player/player_tuning.gd`, `player.gd`; `ART_NEEDS.md` directional locomotion row.
+
 ### 2026-11-23: Inventory and character equipment screen
 - **Area:** UI
 - **Decision:** One combined screen, laid out like the owner's reference image: spatial backpack grid on the left, the player's 3D character on a pedestal in the middle with equipment slots around it, level, attributes, combat stats and resources on the right. A horizontal tab bar on top (Character, Inventory, Map, Talents, Quests, System) with a gold underline and glow on the current tab; L1/R1 cycle tabs.
