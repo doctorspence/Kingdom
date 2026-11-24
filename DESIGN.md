@@ -137,7 +137,7 @@ Every weapon also has these, made from its light and heavy attacks unless its da
 
 | Move | How |
 |---|---|
-| Jump light / jump heavy | Attack while in the air. Both swing **downward**: light is a quick overhead chop, heavy a two-handed overhead slam that lands in a crouch (animation clips `cut/Jump_Chop` and `cut/Jump_Slam`, cut from longer animations in `character_model.gd`) |
+| Jump light / jump heavy | Attack while in the air. Both swing **downward**: light is a straight overhead chop (sword up overhead, cocked back, then down past your right side; built by `overhead_chop.gd`, which bends the sword arm over a plain airborne pose, because no library animation chops straight down), heavy a two-handed overhead slam that lands in a crouch (`cut/Jump_Slam`, cut from the heavy combo in `character_model.gd`) |
 | Plunging attack | Attack while falling from 2.5 m or more above the ground: you dive with the blade held overhead and slam it down as you land, a wide heavy blow (no fall damage) |
 | Running light / running heavy | Attack while sprinting |
 | Rolling light / rolling heavy | Attack right after a roll |

@@ -75,6 +75,7 @@ func _run() -> void:
 	await _seconds(0.8)
 
 	# --- Guard counter -----------------------------------------------------------------------------
+	_calm(e)
 	await _go_to(Vector3(0, 0.05, 0))
 	await _settle()
 	_send("block", true)
@@ -171,6 +172,7 @@ func _dummy_enemy(at: Vector3) -> Enemy:
 	e.data = e.data.duplicate()
 	e.data.sight_range = 0.0
 	e.data.hearing_range = 0.0
+	e.data.guard_after_hits = 0  # never raises its guard (and so never strikes back out of it)
 	return e
 
 
@@ -234,3 +236,12 @@ func _settle() -> void:
 		await get_tree().physics_frame
 	player.stamina = player.max_stamina()
 	await _frames(10)
+
+
+## The dummy got knocked about by the jump attacks and the plunge: recovering from a
+## stagger resets its attack cooldown, so put it back to standing still and harmless.
+func _calm(e: Enemy) -> void:
+	e._set_state(Enemy.State.IDLE)
+	e.target = null
+	e._cooldown = 1.0e9
+	e._poise = e.max_poise
