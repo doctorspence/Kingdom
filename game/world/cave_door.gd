@@ -62,7 +62,7 @@ func interact_position(player: Node3D) -> Vector3:
 func arrival_point() -> Vector3:
 	var p := global_transform * arrive_offset
 	var zone := get_tree().get_first_node_in_group(&"zone_terrain") as ZoneTerrain
-	if zone and global_position.y > -20.0:
+	if zone and global_position.y > 0.0:
 		p.y = zone.height_at(p.x, p.z) + 0.1
 	return p
 

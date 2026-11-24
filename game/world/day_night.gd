@@ -13,7 +13,7 @@ static var raining := false
 ## 0 on the surface, 1 deep underground (the Gullet): no sun, no rain, a dark warm gloom.
 static var cave := 0.0
 ## Below this height the camera counts as underground.
-const CAVE_BELOW := -15.0
+const CAVE_BELOW := 0.0
 
 @export var environment: WorldEnvironment
 @export var sun: DirectionalLight3D

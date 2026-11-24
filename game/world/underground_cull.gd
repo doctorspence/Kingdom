@@ -13,7 +13,7 @@ extends Node
 ## Shown only on the surface.
 @export var surface: Array[NodePath] = []
 ## The surface is hidden below this height (meters).
-@export var below_y := -12.0
+@export var below_y := 0.0
 ## The underground level is drawn this far (meters) into the descent.
 @export var descent_from := 8.0
 

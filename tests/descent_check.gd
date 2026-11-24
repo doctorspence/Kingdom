@@ -27,7 +27,7 @@ func _run() -> void:
 		if run > 0.001:
 			steepest = maxf(steepest, (pts[k].y - pts[k + 1].y) / run)
 	_check("no station steeper than the design slope (%.2f)" % steepest, steepest < QuarryDescent.slope + 0.01)
-	_check("route length %.0f m" % QuarryDescent.cum[QuarryDescent.cum.size() - 1], QuarryDescent.cum[QuarryDescent.cum.size() - 1] > 100.0)
+	_check("route length %.0f m" % QuarryDescent.cum[QuarryDescent.cum.size() - 1], QuarryDescent.cum[QuarryDescent.cum.size() - 1] > 60.0)
 
 	# A person-sized capsule must fit all along the route.
 	var g: Node3D = scene.get_node("Gullet")

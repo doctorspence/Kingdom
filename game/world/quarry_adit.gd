@@ -154,6 +154,7 @@ func _props() -> void:
 		for i in 6:
 			var t := track.instantiate() as Node3D
 			t.position = Vector3(0, 0.02, 3.0 - i * 2.0)
+			t.rotation.y = PI * 0.5  # the track piece runs along x: turn it to run into the tunnel
 			for body in t.find_children("*", "CollisionObject3D", true, false):
 				(body as CollisionObject3D).collision_layer = 0  # rails are for looking at: you walk right over them
 			add_child(t)

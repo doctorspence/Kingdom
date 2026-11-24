@@ -69,7 +69,7 @@ func _run() -> void:
 	_check("enemies spawn around the zone (%d)" % enemies.size(), enemies.size() >= 12)
 	var near_start := enemies.filter(func(e: Node3D) -> bool: return Vector2(e.global_position.x, e.global_position.z).distance_to(Vector2(0, 120.4)) < 30.0)
 	_check("the Crossroads start is quiet", near_start.is_empty())
-	var floating := enemies.filter(func(e: Node3D) -> bool: return e.global_position.y > -20.0 and absf(e.global_position.y - terrain.height_at(e.global_position.x, e.global_position.z)) > 1.5)
+	var floating := enemies.filter(func(e: Node3D) -> bool: return e.global_position.y > 0.0 and absf(e.global_position.y - terrain.height_at(e.global_position.x, e.global_position.z)) > 1.5)
 	_check("enemies stand on the ground (%d off)" % floating.size(), floating.is_empty())
 	var kinds := {}
 	for e in enemies:

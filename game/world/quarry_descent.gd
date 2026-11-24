@@ -1,7 +1,7 @@
 class_name QuarryDescent
 extends Node3D
 ## The way down into the Gullet: a hewn incline that starts where the quarry adit ends and
-## winds down under the cliff to the Gullet's entrance yard, 52 m lower. You walk it; there
+## winds down under the cliff to the Gullet's entrance yard, 24 m lower. You walk it; there
 ## is no door and no loading. The route is a few straight legs with flat landings at the
 ## corners. Everything underground is built here (floor ramp with timber cleats, rough walls
 ## and roof, oak frames, lanterns, collision).
@@ -14,13 +14,13 @@ const H := 3.7           # clear height above the floor
 const PAD := 2.2         # flat floor either side of a corner (m)
 const STEP := 1.0        # station spacing along the ramp (m)
 const MOUTH_Y := 12.0    # the quarry floor at the adit
-const YARD_Y := -40.0    # the Gullet's floor
+const YARD_Y := -12.0    # the Gullet's floor
 
 ## Centerline corners (world x, z). The first is the adit's mouth, the second where the adit
 ## ends and this tunnel begins; the last is inside the Gullet's new west doorway.
 const CORNERS := [
-	Vector2(-169.0, -98.0), Vector2(-178.0, -98.0), Vector2(-200.0, -98.0), Vector2(-200.0, -126.0),
-	Vector2(-194.0, -126.0), Vector2(-194.0, -77.5), Vector2(-189.5, -77.5),
+	Vector2(-169.0, -98.0), Vector2(-178.0, -98.0), Vector2(-200.0, -98.0), Vector2(-200.0, -112.0),
+	Vector2(-194.0, -112.0), Vector2(-194.0, -77.5), Vector2(-189.5, -77.5),
 ]
 
 static var pts := PackedVector3Array()   # floor-center stations from the mouth to the yard
@@ -155,7 +155,7 @@ static func _hdir(a: Vector3, b: Vector3) -> Vector3:
 
 func _tint(y: float) -> Color:
 	# Pale quarry limestone at the mouth, sinking to the Gullet's dark stone.
-	var t := smoothstep(MOUTH_Y, MOUTH_Y - 30.0, y)
+	var t := smoothstep(MOUTH_Y, MOUTH_Y - 20.0, y)
 	return Color(0.95, 0.9, 0.82).lerp(Color(0.5, 0.47, 0.45), t)
 
 

@@ -43,13 +43,13 @@ func _run() -> void:
 	await _frames(3)
 	await _seconds(1.0)
 	_check("the quarry door takes you down into the cave (y %.1f)" % player.global_position.y,
-			player.global_position.y < -30.0 and player.is_on_floor())
+			player.global_position.y < -8.0 and player.is_on_floor())
 	var shrine := zone.get_node("Gullet/GulletShrine") as Shrine
 	_check("the Gullet has its own shrine", shrine != null and shrine.shrine_id == &"gullet")
 	var up := zone.get_node("Gullet/WayUp") as CaveDoor
 	up.interact(player)
 	await _seconds(0.6)
-	_check("...and the way up takes you back to the surface", player.global_position.y > -10.0)
+	_check("...and the way up takes you back to the surface", player.global_position.y > 0.0)
 
 	# --- The boss and his gate --------------------------------------------------------------
 	var boss := _boss()
