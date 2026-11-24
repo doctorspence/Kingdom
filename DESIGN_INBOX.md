@@ -30,6 +30,25 @@ _(nothing waiting)_
 
 ## Filed
 
+### 2026-11-23: Base player character, "the English Outcast"
+- **Area:** art direction / classes
+- **Decision:** The base playable human is an Outcast: an ordinary 12th–13th century English countryside wanderer or displaced villager, not a knight, soldier or faction member. He wears **no armor at all**, only worn, handmade civilian clothes. Look: chunky hand-painted MMORPG style (Warhammer Online, classic-era World of Warcraft as style references only), not photoreal, not pixel art.
+- **Details:**
+  - Body: adult male, athletic but ordinary, slightly chunky MMORPG proportions, messy medium dark-brown hair, short beard, weathered but approachable face. No superhero muscles.
+  - Upper body: loose off-white linen shirt, oversized sleeves rolled up, short laced neckline, dirty and stained.
+  - Cloak: dark olive / forest-green wool with attached hood, simple iron or bronze clasp, torn weathered hem.
+  - Lower body: loose dark-brown or charcoal wool trousers, plain leather belt, small pouches, optional faded red cloth hanging from the belt.
+  - Feet: worn brown leather boots, cloth or leather leg wraps, mud.
+  - Kit: small leather satchel, rope, utility knife, pouches, optional bedroll. A plain, worn iron/steel sword at the waist.
+  - Avoid: chainmail, plate, metal shoulders, armored gloves or boots, uniforms; Viking/Norse, Renaissance, pirate and modern-fantasy styling.
+  - Production sheet: front, side, back, three-quarter, face close-up, material close-ups, separate clothing pieces, belt and accessory breakdown; dark neutral background.
+  - Tech: existing UAL1 skeleton (don't change it), modular clothing, Godot 4.7.2, ~30–60k triangles equipped, animation-friendly, hand-painted textures.
+  - Reference: the owner's concept sheet "Player Character: Outcast (Level 1)" (front, back, T-pose, head, cloak/shirt/belt/boot details, palette: olive, leather brown, rust red, dark brown, gray).
+- **Status:** decided (pasted by the owner into Claude Code chat)
+- **Replaces:** nothing directly. Touches `DESIGN.md` 12.1 (PBR materials; levels 1–10 armor) and the "Player body" row in `ART_NEEDS.md`.
+- **Owner's answers (2026-11-23):** hand-painted textures for characters first; once one stands in Zone 1, decide whether the world follows (scanned world textures stay for now). This outfit is the **base under gear** (empty slots); starting armor is unchanged. A **female** version is wanted too: the owner already has a matching sheet (same clothes, long braid).
+- **Filed:** `DESIGN.md` 12.1 ("The base Outcast look", "Characters are hand-painted"); `ART_NEEDS.md` "Player body" row; male sheet saved as `docs/concept/outcast_male_sheet.webp`.
+
 ### 2026-11-23: Inventory and character equipment screen
 - **Area:** UI
 - **Decision:** One combined screen, laid out like the owner's reference image: spatial backpack grid on the left, the player's 3D character on a pedestal in the middle with equipment slots around it, level, attributes, combat stats and resources on the right. A horizontal tab bar on top (Character, Inventory, Map, Talents, Quests, System) with a gold underline and glow on the current tab; L1/R1 cycle tabs.

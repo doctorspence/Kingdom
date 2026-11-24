@@ -78,6 +78,7 @@ You host your world; two friends join by IP. You rest at the Crossroads shrine a
 | Sprint | Shift (hold) | B (hold) |
 | Jump | Space | A |
 | Lock-on / switch target | Q / mouse wheel | R3 / flick right stick |
+| Camera zoom (not locked on) | Mouse wheel (1.6–6 m) | n/a |
 | Drink flask | R | X |
 | Interact (shrines, doors, loot, revive) | E | Y |
 | Abilities 1–6 | 1–6 | Hold LT + A / B / X / Y / RB / RT |
@@ -99,8 +100,11 @@ Dark Souls pace: every swing commits you, every hit hurts, and stamina is the cl
 - If stamina hits 0 while you block, your **guard breaks** (1.2 s stagger).
 
 ### 5.2 Movement
-- **Weighty**: acceleration and turning take time; no instant 180s while sprinting.
-- Speeds *(start)*: walk 2.6 m/s, run 6.8 m/s, sprint 9.6 m/s, moving while locked on 5.0 m/s (Nioh 2-style snappy; see `data/balance`).
+- **Weighty** *(movement redesign 2026-11-23)*: getting up to speed takes ~0.35 s, stopping ~0.3 s, and turning takes time; no instant 180s.
+- **Two kinds of movement (hybrid):**
+  - **Exploring**: camera-relative. Push a direction and you turn and go that way.
+  - **Combat stance** (locked on, or guard raised): your body faces the foe (or where the camera looks, if guarding with no target) and you move relative to it. You sidestep and backpedal, and backing off is slower: backward 0.7×, sideways 0.9× of forward speed.
+- Speeds *(start)*: walk 2.0 m/s, run 5.8 m/s, sprint 8.0 m/s, locked on 5.0 m/s forward (3.5 back, 4.5 side), guarding 2.6 m/s forward. All in `data/balance/player_tuning.tres`.
 - **Jump**: ~1.1 m high, short i-frames at take-off (~0.12 s).
 - **Dodge roll** with i-frames. Speed depends on **equip load** (gear weight ÷ capacity; capacity = 60 + 0.5 × Strength *(start)*):
 
@@ -457,6 +461,8 @@ Quests and public quests, more zones and an open world, world bosses, New Game+.
   - **Buildings and ruins come from modular kits** (wall, corner, arch, floor pieces) so a few detailed pieces build a whole village.
   - **Budget:** scanned models are often millions of triangles and must be simplified before use. Rough limits: hero tree 20–50k triangles, rock 2–10k, player character with gear 30–60k.
 - **Armor gets louder with level**: levels 1–10 are grounded (gambesons, leather, rusty mail, kettle helms). Levels 11–20 add real plate and bigger pauldrons. Levels 21–30 go big: spikes, skulls, chains, tattered banners.
+- **The base Outcast look** *(owner's brief 2026-11-23; sheet in `docs/concept/outcast_male_sheet.webp`)*: what every character wears with **empty gear slots**. Armor you equip covers it, and starting armor stays as it is. He's an ordinary 12th–13th century English countryside wanderer with **no armor at all**: a loose off-white linen shirt with rolled sleeves and a laced neck, a dark olive-green hooded wool cloak with a torn hem and a simple iron or bronze clasp, loose dark-brown or charcoal wool trousers, a plain leather belt with pouches and a faded red cloth, worn brown boots with leg wraps, a small satchel, rope, a knife and a plain worn sword at the waist. Ordinary athletic build, slightly chunky proportions, weathered face. **Male and female** versions wear the same clothes (the female has a long braid). No Viking, Renaissance, pirate or modern-fantasy styling. Built on the UAL1 skeleton from modular pieces, 30–60k triangles equipped.
+- **Characters are hand-painted** *(2026-11-23)*: characters and their gear get chunky shapes and hand-painted, painterly textures (classic MMORPG style: not photoreal, not pixel art). The world keeps its scanned textures for now. Once a painted character stands in Zone 1, the owner decides whether the world follows.
 - **Palette**: washed-out earth tones (mud brown, moss green, slate gray). White Knights are off-white and tarnished gold; the Dark Ages are rust red and black iron. **Shrines are the only warm, safe light** (amber). Loot rarity colors pop against the gray.
 - **Lighting from day one**: overcast sky, volumetric fog, filmic tone mapping, desaturation and ambient occlusion, so even gray boxes look moody. Nights are cold, blue and genuinely dark.
 - **Sources**: free CC0 assets plus your AI-generated art. Poly Haven and ambientCG (detailed textures, rocks, scanned plants) are final-quality. Quaternius, KayKit and Kenney are low-poly, so they're **stand-ins only**, except for things like UI and sound. Detailed characters, armor and props come mostly from your AI art (textures, and image-to-3D for armor and props), cleaned up and fitted to the shared skeleton. See `ART_NEEDS.md`. Every asset gets logged in `assets/CREDITS.md`.
