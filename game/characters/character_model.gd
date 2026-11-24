@@ -56,7 +56,19 @@ static var _library_cache := {}
 ## How quickly the legs swing to a new stepping direction (higher = quicker).
 @export var leg_twist_sharpness := 10.0
 
+## Moving while in a standing pose (fighting stance, guard up): the feet step
+## instead of gliding. See StanceSteps. Side-steps travel this far per cycle (meters) ...
+@export var side_step_stride := 0.6
+## ... forward and back steps this far ...
+@export var shuffle_stride := 0.9
+## ... and no more than this many cycles a second (faster = longer steps instead).
+@export var max_step_rate := 2.0
+
+## Standing poses the feet can step from.
+const STANCE_POSES: Array[StringName] = [ANIM_IDLE, &"Sword_Idle", ANIM_BLOCK]
+
 var _twist: LegTwist
+var _steps: StanceSteps
 var _last_pos := Vector3.ZERO
 var _step_velocity := Vector3.ZERO
 
@@ -85,6 +97,13 @@ func _ready() -> void:
 		_twist = twist
 	else:
 		twist.free()
+	var steps := StanceSteps.new()
+	steps.name = "StanceSteps"
+	if steps.setup(_skeleton):
+		_skeleton.add_child(steps)
+		_steps = steps
+	else:
+		steps.free()
 	_last_pos = global_position
 	for anim_name in FORCE_LOOP:
 		if _anim.has_animation(anim_name):
@@ -163,6 +182,31 @@ func _physics_process(delta: float) -> void:
 		var limit := deg_to_rad(leg_twist_max)
 		target = clampf(angle, -limit, limit)
 	_twist.yaw = lerp_angle(_twist.yaw, target, 1.0 - exp(-leg_twist_sharpness * delta))
+	_update_stance_steps(delta)
+
+
+## Moving while in a fighting stance or with guard up: step the feet.
+func _update_stance_steps(delta: float) -> void:
+	if _steps == null:
+		return
+	var speed := _step_velocity.length()
+	var want := 0.0
+	if (_current == idle_anim or STANCE_POSES.has(_current)) and speed > 0.2:
+		want = clampf((speed - 0.2) / 0.3, 0.0, 1.0)
+		var fwd := forward()
+		fwd.y = 0.0
+		fwd = fwd.normalized()
+		var dir := _step_velocity / speed
+		_steps.facing = fwd
+		_steps.move_dir = dir
+		var sideways := absf(dir.dot(fwd.cross(Vector3.UP)))
+		var stride := lerpf(shuffle_stride, side_step_stride, sideways)
+		_steps.stride = maxf(stride, speed / max_step_rate)
+		# Feet must not cross: the wider each step, the wider the stance.
+		_steps.widen = maxf(0.08, _steps.stride * 0.25 - 0.04)
+		_steps.phase = fposmod(_steps.phase + speed * delta / _steps.stride, 1.0)
+	# Fade in and out quickly, so starting and stopping don't snap.
+	_steps.weight = move_toward(_steps.weight, want, delta / 0.15)
 
 
 func face_instantly(direction: Vector3) -> void:

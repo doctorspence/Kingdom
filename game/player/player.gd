@@ -1522,7 +1522,7 @@ func _state_move(delta: float) -> void:
 		else:
 			model.turn_smooth(camera_rig.flat_basis() * Vector3.FORWARD, tuning.turn_sharpness, 180.0, delta)
 		if amount > 0.0:
-			target_velocity = dir.normalized() * speed * _stance_speed_mult(dir)
+			target_velocity = dir.normalized() * _stance_speed(dir, speed)
 	else:
 		if amount > 0.0:
 			target_velocity = dir.normalized() * speed
@@ -1546,19 +1546,22 @@ func _state_move(delta: float) -> void:
 			model.play(CharacterModel.ANIM_BLOCK, 0.12)
 	else:
 		var ground := Vector3(velocity.x, 0.0, velocity.z)
-		var backward := stance and ground.length() > 0.15 and ground.normalized().dot(model.forward()) < -0.5
-		model.update_locomotion(ground.length(), is_sprinting, is_walking, backward)
+		var side_stepping := stance and amount > 0.0 and absf(dir.normalized().dot(model.forward())) < 0.5
+		if side_stepping:
+			# Keep the fighting stance; the model steps the feet out and in (StanceSteps).
+			model.play(model.idle_anim, 0.25)
+		else:
+			var backward := stance and ground.length() > 0.15 and ground.normalized().dot(model.forward()) < -0.5
+			model.update_locomotion(ground.length(), is_sprinting, is_walking, backward)
 
 
-## Combat stance: forward is full speed, backing off and sidestepping are slower.
-## Blends smoothly for diagonals.
-func _stance_speed_mult(dir: Vector3) -> float:
-	var d := dir.normalized()
-	var fwd := model.forward()
-	var ahead := d.dot(fwd)
-	var side := 1.0 - ahead * ahead  # share of the push that's sideways
-	var along := tuning.stance_back_mult if ahead < 0.0 else 1.0
-	return ahead * ahead * along + side * tuning.stance_side_mult
+## Combat stance speed for a push in `dir`: full `speed` straight at the foe, slower
+## backing off, and a slow side-step across. Diagonals lean toward the side-step.
+func _stance_speed(dir: Vector3, speed: float) -> float:
+	var ahead := dir.normalized().dot(model.forward())
+	var straight := speed * (tuning.stance_back_mult if ahead < 0.0 else 1.0)
+	var side := minf(speed, tuning.stance_side_speed)
+	return lerpf(side, straight, pow(absf(ahead), 4.0))
 
 
 ## Move the current velocity toward the wanted one. While walking or running,

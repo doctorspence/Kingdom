@@ -103,8 +103,8 @@ Dark Souls pace: every swing commits you, every hit hurts, and stamina is the cl
 - **Weighty** *(movement redesign 2026-11-23)*: getting up to speed takes ~0.35 s, stopping ~0.3 s, and turning takes time; no instant 180s.
 - **Two kinds of movement (hybrid):**
   - **Exploring**: camera-relative. Push a direction and you turn and go that way.
-  - **Combat stance** (locked on, or guard raised): your body faces the foe (or where the camera looks, if guarding with no target) and you move relative to it. You sidestep and backpedal, and backing off is slower: backward 0.7×, sideways 0.9× of forward speed.
-- Speeds *(start)*: walk 1.5 m/s (a real person walks ~1.4; owner chose realistic 2026-11-23), run 5.8 m/s, sprint 8.0 m/s, locked on 5.0 m/s forward (3.5 back, 4.5 side), guarding 2.6 m/s forward. All in `data/balance/player_tuning.tres`.
+  - **Combat stance** (locked on, or guard raised): your body faces the foe (or where the camera looks, if guarding with no target) and you move relative to it. You sidestep and backpedal, and backing off is slower (0.7× of forward speed). **Moving sideways is a slow, careful side-step** *(owner, 2026-11-23, "like Gloria Victis")*: you keep your fighting stance and the feet step out and close in (lead foot out, trail foot in, never crossing), at 1.1 m/s. Moving with guard up steps the feet the same way.
+- Speeds *(start)*: walk 1.5 m/s (a real person walks ~1.4; owner chose realistic 2026-11-23), run 5.8 m/s, sprint 8.0 m/s, locked on 5.0 m/s forward (3.5 back, 1.1 side-step), guarding 2.6 m/s forward. All in `data/balance/player_tuning.tres`.
 - **Jump**: ~1.1 m high, short i-frames at take-off (~0.12 s).
 - **Dodge roll** with i-frames. Speed depends on **equip load** (gear weight ÷ capacity; capacity = 60 + 0.5 × Strength *(start)*):
 

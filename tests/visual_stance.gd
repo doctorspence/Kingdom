@@ -27,6 +27,15 @@ func _run() -> void:
 	player.targeting.toggle()
 	await _frames(40)
 
+	# A strip of frames through one side-step cycle (about 0.55 s at 1.1 m/s).
+	Input.action_press("move_right")
+	await _seconds(0.8)
+	for i in 6:
+		await _shot("strip_%d" % i)
+		await _seconds(0.09)
+	Input.action_release("move_right")
+	await _seconds(0.6)
+
 	for step in [["s01_sidestep_right", ["move_right"]], ["s02_sidestep_left", ["move_left"]],
 			["s03_backpedal", ["move_back"]], ["s04_back_left", ["move_back", "move_left"]],
 			["s05_forward_right", ["move_forward", "move_right"]]]:
