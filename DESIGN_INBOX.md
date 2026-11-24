@@ -44,7 +44,7 @@ _(nothing waiting)_
   - Sheet: front, back, T-pose (arms level, palms down, legs straight, symmetrical), three-quarter, face close-up, clothing close-ups, modular clothing breakdown.
 - **Status:** decided (pasted by the owner into Claude Code chat)
 - **Replaces:** nothing. Matches the male Outcast entry below and the owner's answers there (base look under gear, hand-painted characters).
-- **Filed:** `DESIGN.md` 12.1 ("The base Outcast look"); `ART_NEEDS.md` "Player body" row. The owner's female concept sheet was shared as an image in chat only; it isn't saved in the project yet.
+- **Filed:** `DESIGN.md` 12.1 ("The base Outcast look"); `ART_NEEDS.md` "Player body" row. Concept sheet: `docs/concept/outcast_female_sheet.png`.
 
 ### 2026-11-23: Base player character, "the English Outcast"
 - **Area:** art direction / classes
