@@ -30,12 +30,32 @@ const HEAD_F := [Vector3(0, 1.685, 0.018), Vector3(0.09, 0.13, 0.118)]
 static var _cache := {}
 
 
+## The real (image-to-3D) model for each body, fitted by tools/fit_outcast.gd. When one exists it
+## is worn as a single "body" piece in place of the mannequin and the code-built clothes below.
+const MODEL_DIR := "res://assets/characters/outcast/"
+const MODELS := {false: "outcast_male", true: "outcast_female"}
+
+
+static func has_model(female: bool) -> bool:
+	return ResourceLoader.exists(MODEL_DIR + MODELS[female] + ".res")
+
+
 ## piece name -> Array of [ArrayMesh, Skin], built once per body type.
 static func parts(female: bool) -> Dictionary:
 	if _cache.has(female):
 		return _cache[female]
 	var skin := A.make_skin()
 	var out := {}
+	if has_model(female):
+		var name_: String = MODELS[female]
+		var mesh: ArrayMesh = load(MODEL_DIR + name_ + ".res")
+		var mat := StandardMaterial3D.new()
+		mat.albedo_texture = load(MODEL_DIR + name_ + "_raw_0.png")
+		mat.roughness = 0.9
+		mesh.surface_set_material(0, mat)
+		out["body"] = [[mesh, skin]]
+		_cache[female] = out
+		return out
 	out["shirt"] = [shirt(female)]
 	out["trousers"] = trousers(female)
 	out["boots"] = [boots(female)]

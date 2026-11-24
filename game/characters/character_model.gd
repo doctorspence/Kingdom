@@ -386,10 +386,20 @@ func set_body(slender: bool) -> void:
 		_female_mesh.skeleton = NodePath("..")
 		_meshes.append(_female_mesh)
 		set_tint(body_tint)
+	_body_slender = slender
+	_show_body()
+
+
+var _body_slender := false
+
+
+## The mannequin shows unless a full Outcast model (head, hands and all) is worn over it.
+func _show_body() -> void:
+	var covered := _outfit.has("body")
 	if _female_mesh:
-		_female_mesh.visible = slender
+		_female_mesh.visible = _body_slender and not covered
 	if _body_mesh_original:
-		_body_mesh_original.visible = not slender
+		_body_mesh_original.visible = not _body_slender and not covered
 
 
 ## Put a weapon (or shield) in a hand. Weapons are built with the grip at their
@@ -463,6 +473,7 @@ func set_outfit(on: bool, female := false) -> void:
 				n.queue_free()
 	_outfit.clear()
 	if not on or _skeleton == null:
+		_show_body()
 		return
 	_outfit_female = female
 	var parts: Dictionary = Outcast.parts(female)
@@ -480,6 +491,7 @@ func set_outfit(on: bool, female := false) -> void:
 			made.append(n)
 		_outfit[piece] = made
 	_refresh_outfit()
+	_show_body()
 
 
 func _refresh_outfit() -> void:
