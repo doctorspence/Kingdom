@@ -315,6 +315,7 @@ func _apply_look() -> void:
 	if shield and shield.visual_scene:
 		model.attach_to_hand(shield.visual_scene.instantiate(), "l")
 	model.set_body(net_body == 1)
+	model.set_outfit(true, net_body == 1)
 	for pair in [["head", net_head], ["chest", net_chest], ["legs", net_legs]]:
 		var worn := ItemDB.get_item(pair[1]) if pair[1] != &"" else null
 		model.set_armor(pair[0], worn.model_scene if worn else null)

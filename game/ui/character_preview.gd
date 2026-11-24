@@ -213,6 +213,7 @@ func show_player(player: Player) -> void:
 	if shield and shield.visual_scene:
 		_model.attach_to_hand(shield.visual_scene.instantiate(), "l")
 	_model.set_body(player.net_body == 1)
+	_model.set_outfit(true, player.net_body == 1)
 	for s in armor:
 		_model.set_armor(s, armor[s])
 	_model.set_tint(Classes.LOOK_COLORS[clampi(player.net_color, 0, Classes.LOOK_COLORS.size() - 1)])

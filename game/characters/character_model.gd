@@ -375,6 +375,7 @@ func set_armor(slot: String, scene: PackedScene) -> void:
 			old.queue_free()
 	_armor.erase(slot)
 	if scene == null or _skeleton == null:
+		_refresh_outfit()
 		return
 	var made: Array = []
 	var inst: Node = scene.instantiate()
@@ -392,10 +393,57 @@ func set_armor(slot: String, scene: PackedScene) -> void:
 	if _overlay_kind != "":
 		for n in made:
 			n.material_overlay = _overlay
+	_refresh_outfit()
 
 
 func armor_in(slot: String) -> bool:
 	return _armor.has(slot)
+
+
+# --- Base outfit ---------------------------------------------------------------
+
+const Outcast := preload("res://assets/equipment/eq_outcast.gd")
+var _outfit := {}  # piece ("shirt", "cloak", "hair", ...) -> Array[MeshInstance3D]
+var _outfit_female := false
+
+
+## Wear the base Outcast clothes (DESIGN.md 12.1), sized for the broad or slender body. Each piece
+## hides while armor covers that part of the body. on = false takes the outfit off.
+func set_outfit(on: bool, female := false) -> void:
+	if on and not _outfit.is_empty() and female == _outfit_female:
+		_refresh_outfit()
+		return
+	for piece in _outfit:
+		for n in _outfit[piece]:
+			if is_instance_valid(n):
+				n.queue_free()
+	_outfit.clear()
+	if not on or _skeleton == null:
+		return
+	_outfit_female = female
+	var parts: Dictionary = Outcast.parts(female)
+	for piece in parts:
+		var made: Array = []
+		for pair in parts[piece]:
+			var n := MeshInstance3D.new()
+			n.name = "Outfit_" + piece
+			n.mesh = pair[0]
+			n.skin = pair[1]
+			_skeleton.add_child(n)
+			n.skeleton = NodePath("..")
+			if _overlay_kind != "":
+				n.material_overlay = _overlay
+			made.append(n)
+		_outfit[piece] = made
+	_refresh_outfit()
+
+
+func _refresh_outfit() -> void:
+	for piece in _outfit:
+		var by: String = Outcast.HIDDEN_BY.get(piece, "")
+		for n in _outfit[piece]:
+			if is_instance_valid(n):
+				n.visible = by == "" or not _armor.has(by)
 
 
 # --- Tints --------------------------------------------------------------------
@@ -409,10 +457,11 @@ func set_overlay(kind: String, color := Color.WHITE) -> void:
 	_overlay.albedo_color = color
 	for m in _meshes:
 		m.material_overlay = _overlay if kind != "" else null
-	for slot in _armor:
-		for n in _armor[slot]:
-			if is_instance_valid(n):
-				n.material_overlay = _overlay if kind != "" else null
+	for group in [_armor, _outfit]:
+		for slot in group:
+			for n in group[slot]:
+				if is_instance_valid(n):
+					n.material_overlay = _overlay if kind != "" else null
 
 
 func overlay_kind() -> String:
