@@ -192,7 +192,7 @@ func show_player(player: Player) -> void:
 	var weapon: WeaponData = main.base.weapon if main and main.base.weapon else null
 	var shield: ShieldData = off.base.shield if off and off.base.shield and not (weapon and weapon.two_handed) else null
 	var armor := {}
-	for s in ["head", "chest", "legs"]:
+	for s in ["head", "chest", "legs", "hands", "feet", "cloak"]:
 		var it: ItemInstance = inv.equipped.get(s)
 		armor[s] = it.base.model_scene if it and it.base.model_scene else null
 	var key := "%d/%d/%s/%s/%s" % [player.net_body, player.net_color, weapon.id if weapon else &"", shield.id if shield else &"", armor]

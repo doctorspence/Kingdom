@@ -182,4 +182,5 @@ func _slot_key(slot: int) -> String:
 		ItemData.Slot.LEGS: return "legs"
 		ItemData.Slot.FEET: return "feet"
 		ItemData.Slot.HANDS: return "hands"
+		ItemData.Slot.CLOAK: return "cloak"
 	return "other"

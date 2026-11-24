@@ -624,6 +624,125 @@ static func plate_legs() -> Node3D:
 	return _root("Armor_plate_legs", m)
 
 
+# ---- hands, feet, cloak
+
+## Leather gloves: a cuff over the wrist, a flat mitt over the hand with a thumb, and a strap.
+static func leather_gloves() -> Node3D:
+	var m = _new_mesh([ARM_BONES_L, ARM_BONES_R])
+	var leather = Kit.get_mat("leather")
+	var dark = Kit.get_mat("leather_dark")
+	for s in [1.0, -1.0]:
+		var wr := bp("hand_l")
+		var w := Vector3(wr.x * s, wr.y, wr.z)
+		var dx := Vector3(s, 0, 0)
+		# cuff
+		tube(m, dark, [w - dx * 0.09, w - dx * 0.03, w + dx * 0.02], [0.046, 0.05, 0.056], 10, true, false, false, Vector2(1.0, 1.0))
+		# mitt over the hand (flat: wide in z, thin in y)
+		var pts: Array = []
+		var rad: Array = []
+		for k in [[0.02, 0.056], [0.07, 0.056], [0.12, 0.054], [0.17, 0.046], [0.21, 0.034], [0.235, 0.02]]:
+			pts.append(w + dx * k[0] + Vector3(0, 0, 0.0 + (k[0] - 0.02) * 0.02))
+			rad.append(k[1])
+		tube(m, leather, pts, rad, 10, true, false, true, Vector2(1.0, 0.62))
+		# thumb
+		var t0 := bp("thumb_01_l")
+		var t1 := bp("thumb_03_l")
+		var t2 := bp("thumb_04_leaf_l")
+		var pa := Vector3(t0.x * s, t0.y, t0.z)
+		var pb := Vector3(t1.x * s, t1.y, t1.z)
+		var pc := Vector3(t2.x * s, t2.y, t2.z)
+		tube(m, leather, [pa, pb, pc], [0.028, 0.024, 0.017], 8, true, false, true)
+		# strap across the back of the hand
+		tube(m, dark, [w + dx * 0.09 + Vector3(0, 0.0, 0), w + dx * 0.105], [0.062, 0.062], 10, true, false, false, Vector2(1.0, 0.7))
+	return _root("Armor_leather_gloves", m)
+
+
+## A boot: a shaft up the leg to mid-shin with a folded cuff, and a shoe shape over the foot.
+static func leather_boots() -> Node3D:
+	var m = _new_mesh([["calf_l", "foot_l"], ["calf_r", "foot_r"]])
+	var leather = Kit.get_mat("leather")
+	var dark = Kit.get_mat("leather_dark")
+	var cx: float
+	var zb: float
+	var zf: float
+	var hw: float
+	if P.leg == null:
+		cx = 0.089
+		zb = -0.095
+		zf = 0.2
+		hw = 0.058
+	else:
+		cx = P.leg[2].x + 0.012
+		zb = -0.175
+		zf = 0.148
+		hw = 0.068
+	var lr := _lr()
+	for s in [1.0, -1.0]:
+		# shaft: from the shin (t 0.72) to the ankle, a little wider than the plain leg
+		leg(m, leather, s, 0.72, 1.0, lr[0], lr[1] + 0.003, lr[2], 12, false, 0.004, 0.012)
+		leg(m, dark, s, 0.69, 0.74, lr[0], lr[1] + 0.003, lr[2], 12, false, 0.0, 0.02)   # folded cuff
+		# shoe: cross-sections from heel (0) to toe (1)
+		for layer in 2:
+			var rings: Array = []
+			for st in [[0.0, 0.5, 0.085], [0.1, 0.92, 0.13], [0.28, 1.0, 0.135], [0.5, 1.0, 0.105], [0.76, 0.95, 0.078], [0.93, 0.72, 0.06], [1.0, 0.4, 0.04]]:
+				var z: float = lerpf(zb, zf, st[0])
+				var top: float = st[2]
+				var bot := 0.022 if layer == 1 else 0.004
+				var topl: float = (0.024 if layer == 1 else top)
+				var yc := (topl + bot) * 0.5
+				var hh := (topl - bot) * 0.5
+				var hwx: float = hw * st[1] + (0.004 if layer == 1 else 0.0)
+				var ring := PackedVector3Array()
+				for k in 12:
+					var a := TAU * k / 12
+					var c := cos(a)
+					var sn := sin(a)
+					ring.append(Vector3(s * cx + hwx * signf(c) * pow(absf(c), 2.0 / 3.0), yc + hh * signf(sn) * pow(absf(sn), 2.0 / 3.0), z))
+				rings.append(ring)
+			m.loft(dark if layer == 1 else leather, rings, true, true, true)
+	return _root("Armor_leather_boots", m)
+
+
+## Wizard cloak: a cape over the shoulders with the hood bunched at the neck, open at the front, falling to the calves.
+static func wizard_cloak() -> Node3D:
+	var m = _new_mesh([TORSO_BONES, ["clavicle_l", "clavicle_r"]])
+	var blue = Kit.get_mat("cloth_blue")
+	var trim = Kit.get_mat("cloth_trim")
+	var bronze = Kit.get_mat("bronze")
+	# the hood, down: a soft collar bunched over the shoulders
+	torso_tube(m, blue, 1.40, 1.55, 0.06, 4, 20, 2.2, func(y): return 0.03 * smoothstep(1.5, 1.4, y))
+	# the cape: an open shell, back and sides only, widening to the hem
+	var rings: Array = []
+	var cents := PackedVector3Array()
+	var ys := [1.40, 1.30, 1.16, 1.0, 0.85, 0.7, 0.55, 0.42]
+	for i in ys.size():
+		var y: float = ys[i]
+		var f := smoothstep(1.3, 0.4, y)
+		var k := tk(clampf(y, 0.86, 1.52))
+		var full := _ring(y, k[0] + 0.07 + 0.2 * f, k[1] + 0.07 + 0.12 * f, k[2] - 0.07 - 0.16 * f, 24, 2.2)
+		var sub := PackedVector3Array()
+		for j in range(8, 29):
+			sub.append(full[j % 24])
+		rings.append(sub)
+		cents.append(Vector3(0, y, -0.03))
+	m.loft(blue, rings, true, false, false, false, cents)
+	# a trim line along the hem
+	var hem: Array = []
+	for y in [0.42, 0.455]:
+		var f := smoothstep(1.3, 0.4, y)
+		var k := tk(0.9)
+		var full := _ring(y, k[0] + 0.075 + 0.2 * f, k[1] + 0.075 + 0.12 * f, k[2] - 0.075 - 0.16 * f, 24, 2.2)
+		var sub := PackedVector3Array()
+		for j in range(8, 29):
+			sub.append(full[j % 24])
+		hem.append(sub)
+	m.loft(trim, hem, false, false, false, false, PackedVector3Array([Vector3(0, 0.42, -0.03), Vector3(0, 0.455, -0.03)]))
+	# clasp at the throat
+	var kf := tk(1.46)
+	m.sphere(bronze, Vector3(0, 1.46, kf[1] + 0.075), 0.022, 8, 5)
+	return _root("Armor_wizard_cloak", m)
+
+
 # ------------------------------------------------------------------ catalog
 
 static func catalog() -> Array:
@@ -652,6 +771,12 @@ static func catalog() -> Array:
 			"grid": Vector2i(2, 3), "weight": 2.0, "value": 30, "level": 1, "armor": 3.0, "stats": {"intellect": 2}, "flavor": "Blue wool, mended twice."})
 	out.append({"id": "item_wizard_robe_bottom", "name": "Wizard Robe Bottom", "cat": "Wizard", "folder": "Armor", "kind": "armor", "slot": 5, "tier": "cloth", "build": "wizard_robe_bottom",
 			"grid": Vector2i(2, 3), "weight": 1.6, "value": 22, "level": 1, "armor": 2.0, "stats": {"intellect": 1}, "flavor": "Wide in the leg, for walking and for dignity."})
+	out.append({"id": "item_leather_gloves", "name": "Leather Gloves", "cat": "Leather", "folder": "Armor", "kind": "armor", "slot": 4, "tier": "leather", "build": "leather_gloves",
+			"grid": Vector2i(2, 2), "weight": 0.5, "value": 8, "level": 1, "armor": 2.0, "stats": {}, "flavor": "Cracked at the knuckles, soft in the palm."})
+	out.append({"id": "item_leather_boots", "name": "Leather Boots", "cat": "Leather", "folder": "Armor", "kind": "armor", "slot": 6, "tier": "leather", "build": "leather_boots",
+			"grid": Vector2i(2, 2), "weight": 1.2, "value": 12, "level": 1, "armor": 3.0, "stats": {}, "flavor": "Resoled more than once."})
+	out.append({"id": "item_wizard_cloak", "name": "Wizard Cloak", "cat": "Wizard", "folder": "Armor", "kind": "armor", "slot": 7, "tier": "cloth", "build": "wizard_cloak",
+			"grid": Vector2i(2, 3), "weight": 1.2, "value": 24, "level": 1, "armor": 1.0, "stats": {"intellect": 1}, "flavor": "Deep blue, with a clasp that has seen better years."})
 	for c in [["blue", "Wizard Hat", "item_wizard_hat", 18], ["grey", "Grey Wizard Hat", "item_wizard_hat_grey", 18], ["red", "Red Wizard Hat", "item_wizard_hat_red", 18]]:
 		out.append({"id": c[2], "name": c[1], "cat": "Wizard", "folder": "Armor", "kind": "armor", "slot": 1, "tier": "cloth", "build": "wizard_hat_" + c[0],
 				"grid": Vector2i(2, 2), "weight": 0.6, "value": c[3], "level": 1, "armor": 1.0, "stats": {"intellect": 1}, "flavor": "Pointed, floppy, and quietly smug."})
@@ -673,6 +798,9 @@ static func build(name: String, profile := "outcast") -> Node3D:
 		"leather_legs": return leather_legs()
 		"wizard_robe_top": return wizard_robe_top()
 		"wizard_robe_bottom": return wizard_robe_bottom()
+		"leather_gloves": return leather_gloves()
+		"leather_boots": return leather_boots()
+		"wizard_cloak": return wizard_cloak()
 		"wizard_hat_blue": return wizard_hat("blue")
 		"wizard_hat_grey": return wizard_hat("grey")
 		"wizard_hat_red": return wizard_hat("red")

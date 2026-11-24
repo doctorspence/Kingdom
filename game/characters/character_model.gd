@@ -556,7 +556,7 @@ func _refresh_outfit() -> void:
 		var by: String = Outcast.HIDDEN_BY.get(piece, "")
 		for n in _outfit[piece]:
 			if is_instance_valid(n):
-				n.visible = by == "" or not _armor.has(by)
+				n.visible = (by == "" or not _armor.has(by)) and not (piece == "cloak" and _armor.has("cloak"))
 
 
 # --- Tints --------------------------------------------------------------------

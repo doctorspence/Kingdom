@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Armor/item_wizard_cloak.png" id="1_e2122"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Armor/Wizard/wizard_cloak.scn" id="1_xuu57"]
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="2_e2122"]
+
+[resource]
+script = ExtResource("2_e2122")
+id = &"item_wizard_cloak"
+display_name = "Wizard Cloak"
+flavor = "Deep blue, with a clasp that has seen better years."
+slot = 7
+grid_size = Vector2i(2, 3)
+weight = 1.2
+value = 24
+icon_color = Color(0.45, 0.33, 0.22, 1)
+icon = ExtResource("1_e2122")
+model_scene = ExtResource("1_xuu57")
+tier = &"cloth"
+armor = 1.0
+stats = {
+"intellect": 1
+}

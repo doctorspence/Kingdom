@@ -7,10 +7,10 @@ const SETS := {
 	"none": [],
 	"chain": ["item_chainmail_coif", "item_chainmail_body", "item_chainmail_legs"],
 	"plate": ["item_plate_helm", "item_platebody", "item_plate_legs"],
-	"leather": ["item_leather_hood", "item_leather_body", "item_leather_breeches"],
-	"wizard": ["item_wizard_hat", "item_wizard_robe_top", "item_wizard_robe_bottom"],
+	"leather": ["item_leather_hood", "item_leather_body", "item_leather_breeches", "item_leather_gloves", "item_leather_boots"],
+	"wizard": ["item_wizard_hat", "item_wizard_robe_top", "item_wizard_robe_bottom", "item_wizard_cloak"],
 }
-const SLOT := {1: "head", 3: "chest", 5: "legs"}
+const SLOT := {1: "head", 3: "chest", 5: "legs", 4: "hands", 6: "feet", 7: "cloak"}
 
 
 func _ready() -> void:

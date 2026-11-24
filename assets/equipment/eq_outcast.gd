@@ -14,7 +14,7 @@ const Kit := preload("res://assets/equipment/eq_kit.gd")
 
 ## Which armor slot hides which outfit piece (boots always show).
 const HIDDEN_BY := {"shirt": "chest", "belt": "chest", "cloak": "chest", "trousers": "legs", "hair": "head", "beard": "head",
-		"torso": "chest", "legs": "legs"}
+		"torso": "chest", "legs": "legs", "feet": "feet", "boots": "feet"}
 
 # (y, half width, front z, back z) of the bare slender torso (tools/measure_body.gd on Mannequin_F).
 const TORSO_F := [
