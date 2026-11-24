@@ -13,7 +13,8 @@ const Mesh_ := preload("res://assets/equipment/eq_mesh.gd")
 const Kit := preload("res://assets/equipment/eq_kit.gd")
 
 ## Which armor slot hides which outfit piece (boots always show).
-const HIDDEN_BY := {"shirt": "chest", "belt": "chest", "cloak": "chest", "trousers": "legs", "hair": "head", "beard": "head"}
+const HIDDEN_BY := {"shirt": "chest", "belt": "chest", "cloak": "chest", "trousers": "legs", "hair": "head", "beard": "head",
+		"torso": "chest", "legs": "legs"}
 
 # (y, half width, front z, back z) of the bare slender torso (tools/measure_body.gd on Mannequin_F).
 const TORSO_F := [
@@ -40,6 +41,23 @@ static func has_model(female: bool) -> bool:
 	return ResourceLoader.exists(MODEL_DIR + MODELS[female] + ".res")
 
 
+## [region name, ArrayMesh] for each named surface of a fitted model, each with its own textured
+## material.
+static func _regions(name_: String) -> Array:
+	var src: ArrayMesh = load(MODEL_DIR + name_ + ".res")
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = load(MODEL_DIR + name_ + "_raw_0.png")
+	mat.roughness = 0.9
+	var out: Array = []
+	for s in src.get_surface_count():
+		var m := ArrayMesh.new()
+		m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, src.surface_get_arrays(s))
+		m.surface_set_material(0, mat if src.surface_get_name(s) != "cloak" else mat.duplicate())
+		var region := src.surface_get_name(s)
+		out.append([region if region != "" else "torso", m])
+	return out
+
+
 ## piece name -> Array of [ArrayMesh, Skin], built once per body type.
 static func parts(female: bool) -> Dictionary:
 	if _cache.has(female):
@@ -47,13 +65,25 @@ static func parts(female: bool) -> Dictionary:
 	var skin := A.make_skin()
 	var out := {}
 	if has_model(female):
+		# The fitted model is split into named regions (tools/fit_outcast.gd). With a no-cloak body
+		# model, the body comes from that and only the cloak from the cloaked one, so chest armor
+		# can take the cloak off; without it, the cloak stays part of the torso.
 		var name_: String = MODELS[female]
-		var mesh: ArrayMesh = load(MODEL_DIR + name_ + ".res")
-		var mat := StandardMaterial3D.new()
-		mat.albedo_texture = load(MODEL_DIR + name_ + "_raw_0.png")
-		mat.roughness = 0.9
-		mesh.surface_set_material(0, mat)
-		out["body"] = [[mesh, skin]]
+		var bare: String = name_ + "_nocloak"
+		var has_bare := ResourceLoader.exists(MODEL_DIR + bare + ".res")
+		for region in _regions(bare if has_bare else name_):
+			var piece: String = region[0]
+			if not has_bare and piece == "cloak":
+				piece = "torso"
+			if has_bare and piece == "cloak":
+				continue
+			out[piece] = out.get(piece, []) + [[region[1], skin]]
+		if has_bare:
+			for region in _regions(name_):
+				if region[0] == "cloak":
+					var cm: ArrayMesh = region[1]
+					(cm.surface_get_material(0) as StandardMaterial3D).cull_mode = BaseMaterial3D.CULL_DISABLED
+					out["cloak"] = [[cm, skin]]
 		_cache[female] = out
 		return out
 	out["shirt"] = [shirt(female)]

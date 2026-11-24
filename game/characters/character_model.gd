@@ -395,7 +395,7 @@ var _body_slender := false
 
 ## The mannequin shows unless a full Outcast model (head, hands and all) is worn over it.
 func _show_body() -> void:
-	var covered := _outfit.has("body")
+	var covered := _outfit.has("head") or _outfit.has("body")
 	if _female_mesh:
 		_female_mesh.visible = _body_slender and not covered
 	if _body_mesh_original:

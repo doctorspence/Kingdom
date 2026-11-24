@@ -126,41 +126,92 @@ func _run() -> void:
 				weights[i * 4 + k] = 0.0
 	print("fit: %d vertices, %d tied to the hips as loose cloth" % [out_v.size(), loose])
 
-	# 4. save: texture as a PNG, a plain material, and the skinned mesh
+	# 4. regions: one surface per body region (named), so armor can hide what it covers.
+	#    (The cloak is cut out later, against the no-cloak body: see the "cloak" step.)
 	var tex_path := DIR + name_ + "_raw_0.png"
-	var new_arr := arr.duplicate()
-	new_arr[Mesh.ARRAY_VERTEX] = out_v
 	var idx: PackedInt32Array = arr[Mesh.ARRAY_INDEX] if arr[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
-	new_arr[Mesh.ARRAY_NORMAL] = norms if norms.size() == out_v.size() else _normals(out_v, idx)
-	new_arr[Mesh.ARRAY_BONES] = bones
-	new_arr[Mesh.ARRAY_WEIGHTS] = weights
+	if idx.is_empty():
+		for i in out_v.size():
+			idx.append(i)
+	var nrm := norms if norms.size() == out_v.size() else _normals(out_v, idx)
+	var uvs: PackedVector2Array = arr[Mesh.ARRAY_TEX_UV]
+	var tex_img: Image = null
+	var tex: Texture2D = load(tex_path) if ResourceLoader.exists(tex_path) else null
+	if tex:
+		tex_img = tex.get_image()
+		if tex_img.is_compressed():
+			tex_img.decompress()
+	var region_of := {}
+	for n in ["Head", "neck_01"]:
+		region_of[A.rig().bones[n].i] = "head"
+	for n in ["spine_01", "spine_02", "spine_03", "clavicle_l", "clavicle_r", "upperarm_l", "upperarm_r"]:
+		region_of[A.rig().bones[n].i] = "torso"
+	for n in ["lowerarm_l", "lowerarm_r", "hand_l", "hand_r"]:
+		region_of[A.rig().bones[n].i] = "forearms"
+	for n in ["thigh_l", "thigh_r", "calf_l", "calf_r"]:
+		region_of[A.rig().bones[n].i] = "legs"
+	for n in ["foot_l", "foot_r"]:
+		region_of[A.rig().bones[n].i] = "feet"
+	var tris := {}   # region -> PackedInt32Array of original vertex indices
+	for t in range(0, idx.size(), 3):
+		var sum := {}
+		var cen := Vector3.ZERO
+		var uv := Vector2.ZERO
+		for k in 3:
+			var vi := idx[t + k]
+			cen += out_v[vi] / 3.0
+			if uvs:
+				uv += uvs[vi] / 3.0
+			for j in 4:
+				var b := bones[vi * 4 + j]
+				sum[b] = sum.get(b, 0.0) + weights[vi * 4 + j]
+		var best := -1
+		var bw := -1.0
+		for b in sum:
+			if sum[b] > bw:
+				bw = sum[b]
+				best = b
+		var region: String = region_of.get(best, "")
+		if region == "":   # pelvis
+			region = "torso" if cen.y > hip_y + 0.03 else "legs"
+		if not tris.has(region):
+			tris[region] = PackedInt32Array()
+		tris[region].append_array([idx[t], idx[t + 1], idx[t + 2]])
 	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, new_arr)
-	var m := StandardMaterial3D.new()
-	m.resource_name = name_
-	m.roughness = 0.9
-	m.metallic = 0.0
-	if ResourceLoader.exists(tex_path) or FileAccess.file_exists(ProjectSettings.globalize_path(tex_path)):
-		m.set_meta("albedo_png", tex_path)
-	mesh.surface_set_material(0, m)
+	for region in ["head", "torso", "forearms", "legs", "feet", "cloak"]:
+		if not tris.has(region):
+			continue
+		var list: PackedInt32Array = tris[region]
+		var remap := {}
+		var v2 := PackedVector3Array()
+		var n2 := PackedVector3Array()
+		var u2 := PackedVector2Array()
+		var b2 := PackedInt32Array()
+		var w2 := PackedFloat32Array()
+		var i2 := PackedInt32Array()
+		for vi in list:
+			if not remap.has(vi):
+				remap[vi] = v2.size()
+				v2.append(out_v[vi])
+				n2.append(nrm[vi])
+				if uvs:
+					u2.append(uvs[vi])
+				for j in 4:
+					b2.append(bones[vi * 4 + j])
+					w2.append(weights[vi * 4 + j])
+			i2.append(remap[vi])
+		var sa := []
+		sa.resize(Mesh.ARRAY_MAX)
+		sa[Mesh.ARRAY_VERTEX] = v2
+		sa[Mesh.ARRAY_NORMAL] = n2
+		if uvs:
+			sa[Mesh.ARRAY_TEX_UV] = u2
+		sa[Mesh.ARRAY_BONES] = b2
+		sa[Mesh.ARRAY_WEIGHTS] = w2
+		sa[Mesh.ARRAY_INDEX] = i2
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sa)
+		mesh.surface_set_name(mesh.get_surface_count() - 1, region)
+		print("fit: region %-8s %6d triangles" % [region, i2.size() / 3])
 	var err := ResourceSaver.save(mesh, DIR + name_ + ".res")
 	print("fit: saved %s (err %d), texture %s" % [DIR + name_ + ".res", err, tex_path])
 	quit()
-
-
-## Smooth normals from the triangles (the raw file may carry none).
-static func _normals(v: PackedVector3Array, idx: PackedInt32Array) -> PackedVector3Array:
-	var n := PackedVector3Array()
-	n.resize(v.size())
-	var count := idx.size() if not idx.is_empty() else v.size()
-	for t in range(0, count, 3):
-		var a := idx[t] if not idx.is_empty() else t
-		var b := idx[t + 1] if not idx.is_empty() else t + 1
-		var c := idx[t + 2] if not idx.is_empty() else t + 2
-		var fn := (v[c] - v[a]).cross(v[b] - v[a])   # Godot front faces are clockwise
-		n[a] += fn
-		n[b] += fn
-		n[c] += fn
-	for i in n.size():
-		n[i] = n[i].normalized() if n[i].length_squared() > 0.0 else Vector3.UP
-	return n
