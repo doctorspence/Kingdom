@@ -79,6 +79,15 @@ func _run() -> void:
 		if err != OK:
 			push_error("scene %s: %d" % [path, err])
 			continue
+		if e.kind == "armor":
+			# the slender body still wears the mannequin fit: saved next to it as <id>_f.scn
+			var fm := Catalog.build_model(e, "mannequin")
+			var fpath := path.replace(".scn", "_f.scn")
+			_own(fm, fm)
+			var fps := PackedScene.new()
+			fps.pack(fm)
+			ResourceSaver.save(fps, fpath)
+			fm.free()
 		_make_definitions(e, load(path) if ResourceLoader.exists(path) else ps)
 		report.append("%s  %d tris" % [e.id, tris])
 	print("\n".join(report))

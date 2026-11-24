@@ -484,6 +484,11 @@ func set_armor(slot: String, scene: PackedScene) -> void:
 		_refresh_outfit()
 		return
 	var made: Array = []
+	# armor is fitted to the real Outcast; the slender mannequin body wears the "<id>_f.scn" fit
+	if _body_slender and scene.resource_path.ends_with(".scn"):
+		var alt := scene.resource_path.replace(".scn", "_f.scn")
+		if ResourceLoader.exists(alt):
+			scene = load(alt)
 	var inst: Node = scene.instantiate()
 	for mi in inst.find_children("*", "MeshInstance3D", true, false):
 		var src := mi as MeshInstance3D

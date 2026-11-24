@@ -1,17 +1,17 @@
-[gd_resource type="Resource" script_class="ItemData" format=3]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://buk82bm7nayan"]
 
-[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="1_item"]
 [ext_resource type="Texture2D" uid="uid://bh3xloes6fda7" path="res://assets/equipment/InventoryIcons/Armor/item_padded_cowl.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
-icon = ExtResource("9_icon")
 id = &"item_padded_cowl"
 display_name = "Padded Cowl"
 slot = 1
 grid_size = Vector2i(2, 2)
-weight = 1.0
-value = 10
 icon_color = Color(0.55, 0.5, 0.4, 1)
+icon = ExtResource("9_icon")
 armor = 3.0
-stats = {"intellect": 1}
+stats = {
+"intellect": 1
+}
