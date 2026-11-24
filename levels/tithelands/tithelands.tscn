@@ -86,10 +86,10 @@ size = Vector3(364, 80, 0.7)
 size = Vector3(0.7, 80, 364)
 
 [sub_resource type="BoxShape3D" id="edge_Wa"]
-size = Vector3(0.7, 80, 81.8)
+size = Vector3(0.7, 54, 81.8)
 
 [sub_resource type="BoxShape3D" id="edge_Wb"]
-size = Vector3(0.7, 80, 277.8)
+size = Vector3(0.7, 54, 277.8)
 
 [sub_resource type="BoxShape3D" id="edge_Wc"]
 size = Vector3(0.7, 43.4, 4.4)
@@ -872,13 +872,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 178.5)
 shape = SubResource("edge_S")
 
 [node name="EdgeW" type="StaticBody3D" parent="." unique_id=2137569121]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, 20, -141.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, 33, -141.1)
 
 [node name="Shape" type="CollisionShape3D" parent="EdgeW" unique_id=1151630457]
 shape = SubResource("edge_Wa")
 
 [node name="EdgeW2" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, 20, 43.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -178.5, 33, 43.1)
 
 [node name="Shape" type="CollisionShape3D" parent="EdgeW2"]
 shape = SubResource("edge_Wb")
