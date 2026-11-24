@@ -64,11 +64,17 @@ func move(kind: StringName) -> AttackData:
 	match kind:
 		&"jump_light":
 			made = _make(light, 1.15, 1.2, 1.2, 0.2)
+			# A quick overhead chop straight down (not the ground swing).
+			_downward(made, &"cut/Jump_Chop", 0.18, 0.3, 0.55, 0.75, 1.0)
 		&"jump_heavy":
 			made = _make(heavy, 1.3, 1.4, 1.15, 0.2)
+			# A two-handed overhead slam that lands in a crouch.
+			_downward(made, &"cut/Jump_Slam", 0.34, 0.5, 0.95, 1.15, 1.0)
 		&"plunge":
 			made = _make(heavy, 2.2, 2.5, 1.0, 0.9)
 			if made:
+				# The slam again: held overhead while falling, brought down on landing.
+				_downward(made, &"cut/Jump_Slam", 0.34, 0.5, 0.95, 1.15, 1.0)
 				made.arc_degrees = 360.0
 				made.lunge_distance = 0.0
 				made.stamina_cost = 30.0
@@ -105,6 +111,27 @@ func kind_is_heavy(a: AttackData) -> bool:
 		if _variants.get(k) == a or get(k) == a:
 			return true
 	return false
+
+
+## Swap a jump move's swing for a downward one (melee only; bows keep their shot).
+## Times are in the new animation's seconds.
+func _downward(a: AttackData, anim_name: StringName, hit_start: float, hit_end: float, cancel: float, end: float, speed: float) -> void:
+	if a == null or a.projectile_speed > 0.0:
+		return
+	a.anim = anim_name
+	a.recovery_anim = &""
+	a.anim_speed = speed
+	a.windup_until = 0.0
+	a.windup_speed_mult = 1.0
+	a.hit_start = hit_start
+	a.hit_end = hit_end
+	a.chain_time = cancel
+	a.cancel_time = cancel
+	a.end_time = end
+	a.extra_hits = PackedVector2Array()
+	a.arc_degrees = minf(a.arc_degrees, 100.0)  # a downward blow hits what's in front
+	a.lunge_start = 0.0
+	a.lunge_end = hit_start
 
 
 func _make(base: AttackData, damage: float, poise: float, stamina: float, reach_bonus: float) -> AttackData:

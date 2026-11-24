@@ -36,6 +36,7 @@ func _run() -> void:
 	await _tap("light_attack")
 	await _frames(2)
 	_check("light attack in the air is a jump attack", player.state == Player.State.ATTACK and player._attack.attack == w.move(&"jump_light"))
+	_check("...a downward chop, not the ground swing (playing %s)" % player.model.current_anim(), player.model.current_anim() == &"cut/Jump_Chop")
 	await _seconds(0.9)
 	var jump_light := hp - e.health
 	_check("...and it hurts (%.0f)" % jump_light, jump_light > 0.0)
@@ -50,6 +51,7 @@ func _run() -> void:
 	await _tap("heavy_attack")
 	await _frames(2)
 	_check("heavy attack in the air is a jump heavy", player.state == Player.State.ATTACK and player._attack.attack == w.move(&"jump_heavy"))
+	_check("...an overhead slam (playing %s)" % player.model.current_anim(), player.model.current_anim() == &"cut/Jump_Slam")
 	await _seconds(1.1)
 	var jump_heavy := hp - e.health
 	_check("...and hits harder than the jump light (%.0f vs %.0f)" % [jump_heavy, jump_light], jump_heavy > jump_light)

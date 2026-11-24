@@ -134,6 +134,58 @@ func _merge_extra_libraries() -> void:
 			_library_cache[lib_name] = source.get_animation_library(&"")
 			scene.free()
 		_anim.add_animation_library(lib_name, _library_cache[lib_name])
+	_add_cut_clips()
+
+
+## Clips cut out of longer animations, played as "cut/<name>" like any other:
+## name -> [source animation, from, to] (seconds).
+const CUT_CLIPS := {
+	# Jumping heavy attack: the overhead slam at the end of the heavy combo, down into a crouch.
+	&"Jump_Slam": [&"ual2/Sword_Heavy_Combo", 2.2, 3.4],
+	# Jumping light attack: a quick overhead chop straight down.
+	&"Jump_Chop": [&"Sword_Attack", 0.2, 1.1],
+}
+
+
+func _add_cut_clips() -> void:
+	if _anim.has_animation_library(&"cut"):
+		return
+	if not _library_cache.has(&"cut"):
+		var lib := AnimationLibrary.new()
+		for clip_name: StringName in CUT_CLIPS:
+			var spec: Array = CUT_CLIPS[clip_name]
+			if not _anim.has_animation(spec[0]):
+				return  # not a humanoid with the sword animations (a hound...)
+			lib.add_animation(clip_name, _cut(_anim.get_animation(spec[0]), spec[1], spec[2]))
+		_library_cache[&"cut"] = lib
+	_anim.add_animation_library(&"cut", _library_cache[&"cut"])
+
+
+## A copy of part of `src` (from..to seconds), resampled at 30 fps and starting at 0.
+static func _cut(src: Animation, from: float, to: float) -> Animation:
+	var out := Animation.new()
+	out.length = to - from
+	var step := 1.0 / 30.0
+	for i in src.get_track_count():
+		var type := src.track_get_type(i)
+		if type != Animation.TYPE_POSITION_3D and type != Animation.TYPE_ROTATION_3D and type != Animation.TYPE_SCALE_3D:
+			continue
+		var j := out.add_track(type)
+		out.track_set_path(j, src.track_get_path(i))
+		var t := from
+		while true:
+			var at := minf(t, to)
+			match type:
+				Animation.TYPE_POSITION_3D:
+					out.position_track_insert_key(j, at - from, src.position_track_interpolate(i, at))
+				Animation.TYPE_ROTATION_3D:
+					out.rotation_track_insert_key(j, at - from, src.rotation_track_interpolate(i, at))
+				Animation.TYPE_SCALE_3D:
+					out.scale_track_insert_key(j, at - from, src.scale_track_interpolate(i, at))
+			if at >= to:
+				break
+			t += step
+	return out
 
 
 # --- Facing -------------------------------------------------------------------

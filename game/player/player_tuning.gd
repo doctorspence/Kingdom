@@ -139,6 +139,9 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 ## Flinch: a clean hit during your light attack's wind-up knocks you out of it for
 ## this long (seconds). Heavy swings power through. Swing into their blade and you lose.
 @export var flinch_time := 0.3
+## Heavy attacks: their wind-up (the raise before the blow) plays at this speed
+## (0.5 = takes twice as long, about 0.5 s with a sword). Charging holds at the top as before.
+@export_range(0.2, 1.0) var heavy_windup_scale := 0.5
 ## Attack reach: a melee swing aimed at someone just out of reach closes up to this much
 ## extra distance during its wind-up (meters), so blows connect instead of falling short ...
 @export var reach_assist := 1.2

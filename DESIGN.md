@@ -119,7 +119,7 @@ Dark Souls pace: every swing commits you, every hit hurts, and stamina is the cl
 - **Ladders** only for climbing. **No swimming yet**: water in zone 1 is shallow (wading slows you), and deep water counts as a fatal fall.
 
 ### 5.3 Attacks & weapons
-Light attacks chain into 2–3 hit combos. Heavy attacks can be charged. Running, rolling and jumping attacks come per weapon. Each weapon type has its own moveset:
+Light attacks chain into 2–3 hit combos. Heavy attacks wind up slowly (the raise takes about 0.5 s, `heavy_windup_scale` in the player tuning) and can be charged by holding at the top. Running, rolling and jumping attacks come per weapon. Each weapon type has its own moveset:
 
 | Weapon | Hands | Scales with | Feel |
 |---|---|---|---|
@@ -137,8 +137,8 @@ Every weapon also has these, made from its light and heavy attacks unless its da
 
 | Move | How |
 |---|---|
-| Jump light / jump heavy | Attack while in the air |
-| Plunging attack | Attack while falling from 2.5 m or more above the ground: you dive and land with a wide heavy blow (no fall damage) |
+| Jump light / jump heavy | Attack while in the air. Both swing **downward**: light is a quick overhead chop, heavy a two-handed overhead slam that lands in a crouch (animation clips `cut/Jump_Chop` and `cut/Jump_Slam`, cut from longer animations in `character_model.gd`) |
+| Plunging attack | Attack while falling from 2.5 m or more above the ground: you dive with the blade held overhead and slam it down as you land, a wide heavy blow (no fall damage) |
 | Running light / running heavy | Attack while sprinting |
 | Rolling light / rolling heavy | Attack right after a roll |
 | Backstep attack | Light attack right after a backstep (a roll with no direction held) |

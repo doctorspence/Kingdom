@@ -98,6 +98,19 @@ func _run() -> void:
 	player.weapon.crit_chance = crit_before
 	_check_true("charged heavy hits harder (%.0f vs %.0f)" % [charged, heavy], heavy > 0.0 and charged > heavy * 1.3)
 
+	# Heavy attacks take their time: the blow lands well after a light one would.
+	await _setup_duel()
+	var frames_to_blow := 0
+	await _tap("heavy_attack")
+	for i in 120:
+		await get_tree().physics_frame
+		frames_to_blow += 1
+		if player.state == Player.State.ATTACK and player._attack.past(player._attack.attack.hit_start):
+			break
+	var blow_time := frames_to_blow / float(Engine.physics_ticks_per_second)
+	_check_true("a heavy winds up for a while before the blow (%.2f s)" % blow_time, blow_time >= 0.45)
+	await _seconds(1.5)
+
 	await _setup_duel()
 	var st := player.stamina
 	await _tap("light_attack")

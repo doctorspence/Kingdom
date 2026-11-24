@@ -1678,6 +1678,9 @@ func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
 	_arrow_fired = false
 	_set_state(State.ATTACK)
 	_attack.start(a, model)
+	# Heavy swings take their time: the raise plays slower, so they hit with weight (and can be read).
+	if a == weapon.heavy and a.projectile_speed <= 0.0:
+		_attack.windup_scale = tuning.heavy_windup_scale
 
 
 ## Turn toward the locked target, or the best nearby enemy, or where you push.
