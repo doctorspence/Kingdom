@@ -21,10 +21,13 @@ func _ready() -> void:
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://shots"))
 	var anims: Array = DEFAULT
+	var behind := false  # add "behind" after the list for the game-camera view
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "visual_anim_sheet" and i + 1 < args.size():
 			anims = Array(args[i + 1].split(","))
+		if args[i] == "behind":
+			behind = true
 	var scene: Node = load("res://levels/sandbox/combat_test.tscn").instantiate()
 	get_tree().root.add_child(scene)
 	await _frames(30)
@@ -38,6 +41,9 @@ func _run() -> void:
 	cam.fov = 50.0
 	cam.global_position = Vector3(5.5, 1.3, -0.6)
 	cam.look_at(Vector3(0, 1.1, -0.6))
+	if behind:
+		cam.global_position = Vector3(0.4, 2.0, 3.0)
+		cam.look_at(Vector3(0, 1.2, -0.6))
 	cam.make_current()  # look at the player from the side, at chest height
 	await _frames(20)
 	player.set_physics_process(false)

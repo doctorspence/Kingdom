@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="ItemData" format=3]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dnpo5pnjll5ny"]
 
-[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
-[ext_resource type="Resource" path="res://data/weapons/weapon_rusty_sword.tres" id="2_ref"]
+[ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Resource" uid="uid://b13a7oo8xm2xy" path="res://data/weapons/weapon_rusty_sword.tres" id="2_ref"]
 [ext_resource type="Texture2D" uid="uid://bkmk1oeyefw55" path="res://assets/equipment/InventoryIcons/Weapons/item_rusty_sword.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
-icon = ExtResource("9_icon")
 id = &"item_rusty_sword"
 display_name = "Rusty Sword"
 flavor = "Sharp enough. Mostly."
@@ -15,6 +14,5 @@ grid_size = Vector2i(1, 3)
 weight = 4.0
 value = 20
 icon_color = Color(0.6, 0.58, 0.55, 1)
-armor = 0.0
-stats = {}
+icon = ExtResource("9_icon")
 weapon = ExtResource("2_ref")

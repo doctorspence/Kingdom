@@ -64,8 +64,8 @@ func move(kind: StringName) -> AttackData:
 	match kind:
 		&"jump_light":
 			made = _make(light, 1.15, 1.2, 1.2, 0.2)
-			# A quick overhead chop straight down (not the ground swing).
-			_downward(made, &"cut/Jump_Chop", 0.18, 0.3, 0.55, 0.75, 1.0)
+			# A straight overhead chop (OverheadChop drives the arm; blow at 0.27 s).
+			_downward(made, &"cut/Jump_Chop", 0.2, 0.32, 0.55, 0.75, 1.0)
 		&"jump_heavy":
 			made = _make(heavy, 1.3, 1.4, 1.15, 0.2)
 			# A two-handed overhead slam that lands in a crouch.

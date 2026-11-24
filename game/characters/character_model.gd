@@ -104,6 +104,12 @@ func _ready() -> void:
 		_steps = steps
 	else:
 		steps.free()
+	var chop := OverheadChop.new()
+	chop.name = "OverheadChop"
+	if chop.setup(_skeleton, _anim, self):
+		_skeleton.add_child(chop)
+	else:
+		chop.free()
 	_last_pos = global_position
 	for anim_name in FORCE_LOOP:
 		if _anim.has_animation(anim_name):
@@ -142,8 +148,9 @@ func _merge_extra_libraries() -> void:
 const CUT_CLIPS := {
 	# Jumping heavy attack: the overhead slam at the end of the heavy combo, down into a crouch.
 	&"Jump_Slam": [&"ual2/Sword_Heavy_Combo", 2.2, 3.4],
-	# Jumping light attack: a quick overhead chop straight down.
-	&"Jump_Chop": [&"Sword_Attack", 0.2, 1.1],
+	# Jumping light attack: a plain airborne pose; OverheadChop (overhead_chop.gd) swings
+	# the sword arm through a straight overhead chop on top of it.
+	&"Jump_Chop": [&"Jump", 0.4, 1.15],
 }
 
 

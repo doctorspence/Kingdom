@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="ItemData" format=3]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dhcq13rdoneyp"]
 
-[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
-[ext_resource type="Resource" path="res://data/weapons/weapon_executioner_greatsword.tres" id="2_ref"]
+[ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Resource" uid="uid://d2dj4bgmbqim0" path="res://data/weapons/weapon_executioner_greatsword.tres" id="2_ref"]
 [ext_resource type="Texture2D" uid="uid://bv01sv5gugkwo" path="res://assets/equipment/InventoryIcons/Weapons/item_executioners_greatsword.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
-icon = ExtResource("9_icon")
 id = &"item_executioners_greatsword"
 display_name = "Executioner's Greatsword"
 flavor = "No point. It was never meant to stab."
@@ -15,6 +14,5 @@ grid_size = Vector2i(1, 4)
 weight = 9.0
 value = 40
 icon_color = Color(0.45, 0.42, 0.4, 1)
-armor = 0.0
-stats = {}
+icon = ExtResource("9_icon")
 weapon = ExtResource("2_ref")

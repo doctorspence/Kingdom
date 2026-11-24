@@ -1,11 +1,12 @@
 extends Node
 ## Side-view frame strips of the jumping light attack, the jumping heavy attack and the
 ## ground heavy (not a pass/fail check). Run through tests/run.gd WITHOUT --headless:
-##   Godot_console.exe --path . --resolution 960x720 --script res://tests/run.gd -- visual_jump_attack
+##   Godot_console.exe --path . --resolution 960x720 --script res://tests/run.gd -- visual_jump_attack [game]
+## ("game" = through the real game camera, behind the player; otherwise from the side)
 ## The sheet goes to user://shots/jump_attacks.png (%APPDATA%\Godot\app_userdata\Kingdom\shots).
 
 const STEPS := 9
-const EVERY := 4  # physics frames between pictures
+const EVERY := 2  # physics frames between pictures
 const CELL := Vector2i(160, 220)
 
 var player: Player
@@ -35,7 +36,11 @@ func _run() -> void:
 		player.stamina = player.max_stamina()
 		cam.global_position = Vector3(5.5, 1.6, -0.8)
 		cam.look_at(Vector3(0, 1.3, -0.8))
-		cam.make_current()
+		if "game" in OS.get_cmdline_user_args():
+			player.camera_rig.yaw = 0.0  # the real game camera, behind the player
+			player.camera_rig.camera.make_current()
+		else:
+			cam.make_current()
 		await _physics(30)
 		if rows[row][0] != "":
 			_tap(rows[row][0])

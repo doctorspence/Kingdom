@@ -5,9 +5,9 @@
 [ext_resource type="Script" uid="uid://c6x8twovvp2nu" path="res://game/classes/talent_data.gd" id="3_talent"]
 [ext_resource type="Resource" uid="uid://dos103uccak5l" path="res://data/weapons/weapon_lantern_staff.tres" id="5_weapon"]
 [ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="9_item"]
-[ext_resource type="Resource" path="res://data/items/weapons/item_lantern_staff.tres" id="50_start"]
-[ext_resource type="Resource" path="res://data/items/armor/item_padded_robe.tres" id="51_start"]
-[ext_resource type="Resource" path="res://data/items/armor/item_padded_cowl.tres" id="52_start"]
+[ext_resource type="Resource" uid="uid://tsmij10hmhy4" path="res://data/items/weapons/item_lantern_staff.tres" id="50_start"]
+[ext_resource type="Resource" uid="uid://um2dx5eu3n0q" path="res://data/items/armor/item_padded_robe.tres" id="51_start"]
+[ext_resource type="Resource" uid="uid://buk82bm7nayan" path="res://data/items/armor/item_padded_cowl.tres" id="52_start"]
 
 [sub_resource type="Resource" id="A_bolt"]
 script = ExtResource("2_ability")

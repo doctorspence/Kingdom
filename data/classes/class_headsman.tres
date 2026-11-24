@@ -6,8 +6,8 @@
 [ext_resource type="Script" uid="uid://c7ne42mtltp52" path="res://game/combat/attack_data.gd" id="4_attack"]
 [ext_resource type="Resource" uid="uid://d2dj4bgmbqim0" path="res://data/weapons/weapon_executioner_greatsword.tres" id="5_weapon"]
 [ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="9_item"]
-[ext_resource type="Resource" path="res://data/items/weapons/item_executioners_greatsword.tres" id="50_start"]
-[ext_resource type="Resource" path="res://data/items/armor/item_leather_hood.tres" id="51_start"]
+[ext_resource type="Resource" uid="uid://dhcq13rdoneyp" path="res://data/items/weapons/item_executioners_greatsword.tres" id="50_start"]
+[ext_resource type="Resource" uid="uid://bu8534ss76vpe" path="res://data/items/armor/item_leather_hood.tres" id="51_start"]
 [ext_resource type="Resource" path="res://data/items/armor/item_leather_breeches.tres" id="52_start"]
 
 [sub_resource type="Resource" id="A_lunge"]

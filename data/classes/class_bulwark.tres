@@ -7,9 +7,9 @@
 [ext_resource type="Resource" uid="uid://b13a7oo8xm2xy" path="res://data/weapons/weapon_rusty_sword.tres" id="5_weapon"]
 [ext_resource type="Resource" path="res://data/shields/shield_round_wood.tres" id="6_shield"]
 [ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="9_item"]
-[ext_resource type="Resource" path="res://data/items/weapons/item_rusty_sword.tres" id="50_start"]
-[ext_resource type="Resource" path="res://data/items/weapons/item_round_shield.tres" id="51_start"]
-[ext_resource type="Resource" path="res://data/items/armor/item_rusty_hauberk.tres" id="52_start"]
+[ext_resource type="Resource" uid="uid://dnpo5pnjll5ny" path="res://data/items/weapons/item_rusty_sword.tres" id="50_start"]
+[ext_resource type="Resource" uid="uid://blwp3y28jrfym" path="res://data/items/weapons/item_round_shield.tres" id="51_start"]
+[ext_resource type="Resource" uid="uid://d1c4itygoqu3x" path="res://data/items/armor/item_rusty_hauberk.tres" id="52_start"]
 
 [sub_resource type="Resource" id="Strike_bash"]
 script = ExtResource("4_attack")
