@@ -225,7 +225,8 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Combat stance (locked on or guard up): face the foe, slower backpedal and sidestep, legs run in reverse when backing off
 - [x] Mouse wheel zooms the camera in and out when you're not locked on
 - [ ] 🧪 Run around the Tithelands, then lock on to a bandit and circle and back away from it. Tell me if it feels too slow or floaty, and try the wheel zoom. Numbers: "Speeds" and "Weight and turning" in `data/balance/player_tuning.tres`
-- [ ] Later: real backward and sideways walk/jog animations (sidesteps still slide)
+- [x] Sidesteps: hips and legs turn toward the step, chest stays on the foe (no more sliding sideways); feet matched to the ground at walk, jog and sprint
+- [ ] Later: real backward and sideways walk/jog animations would still look better than the leg turn
 
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades

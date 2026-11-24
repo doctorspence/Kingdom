@@ -38,17 +38,27 @@ const ANIM_DRINK := &"ual2/Consume"
 static var _library_cache := {}
 
 ## Speed (m/s) at which each looping animation's feet match the ground.
-@export var walk_anim_speed := 1.6
-@export var run_anim_speed := 6.2
-@export var sprint_anim_speed := 9.2
-## Legs cycle this much faster than the ground speed alone needs, so strides are quick but long.
-@export var leg_speed_mult := 1.35
+## Measured from the animations with tests/stride_check.gd (2026-11-23).
+@export var walk_anim_speed := 0.95
+@export var run_anim_speed := 5.25
+@export var sprint_anim_speed := 7.6
+## Legs cycle this much faster than the ground needs (1 = planted feet don't slide).
+@export var leg_speed_mult := 1.0
 ## Share of the roll animation that plays during a roll (the rest is the get-up).
 @export_range(0.3, 1.0) var roll_anim_portion := 0.8
 ## Recolor the whole body (alpha 0 = keep the model's own colors).
 @export var body_tint := Color(0, 0, 0, 0)
 ## Idle animation (enemies can use a different one).
 @export var idle_anim := ANIM_IDLE
+## Sidesteps: the hips and legs turn up to this far toward the way you step while
+## the chest keeps facing forward (degrees; 0 = off). See LegTwist.
+@export_range(0.0, 90.0) var leg_twist_max := 75.0
+## How quickly the legs swing to a new stepping direction (higher = quicker).
+@export var leg_twist_sharpness := 10.0
+
+var _twist: LegTwist
+var _last_pos := Vector3.ZERO
+var _step_velocity := Vector3.ZERO
 
 var _anim: AnimationPlayer
 var _skeleton: Skeleton3D
@@ -68,6 +78,14 @@ func _ready() -> void:
 	for m in find_children("*", "MeshInstance3D", true, false):
 		_meshes.append(m)
 	_merge_extra_libraries()
+	var twist := LegTwist.new()
+	twist.name = "LegTwist"
+	if leg_twist_max > 0.0 and twist.setup(_skeleton):
+		_skeleton.add_child(twist)
+		_twist = twist
+	else:
+		twist.free()
+	_last_pos = global_position
 	for anim_name in FORCE_LOOP:
 		if _anim.has_animation(anim_name):
 			_anim.get_animation(anim_name).loop_mode = Animation.LOOP_LINEAR
@@ -122,6 +140,31 @@ func turn_smooth(direction: Vector3, sharpness: float, min_degrees_per_sec: floa
 	turn_toward(direction, step)
 
 
+## Watch which way the body actually travels, and turn the legs that way when
+## it's stepping sideways (works for players, other players' copies and enemies).
+func _physics_process(delta: float) -> void:
+	if _twist == null or delta <= 0.0:
+		return
+	var moved := global_position - _last_pos
+	_last_pos = global_position
+	moved.y = 0.0
+	var v := moved / delta
+	if v.length() > 20.0:
+		v = Vector3.ZERO  # a teleport or respawn, not a step
+	_step_velocity = _step_velocity.lerp(v, 1.0 - exp(-12.0 * delta))
+	var target := 0.0
+	var stepping := _current == ANIM_WALK or _current == ANIM_RUN
+	if stepping and _step_velocity.length() > 0.3:
+		var fwd := forward()
+		fwd.y = 0.0
+		var angle := fwd.signed_angle_to(_step_velocity, Vector3.UP)
+		if get_speed() < 0.0:
+			angle = wrapf(angle + PI, -PI, PI)  # walking backwards: legs face away from travel
+		var limit := deg_to_rad(leg_twist_max)
+		target = clampf(angle, -limit, limit)
+	_twist.yaw = lerp_angle(_twist.yaw, target, 1.0 - exp(-leg_twist_sharpness * delta))
+
+
 func face_instantly(direction: Vector3) -> void:
 	turn_toward(direction, TAU)
 
@@ -141,8 +184,8 @@ func update_locomotion(ground_speed: float, sprinting: bool, walking: bool, back
 		play(idle_anim, 0.2)
 	elif sprinting:
 		play(ANIM_SPRINT, 0.2, clampf(ground_speed / sprint_anim_speed * leg_speed_mult, 0.6, 2.0))
-	elif walking or ground_speed < 2.6:
-		play(ANIM_WALK, 0.2, dir_sign * clampf(ground_speed / walk_anim_speed, 0.5, 1.6))
+	elif walking or ground_speed < 2.3:
+		play(ANIM_WALK, 0.2, dir_sign * clampf(ground_speed / walk_anim_speed, 0.5, 2.4))
 	else:
 		play(ANIM_RUN, 0.2, dir_sign * clampf(ground_speed / run_anim_speed * leg_speed_mult, 0.6, 2.0))
 
