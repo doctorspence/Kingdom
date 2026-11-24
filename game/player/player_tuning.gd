@@ -11,7 +11,7 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var max_health := 100.0
 
 @export_group("Speeds (meters per second)")
-@export var walk_speed := 2.0
+@export var walk_speed := 1.5
 @export var run_speed := 5.8
 @export var sprint_speed := 8.0
 ## Movement speed while locked on to a target (strafing), going forward.
