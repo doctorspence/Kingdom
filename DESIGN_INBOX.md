@@ -30,6 +30,22 @@ _(nothing waiting)_
 
 ## Filed
 
+### 2026-11-23: Female base player character, the Outcast
+- **Area:** art direction / classes
+- **Decision:** The female base player is the same Outcast as the male: same art standard, scale, UAL1 skeleton, modular clothes and hand-painted texture quality. An adult woman from the medieval English countryside, a playable adventurer, not a noblewoman, faction NPC or armored warrior. **No armor.**
+- **Details:**
+  - Body and face: slim, naturally athletic, feminine proportions with a naturally fuller bust worked realistically into the clothes; attractive but believable face, natural complexion, light freckles, no makeup; auburn or dark-brown hair in loose braids or tied back; confident expression. A real medieval traveler, not a fantasy princess or pin-up.
+  - Upper body: fitted but practical cream linen blouse, laced neckline, rolled sleeves, worn fabric, no excessive exposure.
+  - Cloak: dark olive-green wool, attached hood, simple bronze or iron clasp, weathered edges.
+  - Lower body: dark-brown wool trousers (or practical medieval divided garment), leather belt, small pouches, faded red cloth.
+  - Feet: simple brown leather boots with cloth leg wraps.
+  - Kit: small leather satchel, utility knife, rope or travel supplies, simple wrist wraps.
+  - Avoid: chainmail, breastplate, metal shoulders, armored gloves; Viking/Norse, Renaissance, pirate, modern fantasy, anime, photoreal, pixel art.
+  - Sheet: front, back, T-pose (arms level, palms down, legs straight, symmetrical), three-quarter, face close-up, clothing close-ups, modular clothing breakdown.
+- **Status:** decided (pasted by the owner into Claude Code chat)
+- **Replaces:** nothing. Matches the male Outcast entry below and the owner's answers there (base look under gear, hand-painted characters).
+- **Filed:** `DESIGN.md` 12.1 ("The base Outcast look"); `ART_NEEDS.md` "Player body" row. The owner's female concept sheet was shared as an image in chat only; it isn't saved in the project yet.
+
 ### 2026-11-23: Base player character, "the English Outcast"
 - **Area:** art direction / classes
 - **Decision:** The base playable human is an Outcast: an ordinary 12th–13th century English countryside wanderer or displaced villager, not a knight, soldier or faction member. He wears **no armor at all**, only worn, handmade civilian clothes. Look: chunky hand-painted MMORPG style (Warhammer Online, classic-era World of Warcraft as style references only), not photoreal, not pixel art.
