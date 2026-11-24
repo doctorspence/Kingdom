@@ -35,7 +35,7 @@ _(nothing waiting)_
 - **Decision:** The female base player is the same Outcast as the male: same art standard, scale, UAL1 skeleton, modular clothes and hand-painted texture quality. An adult woman from the medieval English countryside, a playable adventurer, not a noblewoman, faction NPC or armored warrior. **No armor.**
 - **Details:**
   - Body and face: slim, naturally athletic, feminine proportions with a naturally fuller bust worked realistically into the clothes; attractive but believable face, natural complexion, light freckles, no makeup; auburn or dark-brown hair in loose braids or tied back; confident expression. A real medieval traveler, not a fantasy princess or pin-up.
-  - Upper body: fitted but practical cream linen blouse, laced neckline, rolled sleeves, worn fabric, no excessive exposure.
+  - Upper body: fitted but practical cream linen blouse, rolled sleeves, worn fabric. **Neckline: low and open, laced, as on her concept sheet** (owner, 2026-11-23; this replaces the brief's "without excessive exposure").
   - Cloak: dark olive-green wool, attached hood, simple bronze or iron clasp, weathered edges.
   - Lower body: dark-brown wool trousers (or practical medieval divided garment), leather belt, small pouches, faded red cloth.
   - Feet: simple brown leather boots with cloth leg wraps.
