@@ -1,0 +1,67 @@
+[gd_scene format=3]
+
+[ext_resource type="Environment" path="res://levels/common/tithelands_env.tres" id="1_env"]
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="3_hud"]
+[ext_resource type="Texture2D" path="res://assets/textures/path/color.jpg" id="4_path"]
+[ext_resource type="PackedScene" path="res://assets/outpost/buildings/B07_small_cottage.scn" id="5_cottage"]
+[ext_resource type="PackedScene" path="res://assets/outpost/castle_approach/CP08_guard_inspection_shelter.scn" id="6_shelter"]
+[ext_resource type="PackedScene" path="res://assets/outpost/castle_approach/CP06_wooden_road_barrier.scn" id="7_barrier"]
+[ext_resource type="PackedScene" path="res://assets/outpost/castle_approach/CP05_standing_iron_brazier.scn" id="8_brazier"]
+[ext_resource type="PackedScene" path="res://assets/outpost/castle_approach/CP09_toll_inspection_table.scn" id="9_table"]
+[ext_resource type="PackedScene" path="res://assets/outpost/castle_approach/CP14_supply_barrels.scn" id="10_barrels"]
+[ext_resource type="PackedScene" path="res://assets/outpost/white_knights/WK04_mounted_standard.scn" id="11_standard"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_ground"]
+albedo_texture = ExtResource("4_path")
+roughness = 0.95
+uv1_scale = Vector3(0.3, 0.3, 0.3)
+uv1_triplanar = true
+
+[node name="OutpostTest" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-38, 35, 0)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.1
+shadow_enabled = true
+shadow_blur = 1.5
+directional_shadow_max_distance = 120.0
+sky_mode = 1
+
+[node name="Ground" type="CSGBox3D" parent="."]
+position = Vector3(0, -0.5, 0)
+use_collision = true
+size = Vector3(200, 1, 200)
+material = SubResource("Mat_ground")
+
+[node name="Cottage" parent="." instance=ExtResource("5_cottage")]
+position = Vector3(-7, 0, 0)
+
+[node name="GuardShelter" parent="." instance=ExtResource("6_shelter")]
+position = Vector3(8, 0, 1)
+rotation_degrees = Vector3(0, -40, 0)
+
+[node name="Barrier" parent="." instance=ExtResource("7_barrier")]
+position = Vector3(4.5, 0, 7)
+
+[node name="Brazier" parent="." instance=ExtResource("8_brazier")]
+position = Vector3(3.2, 0, 4.5)
+
+[node name="TollTable" parent="." instance=ExtResource("9_table")]
+position = Vector3(6.2, 0, 4.8)
+rotation_degrees = Vector3(0, -20, 0)
+
+[node name="Barrels" parent="." instance=ExtResource("10_barrels")]
+position = Vector3(-1.5, 0, 4.5)
+
+[node name="Standard" parent="." instance=ExtResource("11_standard")]
+position = Vector3(1.2, 0, 1.5)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.05, 15)
+
+[node name="Hud" parent="." instance=ExtResource("3_hud")]

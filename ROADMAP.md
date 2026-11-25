@@ -268,7 +268,7 @@ Every milestone must pass all relevant gates before it is marked complete:
 
 Follow `PRIORITIES.md` in this order:
 
-1. Owner decides the outstanding world scale question before more environment art.
+1. ~~Owner decides the outstanding world scale question before more environment art.~~ Decided 2026-11-25: buildings 1.3x real-world size, props real-world (DESIGN.md 12.1).
 2. Owner completes the solo playtest round in `PRIORITIES.md` and the 🧪 items in `TODO.md`.
 3. Claude Code fixes issues found; do not add unrelated content during stabilization.
 4. Tune the Gullet and camp for three players.

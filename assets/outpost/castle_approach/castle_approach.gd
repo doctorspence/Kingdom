@@ -9,6 +9,7 @@ extends RefCounted
 
 const HK := preload("res://assets/hideout/Materials/kit.gd")
 const K := preload("res://assets/outpost/materials/outpost_kit.gd")
+const BLD := preload("res://assets/outpost/buildings/buildings.gd")
 
 ## Where a WK03 pennant goes on the CP03 banner pole.
 const POLE_PENNANT := Vector3(0, 4.47, 0)
@@ -248,7 +249,8 @@ static func timber_barricade() -> Node3D:
 
 ## CP08: guard inspection shelter: an open-fronted timber booth on stone footings, plank floor,
 ## waist-high plank walls on three sides, a shingled hip roof with a pennant on top, a shield on
-## the front post and a seat inside. 2.6 x 2.2 m, eaves at 2.75 m. Front faces +Z.
+## the front post and a seat inside. A building, so built at the buildings' SIZE (x1.3): about
+## 3.4 x 2.9 m, eaves at 3.6 m. Front faces +Z.
 static func guard_shelter() -> Node3D:
 	var b := HK.MB.new(208)
 	var oak := K.oak()
@@ -259,22 +261,24 @@ static func guard_shelter() -> Node3D:
 		for z in [-hz, hz]:
 			b.box(K.limestone(), Vector3(x, 0.09, z), Vector3(0.32, 0.22, 0.32), Basis(), 0.01)
 			b.box(oak, Vector3(x, (0.2 + eave) * 0.5, z), Vector3(0.16, eave - 0.2, 0.16), Basis(), 0.006)
-	b.box(oak, Vector3(0, 0.2, 0), Vector3(hx * 2.0, 0.08, hz * 2.0), Basis(), 0.006)
+	# Plank floor almost at ground level, so the player walks straight in (no step-up in the game).
+	b.box(oak, Vector3(0, 0.03, 0), Vector3(hx * 2.0 - 0.1, 0.06, hz * 2.0 - 0.1), Basis(), 0.004)
 	for z in [-hz, hz]:
 		b.box(oak, Vector3(0, eave, z), Vector3(hx * 2.0 + 0.2, 0.16, 0.16), Basis(), 0.006)
 	for x in [-hx, hx]:
 		b.box(oak, Vector3(x, eave, 0), Vector3(0.16, 0.16, hz * 2.0), Basis(), 0.006)
 	# Half walls: back and both sides (vertical boards on a rail).
 	var wall := K.oak("weathered")
-	b.box(wall, Vector3(0, 0.75, -hz), Vector3(hx * 2.0, 1.05, 0.05), Basis(), 0.004)
+	b.box(wall, Vector3(0, 0.6, -hz), Vector3(hx * 2.0, 1.1, 0.05), Basis(), 0.004)
 	for x in [-hx, hx]:
-		b.box(wall, Vector3(x, 0.75, 0), Vector3(0.05, 1.05, hz * 2.0), Basis(), 0.004)
-		b.box(oak, Vector3(x, 1.3, 0), Vector3(0.1, 0.06, hz * 2.0 + 0.1), Basis(), 0.004)
-	b.box(oak, Vector3(0, 1.3, -hz), Vector3(hx * 2.0 + 0.1, 0.06, 0.1), Basis(), 0.004)
+		b.box(wall, Vector3(x, 0.6, 0), Vector3(0.05, 1.1, hz * 2.0), Basis(), 0.004)
+		b.box(oak, Vector3(x, 1.18, 0), Vector3(0.1, 0.06, hz * 2.0 + 0.1), Basis(), 0.004)
+	b.box(oak, Vector3(0, 1.18, -hz), Vector3(hx * 2.0 + 0.1, 0.06, 0.1), Basis(), 0.004)
 	# A seat along the back.
-	b.box(oak, Vector3(0, 0.62, -hz + 0.25), Vector3(hx * 1.7, 0.06, 0.34), Basis(), 0.004)
+	# (Drawn low: the shelter is scaled x1.3, which puts the seat at a normal 0.47 m.)
+	b.box(oak, Vector3(0, 0.36, -hz + 0.25), Vector3(hx * 1.7, 0.05, 0.3), Basis(), 0.004)
 	for x in [-hx * 0.7, hx * 0.7]:
-		b.box(oak, Vector3(x, 0.42, -hz + 0.25), Vector3(0.06, 0.4, 0.28), Basis(), 0.004)
+		b.box(oak, Vector3(x, 0.18, -hz + 0.25), Vector3(0.06, 0.33, 0.24), Basis(), 0.004)
 	# The roof: four shingled slopes to an apex, oak underneath, hip boards and a fascia.
 	var ov := 0.45
 	var ey := eave + 0.02
@@ -304,13 +308,13 @@ static func guard_shelter() -> Node3D:
 	b.push(Transform3D(Basis(), Vector3(-hx, 1.75, hz + 0.08)))
 	K.heater(b, 0.42, 0.54, 0.03, 0.025)
 	b.pop()
-	var cols := [["box", Vector3(0, 0.2, 0), Vector3(hx * 2.0, 0.12, hz * 2.0)],
-		["box", Vector3(0, 0.75, -hz), Vector3(hx * 2.0, 1.1, 0.08)],
-		["box", Vector3(-hx, 0.75, 0), Vector3(0.08, 1.1, hz * 2.0)],
-		["box", Vector3(hx, 0.75, 0), Vector3(0.08, 1.1, hz * 2.0)]]
+	var cols := [["box", Vector3(0, 0.03, 0), Vector3(hx * 2.0 - 0.1, 0.06, hz * 2.0 - 0.1)],
+		["box", Vector3(0, 0.6, -hz), Vector3(hx * 2.0, 1.2, 0.08)],
+		["box", Vector3(-hx, 0.6, 0), Vector3(0.08, 1.2, hz * 2.0)],
+		["box", Vector3(hx, 0.6, 0), Vector3(0.08, 1.2, hz * 2.0)]]
 	for x in [-hx, hx]:
 		cols.append(["box", Vector3(x, eave * 0.5, hz), Vector3(0.18, eave, 0.18)])
-	return K.asset("CP08_guard_inspection_shelter", b, cols)
+	return K.asset("CP08_guard_inspection_shelter", b, cols, BLD.SIZE)
 
 
 # ---------------------------------------------------------------- CP09-CP13: furniture

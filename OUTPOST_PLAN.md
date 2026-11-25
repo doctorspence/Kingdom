@@ -15,6 +15,7 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 | Emblem | White (ivory) field with a red Templar cross (a cross pattee: arms narrow at the centre, flaring to wide straight ends). The same cross on every flag, pennant, shield, sign, crate and seal. It replaces the gold cross on today's banners. The gold lion in the in-game concept picture is not used. |
 | Palette | Ivory `#E5E0CE`, dark red `#A52F35`, tarnished gold `#C3A45B`, charcoal iron `#292B30`, weathered brown timber, natural stone grey. |
 | Look | Hand-painted textures (painted light, shade, dirt and wear), chunky readable shapes, dark restrained colours; not photo-real. |
+| Building size | **Buildings 1.3x real-world size** (doors about 1.4 x 2.6 m, roomy interiors, eaves about 3.2 m on the cottage), so the over-the-shoulder camera works indoors; it also suits the classic MMO look. **Props and furniture stay real-world size** (tables, benches, barrels fit the body). The owner compared both sizes of the cottage (`docs/outpost/scale_compare_*.jpg`) and left the choice to Claude Code, who picked 1.3x. `buildings.gd SIZE`. |
 | Who is there | **Hostile White Knights.** A quest or storyline can make them friendly and open the outpost (inn, smith, market) to the player. This needs a quest system, which doesn't exist yet, so until then the outpost is hostile. |
 | Size targets | Main road and drawbridge 12 m wide, checkpoint 14 m, market about 28 x 24 m, outpost about 160 x 120 m, one-storey buildings 3.5-5 m tall, two-storey 6-8.5 m. Not symmetrical, not a grid. |
 
@@ -23,7 +24,6 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 |---|---|---|
 | How models are made | Built in code (like the bandit-hideout kit, the quarry and the trees). Any asset can later be swapped for a GLB the owner makes with an image-to-3D tool, keeping the same name, origin and size. | Works today, matches every other environment asset, and nothing waits on outside tools. |
 | Hand-painted for the whole game? | Only the outpost for now. The rest of the Tithelands keeps its textures until the owner decides. | DESIGN.md 12.1 still says photo-scanned textures for the rest of the game. |
-| Scale (doors, rooms) | **Being chosen now:** the owner asked for the B07 cottage at both sizes to compare (A: real-world, doors 1.1 x 2.0 m; B: MMO, everything x1.3, doors 1.4 x 2.6 m), then one is deleted. Walk them in `levels/sandbox/cottage_scale_test.tscn`; pictures `docs/outpost/b07_*.jpg`. | It is the open "scale question" in PRIORITIES P1. |
 
 ## 3. What is there today (facts from the project, 2026-11-25)
 
@@ -47,7 +47,7 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 |---|---|---|
 | 1. Foundations and the White Knights set | Hand-painted texture painter, outpost kit, exporter, preview pictures, the emblem; WK01-WK12. | **Done 2026-11-25.** Pictures: `docs/outpost/wk_*.jpg`. |
 | 2. Checkpoint and castle approach | CP01-CP20: banner pole, stone torch holder, iron brazier, red-and-ivory road barrier, spiked timber barricade, guard shelter, toll table, bench, spear rack, weapon chest, shield display, barrels and crates stencilled with the cross, rope and chain, iron lantern, warning sign, boundary marker. | **Done 2026-11-25.** Pictures: `docs/outpost/cp_*.jpg` (a checkpoint laid out across a 12 m road, by day and at dusk). The guard shelter is open-fronted, so the scale question doesn't change it much. |
-| 3. Buildings | A modular kit (timber-framed walls with openings, gables, thatch roof, chimney, hearth, doors, shutters; `assets/outpost/buildings/buildings.gd`), then B01-B10. | **Started 2026-11-25:** B07 small cottage built at both sizes for the scale choice (enterable, lit hearth, 1,802 triangles). The rest waits for the owner's A or B. |
+| 3. Buildings | A modular kit (timber-framed walls with openings, gables, thatch roof, chimney, hearth, doors, shutters; `assets/outpost/buildings/buildings.gd`), then B01-B10, all at 1.3x. | **Started 2026-11-25:** B07 small cottage (enterable, lit hearth, 1,802 triangles); the guard shelter CP08 rebuilt at 1.3x to match. Walk them in `levels/sandbox/outpost_test.tscn`. Next: the other nine buildings. |
 | 4. Trade and village props | Market, blacksmith, stable, inn, carpenter, cottage props. | |
 | 5. Ground and plants | Road, path, puddle and rut looks; fences, stumps, stone paths. Trees and plants mostly exist. | |
 | 6. Light and effects | Torches, braziers, lanterns, forge fire, smoke, ground fog, rain splash. Most exist in the hideout kit. | |
@@ -60,7 +60,7 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 - **Where:** `assets/outpost/<folder>/<ID_name>.scn`, folders as in the brief: `buildings`, `castle_approach`, `white_knights`, `market`, `stable`, `blacksmith`, `inn`, `carpenter`, `cottages`, `props`, `environment`, `vfx`, plus `materials`. Names keep the brief's IDs (`WK01_large_white_knights_banner.scn`).
 - **Units and origins:** meters, +Y up. Standing props: centre of the base on y = 0. Hanging things: the top attachment point. Wall-mounted things: on the wall, facing +Z.
 - **Materials:** shared, hand-painted (`assets/outpost/materials/*.tres`, textures in `materials/textures/*.png`, painted by `painter.gd`). Tiling textures cover a fixed size in meters (oak 2 m, iron and gold 0.5 m, linen, stripes, shingles and limestone 1 m), so the paint has the same density on every asset. Knights' stores carry the cross as a stencil (`stencil.png`, a cut-out laid a few millimetres off the surface). The PNGs can be painted over by hand or replaced by AI art with the same name and size.
-- **Size factor:** building builders take `k` (1.0 = real-world sizes). `K.asset(..., k)` scales the geometry, its textures and the collision together; the builder scales its own lights and fire with k.
+- **Building size:** buildings are drawn in real-world meters and built `SIZE` (1.3) times bigger: `K.asset(..., k)` scales the geometry, its textures and the collision together, and the builder scales its own lights and fire. Floors sit at ground level (the player has no step-up), so doors are walk-in. Props and furniture are built at real-world size.
 - **Triangles:** small props under 2,000; buildings under 8,000; anything over 2,500 gets automatic distance versions (LODs). The 29 assets built so far total 19,987 (the largest, the rope and chain heap, 1,880).
 - **Lights:** braziers, torch holders and lanterns carry their own flickering light (and fire particles). Only the brazier casts shadows; the zone's shadow budget node limits how many do at once.
 - **Collision:** simple boxes and cylinders (posts, boards, shield fronts); none for cloth, ropes and small fittings above head height.
@@ -68,7 +68,7 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 
 ## 7. Open questions for the owner
 
-1. **Scale:** A (real-world) or B (MMO x1.3)? Walk both cottages in `levels/sandbox/cottage_scale_test.tscn` (open it, press F6) and go inside. Needed before more buildings. The choice also matters for the rest of the game (PRIORITIES P1).
+1. **The Tithelands' own buildings** (cottages, tithe barn, mill, chapel, watchtower) are still real-world size, so the outpost will look bigger than the village. Resize them to 1.3x to match? A separate job; nothing changes until you say so.
 2. **Winning the Knights over (later, with the quest system):** does the truce belong to one character or to the whole world? What does access give (vendors, resting, passage toward the castle)? Can it be lost?
 3. **The castle:** bring Highcrown closer (section 4), or extend the map north to it? Needed before stage 8.
 4. **Models:** keep building in code, or will you make some GLBs (saddles, anvil, hanging meat and pottery are good image-to-3D candidates)?

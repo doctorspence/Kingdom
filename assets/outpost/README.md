@@ -23,7 +23,7 @@ Each asset root is a `Node3D` with a `Mesh` (one mesh, a surface per material) a
 | `materials/*.tres` | The shared materials, saved by the exporter |
 | `white_knights/white_knights.gd` | Builders for WK01-WK12 |
 | `castle_approach/castle_approach.gd` | Builders for the checkpoint, CP03-CP20 (CP01, CP02 and CP19 are WK01, WK03 and WK05) |
-| `buildings/buildings.gd` | Timber-framed walls, gables, thatch roof, chimney and hearth; B07 small cottage (at size `k`: 1.0 real-world, 1.3 MMO) |
+| `buildings/buildings.gd` | Timber-framed walls, gables, thatch roof, chimney and hearth; B07 small cottage. Buildings are built `SIZE` (1.3) times real-world size; props are not |
 | `catalog.gd` | Every built asset: folder, file name, builder |
 | `<folder>/<ID_name>.scn` | The baked assets |
 
@@ -46,6 +46,6 @@ Preview shots: `wk_overview wk_wall wk_stand wk_pennant` (the White Knights set)
 - One emblem: `painter.gd arm_width()` defines the cross's shape for paint, carving (`outpost_kit.gd cross_poly()`) and wax alike.
 - Tiling textures are sized in meters (oak 2 m, iron and gold 0.5 m, linen, stripes and limestone 1 m), so paint density matches across assets.
 - Triangles: small props under 2,000, buildings under 8,000; meshes over 2,500 get automatic LODs.
-- Buildings: the front door faces +Z; origin at the centre of the ground floor. They are enterable; `tests/outpost_check.gd` walks a player-sized capsule through each door.
+- Buildings: the front door faces +Z; origin at the centre of the ground floor. They are enterable, with floors at ground level (the player cannot step up); `tests/outpost_check.gd` walks a player-sized capsule into each.
 - Scripts are loaded with `preload` constants, not `class_name`, so they run from the command line without an editor import.
 - A parse error in a `--script` run can make headless Godot hang instead of exit. Kill only that process.

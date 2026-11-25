@@ -4,8 +4,8 @@ extends SceneTree
 ##   Godot_console --path . --resolution 1600x900 --script res://tests/visual_outpost.gd -- <out dir> [shots...]
 ## Shots: wk_overview wk_wall wk_stand wk_pennant (the White Knights set)
 ##        cp_overview cp_left cp_right cp_table cp_dusk (a checkpoint laid out with stage 2's pieces)
-##        b07_outside b07_door_real b07_door_mmo b07_in_real b07_in_mmo (the cottage at both sizes,
-##        the door and inside views through the game's own camera arm: 1.7 m up, 3 m back)
+##        b07_outside b07_door b07_in (the cottage; the door and inside views through the game's
+##        own camera arm: 1.7 m up, 3 m back, pulled in by walls)
 
 const WK_DIR := "res://assets/outpost/white_knights/"
 const CP_DIR := "res://assets/outpost/castle_approach/"
@@ -13,8 +13,9 @@ const WK := preload("res://assets/outpost/white_knights/white_knights.gd")
 const CP := preload("res://assets/outpost/castle_approach/castle_approach.gd")
 ## Where the checkpoint layout stands, away from the White Knights set.
 const CPO := Vector3(40, 0, 0)
-## Where the two cottages stand: real-world size at CB + (-8, 0, 0), MMO size at CB + (9, 0, 0).
+## Where the cottage stands.
 const CB := Vector3(-45, 0, 40)
+const BLD := preload("res://assets/outpost/buildings/buildings.gd")
 const ENV := preload("res://levels/common/tithelands_env.tres")
 const STONE := preload("res://levels/common/materials/stone.tres")
 
@@ -35,11 +36,12 @@ func _run() -> void:
 	var out_dir := args[0] if args.size() > 0 else "user://shots"
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant", "cp_overview", "cp_left", "cp_right", "cp_table", "cp_dusk",
-		"b07_outside", "b07_door_real", "b07_door_mmo", "b07_in_real", "b07_in_mmo"]
+		"b07_outside", "b07_door", "b07_in"]
 	if args.size() > 1:
 		shots = args.slice(1)
 	_build()
 	for s in shots:
+		_day()
 		call("_shot_" + s)
 		for i in 40:
 			await process_frame
@@ -137,7 +139,7 @@ func _build_cp() -> void:
 	for s in [-1.0, 1.0]:
 		_wk("CP06_wooden_road_barrier", o + Vector3(s * 6.2, 0, -2.0), 0.0 if s < 0.0 else 180.0)
 		_wk("CP08_guard_inspection_shelter", o + Vector3(s * 9.2, 0, -3.6), -90.0 * s)
-		_wk("CP17_iron_lantern", o + Vector3(s * 7.9, 2.62, -3.6))
+		_wk("CP17_iron_lantern", o + Vector3(s * 7.3, 3.32, -3.6))
 		_wk("CP05_standing_iron_brazier", o + Vector3(s * 6.6, 0, 0.9))
 		_wk("CP04_stone_torch_holder", o + Vector3(s * 6.9, 0, -6.4))
 		_wk("CP03_banner_pole", o + Vector3(s * 7.6, 0, 2.8))
@@ -158,6 +160,14 @@ func _build_cp() -> void:
 	man.position = o + Vector3(-1.4, 0, 3.8)
 	man.rotation_degrees.y = 160.0
 	stage.add_child(man)
+
+
+## Daylight (the dusk shot dims it; every other shot starts from this).
+func _day() -> void:
+	sun.light_energy = 1.15
+	env.ambient_light_energy = ENV.ambient_light_energy
+	env.background_energy_multiplier = ENV.background_energy_multiplier
+	env.fog_light_energy = ENV.fog_light_energy
 
 
 func _look(from: Vector3, at: Vector3) -> void:
@@ -215,12 +225,12 @@ func _man(pos: Vector3, yaw: float) -> void:
 
 
 func _build_b07() -> void:
-	_wk("B07_small_cottage_realsize", CB + Vector3(-8, 0, 0))
-	_wk("B07_small_cottage_mmosize", CB + Vector3(9, 0, 0))
-	_man(CB + Vector3(-8.0 - 1.0 + 0.9, 0, 2.3 + 1.2), 200.0)
-	_man(CB + Vector3(9.0 - 1.3 + 0.9, 0, 2.99 + 1.2), 200.0)
-	_man(CB + Vector3(-8.0 + 0.8, 0, 0.2), -90.0)
-	_man(CB + Vector3(9.0 + 1.04, 0, 0.2), -90.0)
+	var k: float = BLD.SIZE
+	_wk("B07_small_cottage", CB)
+	_wk("CP08_guard_inspection_shelter", CB + Vector3(7.5, 0, 3.0), -30.0)
+	_wk("CP09_toll_inspection_table", CB + Vector3(5.6, 0, 6.2), -20.0)
+	_man(CB + Vector3(-1.0 * k + 1.0, 0, 2.3 * k + 1.2), 200.0)
+	_man(CB + Vector3(0.8 * k, 0, 0.2), -90.0)
 	# The game's camera: a 3 m spring arm 1.7 m above the player that pulls in at walls.
 	arm = SpringArm3D.new()
 	var sh := SphereShape3D.new()
@@ -245,20 +255,12 @@ func _arm_shot(feet: Vector3, yaw_deg: float, pitch_deg := -15.0) -> void:
 
 
 func _shot_b07_outside() -> void:
-	_look(CB + Vector3(0.5, 2.4, 17.0), CB + Vector3(0.5, 3.0, 0.0))
+	_look(CB + Vector3(2.0, 2.4, 16.0), CB + Vector3(1.5, 3.0, 0.0))
 
 
-func _shot_b07_door_real() -> void:
-	_arm_shot(CB + Vector3(-8.0 - 1.0, 0, 2.3 + 2.2), 0.0, -8.0)
+func _shot_b07_door() -> void:
+	_arm_shot(CB + Vector3(-1.0 * BLD.SIZE, 0, 2.3 * BLD.SIZE + 2.2), 0.0, -8.0)
 
 
-func _shot_b07_door_mmo() -> void:
-	_arm_shot(CB + Vector3(9.0 - 1.3, 0, 2.99 + 2.2), 0.0, -8.0)
-
-
-func _shot_b07_in_real() -> void:
-	_arm_shot(CB + Vector3(-8.0 + 0.8, 0, 0.2), 90.0)
-
-
-func _shot_b07_in_mmo() -> void:
-	_arm_shot(CB + Vector3(9.0 + 1.04, 0, 0.2), 90.0)
+func _shot_b07_in() -> void:
+	_arm_shot(CB + Vector3(0.8 * BLD.SIZE, 0, 0.2), 90.0)

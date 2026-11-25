@@ -26,14 +26,14 @@ In the editor: **Debug → Customize Run Instances...** → tick **Enable Multip
 - Other test maps: in the editor's **FileSystem** panel (bottom left), open one and press **F6** ("run this scene"):
   - `levels/sandbox/movement_test.tscn`: slopes, stairs, fall heights
   - `levels/sandbox/look_test.tscn`: the Phase 1 mood map
-  - `levels/sandbox/cottage_scale_test.tscn`: the outpost cottage at two sizes (A real-world, B MMO x1.3); walk in and choose
+  - `levels/sandbox/outpost_test.tscn`: the White Knights Outpost's finished buildings and some checkpoint pieces; walk in and around them
 
 ## Automated checks
 I run these before handing you a build. You can too (PowerShell, in this folder):
 ```
 & "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/run.gd -- combat_check
 ```
-(Swap `combat_check` for `movement_check`, `class_check`, `loot_check`, `death_check`, `enemy_check`, `zone_check`, `boss_check` (the Gullet and the boss) `moves_check` (extra attacks, lock-on flick, enemy spacing), `audio_check` (volume groups and sliders), `sound_check` (combat sounds), `subclass_check` (subclasses), `prefs_check` (settings and key rebinding), `camp_check` (the camp and raids) or `outpost_check` (the outpost assets load; a player fits through the cottage doors) to run the others.) Each ends with PASS or FAIL.
+(Swap `combat_check` for `movement_check`, `class_check`, `loot_check`, `death_check`, `enemy_check`, `zone_check`, `boss_check` (the Gullet and the boss) `moves_check` (extra attacks, lock-on flick, enemy spacing), `audio_check` (volume groups and sliders), `sound_check` (combat sounds), `subclass_check` (subclasses), `prefs_check` (settings and key rebinding), `camp_check` (the camp and raids) or `outpost_check` (the outpost assets load; a player can walk into its buildings) to run the others.) Each ends with PASS or FAIL.
 
 The 3-player network check starts three copies of the game and prints what each one saw:
 ```

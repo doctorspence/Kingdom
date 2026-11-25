@@ -3,9 +3,12 @@ extends RefCounted
 ## more weathered than the Knights' things (weathered oak, limewashed daub, thatch, rubble stone).
 ##
 ## Origins: the centre of the ground floor on y = 0, the front door facing +Z.
-## Every builder takes k, a size factor: 1.0 = real-world sizes (doors 1.1 x 2.0 m, like the
-## Tithelands cottages today); 1.3 = "MMO" sizes (doors about 1.4 x 2.6 m). The owner is choosing
-## between them with the B07 pair (OUTPOST_PLAN.md section 7).
+## Buildings are drawn in real-world meters and built SIZE times bigger (k), so doors, rooms and
+## eaves leave room for the over-the-shoulder camera: doors about 1.4 x 2.6 m. Decided 2026-11-25
+## (OUTPOST_PLAN.md section 2). Props and furniture stay real-world size: they relate to the body.
+
+## How much bigger than real-world every building is.
+const SIZE := 1.3
 
 const HK := preload("res://assets/hideout/Materials/kit.gd")
 const K := preload("res://assets/outpost/materials/outpost_kit.gd")
@@ -227,9 +230,9 @@ static func _thatch_roof(b: HK.MB, hx: float, hz: float, plate: float, pitch_deg
 
 ## B07: small thatched cottage: a rubble plinth, an oak frame with limewashed daub, a steep thick
 ## thatch, a stone chimney on the west gable, a plank door standing open, shuttered windows, an
-## earth floor and a lit hearth inside. One room. At k = 1: 6.4 x 4.6 m walls, door 1.1 x 2.0 m,
-## eaves about 2.4 m, ridge about 5.4 m.
-static func small_cottage(k := 1.0) -> Node3D:
+## earth floor and a lit hearth inside. One room. Drawn at 6.4 x 4.6 m walls, door 1.1 x 2.0 m,
+## eaves about 2.4 m, ridge about 5.6 m; built at SIZE: walls 8.3 x 6 m, door 1.4 x 2.6 m.
+static func small_cottage(k := SIZE) -> Node3D:
 	var b := HK.MB.new(307)
 	var hx := 3.2
 	var hz := 2.3

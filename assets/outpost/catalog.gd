@@ -42,8 +42,6 @@ static func entries() -> Array:
 	e.append([C, "CP17_iron_lantern", CP.iron_lantern])
 	e.append([C, "CP18_warning_sign", CP.warning_sign])
 	e.append([C, "CP20_stone_boundary_marker", CP.boundary_marker])
-	# The same cottage at two sizes, for the owner to choose (OUTPOST_PLAN.md section 7).
 	var B := "buildings"
-	e.append([B, "B07_small_cottage_realsize", BLD.small_cottage.bind(1.0)])
-	e.append([B, "B07_small_cottage_mmosize", BLD.small_cottage.bind(1.3)])
+	e.append([B, "B07_small_cottage", BLD.small_cottage])
 	return e

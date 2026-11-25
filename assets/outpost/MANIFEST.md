@@ -21,7 +21,7 @@
 | B04 | Large market shelter | ⬜ |  |
 | B05 | Small market stall | ⬜ | same as MK01 |
 | B06 | Carpenter workshop | ⬜ | same as CR01 |
-| B07 | Small cottage | ✅ | `B07_small_cottage_realsize.scn` (A) and `B07_small_cottage_mmosize.scn` (B, x1.3): the owner keeps one |
+| B07 | Small cottage | ✅ | `B07_small_cottage.scn` (enterable, lit hearth; built 1.3x like every building) |
 | B08 | Medium cottage | ♻️ | zone 1 `assets/buildings/cottage_*.scn` |
 | B09 | Storage shed | ⬜ |  |
 | B10 | Guard shelter | ⬜ | same family as CP08 |
@@ -37,7 +37,7 @@
 | CP05 | Standing iron brazier | ✅ | `CP05_standing_iron_brazier.scn` (lit, casts shadows) |
 | CP06 | Wooden road barrier | ✅ | `CP06_wooden_road_barrier.scn` (two face to face close a 12 m road) |
 | CP07 | Movable timber barricade | ✅ | `CP07_movable_timber_barricade.scn` |
-| CP08 | Guard inspection shelter | ✅ | `CP08_guard_inspection_shelter.scn` (open front; eaves 2.75 m) |
+| CP08 | Guard inspection shelter | ✅ | `CP08_guard_inspection_shelter.scn` (open front, walk-in; built 1.3x: eaves 3.6 m) |
 | CP09 | Toll and inspection table | ✅ | `CP09_toll_inspection_table.scn` |
 | CP10 | Guard bench | ✅ | `CP10_guard_bench.scn` |
 | CP11 | Spear rack | ✅ | `CP11_spear_rack.scn` |
