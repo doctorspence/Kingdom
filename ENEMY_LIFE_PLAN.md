@@ -1,0 +1,98 @@
+# Enemy life plan: what enemies do before the fight
+
+*Written 2026-11-25 at the owner's request. Nothing in this plan is built yet. It needs the owner's answers to the questions at the end before stage 1 starts.*
+
+## The owner's brief
+> Enemies should be gathered around each other, or a task, or a watch, before pulling aggro, as opposed to standing in battle stance 24/7. They should also patrol, or be on "tasks", or stand with each other, or keep watch. Improve their animations in the rested and the fighting state.
+
+## How it works today
+- **Everyone is in battle stance all the time.** Every humanoid enemy file sets `idle_anim = Sword_Idle`, and an idle enemy just plays it (`enemy.gd` `_state_idle`).
+- **Groups stand in a ring all facing the same way.** `SpawnDirector._spawn` puts a group evenly around the spawn point and gives every member the spawn point's rotation, so a bandit group looks like a drill formation.
+- **Patrols walk without stopping.** They walk point to point at walking speed in the same battle stance, and never pause or look around.
+- **Aggro is instant and solo.** The moment one enemy sees or hears you it charges (callers blow a horn first). Its friends standing right next to it only join if they see you themselves. `DESIGN.md` 8.1 lists a "suspicious (investigates a noise)" step that was never built.
+- **Going home ends in battle stance again**, not in what it was doing before.
+
+## What we already have to work with
+The two animation files on the shared skeleton (`UAL1_Standard.glb`, `UAL2_Standard.glb`) already hold plenty of calm, everyday animations, so stages 1-5 need no new art:
+
+| Use | Animations |
+|---|---|
+| Standing around | `Idle`, `ual2/Idle_FoldArms`, `Idle_Talking`, `ual2/Yes` (nod), `ual2/Idle_No` (shake head), `ual2/Idle_TalkingPhone` (hand gesture) |
+| Sitting at a fire or on a log | `Sitting_Enter`, `Sitting_Idle`, `Sitting_Talking`, `Sitting_Exit` |
+| Keeping watch | `ual2/Idle_Rail` (leaning on a rail or palisade), `ual2/Idle_Rail_Call` (shouting, already the caller's horn), `Idle_Torch` / `ual2/Idle_Lantern` (at night) |
+| Tasks | `ual2/TreeChopping`, `Fixing_Kneeling`, `PickUp_Table`, `Interact`, `ual2/Walk_Carry`, `ual2/Consume` (drinking), `ual2/Chest_Open`, `ual2/Farm_Harvest`, `Crouch_Idle` |
+| Lying down / waking up | `ual2/LayToIdle` (also played backwards to lie down) |
+| Patrol walk | `Walk_Formal` (Knights), `Walk` (bandits) |
+| Fighting | `Sword_Idle`, `ual2/Idle_Shield`, the sword attack sets, `Hit_Chest`, `ual2/Hit_Knockback` |
+
+The camps already have props to gather around: the Hobb camp has log seats, crates, barrels, hay, a cart and a lookout; the Gullet and the Knight's checkpoint have their own.
+
+## The idea in one paragraph
+Every enemy group gets a **post**: what it is doing while nobody is around. While on its post it plays calm animations (weapon lowered, facing its friends or its job, not you). When it notices you it goes through a short **alert ladder** (notice, turn, warn the others, draw), and the **whole group** joins together. The fight looks like it does now, with a few more fighting animations. When the fight ends and they walk home, they go **back to their post**, not back into battle stance.
+
+## 1. Posts (the calm state)
+A spawn point gets a new setting, `post`, plus optional marker children for seats, work spots and look-out spots. Members of the group share the post:
+
+| Post | What it looks like | Where |
+|---|---|---|
+| **Huddle** (the default) | 2-4 standing close in a loose circle, **facing each other**. Each one picks its own idle from the "standing around" set and changes it every 6-15 s; whoever is "talking" plays `Idle_Talking`, the others nod, fold arms or shift. Slightly different start times so nobody moves in sync. | Roads, the hamlet, woods groups |
+| **Campfire** | Sitting on the log seats around a fire, `Sitting_Idle` / `Sitting_Talking`, one may stand drinking (`Consume`). | Hobb camp, raider camp, the Gullet's yard |
+| **Watch** | Stands at a look-out marker facing outward (`Idle_Rail` on a palisade or a tower, else `Idle_FoldArms`), and slowly scans left and right. Torch or lantern at night. Sees **farther** in its cone but nothing behind it. | Hobb lookout, the checkpoint, Gullet gates |
+| **Task** | Works at a job marker: chopping at a woodpile, kneeling at a cart, sorting crates, carrying a sack between two markers (`Walk_Carry`), harvesting in the farms. Hears less while working (noisy job). | Farms, tithe barn, mill, camps |
+| **Patrol** | Walks the route at a relaxed pace, **stops at each corner** for 3-6 s to look around, then walks on. Pairs walk side by side (or one behind the other) instead of all on the same line. Knights use `Walk_Formal`. | Road patrol, tithe barn patrol |
+| **Rest** (night only, later) | Lying down by the fire or in a tent; wakes with `LayToIdle`. Slowest to react. | Camps at night |
+
+Mixing is allowed: a camp of 5 might be 3 at the fire, 1 at a task and 1 on watch. A spawn point that has no post set gets a **Huddle**, so every existing spawn point improves without being re-done.
+
+### Weapons while calm
+Calm enemies should not hold a raised sword. Two ways, the owner picks (question 1):
+- **A. Sword held low** in the hand: no new art, just the calm animations (the sword hangs down by the leg). Shields go on the back.
+- **B. Sword on the belt or back**, drawn when the fight starts: looks best, but the animation library has no "draw sword" move, so the draw would be faked (the hand goes to the hip with the arm tool used for the jump chop, the sword jumps to the hand halfway). Sitting and working enemies would always look like this.
+
+## 2. The alert ladder (calm to fighting)
+| Step | What happens | Time |
+|---|---|---|
+| **Unaware** | On its post. Senses depend on the post: sitting or resting sees less, watchers see farther in their cone, workers hear less. Night already shortens sight. | |
+| **Suspicious** | Hears a noise (sprinting, fighting, an arrow hitting) or glimpses you at the edge of its sight: stops what it is doing, turns toward it, a short "Hm?" sound, may walk a few steps to look. If nothing more happens it goes back to its post after a few seconds. Sneaking past or picking off one at a time becomes possible. | 2-5 s |
+| **Alert** | Sure it saw you: shouts (or the horn, for callers), and **its whole group** turns to fight, even those who didn't see you. | |
+| **Getting up** | Each enemy needs a moment to be ready, depending on its post: standing 0.4 s (turn and raise the sword), working 0.8 s (drop the job), sitting 1.2 s (`Sitting_Exit`), lying 2 s (`LayToIdle`). The player gets an opening for a first strike on a sleepy camp, which rewards sneaking up. | 0.4-2 s |
+| **Fighting** | The current fight (rings, taking turns, guard, balance, everything from the combat rhythm pass) is not changed. | |
+| **Going home** | Lowers the weapon, walks home, heals, and **goes back to its post** (sits back down, picks the axe back up). | |
+
+Getting hit always skips straight to fighting, whatever the step.
+
+## 3. Better fighting animations
+Small additions on top of the combat rhythm pass, no rule changes:
+- **Waiting its turn** (not one of the 2 attackers): instead of a still stance, a mix of slow circling (already there), short taunts (`Idle_No`, a weapon-raise) and guard poses (`Idle_Shield` for shield users).
+- **Hurt and tired**: below a third of its health it breathes harder (slower stance animation) and steps back more often.
+- **Different stances per enemy type**: bandits a loose, low stance; Knights an upright shield stance; Harl and the Captain their own. Today all share `Sword_Idle`.
+- **A group that loses its friends**: when most of a group is dead, the last one may hesitate (one step back, a look round) before fighting on. Martyr's fury (Zealots) stays as it is.
+
+## How it is built (for later sessions)
+- **`enemy.gd`**: the IDLE state splits into small parts: `UNAWARE` (doing its post), `SUSPICIOUS`, and a short `READYING` step before `CHASE`. RETURN ends in the post. The chase, attack and guard code is left alone. Because `enemy.gd` is already 1,500 lines (PRIORITIES P2 asks to split it), the post logic goes in its own file, `game/enemies/enemy_post.gd`, that the enemy asks "what should I be doing now?".
+- **`spawn_point.gd`**: new settings `post` (huddle, campfire, watch, task, patrol, mixed) and how many of each; marker children named `Seat*`, `Work*` (with the job in the name or a setting), `Watch*`. `SpawnDirector._spawn` hands each member its spot and faces it the right way (toward the huddle center, the fire, the job or outward).
+- **Group**: members of one spawn point share a group id; alerting one alerts the group (plus anyone within call range, as horns do today).
+- **Network**: animations are already shared (`net_anim`), so friends see the calm poses with no extra network work. Posts are decided on the host only.
+- **Performance**: far-off enemies already sleep (`enemy_sleep.gd`). A sleeping calm enemy freezes mid-pose, which looks fine for sitting or huddling; patrols keep walking only while someone is near, like now.
+- **Hounds** use a different body (`quadruped_model.gd`) with their own animations: they get a simpler version (lying by the fire or sniffing near their handler, then the same alert ladder). Their animation list still needs checking.
+- **Checks**: `tests/enemy_check.gd` gets new parts: a huddle faces inward, a sitting enemy takes longer to engage than a standing one, the whole group joins when one is hit, going home ends on the post. A picture script (`tests/visual_posts.gd`) takes shots of each post type.
+
+## Stages
+Each stage is playable on its own and ends with the checks and pictures.
+
+| # | Stage | What you'll see |
+|---|---|---|
+| 1 | **Calm idle and huddles, group alert, going home to the post** | No more battle stance at rest: groups stand facing each other with varied calm animations; the whole group fights together; after a chase they go back to standing around. This alone covers most of the brief. |
+| 2 | **Better patrols** | Patrols pause and look around at corners, walk in pairs, Knights march. |
+| 3 | **Watch posts** | Look-outs on the Hobb lookout, the checkpoint and the Gullet gates, scanning outward, with longer sight in their cone. |
+| 4 | **Campfire and tasks** | Sitting around the camp fires, chopping wood, working at carts and crates, carrying sacks; the "getting up" delay. Uses the existing camp props; adds marker children to those spawn points. |
+| 5 | **Suspicious step** | Enemies investigate noises and glimpses before committing; sneaking becomes a real option. |
+| 6 | **Fighting animation pass** | Taunts and guard poses while waiting, per-type stances, hurt behavior. |
+| 7 | **Weapons on the belt / drawing** (if the owner picks B) and **night rest** | Sheathed weapons, a draw on alert; camps sleep at night with a lit watch. |
+
+## Questions for the owner
+1. **Weapons while calm:** A (sword held low, quick) or B (sword on the belt or back and drawn when the fight starts, slower to build and the draw is faked)?
+2. **Sneaking:** is it OK that sitting, working or sleeping enemies take a moment to get up, so a careful player gets a free first hit? Should hitting an unaware enemy from behind do extra damage (a backstab), or just the free hit?
+3. **The suspicious step (stage 5):** do you want enemies that can lose track of you and go back to their post, or should seeing you always mean a fight?
+4. **Knights vs bandits:** should Knights (Zealots) behave more disciplined (formal posts, marching patrols, upright stance) and bandits looser (drinking, sitting, slouching)? That is what this plan assumes.
+5. **Start with stage 1?**

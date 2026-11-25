@@ -19,6 +19,7 @@ Before working on an area, read its doc:
 | The Gullet dungeon and Harl the Delver | `GULLET_DESIGN.md` + `GULLET_MAP.svg` |
 | White Knights Outpost (north end of zone 1), its asset library | `OUTPOST_PLAN.md` + `assets/outpost/MANIFEST.md` + `docs/outpost/` |
 | Martial / Vanguard / Mystic classes, subclasses, factions | `CLASS_PLAN.md` |
+| Enemy posts, idle life, alert ladder, patrols (plan, not built) | `ENEMY_LIFE_PLAN.md` |
 | Art and audio shopping list | `ART_NEEDS.md` |
 | Checklist by phase, playtest (🧪) items | `TODO.md` |
 
