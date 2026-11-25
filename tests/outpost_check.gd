@@ -43,6 +43,10 @@ func _run() -> void:
 		["buildings/B08_medium_cottage", "B08 cottage: in through the door, to the hearth and the far end", [Vector2(0.6, 4.9), Vector2(0.6, 2.7), Vector2(0.6, 0.0), Vector2(3.2, 0.0), Vector2(-3.6, 0.0)], [Vector3(-1.0, 1.0, 2.65), Vector3(0, 1.0, -2.7)]],
 		["buildings/B09_storage_shed", "B09 shed: in through the door", [Vector2(0.0, 3.4), Vector2(0.0, 1.4), Vector2(0.0, 0.0)], [Vector3(1.2, 1.0, 1.4), Vector3(0, 1.0, -1.4)]],
 		["buildings/B04_large_market_shelter", "B04 market shelter: walk through between the posts", [Vector2(-2.0, 5.0), Vector2(-2.0, -5.0), Vector2(2.0, -5.0), Vector2(2.0, 5.0)], [Vector3(0, 1.0, 2.6)]],
+		["buildings/B01_roadside_inn", "B01 inn: in through the door, to the hearth and the bar", [Vector2(0.4, 5.4), Vector2(0.4, 3.2), Vector2(0.4, 0.0), Vector2(-3.8, 0.0), Vector2(2.8, 0.0)], [Vector3(2.0, 1.0, 3.2), Vector3(0, 1.0, -3.2)]],
+		["buildings/B02_civilian_blacksmith_workshop", "B02 blacksmith: in at the open front, beside the forge", [Vector2(-1.5, 4.4), Vector2(-1.5, 0.0), Vector2(-0.6, -0.8)], [Vector3(0, 1.0, -2.2)]],
+		["buildings/B03_stable_farrier_shelter", "B03 stable: into each of the three stalls", [Vector2(-3.2, 4.5), Vector2(-3.2, 0.0), Vector2(-3.2, 4.5), Vector2(0.0, 4.5), Vector2(0.0, 0.0), Vector2(0.0, 4.5), Vector2(3.2, 4.5), Vector2(3.2, 0.0)], [Vector3(0, 1.0, -2.5)]],
+		["buildings/B06_carpenter_workshop", "B06 carpenter: in at the open front", [Vector2(1.5, 4.3), Vector2(1.5, 0.0)], [Vector3(0, 1.0, -2.3)]],
 		["castle_approach/CP08_guard_inspection_shelter", "CP08 guard shelter: in at the open front", [Vector2(0, 2.6), Vector2(0, 0)], [Vector3(0, 1.0, -1.1)]],
 	]
 	for w in walks:

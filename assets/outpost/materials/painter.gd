@@ -38,6 +38,7 @@ static func all() -> Dictionary:
 		"thatch": [256, 256, thatch],
 		"earth_floor": [256, 256, earth_floor],
 		"rubble": [256, 256, rubble],
+		"inn_sign": [256, 320, inn_sign],
 	}
 
 
@@ -441,4 +442,29 @@ static func rubble(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
 	if edge < 0.035:
 		c = _shade(Color(0.3, 0.28, 0.24), 0.8 + 0.3 * fbm(u, v, 20, 20, 1706))
 	c = _mix(c, Color(0.32, 0.36, 0.2), smoothstep(0.68, 0.82, fbm(u, v, 3, 3, 1707)) * 0.4)
+	return c
+
+
+## The inn's hanging sign: a dark board with a painted foaming tankard in ivory and ochre.
+static func inn_sign(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var c := _shade(Color(0.22, 0.15, 0.1), 0.8 + 0.3 * fbm(u, v, 2, 16, 1801, 3))
+	var edge := minf(minf(u, 1.0 - u), minf(v, 1.0 - v))
+	if edge < 0.05:
+		c = _shade(Color(0.42, 0.34, 0.18), 0.85 + 0.3 * fbm(u, v, 16, 16, 1802))
+	var p := Vector2(u, v)
+	var body := absf(p.x - 0.45) < 0.2 and p.y > 0.35 and p.y < 0.82
+	var foam := Vector2((p.x - 0.45) / 0.24, (p.y - 0.32) / 0.08).length() < 1.0
+	var handle_d := Vector2((p.x - 0.68) / 0.1, (p.y - 0.56) / 0.14).length()
+	var handle := handle_d > 0.6 and handle_d < 1.0 and p.x > 0.64
+	var paint := Color(0.0, 0.0, 0.0, 0.0)
+	if body or handle:
+		paint = _shade(Color(0.72, 0.52, 0.25), 0.85 + 0.25 * fbm(u, v, 8, 8, 1803))
+		if body and absf(p.y - 0.45) < 0.015 or body and absf(p.y - 0.72) < 0.015:
+			paint = _shade(IRON, 1.4)
+	if foam:
+		paint = _shade(IVORY, 0.9 + 0.15 * fbm(u, v, 12, 12, 1804))
+	if paint.a == 0.0 and (body or handle or foam):
+		paint.a = 1.0
+	if body or handle or foam:
+		c = _mix(c, Color(paint.r, paint.g, paint.b), 0.9 * (1.0 - smoothstep(0.7, 0.8, fbm(u, v, 20, 20, 1805, 2))))
 	return c

@@ -61,6 +61,17 @@
 
 ---
 
+
+
+### Player-inspired recurring characters: Showback and Kimbah *(owner direction, 2026-11-25; story concept, not implemented)*
+The owner wants two friends' gaming personas to become significant recurring characters in KINGDOM, not one-off cameos. Their first major appearances are boss encounters available to the whole party/story, regardless of player class. After the players defeat them, the characters become allies and recur throughout the campaign. Their defeat and later friendship should feel earned; do not make either character a disposable enemy or a specialization-only NPC.
+
+- **Showback** *(name spelling to confirm; owner has also said Shobek)*: a legendary rogue inspired by the friend's World of Warcraft Rogue identity and streamer persona. His signature battle cry is **“BANKAI!”**, shouted at a dramatic moment immediately before a lethal attack or decisive opening. First, all players encounter and defeat him as a dangerous boss. Later he becomes a recurring ally and the center of an underground network of rogues, spies, thieves and informants. Potential later roles: offer intelligence and infiltration contracts; provide assassination/rogue-specialization trials to eligible players; help the party expose or eliminate a traitor; lead a covert operation during a major faction conflict; and return as an ally in a late-campaign or endgame confrontation. These are proposed uses, not finalized quest content.
+- **Kimbah** *(K-I-M-B-A-H)*: a forest guardian inspired by the friend's Warcraft druid/shaman identity and forest-protection persona. He protects woodland, its creatures and threatened natural places from destructive forces, including encroaching armies and those who would clear or exploit the forest. His signature phrase is **“Do it for them”**, referring to the forest animals and creatures he is defending. All players first encounter and defeat him in a major story boss encounter; the conflict should arise from his fierce defense of a place or beings the party appears to threaten, not from making him simply evil. Afterward, he becomes a recurring ally, protector and guide. Potential later roles: rally forest creatures and animal allies; guide the party through threatened or corrupted wilderness; lead a campaign to defend or restore a forest; offer druid/shaman specialization trials to eligible players; and join the party in a major late-game battle. These are proposed uses, not finalized quest content.
+- **Shared structure:** introduce both characters to every player through the main storyline before any specialization branch. Defeating them is a shared story milestone; later, their class-specific mentorship quests are optional branches available only to the relevant class/specialization candidates. Players who choose other specializations still complete their stories, build relationships with them and benefit from their later alliance. Their stories should recur across multiple stages of the campaign and converge naturally in a major later conflict.
+- **Tone and treatment:** preserve the recognizable signature phrases and broad gameplay identities, but adapt them into KINGDOM's grounded-to-supernatural medieval world. Make original in-world character designs, dialogue, abilities and encounters; do not directly copy Warcraft assets, lore, or character designs. Treat the characters as owner-requested tributes to friends; confirm any public use of real names, likenesses or recognizable personal details with the friends.
+- **Open questions:** exact in-world names/spelling (Showback vs Shobek; Kimbah confirmed by owner), their appearance and backstories, the reason each initially fights the party, whether their boss encounters are lethal/defeating-but-not-killing, exact specialization mapping for Kimbah (Druid, Shaman, or both), and which later campaign events they participate in.
+
 ## 3. What a session feels like
 You host your world; two friends join by IP. You rest at the Crossroads shrine and the Tithelands fill with enemies rolled fresh from spawn tables. Tonight there's a rumor of Hobb the Unhanged at the mill. The tank pulls a White Knight patrol, a zealot blows a horn and two more come running. The healer lobs embers that have to actually land on people. Someone gets greedy, chases a fleeing hound into the woods and gets downed by the pack. A friend burns one of their last flasks to drag him up. Hobb drops a blue amulet with a great bonus roll; the need/greed roll is tense. In the Gullet, the boss kills you twice. Your gear lies in a glowing pile at the boss door, and you have one shot to get it back before something worse happens. That's the game.
 
@@ -373,6 +384,17 @@ Head, Shoulders, Chest, Hands, Legs, Feet, Neck, **one Ring**, Utility (holds th
 
 **The inventory screen** *(2026-11-23)*: one screen with the backpack grid on the left, your character on a pedestal in the middle with the slots around it (left: helmet, shoulders, chest, gloves, legs, boots; right: necklace, ring, main hand, off hand, utility, weapon-set switch), and your stats on the right (level and XP; Strength, Agility, Intellect, Vitality; Attack, Defense, Ability Power, Critical; Health, Stamina and your class resource). Tabs on top: Character, Inventory, Map, Talents, Quests, System (Q / E or LB / RB). Look: aged-gold frames, ivory serif text, a torch-lit stone backdrop.
 
+**Actual in-game reference screenshot (owner supplied 2026-11-25):** The screenshot shows the implemented menu, not a concept mockup. Treat its overall composition and visual treatment as the current visual reference to preserve and refine:
+- A narrow black top navigation strip with the six tabs **Character, Inventory, Map, Talents, Quests, System**, centered across the top, with subtle gold active-tab emphasis and Q / E navigation hints.
+- A large left inventory panel framed in ornate aged gold. It has a category/filter row (All selected, followed by item-category icons and Junk), an **All Items** heading, an equipped-load/weight readout, a blue class-resource icon and value, and a coin count.
+- A spatial backpack grid with dark cells, visible item footprints, and rarity-colored borders around item icons. Keep the inventory dense and readable; the screenshot demonstrates item footprints spanning multiple cells rather than a simple list.
+- A bottom action strip with keyboard hints for **Equip, Compare, Drop, Sort, Mark Junk**. Keep contextual item actions visible and controller-compatible.
+- A central character/paperdoll panel with the full 3D character displayed on a raised circular stone pedestal against a warm, torch-lit stone/wood backdrop. Equipment slots flank the character on both sides. The active weapon slot has a clear purple rarity/selection border. The weapon-set selector sits near the lower-right of the paperdoll.
+- A right-hand character-stat panel with level and class at the top, a horizontal XP bar, then primary attributes, combat statistics, and resource bars. The current screenshot visibly groups Strength, Agility, Intellect and Vitality; Attack, Defense, Ability Power and Critical; then Health, Stamina and the class resource.
+- Visual language: near-black and dark brown panel surfaces, thin ornate aged-gold borders, muted ivory serif text, restrained gold highlights, and a warm environmental backdrop. Maintain strong contrast and avoid bright modern UI styling.
+
+This screenshot records the current implementation's composition and styling. Treat displayed character values, item examples, current resource names/amounts and current equipment contents as screenshot-state data, not new balance or itemization decisions. Preserve the already-decided equipment rules above: one Ring, no Belt, cloak in Utility, and two weapon sets with only the active set shown on the paperdoll.
+
 ### 9.3 Grid inventory
 - Items take up shapes on a grid: a ring is 1×1, a dagger 1×2, a sword 1×3, a greatsword or staff 1×4, a shield or helm 2×2, a chest piece 2×3. Backpack 10×6 *(start)*.
 - Long items can be **turned on their side** (a 1×3 sword lies as 3×1). Drag and drop with the mouse, or hold A to pick up with a gamepad. Potions and food **stack**. **Sort** tidies the backpack. Items can be **marked as junk**: they sort last and a merchant buys them all with one button. The border color shows rarity. Filters: weapons, off hand, armor, jewelry, consumables, junk.
@@ -478,6 +500,55 @@ Quests and public quests, more zones and an open world, world bosses, New Game+.
 ### 12.3 HUD & menus (minimal, Souls-style)
 - **On screen**: health, stamina and class resource bars; flask count; ability hotbar with cooldown sweeps; party frames (name, health, class, downed); boss bar; status buildup meters; floating numbers; enemy health bars (toggle); chat (fades out).
 - **Menus**: main menu (Play/Host, Join, Characters, Settings, Quit), character creator, the menu book (tabs Character, Inventory, Map, Talents, Quests, System; see 9.2), talents, map, shrine menu (rest, travel, bank, vendors), loot roll pop-ups, settings (graphics, audio, controls, gameplay toggles).
+
+
+### 12.4 Typography *(owner-approved direction, 2026-11-25)*
+
+KINGDOM uses a **hybrid typographic identity**: the precise, compact readability of an old-school PC MMORPG interface (OSRS-inspired) combined with the literary, medieval atmosphere of The Elder Scrolls IV: Oblivion. The game should feel like a functional classic MMORPG set inside a bleak medieval world. Do not make every screen look like a medieval manuscript.
+
+**Primary typefaces**
+
+| Typeface | Role | Use |
+|---|---|---|
+| **IBM Plex Sans Condensed** | Functional interface | HUD labels and values, inventory, equipment, menus, buttons, tooltips, status labels and compact UI |
+| **Cinzel** | Formal display | Main menu titles, region and dungeon names, faction names, major headings, boss introductions and important announcements |
+| **EB Garamond** | Literary reading | NPC dialogue, quest descriptions, books, journals, lore entries and item flavor text |
+| **IBM Plex Mono** *(optional specialist)* | Technical/numeric | Debug information, coordinates and selected precise numerical readouts; use sparingly |
+
+Use the official font distributions and retain their license files in the project. Bundle only the required font weights and styles. Do not extract or redistribute OSRS's proprietary game fonts.
+
+**Typography rules**
+- HUD and gameplay text must be crisp, compact and readable at a glance. Favor IBM Plex Sans Condensed.
+- Use Cinzel selectively. It is for hierarchy and atmosphere, not paragraphs, tiny labels or dense inventory information.
+- Use EB Garamond for longer narrative reading and literary emphasis. Keep body text comfortably readable.
+- Use consistent weights and hierarchy. Avoid excessive all-caps, ornamental lettering, blackletter, distressed effects and unnecessary italics.
+- Numbers, item stats, cooldowns and combat information must remain easy to scan.
+- Maintain strong contrast against dark panels and the world. Use muted ivory or warm off-white for primary text, subdued grey for secondary text, and restrained aged-gold accents for emphasis.
+- The font combination must work at gameplay distance and across supported resolutions, including gamepad navigation and accessibility scaling.
+
+**Starting size guide at 1920×1080** *(tune in-game; not fixed pixel requirements)*
+
+| Element | Starting size |
+|---|---:|
+| HUD labels | 14–16 px |
+| HUD values | 16–18 px |
+| Inventory and item names | 16 px |
+| Item descriptions | 16–18 px |
+| Dialogue body | 20–22 px |
+| Quest headings | 24–28 px |
+| Region and dungeon titles | 36–48 px |
+| Main menu title | 56–72 px |
+
+Scale typography with the UI rather than assuming a fixed 1080p display. Check readability at common window sizes and UI scale settings.
+
+**Visual treatment**
+- Pair compact, precise interface typography with dark charcoal panels, muted ivory text, restrained aged-gold accents, thin dividers and subtle medieval framing.
+- Reserve parchment-like surfaces and more ornamental treatments for books, journals, maps, quest records and lore-focused screens.
+- Avoid excessive scrollwork, glowing text, bright saturated UI colors and decorative borders that compete with information.
+- Preserve the existing dark, subdued KINGDOM palette. Typography should reinforce the world rather than make the interface feel like a modern web app or a generic fantasy template.
+
+**Implementation standard**
+Create a reusable Godot Theme/resource for the typography system. Define named styles for HUD, body, compact UI, buttons, headings, dialogue, item descriptions and numerical readouts. Apply the same theme consistently across menus and gameplay UI. Avoid hardcoding font choices independently in individual controls. Test font rendering, line spacing, truncation, localization headroom, and gamepad focus states before applying the theme project-wide.
 
 ---
 

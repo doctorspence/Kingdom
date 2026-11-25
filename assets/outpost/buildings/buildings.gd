@@ -80,7 +80,8 @@ static func _wall(b: HK.MB, a2: Vector2, b2: Vector2, ops: Array, full: bool, d:
 	# Rubble plinth and the sill beam on it (broken at the door).
 	for s: Vector2 in _segments(e0, e1, gaps):
 		var m := (s.x + s.y) * 0.5
-		b.box(K.rubble(), A + dir * m + Vector3(0, (py - 0.15) * 0.5, 0), Vector3(s.y - s.x, py + 0.15, 0.34), bas, 0.01)
+		if d.get("plinth", true):
+			b.box(K.rubble(), A + dir * m + Vector3(0, (py - 0.15) * 0.5, 0), Vector3(s.y - s.x, py + 0.15, 0.34), bas, 0.01)
 		b.box(oak, A + dir * m + Vector3(0, py + 0.08, 0), Vector3(s.y - s.x, 0.16, 0.2), bas, 0.006)
 	b.box(oak, A + dir * (e0 + e1) * 0.5 + Vector3(0, plate, 0), Vector3(e1 - e0, 0.2, 0.22), bas, 0.006)
 	# Posts: corners, jambs, and evenly between them.
@@ -143,7 +144,8 @@ static func _wall(b: HK.MB, a2: Vector2, b2: Vector2, ops: Array, full: bool, d:
 		b.box(K.daub(), A + dir * (r.position.x + r.size.x * 0.5) + Vector3(0, r.position.y + r.size.y * 0.5, 0), Vector3(r.size.x, r.size.y, 0.12), bas)
 	# Collision: the wall, open at the door.
 	for s: Vector2 in _segments(e0, e1, gaps):
-		cols.append(["box", A + dir * (s.x + s.y) * 0.5 + Vector3(0, (plate - 0.05) * 0.5, 0), Vector3(s.y - s.x, plate + 0.25, 0.3), bas])
+		var base: float = d.get("base", -0.15)
+		cols.append(["box", A + dir * (s.x + s.y) * 0.5 + Vector3(0, (base + plate + 0.1) * 0.5, 0), Vector3(s.y - s.x, plate + 0.1 - base, 0.3), bas])
 	for g: Vector2 in gaps:
 		var top: float = d.door_top
 		cols.append(["box", A + dir * (g.x + g.y) * 0.5 + Vector3(0, (top + plate + 0.1) * 0.5, 0), Vector3(g.y - g.x, plate + 0.1 - top, 0.3), bas])
@@ -536,3 +538,228 @@ static func market_stall(k := 1.0) -> Node3D:
 			vu.append(Vector2(x + hx, 1.8 + 2.12 - y))
 	K.sheet2(b, K.linen(), vp, vu, nu * 2 - 1, 3, Vector3(0, 0, 1))
 	return K.asset("B05_small_market_stall", b, cols, k)
+
+
+# ---------------------------------------------------------------- B02: the blacksmith
+
+## B02 / BS01: civilian blacksmith: an open-sided forge under a shingled roof, a rubble back wall,
+## a stone forge furnace (BS02) with a glowing coal bed and a chimney (BS20) through the roof.
+## Drawn 6 x 4.4 m, eaves 2.6 m; built at SIZE. The open front faces +Z; the forge is at the back.
+static func blacksmith(k := SIZE) -> Node3D:
+	var b := HK.MB.new(302)
+	var oak := K.oak("weathered")
+	var hx := 3.0
+	var hz := 2.2
+	var eave := 2.6
+	var cols := []
+	for x in [-hx, 0.0, hx]:
+		for z in [-hz, hz]:
+			b.box(K.rubble(), Vector3(x, 0.08, z), Vector3(0.4, 0.2, 0.4), Basis(), 0.01)
+			b.box(oak, Vector3(x, (0.18 + eave) * 0.5, z), Vector3(0.22, eave - 0.18, 0.22), Basis(), 0.006)
+			if z > 0.0:
+				cols.append(["box", Vector3(x, eave * 0.5, z), Vector3(0.26, eave, 0.26)])
+		b.box(oak, Vector3(x, eave + 0.05, 0), Vector3(0.2, 0.22, hz * 2.0 + 0.3), Basis(), 0.006)
+	for z in [-hz, hz]:
+		b.box(oak, Vector3(0, eave + 0.05, z), Vector3(hx * 2.0 + 0.3, 0.22, 0.24), Basis(), 0.006)
+	# Rubble back wall and a low side wall on the west.
+	b.box(K.rubble(), Vector3(0, eave * 0.5, -hz), Vector3(hx * 2.0 + 0.2, eave, 0.4), Basis(), 0.012)
+	cols.append(["box", Vector3(0, eave * 0.5, -hz), Vector3(hx * 2.0 + 0.2, eave, 0.4)])
+	b.box(K.rubble(), Vector3(-hx, 0.55, -0.3), Vector3(0.36, 1.1, hz * 2.0 - 0.6), Basis(), 0.01)
+	cols.append(["box", Vector3(-hx, 0.55, -0.3), Vector3(0.36, 1.1, hz * 2.0 - 0.6)])
+	# The forge furnace against the back wall: a stone hearth, a coal bed, a hood and the chimney.
+	var fx := 1.2
+	var fz := -hz + 0.9
+	b.box(K.rubble(), Vector3(fx, 0.45, fz), Vector3(1.5, 0.9, 1.4), Basis(), 0.012)
+	b.box(HK.plain(Color(0.07, 0.06, 0.06), 0.9), Vector3(fx, 0.91, fz + 0.05), Vector3(0.9, 0.04, 0.8))
+	for i in 9:
+		b.blob(HK.ember(), Vector3(fx - 0.3 + (i % 3) * 0.3, 0.95, fz - 0.2 + (i / 3) * 0.22), Vector3(0.12, 0.05, 0.1), i, 0.3, 2.0, 3, 6)
+	b.box(K.rubble(), Vector3(fx, 1.9, fz - 0.3), Vector3(1.5, 0.9, 0.8), Basis(Vector3(1, 0, 0), -0.25), 0.01)
+	cols.append(["box", Vector3(fx, 0.45, fz), Vector3(1.5, 0.9, 1.4)])
+	var top := _shingle_roof(b, hx, hz, eave + 0.16, 30.0, cols, 0.5, 0.4)
+	b.box(K.rubble(), Vector3(fx, (2.2 + top + 1.0) * 0.5, -hz + 0.1), Vector3(0.8, top + 1.0 - 2.2, 0.7), Basis(), 0.01)
+	b.box(K.limestone(), Vector3(fx, top + 1.05, -hz + 0.1), Vector3(0.95, 0.1, 0.85), Basis(), 0.008)
+	# Bellows beside the forge: two oak boards and a leather bag.
+	b.box(oak, Vector3(fx - 1.15, 0.75, fz + 0.1), Vector3(0.7, 0.05, 0.5), Basis(Vector3(0, 0, 1), 0.12), 0.003)
+	b.blob(K.leather(), Vector3(fx - 1.15, 0.62, fz + 0.1), Vector3(0.34, 0.12, 0.24), 3, 0.15, 1.5, 4, 8)
+	b.box(oak, Vector3(fx - 1.15, 0.5, fz + 0.1), Vector3(0.7, 0.05, 0.5), Basis(), 0.003)
+	b.box(oak, Vector3(fx - 1.15, 0.24, fz + 0.1), Vector3(0.5, 0.48, 0.4), Basis(), 0.005)
+	b.box(K.earth_floor(), Vector3(0, -0.04, 0), Vector3(hx * 2.0, 0.1, hz * 2.0))
+	var root := K.asset("B02_civilian_blacksmith_workshop", b, cols, k)
+	HK.fire_fx(root, Vector3(fx, 1.0, fz) * k, 0.55 * k, 3.0, true)
+	return root
+
+
+## BS03 + BS04: an anvil on its oak stump. Real-world size (the smith works at it).
+static func anvil_on_stump(k := 1.0) -> Node3D:
+	var b := HK.MB.new(343)
+	b.cyl(K.oak("weathered"), Vector3(0, 0, 0), Vector3(0, 0.5, 0), 0.3, 0.27, 10, 0.04)
+	b.disc(K.oak("weathered"), 0.5, 0.27, 10)
+	var ir := K.iron()
+	b.box(ir, Vector3(0, 0.56, 0), Vector3(0.36, 0.12, 0.24))
+	b.box(ir, Vector3(0, 0.66, 0), Vector3(0.2, 0.1, 0.14))
+	b.box(ir, Vector3(0.02, 0.76, 0), Vector3(0.5, 0.1, 0.16))
+	b.push(Transform3D(HK.basis_y(Vector3(1, 0, 0)), Vector3(0.27, 0.77, 0)))
+	b.lathe(ir, PackedVector2Array([Vector2(0.07, 0.0), Vector2(0.04, 0.15), Vector2(0.0005, 0.3)]), 8)
+	b.pop()
+	b.cyl(ir, Vector3(-0.16, 0.81, 0.04), Vector3(-0.16, 0.81, -0.04), 0.012, 0.012, 4)
+	return K.asset("BS03_anvil_on_stump", b, [["cyl", Vector3(0, 0.4, 0), 0.3, 0.8]], k)
+
+
+# ---------------------------------------------------------------- B03: the stable
+
+## B03 / ST01: stable and farrier shelter: a long board-walled stable, open along the front, three
+## horse stalls with plank partitions (ST02), a hay rack on the back wall and a shingled roof.
+## Drawn 9.6 x 5 m, eaves 2.7 m; built at SIZE. The open front faces +Z.
+static func stable(k := SIZE) -> Node3D:
+	var b := HK.MB.new(303)
+	var oak := K.oak("weathered")
+	var hx := 4.8
+	var hz := 2.5
+	var eave := 2.7
+	var cols := []
+	_plank_wall(b, Vector2(hx, -hz), Vector2(-hx, -hz), 0.0, eave, eave, [], cols)
+	_plank_wall(b, Vector2(hx, hz), Vector2(hx, -hz), 0.0, eave, eave, [], cols)
+	_plank_wall(b, Vector2(-hx, -hz), Vector2(-hx, hz), 0.0, eave, eave, [], cols)
+	for x in [-hx, -hx / 3.0, hx / 3.0, hx]:
+		b.box(K.rubble(), Vector3(x, 0.06, hz), Vector3(0.36, 0.16, 0.36), Basis(), 0.01)
+		b.box(oak, Vector3(x, eave * 0.5, hz), Vector3(0.22, eave, 0.22), Basis(), 0.006)
+		cols.append(["box", Vector3(x, eave * 0.5, hz), Vector3(0.26, eave, 0.26)])
+	b.box(oak, Vector3(0, eave, hz), Vector3(hx * 2.0 + 0.3, 0.22, 0.24), Basis(), 0.006)
+	# Stall partitions between the bays, a low rail across each bay's front half.
+	for x in [-hx / 3.0, hx / 3.0]:
+		b.box(oak, Vector3(x, 0.8, -0.6), Vector3(0.06, 1.6, hz * 2.0 - 1.2), Basis(), 0.004)
+		b.box(oak, Vector3(x, 1.0, hz - 0.5), Vector3(0.14, 2.0, 0.14), Basis(), 0.004)
+		cols.append(["box", Vector3(x, 0.8, -0.6), Vector3(0.08, 1.6, hz * 2.0 - 1.2)])
+	# Hay rack along the back wall and hay on the floor.
+	b.box(oak, Vector3(0, 1.5, -hz + 0.35), Vector3(hx * 2.0 - 0.4, 0.06, 0.06), Basis(), 0.003)
+	for i in 30:
+		var x := -hx + 0.3 + i * (hx * 2.0 - 0.6) / 29.0
+		b.box(oak, Vector3(x, 1.25, -hz + 0.22), Vector3(0.03, 0.55, 0.03), Basis(Vector3(1, 0, 0), 0.4), 0.0)
+	var hay := HK.plain(Color(0.55, 0.45, 0.24), 1.0)
+	for i in 3:
+		var x := (i - 1) * hx * 2.0 / 3.0
+		b.blob(hay, Vector3(x, 1.3, -hz + 0.28), Vector3(1.1, 0.3, 0.22), 30 + i, 0.45, 2.5, 5, 10)
+		b.blob(hay, Vector3(x + 0.3, 0.05, -0.5), Vector3(0.9, 0.08, 0.7), 40 + i, 0.4, 2.0, 4, 8, Basis(), false, 0.3)
+	b.box(K.earth_floor(), Vector3(0, -0.04, 0), Vector3(hx * 2.0, 0.1, hz * 2.0))
+	_shingle_roof(b, hx, hz, eave + 0.16, 30.0, cols, 0.5, 0.35)
+	# Boarded gable ends under the roof.
+	var gy := eave + 0.16 + (hz + 0.1) * tan(deg_to_rad(30.0)) - 0.03
+	for s in [-1.0, 1.0]:
+		b.push(Transform3D(Basis(Vector3.UP, s * PI * 0.5), Vector3(s * hx, 0, 0)))
+		K.extrude(b, oak, oak, PackedVector2Array([Vector2(-hz - 0.05, eave - 0.05), Vector2(hz + 0.05, eave - 0.05), Vector2(0, gy)]), -0.03, 0.05, Rect2(-hz, eave, hz * 2.0, gy - eave), true)
+		b.pop()
+	return K.asset("B03_stable_farrier_shelter", b, cols, k)
+
+
+# ---------------------------------------------------------------- B06: the carpenter
+
+## B06 / CR01: carpenter workshop: a timber-framed workshop, daub walls on three sides, the front
+## open between posts so timber can be carried in, a shingled roof, a heavy workbench and a plank
+## rack inside. Drawn 7 x 4.6 m, eaves 2.6 m; built at SIZE. Open front faces +Z.
+static func carpenter(k := SIZE) -> Node3D:
+	var b := HK.MB.new(306)
+	var oak := K.oak("weathered")
+	var hx := 3.5
+	var hz := 2.3
+	var d := {"py": 0.3, "plate": 2.6, "door_top": 2.0}
+	var cols := []
+	_wall(b, Vector2(hx, -hz), Vector2(-hx, -hz), [[hx - 0.35 - 1.5, hx + 0.35 - 1.5, 1.15, 1.75, "window"]], true, d, cols)
+	_wall(b, Vector2(hx, hz), Vector2(hx, -hz), [], false, d, cols)
+	_wall(b, Vector2(-hx, -hz), Vector2(-hx, hz), [], false, d, cols)
+	for x in [-hx, 0.0, hx]:
+		b.box(oak, Vector3(x, 1.3, hz), Vector3(0.2, 2.6, 0.2), Basis(), 0.006)
+		cols.append(["box", Vector3(x, 1.3, hz), Vector3(0.24, 2.6, 0.24)])
+	b.box(oak, Vector3(0, 2.6, hz), Vector3(hx * 2.0 + 0.3, 0.22, 0.24), Basis(), 0.006)
+	var top := _shingle_roof(b, hx, hz, 2.76, 38.0, cols, 0.5, 0.35)
+	var apex := 2.76 + (hz + 0.1) * tan(deg_to_rad(38.0)) - 0.05
+	_gable(b, Vector2(hx, hz), Vector2(hx, -hz), 2.7, apex)
+	_gable(b, Vector2(-hx, -hz), Vector2(-hx, hz), 2.7, apex)
+	for tx in [-1.2, 1.2]:
+		b.box(oak, Vector3(tx, 2.6, 0), Vector3(0.16, 0.18, hz * 2.0 + 0.2), Basis(), 0.006)
+	b.box(K.earth_floor(), Vector3(0, -0.04, 0), Vector3(hx * 2.0, 0.1, hz * 2.0))
+	# Workbench (real-world height, drawn 0.85 / SIZE so it scales to 0.85 m) and a plank rack.
+	var bh := 0.85 / k
+	b.box(K.oak(), Vector3(-0.8, bh - 0.04, -1.2), Vector3(2.0 / k, 0.08, 0.7 / k), Basis(), 0.004)
+	for x in [-0.8 - 0.85 / k, -0.8 + 0.85 / k]:
+		for z in [-1.2 - 0.28 / k, -1.2 + 0.28 / k]:
+			b.box(K.oak(), Vector3(x, (bh - 0.08) * 0.5, z), Vector3(0.08, bh - 0.08, 0.08), Basis(), 0.003)
+	cols.append(["box", Vector3(-0.8, bh * 0.5, -1.2), Vector3(2.0 / k, bh, 0.7 / k)])
+	for i in 6:
+		b.box(K.oak("weathered"), Vector3(2.2, 0.3 + i * 0.09, -1.6), Vector3(0.9, 0.05, 1.3), Basis(Vector3.UP, 0.04 * (i % 3)), 0.003)
+	return K.asset("B06_carpenter_workshop", b, cols, k)
+
+
+# ---------------------------------------------------------------- B01: the inn
+
+## B01 / IN01: roadside inn and alehouse: two storeys of oak frame and daub on a rubble plinth,
+## a thatched roof, the chimney and taproom hearth on the west gable, a bar counter with ale
+## barrels inside and a hanging sign (IN02). The ground floor is the taproom; the upper floor is a
+## ceiling for now. Drawn 11 x 6.4 m, eaves 5.2 m; built at SIZE. Front faces +Z.
+static func inn(k := SIZE) -> Node3D:
+	var b := HK.MB.new(301)
+	var hx := 5.5
+	var hz := 3.2
+	var fl := 0.06
+	var d1 := {"py": 0.4, "plate": 2.7, "door_top": fl + 2.0}
+	var d2 := {"py": 2.75, "plate": 5.2, "door_top": 0.0, "plinth": false, "base": 2.7}
+	var door_x := 0.4
+	var door_w := 1.3
+	var w1 := [1.15, 1.8]
+	var w2 := [3.6, 4.3]
+	var cols := []
+	_wall(b, Vector2(-hx, hz), Vector2(hx, hz), [
+		[-3.0 - 0.45 + hx, -3.0 + 0.45 + hx, w1[0], w1[1], "window"],
+		[door_x - door_w * 0.5 + hx, door_x + door_w * 0.5 + hx, fl, d1.door_top, "door"],
+		[3.2 - 0.45 + hx, 3.2 + 0.45 + hx, w1[0], w1[1], "window"]], true, d1, cols)
+	_wall(b, Vector2(hx, hz), Vector2(hx, -hz), [[hz - 0.4, hz + 0.4, w1[0], w1[1], "window"]], false, d1, cols)
+	_wall(b, Vector2(hx, -hz), Vector2(-hx, -hz), [[hx - 0.4, hx + 0.4, w1[0], w1[1], "window"]], true, d1, cols)
+	_wall(b, Vector2(-hx, -hz), Vector2(-hx, hz), [], false, d1, cols)
+	_wall(b, Vector2(-hx, hz), Vector2(hx, hz), [
+		[-3.0 - 0.4 + hx, -3.0 + 0.4 + hx, w2[0], w2[1], "window"],
+		[0.4 - 0.4 + hx, 0.4 + 0.4 + hx, w2[0], w2[1], "window"],
+		[3.2 - 0.4 + hx, 3.2 + 0.4 + hx, w2[0], w2[1], "window"]], true, d2, cols)
+	_wall(b, Vector2(hx, hz), Vector2(hx, -hz), [], false, d2, cols)
+	_wall(b, Vector2(hx, -hz), Vector2(-hx, -hz), [[hx - 0.4, hx + 0.4, w2[0], w2[1], "window"]], true, d2, cols)
+	_wall(b, Vector2(-hx, -hz), Vector2(-hx, hz), [], false, d2, cols)
+	var top := _thatch_roof(b, hx, hz, 5.2, 45.0, cols)
+	var apex := 5.3 + (hz + 0.1) * tan(deg_to_rad(45.0)) - 0.05
+	_gable(b, Vector2(hx, hz), Vector2(hx, -hz), 5.3, apex)
+	_gable(b, Vector2(-hx, -hz), Vector2(-hx, hz), 5.3, apex)
+	# The ceiling of the taproom: joists and boards (the upper floor).
+	var oak := K.oak("weathered")
+	b.box(oak, Vector3(0, 2.78, 0), Vector3(hx * 2.0, 0.06, hz * 2.0), Basis(), 0.0)
+	var x := -hx + 0.6
+	while x < hx:
+		b.box(oak, Vector3(x, 2.66, 0), Vector3(0.16, 0.18, hz * 2.0), Basis(), 0.004)
+		x += 1.1
+	cols.append(["box", Vector3(0, 2.75, 0), Vector3(hx * 2.0, 0.2, hz * 2.0)])
+	_floor_and_door(b, hx, hz, fl, door_x, door_w, cols)
+	var fire := _chimney_and_hearth(b, -1.0, hx, 2.7, top, fl, cols)
+	b.box(K.rubble(), Vector3(-(hx + 0.51), 3.95, 0), Vector3(0.84, 2.5, 1.3), Basis(), 0.012)
+	# The bar: a counter across the east end and ale barrels on a rack behind it.
+	var bk := 0.95 / k
+	var cx := hx - 1.6
+	b.box(K.oak(), Vector3(cx, bk * 0.5, 0.3), Vector3(0.6 / k, bk, 3.6), Basis(), 0.006)
+	b.box(K.oak(), Vector3(cx, bk + 0.03, 0.3), Vector3(0.8 / k, 0.06, 3.8), Basis(), 0.005)
+	cols.append(["box", Vector3(cx, bk * 0.5, 0.3), Vector3(0.6 / k, bk, 3.6)])
+	for i in 3:
+		var bz := -1.4 + i * 1.0
+		b.push(Transform3D(Basis(Vector3(0, 0, 1), PI * 0.5), Vector3(hx - 0.55, 0.55, bz)))
+		b.lathe(K.oak(), PackedVector2Array([Vector2(0.0005, -0.4), Vector2(0.27, -0.4), Vector2(0.33, 0.0), Vector2(0.27, 0.4), Vector2(0.0005, 0.4)]), 12, true)
+		for hy in [-0.3, 0.3]:
+			b.cyl(K.iron(), Vector3(0, hy - 0.02, 0), Vector3(0, hy + 0.02, 0), 0.315, 0.315, 12, 0.0, false)
+		b.pop()
+	b.box(oak, Vector3(hx - 0.55, 0.12, -0.4), Vector3(0.7, 0.24, 3.2), Basis(), 0.004)
+	# The hanging sign on an iron bracket over the door: a painted tankard.
+	var sx := door_x + 1.3
+	b.box(K.iron(), Vector3(sx, 3.3, hz + 0.6), Vector3(0.05, 0.05, 1.2))
+	b.box(K.oak(), Vector3(sx, 2.8, hz + 0.95), Vector3(0.05, 0.75, 0.62), Basis(), 0.004)
+	for s in [1.0, -1.0]:
+		K.face(b, K.inn_sign(), Vector3(sx + s * 0.03, 3.12, hz + 0.95 - s * 0.27), Vector3(sx + s * 0.03, 3.12, hz + 0.95 + s * 0.27),
+			Vector3(sx + s * 0.03, 2.48, hz + 0.95 + s * 0.27), Vector3(sx + s * 0.03, 2.48, hz + 0.95 - s * 0.27), Vector3(s, 0, 0))
+	for z in [hz + 0.72, hz + 1.18]:
+		b.cyl(K.iron(), Vector3(sx, 3.28, z), Vector3(sx, 3.17, z), 0.008, 0.008, 4)
+	var root := K.asset("B01_roadside_inn", b, cols, k)
+	HK.fire_fx(root, fire * k, 0.5 * k, 2.2, false)
+	K.flicker_light(root, Vector3(cx - 1.0, 2.3, 0.3) * k, 1.4, 8.0 * k)
+	return root

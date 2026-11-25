@@ -117,6 +117,10 @@ static func rubble() -> StandardMaterial3D:
 	return painted("rubble", "rubble", 1.0, {"rough": 0.95, "spec": 0.2})
 
 
+static func inn_sign() -> StandardMaterial3D:
+	return painted("inn_sign", "inn_sign", 0.0, {"rough": 0.85, "spec": 0.25})
+
+
 static func shingles() -> StandardMaterial3D:
 	return painted("shingles", "shingles", 1.0, {"rough": 0.95, "spec": 0.2})
 
