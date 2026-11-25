@@ -231,6 +231,12 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Lock on to a dummy or bandit and hold A or D: tell me if the side-step is too slow, too quick-footed, or too wide
 - [ ] Later: real backward and sideways walk/jog animations would still look better than the leg turn
 
+## Enemy life (plan in ENEMY_LIFE_PLAN.md)
+- [x] Stages 1-4: calm huddles, weapons on the hip, patrols, watch posts, sitting at camp fires and camp jobs (built 2026-11-25; `enemy_check`, `posts_check`)
+- [x] Stage 6: fighting looks: Knights behind their shields, bandits taunt while waiting their turn, hurt enemies hunch and step back (built 2026-11-25; `fight_idle_check`)
+- [ ] 🧪 Walk into the Hobb camp and fight it: do they look alive before they see you, and do the ones waiting their turn taunt? Do the hurt ones hunch over?
+- [ ] Stage 7: a draw animation, camps sleeping at night
+
 ## White Knights Outpost (started 2026-11-25; plan in OUTPOST_PLAN.md, asset list in assets/outpost/MANIFEST.md)
 - [x] Stage 1: hand-painted texture painter, outpost kit, exporter and preview pictures; the White Knights set WK01-WK12 (`assets/outpost/white_knights/`, 8,691 triangles in all)
 - [ ] 🧪 Look at `docs/outpost/wk_overview.jpg`, `wk_wall.jpg`, `wk_stand.jpg`, `wk_pennant.jpg` (or double-click any `.scn` in `assets/outpost/white_knights/` in the editor): is the emblem right, too clean, too bright?

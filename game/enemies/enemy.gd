@@ -108,6 +108,7 @@ var _glinted := 0        # which follow-up blows of this attack have flashed the
 var _string_parries := 0  # blows of this attack that were deflected (all of them = Flawless)
 ## What it does on its post before a fight: calm idles, huddles, sheathed weapons (EnemyPost).
 var post: EnemyPost
+var fight: EnemyFight  # stance, taunts and hurt look in a fight (enemy_fight.gd)
 var _alarm_time := -1.0  # noticed a player: seconds left to get ready (< 0 = not alarmed)
 var _alarm_horn := true  # when ready, a caller may still blow its horn
 
@@ -133,6 +134,7 @@ func _ready() -> void:
 	if data.offhand_scene:
 		model.attach_to_hand(data.offhand_scene.instantiate(), "l")
 	post = EnemyPost.new(self)
+	fight = EnemyFight.new(self)
 	if data.keep_distance > 0.0:
 		model.stow_places = {"r": "bow", "l": "back"}
 	max_health = data.max_health
@@ -752,6 +754,7 @@ func _physics_process(delta: float) -> void:
 		State.DEAD:
 			_move(Vector3.ZERO, delta)
 	_update_sheath()
+	fight.update_stance()
 	_write_net_state()
 
 
@@ -785,6 +788,7 @@ func _mirror(delta: float) -> void:
 		model.set_tint(data.phase2_tint)
 	collision_layer = 0 if state == State.DEAD else 4
 	_update_sheath()
+	fight.update_stance()
 	if net_overlay != model.overlay_kind():
 		if net_overlay == "danger":
 			_danger_sound()
@@ -974,6 +978,8 @@ func _state_chase(delta: float) -> void:
 				heading = spot.normalized()
 		_move(heading * speed, delta)
 		model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, speed < 3.0)
+	elif not can_swing and fight.wait(delta, to):
+		return  # a taunt, a guard pose or (hurt) a step back
 	else:
 		# In range but waiting: slide along the ring toward our own spot (so the group
 		# spreads evenly); once there, circle slowly.
@@ -986,7 +992,10 @@ func _state_chase(delta: float) -> void:
 				_strafe_dir = -_strafe_dir
 			var side := to.normalized().cross(Vector3.UP) * _strafe_dir
 			_move(side * data.walk_speed * 0.4, delta)
-		model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
+		if fight.enabled and spot.length() <= 0.5:
+			model.play(model.idle_anim, 0.2)  # circle in its stance, the feet stepping
+		else:
+			model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
 
 
 func _start_guard() -> void:

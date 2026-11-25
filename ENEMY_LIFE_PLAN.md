@@ -1,6 +1,6 @@
 # Enemy life plan: what enemies do before the fight
 
-*Written 2026-11-25 at the owner's request. Stages 1-4 are built (see "Progress" at the end).*
+*Written 2026-11-25 at the owner's request. Stages 1-4 and 6 are built (see "Progress" at the end).*
 
 ## Decided (owner, 2026-11-25)
 1. **Weapons while calm: on the hip (shields on the back) and drawn when the fight starts** (option B below).
@@ -103,7 +103,23 @@ Each stage is playable on its own and ends with the checks and pictures.
 | 2 | **Built 2026-11-25, not playtested by hand.** Details below. |
 | 3 | **Built 2026-11-25, not playtested by hand.** Details below. |
 | 4 | **Built 2026-11-25, not playtested by hand.** Details below. |
-| 6, 7 | Not started. |
+| 6 | **Built 2026-11-25, not playtested by hand.** Details below. |
+| 7 | Not started. |
+
+**Stage 6 as built (fighting animations):**
+- All the fight-look code is in one small helper, `game/enemies/enemy_fight.gd` (`EnemyFight`). `enemy.gd` only asks it what to do. Looks only: damage, timing and how many attack at once (still 2) are unchanged.
+- **Stances:** bandits keep their low crouch (`Sword_Idle`). Knights (`calm_style = "disciplined"`) with a shield stand upright behind it (`ual2/Idle_Shield`). Out of a fight everyone goes back to the stance they started with. Bosses, archers and hounds keep their own look.
+- **Waiting its turn:** an enemy that isn't one of the 2 attackers now circles in its stance with its feet stepping (it used to switch to a normal walk). Every 2.5-5 s it stops for a pose: bandits raise the sword overhead (`ual2/Idle_Rail_Call`), shake their head (`ual2/Idle_No`) or, with a shield, lift it (`ual2/Idle_Shield`). Knights never taunt: they stand their ground behind the shield for about 2 s. A free attack slot cuts any pose short.
+- **Hurt (below a third of health):** bandits hunch over with the weapon low (`ual2/Zombie_Idle`). Knights keep the shield up. Both play their stance slower (0.7 speed, heavy breathing) and pause more often (every 1.4-3 s). 60% of those pauses are a step back instead of a pose.
+- **Network:** decided on the host. Friends see it through the shared animation and its speed. Each machine works out the stance from the enemy's state, so the feet step there too.
+- Not done: the "last one standing hesitates" idea, and separate stances for Harl and the Captain (no fitting animations; they keep `Sword_Idle`).
+- Checks: `tests/fight_idle_check.gd`:
+  - bandits taunt while waiting, with never more than 2 swinging;
+  - hurt ones hunch, slow down and step back;
+  - Knights hold their shields up, guard while waiting and never taunt;
+  - stances reset after the fight;
+  - bosses and archers are left out.
+- Pictures: `tests/visual_fight.gd` (f01-f04).
 
 **Stage 4 as built (seats and camp work):**
 - About 0.3 s after appearing, a calm enemy (not a watcher, not on patrol) looks for camp props within 7 m that nobody has taken: log seats (`log_seat.tscn`, two places per log), crates, barrels and carts (`crate.tscn`, `barrel.tscn`, `cart.tscn`). Props are found by their scene file, so no scene changes were needed. A seat near a fire is picked 70% of the time when a job is also free.
