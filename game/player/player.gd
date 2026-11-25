@@ -2447,9 +2447,9 @@ func _update_lantern(delta: float) -> void:
 	var want := maxf(smoothstep(0.35, 0.8, DayNight.night), 0.85 if global_position.y < DayNight.CAVE_BELOW else 0.0) * (0.0 if state == State.DEAD else 1.6)
 	_lantern_glow = move_toward(_lantern_glow, want, delta * 1.5)
 	_lantern.visible = _lantern_glow > 0.01
-	# A gentle flicker.
+	# A gentle flicker (not tied to position: running used to shift the phase and make it shimmer).
 	var t := Time.get_ticks_msec() * 0.001
-	_lantern.light_energy = _lantern_glow * (0.95 + 0.05 * sin(t * 9.0 + position.x) * sin(t * 4.3))
+	_lantern.light_energy = _lantern_glow * (0.97 + 0.03 * sin(t * 5.0) * sin(t * 2.3))
 
 
 ## ID of the armor worn in a slot ("head", "chest", "legs") that has a 3D model, or empty.
