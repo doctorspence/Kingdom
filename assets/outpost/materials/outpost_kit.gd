@@ -147,6 +147,11 @@ static func goods(name: String, c: Color, rough := 0.85) -> StandardMaterial3D:
 	return m
 
 
+## Straw and hay: the thatch strands, golden and fresh.
+static func straw() -> StandardMaterial3D:
+	return painted("straw", "thatch", 0.5, {"rough": 1.0, "spec": 0.1, "tint": Color(1.35, 1.2, 0.85)})
+
+
 static func shingles() -> StandardMaterial3D:
 	return painted("shingles", "shingles", 1.0, {"rough": 0.95, "spec": 0.2})
 

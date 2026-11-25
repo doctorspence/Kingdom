@@ -1,0 +1,6 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "goods_grain"
+albedo_color = Color(0.7, 0.58, 0.36, 1)
+metallic_specular = 0.3

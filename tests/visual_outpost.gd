@@ -9,6 +9,7 @@ extends SceneTree
 ##        vil_overview vil_market vil_b08_in vil_shed (stage 3's buildings as a village corner)
 ##        town_overview town_inn town_inn_in town_smith town_stable (the inn, smithy, stable, carpenter)
 ##        mk_market mk_close bs_forge bs_close (stage 4: the market and the forge dressed with props)
+##        yd_stable yd_inn yd_inn_in yd_carpenter yd_cottage (stage 4: stable, inn, carpenter, cottage life)
 
 const WK_DIR := "res://assets/outpost/white_knights/"
 const CP_DIR := "res://assets/outpost/castle_approach/"
@@ -24,6 +25,8 @@ const VB := Vector3(-45, 0, -25)
 const TB := Vector3(-45, 0, -75)
 ## Where the dressed market and forge stand.
 const PB := Vector3(-45, 0, -120)
+## Where the stable, inn, carpenter and cottage yards stand.
+const QB := Vector3(-45, 0, -170)
 const BLD := preload("res://assets/outpost/buildings/buildings.gd")
 const ENV := preload("res://levels/common/tithelands_env.tres")
 const STONE := preload("res://levels/common/materials/stone.tres")
@@ -46,7 +49,8 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant", "cp_overview", "cp_left", "cp_right", "cp_table", "cp_dusk",
 		"b07_outside", "b07_door", "b07_in", "vil_overview", "vil_market", "vil_b08_in", "vil_shed",
-		"town_overview", "town_inn", "town_inn_in", "town_smith", "town_stable", "mk_market", "mk_close", "bs_forge", "bs_close"]
+		"town_overview", "town_inn", "town_inn_in", "town_smith", "town_stable", "mk_market", "mk_close", "bs_forge", "bs_close",
+		"yd_stable", "yd_inn", "yd_inn_in", "yd_carpenter", "yd_cottage"]
 	if args.size() > 1:
 		shots = args.slice(1)
 	_build()
@@ -67,6 +71,14 @@ func _wk(id: String, pos: Vector3, yaw := 0.0) -> Node3D:
 		dir = "res://assets/outpost/blacksmith/"
 	elif id.begins_with("MK"):
 		dir = "res://assets/outpost/market/"
+	elif id.begins_with("ST"):
+		dir = "res://assets/outpost/stable/"
+	elif id.begins_with("IN"):
+		dir = "res://assets/outpost/inn/"
+	elif id.begins_with("CR"):
+		dir = "res://assets/outpost/carpenter/"
+	elif id.begins_with("CO"):
+		dir = "res://assets/outpost/cottages/"
 	elif id.begins_with("B"):
 		dir = "res://assets/outpost/buildings/"
 	var n := (load(dir + id + ".scn") as PackedScene).instantiate() as Node3D
@@ -99,10 +111,10 @@ func _build() -> void:
 	gm.albedo_texture = load("res://assets/textures/path/color.jpg")
 	gm.normal_enabled = true
 	gm.normal_texture = load("res://assets/textures/path/normal.jpg")
-	gm.uv1_scale = Vector3(54, 54, 1)
+	gm.uv1_scale = Vector3(108, 108, 1)
 	var ground := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
-	pm.size = Vector2(240, 240)
+	pm.size = Vector2(480, 480)
 	ground.mesh = pm
 	ground.material_override = gm
 	stage.add_child(ground)
@@ -148,6 +160,7 @@ func _build() -> void:
 	_build_village()
 	_build_town()
 	_build_props()
+	_build_yards()
 
 
 ## A checkpoint across a 12 m road running north (-Z) toward the castle.
@@ -406,3 +419,87 @@ func _shot_bs_forge() -> void:
 
 func _shot_bs_close() -> void:
 	_look(PB + Vector3(8.5, 1.9, 4.2), PB + Vector3(9.5, 0.8, -1.0))
+
+
+func _build_yards() -> void:
+	var k: float = BLD.SIZE
+	# Stable yard.
+	var st := QB + Vector3(-24, 0, 0)
+	_wk("B03_stable_farrier_shelter", st)
+	_wk("ST04_rectangular_hay_bales", st + Vector3(-5.0, 0, -1.5) * k)
+	_wk("ST05_loose_hay_piles", st + Vector3(-4.2, 0, 0.5))
+	_wk("ST07_wooden_feeding_trough", st + Vector3(0, 0, -1.4) * k)
+	_wk("ST08_water_trough", st + Vector3(-2.0, 0, 5.5))
+	_wk("ST12_hitching_post", st + Vector3(3.0, 0, 6.5))
+	_wk("ST13_horse_fence_section", st + Vector3(-7.5, 0, 6.5))
+	_wk("ST14_stable_gate", st + Vector3(-4.3, 0, 6.5))
+	_wk("ST15_saddle_rack", st + Vector3(4.2, 0, 1.2) * k, -30.0)
+	_wk("ST17_horse_blankets", st + Vector3(-1.6, 0, 1.6) * k, 20.0)
+	_wk("ST21_manure_pile", st + Vector3(8.0, 0, 1.0))
+	_wk("ST22_manure_cart", st + Vector3(7.0, 0, 4.0), -60.0)
+	_wk("ST23_wheelbarrow", st + Vector3(1.0, 0, 4.4), 40.0)
+	_wk("ST25_grooming_equipment", st + Vector3(1.6, 0, 3.2))
+	_wk("ST11_feed_baskets", st + Vector3(-0.5, 0, 3.0))
+	_man(st + Vector3(0.0, 0, 5.0), 180.0)
+	# Inn: the terrace in front and the taproom furnished.
+	var inn := QB + Vector3(0, 0, -2)
+	_wk("B01_roadside_inn", inn)
+	_wk("IN04_outdoor_table", inn + Vector3(-3.2, 0, 7.0), 10.0)
+	_wk("IN04_outdoor_table", inn + Vector3(3.8, 0, 7.4), -8.0)
+	_wk("IN20_tavern_notice_board", inn + Vector3(-6.2, 0, 5.6), 20.0)
+	_wk("IN08_ale_barrels", inn + Vector3(6.6, 0, 5.0), -15.0)
+	_wk("IN05_dining_table", inn + Vector3(-0.5, 0, 0.6) * k)
+	_wk("IN06_wooden_stools", inn + Vector3(-0.5, 0, 1.4) * k)
+	_wk("IN05_dining_table", inn + Vector3(-2.6, 0, -1.4) * k, 90.0)
+	_wk("IN03_outdoor_bench", inn + Vector3(-1.9, 0, -1.4) * k, 90.0)
+	_wk("IN13_firewood_basket", inn + Vector3(-4.6, 0, 1.4) * k)
+	_wk("IN11_cooking_pot", inn + Vector3(-3.6, 0, 1.9) * k)
+	_wk("IN19_hanging_herbs", inn + Vector3(1.0, 0.55, -2.4) * k)
+	_wk("IN18_wall_shelves", inn + Vector3(0.8, 0, -3.15) * k)
+	_man(inn + Vector3(1.8, 0, 0.6) * k, -90.0)
+	# Carpenter's yard.
+	var cr := QB + Vector3(24, 0, 0)
+	_wk("B06_carpenter_workshop", cr)
+	_wk("CR03_sawhorse", cr + Vector3(-1.5, 0, 4.6), 15.0)
+	_wk("CR07_timber_plank_pile", cr + Vector3(3.5, 0, 5.2), 80.0)
+	_wk("CR08_cut_logs", cr + Vector3(-5.6, 0, 5.0), 70.0)
+	_wk("CR11_wooden_cart", cr + Vector3(1.0, 0, 7.6), 60.0)
+	_wk("CR12_cart_wheels", cr + Vector3(5.6, 0, 1.0), -20.0)
+	_wk("CR10_wood_shavings", cr + Vector3(-1.2, 0, 4.0))
+	_wk("CR16_timber_frame_section", cr + Vector3(-3.0, 0, 8.4), 10.0)
+	_wk("CR13_wagon_axle", cr + Vector3(-1.0, 0, 1.6) * k)
+	_wk("CR15_wooden_pegs", cr + Vector3(1.6, 0, -1.2) * k)
+	_man(cr + Vector3(-0.6, 0, 5.4), 160.0)
+	# A cottage and its garden.
+	var co := QB + Vector3(0, 0, 24)
+	_wk("B07_small_cottage", co)
+	_wk("CO06_vegetable_garden", co + Vector3(-9.0, 0, 3.0))
+	_wk("CO07_garden_fence", co + Vector3(-9.0, 0, 6.6))
+	_wk("CO07_garden_fence", co + Vector3(-11.5, 0, 6.6))
+	_wk("CO09_hanging_linen", co + Vector3(7.5, 0, 5.0), -10.0)
+	_wk("CO10_laundry_basket", co + Vector3(6.2, 0, 6.0))
+	_wk("CO12_animal_pen", co + Vector3(8.0, 0, -4.5))
+	_wk("CO13_chicken_coop", co + Vector3(8.0, 0, -4.8))
+	_wk("CO15_household_tools", co + Vector3(-4.4, 0, 3.4), 90.0)
+	_wk("IN03_outdoor_bench", co + Vector3(1.0, 0, 3.6))
+	_man(co + Vector3(2.0, 0, 7.0), 180.0)
+
+
+func _shot_yd_stable() -> void:
+	_look(QB + Vector3(-22.0, 4.0, 16.0), QB + Vector3(-23.0, 1.0, 2.0))
+
+
+func _shot_yd_inn() -> void:
+	_look(QB + Vector3(1.5, 3.4, 19.0), QB + Vector3(0.0, 2.0, 2.0))
+
+
+func _shot_yd_inn_in() -> void:
+	_arm_shot(QB + Vector3(0, 0, -2) + Vector3(1.8, 0, 0.6) * BLD.SIZE, 90.0)
+
+
+func _shot_yd_carpenter() -> void:
+	_look(QB + Vector3(25.0, 3.8, 18.0), QB + Vector3(24.0, 1.0, 3.0))
+
+
+func _shot_yd_cottage() -> void:
+	_look(QB + Vector3(1.0, 4.0, 42.0), QB + Vector3(0.0, 1.2, 26.0))
