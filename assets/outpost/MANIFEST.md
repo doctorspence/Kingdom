@@ -4,23 +4,23 @@
 
 **Status:** ✅ built for the outpost (hand-painted, baked to `assets/outpost/<folder>/<ID_name>.scn`) · ♻️ something usable already exists in the project and can stand in, but the outpost version is still to make · ⬜ to do.
 
-**Totals (228 assets):** ✅ 49 built · ♻️ 80 with a stand-in · ⬜ 99 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
+**Totals (228 assets):** ✅ 66 built · ♻️ 81 with a stand-in · ⬜ 81 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
 
 **How each asset is made:** built in code for now (`assets/outpost/`, like the bandit-hideout kit). Any asset can later be swapped for a GLB the owner makes with an image-to-3D tool: keep the same file name, origin and size (rules in `OUTPOST_PLAN.md`, section 6).
 
 "hideout" means the bandit-hideout library, `assets/hideout/<folder>/<name>.scn`.
 
 
-## A. Buildings (`buildings/`, 6 of 10 built)
+## A. Buildings (`buildings/`, 10 of 10 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
-| B01 | Roadside inn / alehouse | ⬜ | same as IN01 |
-| B02 | Civilian blacksmith workshop | ⬜ | same as BS01 |
-| B03 | Stable and farrier shelter | ⬜ | same as ST01 |
+| B01 | Roadside inn / alehouse | ✅ | `B01_roadside_inn.scn` (two storeys; taproom with bar and hearth; the upper floor is a ceiling for now); also IN01 |
+| B02 | Civilian blacksmith workshop | ✅ | `B02_civilian_blacksmith_workshop.scn` (open forge, furnace, chimney, bellows); also BS01 |
+| B03 | Stable and farrier shelter | ✅ | `B03_stable_farrier_shelter.scn` (three stalls, hay rack); also ST01 |
 | B04 | Large market shelter | ✅ | `B04_large_market_shelter.scn` (open hall, walk-through) |
 | B05 | Small market stall | ✅ | `B05_small_market_stall.scn` (real-world size: market furniture); also MK01 |
-| B06 | Carpenter workshop | ⬜ | same as CR01 |
+| B06 | Carpenter workshop | ✅ | `B06_carpenter_workshop.scn` (open front, workbench, plank rack); also CR01 |
 | B07 | Small cottage | ✅ | `B07_small_cottage.scn` (enterable, lit hearth; built 1.3x like every building) |
 | B08 | Medium cottage | ✅ | `B08_medium_cottage.scn` (enterable, hearth on the east gable) |
 | B09 | Storage shed | ✅ | `B09_storage_shed.scn` (board walls, lean-to roof, enterable) |
@@ -68,16 +68,16 @@
 | WK11 | Banner ropes and fittings | ✅ | `WK11_banner_ropes_and_fittings.scn` |
 | WK12 | Banner stand | ✅ | `WK12_banner_stand.scn` (WK02 hangs from it) |
 
-## D. Stable and horse area (`stable/`, 1 of 25 built)
+## D. Stable and horse area (`stable/`, 3 of 25 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
-| ST01 | Timber stable | ⬜ |  |
-| ST02 | Stall partitions | ⬜ |  |
+| ST01 | Timber stable | ✅ | = B03 |
+| ST02 | Stall partitions | ✅ | built into B03 |
 | ST03 | Stable doors | ♻️ | hideout `door_gate` |
 | ST04 | Rectangular hay bales | ⬜ |  |
 | ST05 | Loose hay piles | ⬜ |  |
-| ST06 | Hay rack | ⬜ |  |
+| ST06 | Hay rack | ♻️ | built into B03; a separate piece to do |
 | ST07 | Wooden feeding trough | ⬜ | also CO14 |
 | ST08 | Water trough | ⬜ |  |
 | ST09 | Wooden water buckets | ♻️ | hideout `bucket_water` |
@@ -127,15 +127,15 @@
 | MK23 | Wooden price sign | ♻️ | hideout `sign_post` |
 | MK24 | Market lantern | ✅ | = CP17 |
 
-## F. Blacksmith and forge (`blacksmith/`, 1 of 22 built)
+## F. Blacksmith and forge (`blacksmith/`, 6 of 22 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
-| BS01 | Open-sided forge building | ⬜ |  |
-| BS02 | Stone forge furnace | ⬜ |  |
-| BS03 | Anvil | ⬜ | good image-to-3D candidate |
-| BS04 | Anvil stump | ⬜ |  |
-| BS05 | Bellows | ⬜ |  |
+| BS01 | Open-sided forge building | ✅ | = B02 |
+| BS02 | Stone forge furnace | ✅ | built into B02 |
+| BS03 | Anvil | ✅ | `blacksmith/BS03_anvil_on_stump.scn` (with BS04) |
+| BS04 | Anvil stump | ✅ | = BS03 |
+| BS05 | Bellows | ♻️ | built into B02; a separate piece to do |
 | BS06 | Hammers | ♻️ | hideout `mining_hammer` |
 | BS07 | Tongs | ⬜ |  |
 | BS08 | Workbench | ♻️ | hideout `table_slab` |
@@ -150,26 +150,26 @@
 | BS17 | Sword blade blanks | ⬜ |  |
 | BS18 | Iron tools | ♻️ | hideout `broken_tools` |
 | BS19 | Weapon rack | ♻️ | hideout `weapon_rack` |
-| BS20 | Chimney | ⬜ |  |
+| BS20 | Chimney | ✅ | built into B02 |
 | BS21 | Ash pile | ⬜ |  |
 | BS22 | Forge lantern | ✅ | = CP17 |
 
-## G. Inn and tavern (`inn/`, 1 of 20 built)
+## G. Inn and tavern (`inn/`, 5 of 20 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
-| IN01 | Inn building | ⬜ |  |
-| IN02 | Tavern hanging sign | ⬜ | WK06's frame with its own board |
+| IN01 | Inn building | ✅ | = B01 |
+| IN02 | Tavern hanging sign | ✅ | built into B01 (a painted tankard) |
 | IN03 | Outdoor benches | ⬜ | also CO17 |
 | IN04 | Outdoor tables | ♻️ | hideout `table_trestle` |
 | IN05 | Dining tables | ♻️ | hideout `table_trestle` |
 | IN06 | Wooden stools | ♻️ | hideout `stool_0`-`stool_2` |
-| IN07 | Bar counter | ⬜ |  |
+| IN07 | Bar counter | ✅ | built into B01 |
 | IN08 | Ale barrels | ♻️ | hideout `barrel_large`, `barrel_stack` |
 | IN09 | Wooden drinking mugs | ⬜ |  |
 | IN10 | Ceramic tankards | ⬜ |  |
 | IN11 | Cooking pots | ♻️ | hideout `tripod_pot` |
-| IN12 | Fireplace | ⬜ |  |
+| IN12 | Fireplace | ✅ | built into B01 |
 | IN13 | Firewood basket | ⬜ |  |
 | IN14 | Food plates and bowls | ♻️ | hideout `utensils` |
 | IN15 | Hanging lanterns | ✅ | = CP17 |
@@ -179,12 +179,12 @@
 | IN19 | Hanging herbs | ⬜ |  |
 | IN20 | Tavern notice board | ⬜ | WK09 notices on a board |
 
-## H. Carpenter and trade workshop (`carpenter/`, 0 of 16 built)
+## H. Carpenter and trade workshop (`carpenter/`, 2 of 16 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
-| CR01 | Carpenter workshop | ⬜ |  |
-| CR02 | Workbench | ♻️ | hideout `table_slab` |
+| CR01 | Carpenter workshop | ✅ | = B06 |
+| CR02 | Workbench | ✅ | built into B06 |
 | CR03 | Sawhorse | ⬜ |  |
 | CR04 | Hand saw | ⬜ |  |
 | CR05 | Wooden mallet | ⬜ |  |

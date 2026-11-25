@@ -43,9 +43,14 @@ static func entries() -> Array:
 	e.append([C, "CP18_warning_sign", CP.warning_sign])
 	e.append([C, "CP20_stone_boundary_marker", CP.boundary_marker])
 	var B := "buildings"
+	e.append([B, "B01_roadside_inn", BLD.inn])
+	e.append([B, "B02_civilian_blacksmith_workshop", BLD.blacksmith])
+	e.append([B, "B03_stable_farrier_shelter", BLD.stable])
 	e.append([B, "B04_large_market_shelter", BLD.market_shelter])
 	e.append([B, "B05_small_market_stall", BLD.market_stall])
 	e.append([B, "B07_small_cottage", BLD.small_cottage])
 	e.append([B, "B08_medium_cottage", BLD.medium_cottage])
+	e.append([B, "B06_carpenter_workshop", BLD.carpenter])
 	e.append([B, "B09_storage_shed", BLD.storage_shed])
+	e.append(["blacksmith", "BS03_anvil_on_stump", BLD.anvil_on_stump])
 	return e

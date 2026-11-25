@@ -247,7 +247,9 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Open `levels/sandbox/outpost_test.tscn`, press F6, walk into the cottage and the guard shelter: does the size feel right with the camera?
 - [x] Stage 3: B08 medium cottage, B09 storage shed, B04 large market shelter, B05 small market stall (B10 = the guard shelter CP08); all walk-in, checked by `outpost_check`
 - [ ] 🧪 Walk the new buildings in `levels/sandbox/outpost_test.tscn` (pictures `docs/outpost/vil_*.jpg`)
-- [ ] Stage 3: B01 inn, B02 blacksmith, B03 stable, B06 carpenter
+- [x] Stage 3: B01 inn, B02 blacksmith (and the anvil), B03 stable, B06 carpenter; all walk-in, checked by `outpost_check`
+- [ ] 🧪 Walk the inn, smithy, stable and carpenter in `levels/sandbox/outpost_test.tscn` (pictures `docs/outpost/town_*.jpg`)
+- [ ] Stage 4: trade and village props (market, forge, stable, inn, carpenter, cottage props)
 - [ ] Stages 4-7: trade and village props, ground and plants, light and effects, story props
 - [ ] Stage 8: placement in the Tithelands (needs the owner's OK on the layout and on who lives there)
 - [ ] Stage 9: checks, FPS, pictures
