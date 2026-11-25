@@ -496,6 +496,25 @@ func _place_in_hand(item: Node3D) -> void:
 	item.rotation_degrees = Vector3(90.0, 0.0, 0.0)
 
 
+var _carried := {}  # side -> BoneAttachment3D holding a carried item
+
+## Carry something light in a hand besides the weapons (a watcher's torch), held
+## like a weapon grip. null takes it away (freed with its holder).
+func carry(side: String, item: Node3D) -> void:
+	var old: Node = _carried.get(side)
+	if old and is_instance_valid(old):
+		old.queue_free()
+	_carried.erase(side)
+	if item == null or _skeleton == null:
+		return
+	var holder := BoneAttachment3D.new()
+	holder.bone_name = "hand_" + side
+	_skeleton.add_child(holder)
+	holder.add_child(item)
+	_carried[side] = holder
+	_place_in_hand(item)
+
+
 # --- Weapons on the belt and back ----------------------------------------------
 ## While calm (enemies on their post) the hand items are stowed: the weapon on the
 ## left hip, grip forward for a right-hand draw; the off-hand item (shield) on the

@@ -99,6 +99,24 @@ func _run() -> void:
 	_check("in the morning everyone is up", crew.all(func(e: Enemy) -> bool: return not e.post.resting))
 	_check("...and back at the camp (%s)" % s.model.current_anim(), s.model.current_anim() != EnemyPost.LIE and s.sight_scale >= 0.7)
 
+	# A watch post at night: torch up; called to fight, it drops it (still burning).
+	_night = 1.0
+	await _go_to(Vector3(0, 0.05, 80))
+	var look := (load("res://game/enemies/bandit_lookout.tscn") as PackedScene).instantiate() as Enemy
+	look.set_meta(&"post_kind", "watch")
+	look.position = Vector3(40, 0, 0)
+	_arena.add_child(look, true)
+	await _seconds(2.0)
+	var torch := look.post._torch
+	_check("a lookout at night holds up a torch", look.model.current_anim() == EnemyPost.TORCH_ANIM and torch != null and is_instance_valid(torch))
+	await _go_to(look.global_position + look.model.forward() * 9.0 + Vector3.UP * 0.05)
+	look._aggro(player, false)
+	await _seconds(0.6)
+	_check("...called to fight, it drops the torch, which burns on the ground", is_instance_valid(torch) and torch.is_dropped() and torch.global_position.y < 0.3)
+	look.remove_from_group(&"enemies")
+	look.queue_free()
+	_night = 0.0
+
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)
 

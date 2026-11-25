@@ -69,6 +69,26 @@ func _run() -> void:
 		await _frames(3)
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("user://shots/%s.png" % v[0])
+	# A lookout on watch at night: torch up. Then it spots you and drops it.
+	var look := (load("res://game/enemies/bandit_lookout.tscn") as PackedScene).instantiate() as Enemy
+	look.set_meta(&"post_kind", "watch")
+	look.position = Vector3(20, 0, 0)
+	arena.add_child(look, true)
+	await _seconds(3.0)
+	for v in [["d_watch_torch", Vector3(21.6, 1.7, 3.2)], ["d_watch_torch_far", Vector3(26, 3.0, 8.0)]]:
+		cam.global_position = v[1]
+		cam.look_at(look.global_position + Vector3.UP * 1.1)
+		await _frames(3)
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png("user://shots/%s.png" % v[0])
+	player.global_position = look.global_position + look.model.forward() * 9.0
+	look._aggro(player, false)
+	await _seconds(1.2)
+	cam.global_position = look.global_position + Vector3(2.5, 2.2, 3.5)
+	cam.look_at(look.global_position + Vector3.UP * 0.5)
+	await _frames(3)
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png("user://shots/d_watch_torch_dropped.png")
 	get_tree().quit()
 
 

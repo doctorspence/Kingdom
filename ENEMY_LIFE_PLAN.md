@@ -115,14 +115,16 @@ Each stage is playable on its own and ends with the checks and pictures.
   - **Senses and getting up:** sleepers see 0.35 times as far. Woken (the watch spots you, a hit, a noise that makes it suspicious), a sleeper takes about 2 s to get up before it can fight. After a fight at night they go back to sleep.
   - **Nobody near:** a sleeper is placed straight on the ground, the same as seats.
 - Also fixed: the seat helper (`SpotLock`) could hold an enemy on its seat for one more frame after letting go.
-- Not done: a torch or lantern for the night watch (no torch prop yet), tents, hounds curling up.
+- **Torches:** at night a watch post holds up a burning torch (`Idle_Torch`; the torch is built in code, `game/enemies/hand_torch.gd`, with a flickering light that casts no shadow). Called to fight, it drops the torch, which falls and burns on the ground for about 25 s. Every machine shows the torch while the torch animation plays, so nothing new goes over the network.
+- Not done: tents, hounds curling up by the fire.
 - Checks: `tests/draw_rest_check.gd`:
   - sword on the hip, then the reach, then the sword in hand;
   - at night 2 of 3 lie down near the fire and 1 keeps watch;
   - sleepers lie on the ground and see little;
   - the watch wakes them, and they take a while to get up, then fight;
   - back to sleep after the fight;
-  - everyone up in the morning.
+  - everyone up in the morning;
+  - a lookout holds a torch at night and drops it, still burning, when it charges.
 - Pictures: `tests/visual_draw.gd` (the draw for a bandit and a Knight, the camp at night).
 
 **Stage 6 as built (fighting animations):**
@@ -131,13 +133,15 @@ Each stage is playable on its own and ends with the checks and pictures.
 - **Waiting its turn:** an enemy that isn't one of the 2 attackers now circles in its stance with its feet stepping (it used to switch to a normal walk). Every 2.5-5 s it stops for a pose: bandits raise the sword overhead (`ual2/Idle_Rail_Call`), shake their head (`ual2/Idle_No`) or, with a shield, lift it (`ual2/Idle_Shield`). Knights never taunt: they stand their ground behind the shield for about 2 s. A free attack slot cuts any pose short.
 - **Hurt (below a third of health):** bandits hunch over with the weapon low (`ual2/Zombie_Idle`). Knights keep the shield up. Both play their stance slower (0.7 speed, heavy breathing) and pause more often (every 1.4-3 s). 60% of those pauses are a step back instead of a pose.
 - **Network:** decided on the host. Friends see it through the shared animation and its speed. Each machine works out the stance from the enemy's state, so the feet step there too.
-- Not done: the "last one standing hesitates" idea, and separate stances for Harl and the Captain (no fitting animations; they keep `Sword_Idle`).
+- **The last one standing:** when a friend falls and only one of its group (2 or more down within 15 m) is still fighting, it hesitates 70% of the time: a 0.7 s step back, then a look toward the fallen for about a second, then it fights on (`EnemyFight.friend_fell`). Zealots fly into their martyr's fury instead.
+- Not done: separate stances for Harl and the Captain (no fitting animations; they keep `Sword_Idle`).
 - Checks: `tests/fight_idle_check.gd`:
   - bandits taunt while waiting, with never more than 2 swinging;
   - hurt ones hunch, slow down and step back;
   - Knights hold their shields up, guard while waiting and never taunt;
   - stances reset after the fight;
-  - bosses and archers are left out.
+  - bosses and archers are left out;
+  - the last one standing hesitates, then fights on.
 - Pictures: `tests/visual_fight.gd` (f01-f04).
 
 **Stage 4 as built (seats and camp work):**

@@ -236,7 +236,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Stage 6: fighting looks: Knights behind their shields, bandits taunt while waiting their turn, hurt enemies hunch and step back (built 2026-11-25; `fight_idle_check`)
 - [ ] 🧪 Walk into the Hobb camp and fight it: do they look alive before they see you, and do the ones waiting their turn taunt? Do the hurt ones hunch over?
 - [x] Stage 7: enemies draw their sword from the hip; camps sleep round the fire at night with one on watch (built 2026-11-25; `draw_rest_check`)
-- [ ] 🧪 Sneak up on the Hobb camp at night: are most asleep round the fire, one awake? Do the sleepers take a moment to get up? By day, watch a bandit draw his sword as he charges
+- [ ] 🧪 Sneak up on the Hobb camp at night: are most asleep round the fire, one awake, the lookout holding a torch? Do the sleepers take a moment to get up? By day, watch a bandit draw his sword as he charges
 
 ## White Knights Outpost (started 2026-11-25; plan in OUTPOST_PLAN.md, asset list in assets/outpost/MANIFEST.md)
 - [x] Stage 1: hand-painted texture painter, outpost kit, exporter and preview pictures; the White Knights set WK01-WK12 (`assets/outpost/white_knights/`, 8,691 triangles in all)

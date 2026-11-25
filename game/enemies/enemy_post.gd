@@ -337,6 +337,33 @@ const WATCH_ANIMS := {
 }
 const RAIL_ANIM := &"ual2/Idle_Rail"
 
+
+## At night a watcher holds up a torch (`Idle_Torch`, the torch in the left hand).
+const TORCH_ANIM := &"Idle_Torch"
+var _torch: HandTorch
+
+
+func _torch_time() -> bool:
+	return DayNight.night >= REST_AT and enemy.model.has_anim(TORCH_ANIM)
+
+
+## Every machine, every frame: a torch in hand while the torch animation plays on
+## the post. Called to fight, it drops the torch, which burns out on the ground.
+func update_torch() -> void:
+	var want := enemy.state == Enemy.State.IDLE and enemy.model.current_anim() == TORCH_ANIM
+	var has := _torch != null and is_instance_valid(_torch) and not _torch.is_dropped()
+	if want == has:
+		return
+	if want:
+		_torch = HandTorch.new()
+		enemy.model.carry("l", _torch)
+	else:
+		if enemy.state != Enemy.State.IDLE and enemy.is_inside_tree():
+			_torch.drop(enemy.get_parent())
+		else:
+			enemy.model.carry("l", null)
+		_torch = null
+
 ## True: keeps watch instead of standing with friends.
 var watching := false
 var _rail := false
@@ -350,7 +377,13 @@ func _keep_watch(delta: float) -> void:
 		return  # waiting for the first look round (_first_look)
 	# Calm animation: leaning on the rail, or standing (now and then a drink).
 	_time_left -= delta
-	if _time_left <= 0.0 or _anim == &"":
+	if _torch_time() != (_anim == TORCH_ANIM):
+		_time_left = 0.0  # night fell (torch up) or day broke (torch away)
+	if _torch_time() and _time_left <= 0.0:
+		enemy.model.play(TORCH_ANIM, 0.5, _rng.randf_range(0.9, 1.1))
+		_anim = TORCH_ANIM
+		_time_left = 10.0
+	elif _time_left <= 0.0 or _anim == &"":
 		var anim := RAIL_ANIM
 		if not (_rail and enemy.model.has_anim(RAIL_ANIM)):
 			anim = _pick(WATCH_ANIMS.get(_style, WATCH_ANIMS["loose"]).map(func(o: Array) -> Array: return [o[0], o[1], 5.0, 10.0]))[0]
