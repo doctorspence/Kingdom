@@ -1,6 +1,6 @@
 # Enemy life plan: what enemies do before the fight
 
-*Written 2026-11-25 at the owner's request. Stages 1 and 2 are built (see "Progress" at the end).*
+*Written 2026-11-25 at the owner's request. Stages 1-4 are built (see "Progress" at the end).*
 
 ## Decided (owner, 2026-11-25)
 1. **Weapons while calm: on the hip (shields on the back) and drawn when the fight starts** (option B below).
@@ -102,7 +102,18 @@ Each stage is playable on its own and ends with the checks and pictures.
 | 1 | **Built 2026-11-25, not playtested by hand.** Details below. |
 | 2 | **Built 2026-11-25, not playtested by hand.** Details below. |
 | 3 | **Built 2026-11-25, not playtested by hand.** Details below. |
-| 4, 6, 7 | Not started. |
+| 4 | **Built 2026-11-25, not playtested by hand.** Details below. |
+| 6, 7 | Not started. |
+
+**Stage 4 as built (seats and camp work):**
+- About 0.3 s after appearing, a calm enemy (not a watcher, not on patrol) looks for camp props within 7 m that nobody has taken: log seats (`log_seat.tscn`, two places per log), crates, barrels and carts (`crate.tscn`, `barrel.tscn`, `cart.tscn`). Props are found by their scene file, so no scene changes were needed. A seat near a fire is picked 70% of the time when a job is also free.
+- **Sitting:** on the log, facing the nearest fire within 7 m (`Sitting_Enter`, then `Sitting_Idle` / `Sitting_Talking`, one talker at a time). Sees 0.75 times as far. A small helper (`EnemyPost.SpotLock`) holds the body on the seat (the log's own collision would push it off) and lets go the moment the enemy leaves its post.
+- **Working:** at the side of the prop facing the camp's fire: crates and barrels `PickUp_Table`, `Chest_Open`, `Interact` (barrels also a drink); kneeling at the middle of a cart's long side (`Fixing_Kneeling`, with a crouched breather now and then). Sees 0.85 times as far.
+- **Getting up:** alerted while seated, it plays `Sitting_Exit` and charges about 1.35 s later (standing: 0.35 s); a worker needs 0.8 s. Friends add their own get-up time to their warning delay. With stealth's suspicious step, a sitter that grows suspicious stands up first (`_become_suspicious` calls `post.get_up()`, and `_state_suspicious` waits while `post.is_getting_up()`). A hit makes it fight at once.
+- **After a fight:** home is just in front of its seat (or the job itself), so it walks back, then sits down again.
+- Nobody is near at the start, so it is placed straight on its seat; otherwise it walks there.
+- Not done: chopping wood and carrying sacks (no axe or sack to hold: a sheathed sword can't chop), night rest (stage 7).
+- Checks: `tests/posts_check.gd` (2 sit and 1 works in a small camp, on the log facing the fire, sees less, stands up before fighting, its body is released, back on the seat after a fight). Pictures: `tests/visual_posts.gd` shots p11-p13. In the real zone at start: both Hobb camp bandits sit by the fire; about 7 sit and 1 works zone-wide (the spawn rolls vary).
 | 5 | Moved to `STEALTH_PLAN.md` stage 2. |
 
 **Stage 1 as built:**

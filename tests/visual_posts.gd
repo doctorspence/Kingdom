@@ -37,7 +37,19 @@ func _run() -> void:
 	]
 	var archer := _add(arena, "bandit_archer", Vector3(-7, 0, 0))
 	archer.model.face_instantly(Vector3(0, 0, 1))
+	# A camp off to the side: fire, log seat, crate and cart (stage 4).
+	for prop in [["campfire", Vector3(-20, 0, 0), 0.0], ["log_seat", Vector3(-20, 0, 2.2), 0.0],
+			["crate", Vector3(-24, 0, -2), 0.3], ["cart", Vector3(-16, 0, -3), 0.0]]:
+		var n := (load("res://levels/tithelands/props/%s.tscn" % prop[0]) as PackedScene).instantiate() as Node3D
+		n.position = prop[1]
+		n.rotation.y = prop[2]
+		arena.add_child(n)
+	for at in [Vector3(-20.5, 0, 3.5), Vector3(-19.5, 0, 3.5), Vector3(-23, 0, -3), Vector3(-17, 0, -1)]:
+		_add(arena, "bandit_sword", at)
 	await _seconds(4.0)
+	await _shot("p11_camp", Vector3(-20, 2.6, 8.5), Vector3(-20, 0.8, 0))
+	await _shot("p12_seated_side", Vector3(-23.5, 1.2, 2.6), Vector3(-20, 0.7, 2.4))
+	await _shot("p13_camp_work", Vector3(-20, 2.2, -7.5), Vector3(-20, 0.8, -2))
 
 	await _shot("p01_huddle", Vector3(0, 2.2, 5.5), Vector3(0, 1.0, 0))
 	await _seconds(3.0)

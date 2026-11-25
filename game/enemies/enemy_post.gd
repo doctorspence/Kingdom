@@ -84,7 +84,7 @@ func _first_look() -> void:
 		_watch_dir = _choose_watch_dir()
 		enemy.set_home_facing(_watch_dir)
 		enemy.model.face_instantly(_watch_dir)
-	elif not is_patrolling():
+	elif not is_patrolling() and not _claim_spot():
 		_find_mates(true)
 
 
@@ -112,6 +112,9 @@ func tick(delta: float) -> void:
 	if watching:
 		_keep_watch(delta)
 		return
+	if spot_kind != Spot.NONE:
+		_tick_spot(delta)
+		return
 	if not _set_up:
 		return  # waiting for the first look round (_first_look)
 	_rescan -= delta
@@ -134,6 +137,7 @@ func resume() -> void:
 	_anim = &""
 	_time_left = 0.0
 	_waiting = false
+	_phase = 0  # a seat or a job: walk back to it
 	if is_patrolling():
 		var ahead: Enemy = null
 		for m in _patrol_mates():
@@ -217,6 +221,304 @@ func _choose_watch_dir() -> Vector3:
 	var fwd := enemy.model.forward()
 	fwd.y = 0.0
 	return fwd.normalized()
+
+
+# --- Seats and camp work (stage 4) ---------------------------------------------
+## Calm enemies near camp props use them: sit on a log seat (facing the fire, if
+## there is one), or work at a crate, barrel or cart. Seated ones see less and take
+## longest to get up; workers are a little distracted.
+
+enum Spot { NONE, SIT, WORK }
+## Props within this distance (meters) of where it appears can be claimed.
+const SPOT_RANGE := 7.0
+## A seat near a fire is taken this often (otherwise a job, if there is one free).
+const SIT_CHANCE := 0.7
+const SEATED_SIGHT := 0.75
+const WORK_SIGHT := 0.85
+## Seconds added to its "getting ready" when alerted.
+const GET_UP := {Spot.NONE: 0.0, Spot.SIT: 1.0, Spot.WORK: 0.45}
+## Props by scene file: [kind, ...]. Seats: logs (2 places, along local X).
+## Work: [where to stand in the prop's space, the jobs played there].
+const PROPS := {
+	"log_seat.tscn": ["seat"],
+	"crate.tscn": ["work", 0.95, [&"PickUp_Table", &"ual2/Chest_Open", &"Interact"]],
+	"barrel.tscn": ["work", 0.85, [&"Interact", &"ual2/Consume", &"PickUp_Table"]],
+	"cart.tscn": ["work", 1.35, [&"Fixing_Kneeling"]],
+}
+const SIT_ANIMS := [[&"Sitting_Idle", 3.0, 5.0, 10.0], [&"Sitting_Talking", 1.5, 4.0, 8.0]]
+
+## What it is using (NONE = standing with friends as before).
+var spot_kind := Spot.NONE
+var _spot_pos := Vector3.ZERO
+var _spot_face := Vector3.FORWARD
+var _jobs: Array = []
+var _spot_key := ""
+var _phase := 0  # 0 = walking there, 1 = sitting down / starting, 2 = settled
+var _phase_time := 0.0
+var _last_frame := -100
+var _lock: Node = null
+
+## Shared by every enemy: which prop places are taken, and the props found in the world.
+static var _claims := {}  # place key -> Enemy
+static var _props: Array = []  # [{key, kind, pos, face, jobs, fire}]
+static var _props_time := -100000
+
+
+func get_up_time() -> float:
+	return GET_UP[spot_kind] if _phase > 0 else 0.0
+
+
+## Still standing up from a seat (other states wait before playing their own animations).
+func is_getting_up() -> bool:
+	return Time.get_ticks_msec() < _up_until
+
+
+var _up_until := 0
+
+
+## Alerted (or hit): stand up from the seat or put the job down.
+func get_up() -> void:
+	_release_lock()
+	if spot_kind == Spot.NONE or _phase == 0:
+		return
+	var takes := get_up_time() + READY_TIME
+	_up_until = Time.get_ticks_msec() + int(takes * 1000.0)
+	if spot_kind == Spot.SIT:
+		enemy.model.play_fitted(&"Sitting_Exit", takes, 0.15)
+	else:
+		enemy.model.play(&"Idle", 0.2)
+	_anim = &""
+	_phase = 0
+	enemy.sight_scale = 1.0
+
+
+func _claim_spot() -> bool:
+	_find_props()
+	var here := enemy.global_position
+	var seats: Array = []
+	var jobs: Array = []
+	for p: Dictionary in _props:
+		if (p.pos as Vector3).distance_to(here) > SPOT_RANGE or _taken(p.key):
+			continue
+		(seats if p.kind == "seat" else jobs).append(p)
+	if seats.is_empty() and jobs.is_empty():
+		return false
+	var pick: Dictionary
+	var by_fire := seats.filter(func(p: Dictionary) -> bool: return p.fire)
+	if not by_fire.is_empty() and (jobs.is_empty() or _rng.randf() < SIT_CHANCE):
+		pick = _nearest(by_fire, here)
+	elif not jobs.is_empty() and (seats.is_empty() or _rng.randf() < 0.6):
+		pick = _nearest(jobs, here)
+	else:
+		pick = _nearest(seats, here)
+	_claims[pick.key] = enemy
+	_spot_key = pick.key
+	spot_kind = Spot.SIT if pick.kind == "seat" else Spot.WORK
+	_spot_pos = pick.pos
+	_spot_face = pick.face
+	_jobs = pick.jobs
+	_phase = 0
+	enemy.set_home_facing(_spot_face)
+	# Home after a fight: just in front of the seat (the log blocks the seat itself), or the job.
+	var home := _spot_pos + _spot_face * (0.75 if spot_kind == Spot.SIT else 0.0)
+	enemy._spawn.origin = Vector3(home.x, enemy.global_position.y, home.z)
+	# Nobody close enough to see it: just be there already.
+	if not _player_within(30.0):
+		enemy.global_position = Vector3(_spot_pos.x, enemy.global_position.y, _spot_pos.z)
+		enemy.model.face_instantly(_spot_face)
+		enemy.reset_physics_interpolation()
+	return true
+
+
+func _taken(key: String) -> bool:
+	var e: Variant = _claims.get(key)
+	return e != null and is_instance_valid(e) and e != enemy and (e as Enemy).state != Enemy.State.DEAD
+
+
+func _nearest(options: Array, to: Vector3) -> Dictionary:
+	var best: Dictionary = options[0]
+	for p: Dictionary in options:
+		if (p.pos as Vector3).distance_to(to) < (best.pos as Vector3).distance_to(to):
+			best = p
+	return best
+
+
+func _player_within(dist: float) -> bool:
+	for n in enemy.get_tree().get_nodes_in_group(&"player"):
+		if (n as Node3D).global_position.distance_to(enemy.global_position) < dist:
+			return true
+	return false
+
+
+## Every seat and work place in the world (looked up again every few seconds at most).
+func _find_props() -> void:
+	var now := Time.get_ticks_msec()
+	if now - _props_time < 5000 and not _props.is_empty():
+		return
+	_props_time = now
+	_props.clear()
+	var fires: Array[Vector3] = []
+	var found: Array = []
+	for n in enemy.get_tree().root.find_children("*", "Node3D", true, false):
+		if n is Campfire:
+			fires.append((n as Node3D).global_position)
+			continue
+		var file := String(n.scene_file_path).get_file()
+		if PROPS.has(file):
+			found.append([n, PROPS[file]])
+	for f: Array in found:
+		var node := f[0] as Node3D
+		var spec: Array = f[1]
+		var t := node.global_transform
+		var id := node.get_instance_id()
+		if spec[0] == "seat":
+			var along := t.basis.x.normalized()
+			var fire := _nearest_point(fires, t.origin, 7.0)
+			# Sit facing the fire, or (no fire) whichever side faces the camp's open side.
+			var face := t.basis.z.normalized()
+			if fire != Vector3.INF and face.dot(fire - t.origin) < 0.0:
+				face = -face
+			face.y = 0.0
+			for side in [-0.5, 0.5]:
+				var pos: Vector3 = t.origin + along * side + face * SEAT_FORWARD
+				_props.append({"key": "%d:%s" % [id, side], "kind": "seat", "pos": pos, "face": face.normalized(), "jobs": [], "fire": fire != Vector3.INF})
+		else:
+			# Stand at the prop's side that faces the camp middle (the nearest fire, or its +Z).
+			var dist: float = spec[1]
+			var fire := _nearest_point(fires, t.origin, 15.0)
+			var out := (fire - t.origin) if fire != Vector3.INF else t.basis.z
+			out.y = 0.0
+			out = out.normalized() if out.length() > 0.01 else Vector3.BACK
+			if file_is_cart(node):
+				# A cart is long: kneel at the middle of whichever long side faces the camp.
+				var side := t.basis.x.normalized()
+				out = side if side.dot(out) >= 0.0 else -side
+			_props.append({"key": "%d" % id, "kind": "work", "pos": t.origin + out * dist, "face": -out, "jobs": spec[2], "fire": false})
+
+
+## How far forward of the log's middle the body stands to sit on it (meters).
+const SEAT_FORWARD := 0.12
+
+
+func file_is_cart(n: Node) -> bool:
+	return String(n.scene_file_path).get_file() == "cart.tscn"
+
+
+func _nearest_point(points: Array[Vector3], to: Vector3, within: float) -> Vector3:
+	var best := Vector3.INF
+	for p in points:
+		if p.distance_to(to) <= within and (best == Vector3.INF or p.distance_to(to) < best.distance_to(to)):
+			best = p
+	return best
+
+
+func _tick_spot(delta: float) -> void:
+	# Away for a while (a fight, a suspicious look): walk back and start again.
+	var frame := Engine.get_physics_frames()
+	if frame - _last_frame > 3 and _phase != 0:
+		_release_lock()
+		_phase = 0
+	_last_frame = frame
+	if _phase == 0:
+		var to := _spot_pos - enemy.global_position
+		to.y = 0.0
+		# The log itself stops the body short of a seat; the lock sets it in place.
+		if to.length() > (0.8 if spot_kind == Spot.SIT else 0.3):
+			enemy.model.turn_toward(to, deg_to_rad(enemy.data.turn_speed) * 0.5 * delta)
+			enemy._move(to.normalized() * minf(enemy.data.walk_speed, to.length() * 2.0 + 0.4), delta)
+			walk(Vector3(enemy.velocity.x, 0, enemy.velocity.z).length())
+			return
+		_phase = 1
+		_phase_time = 0.0
+		_anim = &""
+		enemy.model.face_instantly(_spot_face)
+		_take_lock()
+		enemy.sight_scale = SEATED_SIGHT if spot_kind == Spot.SIT else WORK_SIGHT
+		if spot_kind == Spot.SIT:
+			enemy.model.play(&"Sitting_Enter", 0.2, 1.0, true)
+			_time_left = enemy.model.anim_length(&"Sitting_Enter") - 0.1
+		else:
+			_time_left = 0.0
+		return
+	_phase_time += delta
+	_time_left -= delta
+	if _time_left > 0.0:
+		return
+	_phase = 2
+	if spot_kind == Spot.SIT:
+		var talker := _seated_talker()
+		var pick: Array = SIT_ANIMS[0] if talker else _pick(SIT_ANIMS)
+		_time_left = _rng.randf_range(pick[2], pick[3])
+		enemy.model.play(pick[0], 0.4, _rng.randf_range(0.9, 1.1))
+		_anim = pick[0]
+	else:
+		# A job, then a short breather now and then.
+		var anim: StringName = _jobs[_rng.randi() % _jobs.size()]
+		if _anim != &"Idle" and _anim != &"" and _rng.randf() < 0.3:
+			anim = &"Crouch_Idle" if _jobs.has(&"Fixing_Kneeling") else &"Idle"
+		var length := enemy.model.anim_length(anim)
+		if anim == &"Idle" or anim == &"Crouch_Idle":
+			length = _rng.randf_range(2.0, 4.0)
+		enemy.model.play(anim, 0.3, _rng.randf_range(0.9, 1.05), true)
+		_time_left = length * _rng.randf_range(1.0, 1.6)  # holds the last pose a moment
+		_anim = anim
+
+
+## Another enemy sitting close by is talking (then this one listens).
+func _seated_talker() -> Enemy:
+	for n in enemy.get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e and e != enemy and e.post and e.post.spot_kind == Spot.SIT and e.post._anim == &"Sitting_Talking" \
+				and e.global_position.distance_to(enemy.global_position) < 8.0:
+			return e
+	return null
+
+
+## Sitting or kneeling on a prop: its body must not be pushed off it by the prop's
+## own collision, or slide when friends sit close. A small helper holds it in place
+## and lets go the moment the enemy leaves its post.
+func _take_lock() -> void:
+	_release_lock()
+	var lock := SpotLock.new()
+	lock.post = self
+	lock.spot = Vector3(_spot_pos.x, enemy.global_position.y, _spot_pos.z)
+	enemy.add_child(lock)
+	_lock = lock
+
+
+func _release_lock() -> void:
+	if _lock and is_instance_valid(_lock):
+		(_lock as SpotLock).release()
+	_lock = null
+
+
+class SpotLock extends Node:
+	var post: EnemyPost
+	var spot: Vector3
+	var _mask := -1
+
+	func _ready() -> void:
+		var e := get_parent() as Enemy
+		_mask = e.collision_mask
+		e.collision_mask = 0  # nothing pushes it off the seat...
+		e.axis_lock_linear_y = true  # ...and with nothing under it, it must not fall
+
+	func _physics_process(_delta: float) -> void:
+		var e := get_parent() as Enemy
+		if e.state != Enemy.State.IDLE or e._alarm_time >= 0.0:
+			release()
+			return
+		e.velocity = Vector3.ZERO
+		e.global_position = Vector3(spot.x, e.global_position.y, spot.z)
+
+	func release() -> void:
+		if is_queued_for_deletion():
+			return
+		var e := get_parent() as Enemy
+		if e and _mask >= 0:
+			e.collision_mask = _mask
+			e.axis_lock_linear_y = false
+		queue_free()
 
 
 # --- Patrols (stage 2) -----------------------------------------------------------
@@ -444,13 +746,20 @@ func _center() -> Vector3:
 ## This enemy has noticed `p`: every calm friend close by (that can see it) gets
 ## ready too, a moment apart.
 func alert_friends(p: Player) -> void:
+	# Its own moment to get up from a seat or a job (still getting ready: add to it).
+	if enemy._alarm_time >= 0.0:
+		enemy._alarm_time += get_up_time()
+	get_up()
 	for n in enemy.get_tree().get_nodes_in_group(&"enemies"):
 		var e := n as Enemy
 		if e == null or e == enemy or e.state != Enemy.State.IDLE or e.target != null or e.data.boss:
 			continue
 		var close := mates.has(e) or e.global_position.distance_to(enemy.global_position) <= ALERT_RANGE
 		if close and _clear_between(e):
-			e.raise_alarm(p, READY_TIME + _rng.randf_range(READY_STAGGER.x, READY_STAGGER.y), not enemy.data.caller)
+			var extra := e.post.get_up_time() if e.post else 0.0
+			e.raise_alarm(p, READY_TIME + extra + _rng.randf_range(READY_STAGGER.x, READY_STAGGER.y), not enemy.data.caller)
+			if e.post and e._alarm_time >= 0.0:
+				e.post.get_up()
 
 
 func _clear_between(e: Enemy) -> bool:
