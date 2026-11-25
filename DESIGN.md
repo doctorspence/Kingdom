@@ -479,6 +479,55 @@ Quests and public quests, more zones and an open world, world bosses, New Game+.
 - **On screen**: health, stamina and class resource bars; flask count; ability hotbar with cooldown sweeps; party frames (name, health, class, downed); boss bar; status buildup meters; floating numbers; enemy health bars (toggle); chat (fades out).
 - **Menus**: main menu (Play/Host, Join, Characters, Settings, Quit), character creator, the menu book (tabs Character, Inventory, Map, Talents, Quests, System; see 9.2), talents, map, shrine menu (rest, travel, bank, vendors), loot roll pop-ups, settings (graphics, audio, controls, gameplay toggles).
 
+
+### 12.4 Typography *(owner-approved direction, 2026-11-25)*
+
+KINGDOM uses a **hybrid typographic identity**: the precise, compact readability of an old-school PC MMORPG interface (OSRS-inspired) combined with the literary, medieval atmosphere of The Elder Scrolls IV: Oblivion. The game should feel like a functional classic MMORPG set inside a bleak medieval world. Do not make every screen look like a medieval manuscript.
+
+**Primary typefaces**
+
+| Typeface | Role | Use |
+|---|---|---|
+| **IBM Plex Sans Condensed** | Functional interface | HUD labels and values, inventory, equipment, menus, buttons, tooltips, status labels and compact UI |
+| **Cinzel** | Formal display | Main menu titles, region and dungeon names, faction names, major headings, boss introductions and important announcements |
+| **EB Garamond** | Literary reading | NPC dialogue, quest descriptions, books, journals, lore entries and item flavor text |
+| **IBM Plex Mono** *(optional specialist)* | Technical/numeric | Debug information, coordinates and selected precise numerical readouts; use sparingly |
+
+Use the official font distributions and retain their license files in the project. Bundle only the required font weights and styles. Do not extract or redistribute OSRS's proprietary game fonts.
+
+**Typography rules**
+- HUD and gameplay text must be crisp, compact and readable at a glance. Favor IBM Plex Sans Condensed.
+- Use Cinzel selectively. It is for hierarchy and atmosphere, not paragraphs, tiny labels or dense inventory information.
+- Use EB Garamond for longer narrative reading and literary emphasis. Keep body text comfortably readable.
+- Use consistent weights and hierarchy. Avoid excessive all-caps, ornamental lettering, blackletter, distressed effects and unnecessary italics.
+- Numbers, item stats, cooldowns and combat information must remain easy to scan.
+- Maintain strong contrast against dark panels and the world. Use muted ivory or warm off-white for primary text, subdued grey for secondary text, and restrained aged-gold accents for emphasis.
+- The font combination must work at gameplay distance and across supported resolutions, including gamepad navigation and accessibility scaling.
+
+**Starting size guide at 1920×1080** *(tune in-game; not fixed pixel requirements)*
+
+| Element | Starting size |
+|---|---:|
+| HUD labels | 14–16 px |
+| HUD values | 16–18 px |
+| Inventory and item names | 16 px |
+| Item descriptions | 16–18 px |
+| Dialogue body | 20–22 px |
+| Quest headings | 24–28 px |
+| Region and dungeon titles | 36–48 px |
+| Main menu title | 56–72 px |
+
+Scale typography with the UI rather than assuming a fixed 1080p display. Check readability at common window sizes and UI scale settings.
+
+**Visual treatment**
+- Pair compact, precise interface typography with dark charcoal panels, muted ivory text, restrained aged-gold accents, thin dividers and subtle medieval framing.
+- Reserve parchment-like surfaces and more ornamental treatments for books, journals, maps, quest records and lore-focused screens.
+- Avoid excessive scrollwork, glowing text, bright saturated UI colors and decorative borders that compete with information.
+- Preserve the existing dark, subdued KINGDOM palette. Typography should reinforce the world rather than make the interface feel like a modern web app or a generic fantasy template.
+
+**Implementation standard**
+Create a reusable Godot Theme/resource for the typography system. Define named styles for HUD, body, compact UI, buttons, headings, dialogue, item descriptions and numerical readouts. Apply the same theme consistently across menus and gameplay UI. Avoid hardcoding font choices independently in individual controls. Test font rendering, line spacing, truncation, localization headroom, and gamepad focus states before applying the theme project-wide.
+
 ---
 
 ## 13. Technical plan
