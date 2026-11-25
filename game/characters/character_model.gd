@@ -397,6 +397,10 @@ func anim_length(anim_name: StringName) -> float:
 	return _anim.get_animation(anim_name).length if _anim and _anim.has_animation(anim_name) else 1.0
 
 
+func has_anim(anim_name: StringName) -> bool:
+	return _anim != null and _anim.has_animation(anim_name)
+
+
 func current_anim() -> StringName:
 	return _current
 
@@ -413,6 +417,10 @@ func clear_hands() -> void:
 		if is_instance_valid(h):
 			h.queue_free()
 	_held.clear()
+	_hand_holders.clear()
+	_hand_items.clear()
+	_stow_holders.clear()
+	_sheathed = false
 
 
 ## Recolor the body (placeholder for real outfits).
@@ -469,10 +477,104 @@ func attach_to_hand(item: Node3D, side: String) -> void:
 	_skeleton.add_child(holder)
 	holder.add_child(item)
 	_held.append(holder)
-	# In the hand bone, fingers point along +Y and the knuckles along +Z, so a
-	# held blade points along +Z. Rotate the item's +Y onto +Z.
+	_hand_holders[side] = holder
+	_hand_items[side] = item
+	_place_in_hand(item)
+
+
+## In the hand bone, fingers point along +Y and the knuckles along +Z, so a
+## held blade points along +Z. Rotate the item's +Y onto +Z.
+func _place_in_hand(item: Node3D) -> void:
 	item.position = Vector3(0.0, 0.08, 0.0)
 	item.rotation_degrees = Vector3(90.0, 0.0, 0.0)
+
+
+# --- Weapons on the belt and back ----------------------------------------------
+## While calm (enemies on their post) the hand items are stowed: the weapon on the
+## left hip, grip forward for a right-hand draw; the off-hand item (shield) on the
+## back; a bow across the back. Positions are in the model's own space (+Z is
+## forward, +X the character's left), measured from a bone's rest pose.
+
+## Per hand: "hip", "back" or "bow" (across the back). Set before sheathe().
+var stow_places := {"r": "hip", "l": "back"}
+var _sheathed := false
+var _hand_holders := {}   # side -> BoneAttachment3D in the hand
+var _hand_items := {}     # side -> the item
+var _stow_holders := {}   # side -> BoneAttachment3D on the hip / back
+
+const STOW := {
+	# place: [bone, offset from the bone, item +Y (blade / handle up), item +Z,
+	#         true = the item's middle goes there (false = its grip)]
+	"hip": [&"pelvis", Vector3(0.2, 0.04, 0.1), Vector3(0.18, -0.75, -0.62), Vector3(1.0, 0.0, 0.0), false],
+	"back": [&"spine_03", Vector3(0.0, -0.12, -0.24), Vector3(0.0, 1.0, 0.0), Vector3(0.0, 0.0, 1.0), true],
+	"bow": [&"spine_03", Vector3(0.0, -0.1, -0.2), Vector3(0.6, 0.8, 0.0), Vector3(0.0, 0.0, -1.0), true],
+}
+
+
+func is_sheathed() -> bool:
+	return _sheathed
+
+
+## Stow the hand items (true) or take them back in hand (false). Instant: the
+## enemy's alert step covers the moment of the draw.
+func sheathe(on: bool) -> void:
+	if on == _sheathed or _skeleton == null:
+		return
+	_sheathed = on
+	for side: String in _hand_items:
+		var item := _hand_items[side] as Node3D
+		if not is_instance_valid(item):
+			continue
+		if on:
+			var holder := _stow_holder(side)
+			if holder == null:
+				continue
+			item.reparent(holder, false)
+			item.transform = holder.get_meta(&"stow") as Transform3D
+		else:
+			item.reparent(_hand_holders[side], false)
+			_place_in_hand(item)
+
+
+func _stow_holder(side: String) -> BoneAttachment3D:
+	if _stow_holders.has(side) and is_instance_valid(_stow_holders[side]):
+		return _stow_holders[side]
+	var spec: Array = STOW.get(stow_places.get(side, "hip"), STOW["hip"])
+	var bone := _skeleton.find_bone(spec[0])
+	if bone < 0:
+		return null
+	var holder := BoneAttachment3D.new()
+	holder.bone_name = spec[0]
+	_skeleton.add_child(holder)
+	_held.append(holder)
+	_stow_holders[side] = holder
+	# Wanted place in model space -> the bone's own space (rest pose).
+	var model_from_skel := global_transform.affine_inverse() * _skeleton.global_transform
+	var rest := model_from_skel * _skeleton.get_bone_global_rest(bone)
+	var up := (spec[2] as Vector3).normalized()
+	var fwd := spec[3] as Vector3
+	fwd = (fwd - up * up.dot(fwd)).normalized()
+	var basis := Basis(up.cross(fwd), up, fwd)
+	var spot := rest.origin + (spec[1] as Vector3)
+	if spec[4]:
+		spot -= basis * _middle_of(_hand_items[side])
+	var local := rest.affine_inverse() * Transform3D(basis, spot)
+	local.basis = local.basis.orthonormalized()
+	holder.set_meta(&"stow", local)
+	return holder
+
+
+## The middle of an item's meshes, in the item's own space.
+func _middle_of(item: Node3D) -> Vector3:
+	var box := AABB()
+	var first := true
+	for m in item.find_children("*", "MeshInstance3D", true, false):
+		var mi := m as MeshInstance3D
+		var to_item := item.global_transform.affine_inverse() * mi.global_transform
+		var b := to_item * mi.get_aabb()
+		box = b if first else box.merge(b)
+		first = false
+	return box.get_center() if not first else Vector3.ZERO
 
 
 # --- Worn armor ----------------------------------------------------------------

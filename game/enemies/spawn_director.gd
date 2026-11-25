@@ -75,7 +75,13 @@ func _spawn(sp: SpawnPoint, scene: PackedScene, index: int, count: int) -> void:
 	_counter += 1
 	e.name = "%s_%d" % [sp.name, _counter]
 	var a := TAU * index / maxf(count, 1)
-	var off := Vector3(cos(a), 0, sin(a)) * (sp.radius if count > 1 else 0.0)
+	var r := sp.radius
+	if sp.patrol.is_empty():
+		# A group on its post stands close together, a little untidy (it turns to
+		# face its middle: EnemyPost). Patrols keep their spacing.
+		r = minf(sp.radius, 0.75 + 0.3 * count) * _rng.randf_range(0.85, 1.15)
+		a += _rng.randf_range(-0.35, 0.35)
+	var off := Vector3(cos(a), 0, sin(a)) * (r if count > 1 else 0.0)
 	var p := sp.global_position + off
 	if terrain and sp.snap_to_terrain:
 		p.y = terrain.height_at(p.x, p.z) + 0.05

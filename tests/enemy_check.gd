@@ -84,6 +84,49 @@ func _run() -> void:
 	var hobb := await _add("hobb", Vector3(5, 0, 5), 0.0)
 	_check("Hobb is named, tough, and has his own loot", hobb.data.named and hobb.max_health >= 400.0 and hobb.data.loot_table.always.size() == 1)
 
+	# --- Posts: calm before the fight (ENEMY_LIFE_PLAN.md stage 1) --------------------
+	_clear()
+	await _go_to(Vector3(0, 0.05, 30))  # far out of sight
+	var b1 := await _add("bandit_sword", Vector3(-1, 0, -10), 0.0)
+	var b2 := await _add("bandit_sword", Vector3(1, 0, -10), 0.0)
+	await _seconds(0.6)
+	_check("two bandits on a post turn to face each other", _faces(b1, b2) and _faces(b2, b1))
+	_check("...with their swords at the hip", b1.model.is_sheathed() and b2.model.is_sheathed())
+	_check("...not in fighting stance", b1.model.current_anim() != &"Sword_Idle" and b2.model.current_anim() != &"Sword_Idle")
+	# Walk into one's view only: both join, a moment apart.
+	await _go_to(Vector3(-9, 0.05, -10))  # 8 m behind b1 (out of earshot), 10 m in front of b2
+	await _seconds(0.15)
+	var spotted := b2.target == player
+	_check("the one facing you notices you", spotted)
+	_check("...and takes a moment to get ready (no instant charge)", b2.state == Enemy.State.IDLE)
+	_check("...and warns its friend", b1.target == player)
+	await _seconds(1.2)
+	_check("both fight together", b1.state != Enemy.State.IDLE and b2.state != Enemy.State.IDLE)
+	_check("...with swords drawn", not b1.model.is_sheathed() and not b2.model.is_sheathed())
+	# Home again: back on the post, facing the friend, sword away.
+	await _go_to(Vector3(0, 0.05, 60))
+	for e: Enemy in [b1, b2]:
+		e.target = null
+		e._set_state(Enemy.State.RETURN)
+	await _seconds(3.0)
+	_check("after the fight they go back to their post", b1.state == Enemy.State.IDLE and b1.model.is_sheathed() and _faces(b1, b2))
+	# A blow on a calm enemy: it fights at once.
+	_clear()
+	await _go_to(Vector3(0, 0.05, 0))
+	var calm := await _add("bandit_sword", Vector3(0, 0, -8), 0.0)  # back turned, out of earshot
+	await _seconds(0.2)
+	var tap := HitInfo.new()
+	tap.damage = 1.0
+	tap.attacker = player
+	tap.origin = player.global_position
+	calm.receive_hit(tap)
+	await _frames(3)
+	_check("hit while calm, it fights at once", calm.state != Enemy.State.IDLE and not calm.model.is_sheathed())
+	# Bosses, hounds and ambushers keep their old ways.
+	_clear()
+	var h := await _add("hound", Vector3(5, 0, 5), 0.0)
+	_check("hounds have no post", not h.post.enabled)
+
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)
 
@@ -95,6 +138,13 @@ func _add(kind: String, at: Vector3, yaw_deg: float) -> Enemy:
 	_arena.add_child(e, true)
 	await _frames(3)
 	return e
+
+
+## `a` faces `b` (within 25 degrees).
+func _faces(a: Enemy, b: Enemy) -> bool:
+	var to := b.global_position - a.global_position
+	to.y = 0.0
+	return rad_to_deg(a.model.forward().angle_to(to)) < 25.0
 
 
 func _kill(e: Enemy) -> void:

@@ -1,6 +1,12 @@
 # Enemy life plan: what enemies do before the fight
 
-*Written 2026-11-25 at the owner's request. Nothing in this plan is built yet. It needs the owner's answers to the questions at the end before stage 1 starts.*
+*Written 2026-11-25 at the owner's request. Stage 1 is being built (see "Progress" at the end).*
+
+## Decided (owner, 2026-11-25)
+1. **Weapons while calm: on the hip (shields on the back) and drawn when the fight starts** (option B below).
+2. **Hits from behind always do extra damage**, in or out of a fight, not only on unaware enemies. This touches the player's damage code (`player.gd` `_land_hit`), so it is built together with the sneak attack in `STEALTH_PLAN.md` stage 3, not here. The size of the bonus is still open (suggestion: x1.5 from behind, and the sneak attack's x2 replaces it on an unaware enemy rather than stacking).
+3. **Yes, enemies can lose track of you** and go back to their post. The suspicious step and the awareness meter are built by the stealth work (`STEALTH_PLAN.md` stage 2), so this plan's stage 5 is covered there. Posts only change how keen each enemy is (sitting, working, watching).
+4. **Yes: Knights disciplined, bandits loose.**
 
 ## The owner's brief
 > Enemies should be gathered around each other, or a task, or a watch, before pulling aggro, as opposed to standing in battle stance 24/7. They should also patrol, or be on "tasks", or stand with each other, or keep watch. Improve their animations in the rested and the fighting state.
@@ -90,7 +96,24 @@ Each stage is playable on its own and ends with the checks and pictures.
 | 6 | **Fighting animation pass** | Taunts and guard poses while waiting, per-type stances, hurt behavior. |
 | 7 | **Weapons on the belt / drawing** (if the owner picks B) and **night rest** | Sheathed weapons, a draw on alert; camps sleep at night with a lit watch. |
 
-## Questions for the owner
+## Progress
+| Stage | State |
+|---|---|
+| 1 | **Built 2026-11-25, not playtested by hand.** Details below. |
+| 2-4, 6, 7 | Not started. |
+| 5 | Moved to `STEALTH_PLAN.md` stage 2. |
+
+**Stage 1 as built:**
+- `game/enemies/enemy_post.gd` (EnemyPost, one per enemy): about 0.3 s after appearing (then every 2.5-4 s) it looks for idle friends within 5 m; a group turns to face its middle, and that becomes its home facing. Calm animations per `EnemyData.calm_style` ("loose" for bandits, "disciplined" for Zealots, "none" keeps the old stance): one talks at a time while the others listen, nod, fold their arms or drink (bandits), at slightly different speeds and start points. Patrols walk with `Walk` (bandits) or `Walk_Formal` (Knights).
+- Not given a post: bosses, hounds (no human animations), ambushers (`ambush_range`), camp raiders (they march on the camp ready to fight).
+- **Alert:** an enemy that spots you stands for 0.35 s turning toward you, then charges; calm friends within 10 m (with a clear line between them) turn and join 0.5-0.95 s after. Callers still blow the horn at once; friends warned by a caller don't blow their own. A hit on a calm enemy makes it fight at once. After a chase they walk home, sheathe, and face the group again.
+- **Weapons:** `CharacterModel.sheathe()` moves the hand items onto the left hip (weapon, grip forward), the back (shield) or across the back (bow). Every machine sheathes when the enemy's state is IDLE and draws otherwise, so nothing new goes over the network. The draw is instant at the start of the charge: the library has no draw animation (a real one would go on `ART_NEEDS.md`).
+- Hooks in `enemy.gd`: `_notice`, `raise_alarm`, `_get_ready`, `set_home_facing`, `_update_sheath`, and `_aggro(p, spread)`. The stealth work's awareness meter should call `_notice(p)` where it would call `_aggro(p)`, so posts and stealth stack.
+- `SpawnDirector` now places a non-patrol group 1.3-2 m apart (was the spawn point's radius, usually 3 m), a little untidy.
+- Checks: `enemy_check` (huddle facing, sheathed, notice delay, group joins, drawn, back to post, hit while calm, hounds). Pictures: `tests/visual_posts.gd` (run without `--headless`).
+- Known: the archer's placeholder bow is a full ring (the placeholder mesh, same in hand), so it looks odd on the back until a real bow model exists.
+
+## Questions for the owner (answered above, kept for the record)
 1. **Weapons while calm:** A (sword held low, quick) or B (sword on the belt or back and drawn when the fight starts, slower to build and the draw is faked)?
 2. **Sneaking:** is it OK that sitting, working or sleeping enemies take a moment to get up, so a careful player gets a free first hit? Should hitting an unaware enemy from behind do extra damage (a backstab), or just the free hit?
 3. **The suspicious step (stage 5):** do you want enemies that can lose track of you and go back to their post, or should seeing you always mean a fight?

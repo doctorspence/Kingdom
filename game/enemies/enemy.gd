@@ -102,6 +102,10 @@ var _blocked_streak := 0  # its blows you blocked (not deflected) in a row: it r
 var _stun_len := 1.0     # how long the current STAGGER lasts
 var _glinted := 0        # which follow-up blows of this attack have flashed their warning
 var _string_parries := 0  # blows of this attack that were deflected (all of them = Flawless)
+## What it does on its post before a fight: calm idles, huddles, sheathed weapons (EnemyPost).
+var post: EnemyPost
+var _alarm_time := -1.0  # noticed a player: seconds left to get ready (< 0 = not alarmed)
+var _alarm_horn := true  # when ready, a caller may still blow its horn
 
 @onready var model: CharacterModel = $Visual
 
@@ -124,6 +128,9 @@ func _ready() -> void:
 		model.attach_to_hand(_weapon, "r")
 	if data.offhand_scene:
 		model.attach_to_hand(data.offhand_scene.instantiate(), "l")
+	post = EnemyPost.new(self)
+	if data.keep_distance > 0.0:
+		model.stow_places = {"r": "bow", "l": "back"}
 	max_health = data.max_health
 	max_poise = data.poise
 	_reset()
@@ -158,10 +165,13 @@ func _reset() -> void:
 	_set_engaged(false)
 	_free_adds()
 	_patrol_i = 0
+	_alarm_time = -1.0
 	collision_layer = 4
 	_set_state(State.IDLE)
 	model.set_overlay("")
 	model.play(model.idle_anim, 0.2)
+	if post:
+		post.resume()
 
 
 # --- Used by players, the HUD and shrines --------------------------------------
@@ -692,6 +702,7 @@ func _physics_process(delta: float) -> void:
 	if _hitstop > 0.0:
 		_hitstop -= delta
 		model.hold(true)
+		_update_sheath()
 		_write_net_state()
 		return
 	model.hold(false)
@@ -736,6 +747,7 @@ func _physics_process(delta: float) -> void:
 			_state_call(delta)
 		State.DEAD:
 			_move(Vector3.ZERO, delta)
+	_update_sheath()
 	_write_net_state()
 
 
@@ -768,6 +780,7 @@ func _mirror(delta: float) -> void:
 		_tinted = true
 		model.set_tint(data.phase2_tint)
 	collision_layer = 0 if state == State.DEAD else 4
+	_update_sheath()
 	if net_overlay != model.overlay_kind():
 		if net_overlay == "danger":
 			_danger_sound()
@@ -780,6 +793,9 @@ func _set_state(s: State) -> void:
 
 
 func _state_idle(delta: float) -> void:
+	if _alarm_time >= 0.0:
+		_get_ready(delta)
+		return
 	# Walk the patrol route, or stand guard.
 	if patrol_points.size() >= 2:
 		var goal := patrol_points[_patrol_i]
@@ -790,18 +806,85 @@ func _state_idle(delta: float) -> void:
 		else:
 			model.turn_toward(to, deg_to_rad(data.turn_speed) * 0.5 * delta)
 			_move(to.normalized() * data.walk_speed, delta)
-			model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
+			if post.enabled:
+				post.walk(Vector3(velocity.x, 0, velocity.z).length())
+			else:
+				model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
 	else:
 		_move(Vector3.ZERO, delta)
-		model.play(model.idle_anim, 0.25)
+		if post.enabled:
+			post.tick(delta)
+		else:
+			model.play(model.idle_anim, 0.25)
 	var p := _find_player()
 	if p:
+		_notice(p)
+
+
+## Spotted a player while calm on its post: get ready (a moment to turn and draw)
+## and warn its friends. Callers blow the horn straight away; enemies without a
+## post fight at once, as before.
+func _notice(p: Player) -> void:
+	if not post.enabled or data.caller:
 		_aggro(p)
-
-
-## Noticed a player: callers raise the alarm first.
-func _aggro(p: Player) -> void:
+		return
 	target = p
+	_alarm_time = EnemyPost.READY_TIME
+	_alarm_horn = true
+	post.alert_friends(p)
+
+
+## A friend saw `p` (EnemyPost.alert_friends): turn toward it and join in after `delay`.
+## `horn`: false when the one who saw it is already blowing a horn.
+func raise_alarm(p: Player, delay: float, horn := true) -> void:
+	if state != State.IDLE or _alarm_time >= 0.0:
+		return
+	target = p
+	_alarm_time = delay
+	_alarm_horn = horn
+
+
+## Alarmed but not ready yet: stand, turn to the threat, then fight.
+func _get_ready(delta: float) -> void:
+	_move(Vector3.ZERO, delta)
+	if target == null or not is_instance_valid(target) or target.is_out_of_fight():
+		target = null
+		_alarm_time = -1.0
+		post.resume()
+		return
+	model.turn_toward(target.global_position - global_position, deg_to_rad(data.turn_speed) * 0.7 * delta)
+	_alarm_time -= delta
+	if _alarm_time < 0.0:
+		if not _alarm_horn:
+			_called = true
+		_aggro(target, false)
+
+
+## Its home spot faces this way (a huddle faces its middle).
+func set_home_facing(direction: Vector3) -> void:
+	direction.y = 0.0
+	if direction.length() > 0.01:
+		_spawn.basis = Basis.looking_at(direction.normalized(), Vector3.UP)
+
+
+## Sheathed on its post, weapon in hand otherwise. Every machine works this out
+## from the (shared) state, so nothing extra goes over the network.
+func _update_sheath() -> void:
+	if post == null or not post.enabled:
+		return
+	if state == State.IDLE:
+		model.sheathe(true)
+	elif state != State.DEAD:
+		model.sheathe(false)
+
+
+## Noticed a player: callers raise the alarm first. `spread`: warn calm friends
+## nearby too (false when it was warned itself).
+func _aggro(p: Player, spread := true) -> void:
+	target = p
+	_alarm_time = -1.0
+	if spread and post and post.enabled:
+		post.alert_friends(p)
 	if data.caller and not _called:
 		_called = true
 		model.face_instantly(p.global_position - global_position)
