@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/limestone.png" id="1_exmrq"]
+
+[resource]
+resource_name = "limestone_wet"
+albedo_color = Color(0.72, 0.72, 0.7, 1)
+albedo_texture = ExtResource("1_exmrq")
+roughness = 0.45
+texture_filter = 5

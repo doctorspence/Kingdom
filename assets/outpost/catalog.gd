@@ -12,6 +12,9 @@ const STB := preload("res://assets/outpost/stable/stable.gd")
 const INN := preload("res://assets/outpost/inn/inn.gd")
 const CRP := preload("res://assets/outpost/carpenter/carpenter.gd")
 const COT := preload("res://assets/outpost/cottages/cottages.gd")
+const ENVR := preload("res://assets/outpost/environment/environment.gd")
+const VFX := preload("res://assets/outpost/vfx/vfx.gd")
+const STO := preload("res://assets/outpost/props/story.gd")
 
 
 static func entries() -> Array:
@@ -105,4 +108,17 @@ static func entries() -> Array:
 			["CO09_hanging_linen", COT.hanging_linen], ["CO10_laundry_basket", COT.laundry_basket], ["CO12_animal_pen", COT.animal_pen],
 			["CO13_chicken_coop", COT.chicken_coop], ["CO15_household_tools", COT.household_tools]]:
 		e.append(["cottages", it[0], it[1]])
+	for it in [["ENV07_mud_splash_decal", ENVR.mud_splash], ["ENV19_tree_stumps", ENVR.tree_stumps], ["ENV23_stone_path_pieces", ENVR.stone_path],
+			["ENV25_creek_rocks", ENVR.creek_rocks], ["ENV26_small_footbridge", ENVR.footbridge]]:
+		e.append(["environment", it[0], it[1]])
+	for it in [["FX01_standing_wooden_torch", VFX.standing_torch], ["FX04_wall_mounted_lantern", VFX.wall_lantern], ["FX05_candle_cluster", VFX.candles],
+			["FX09_campfire", VFX.campfire], ["FX12_rain_splash", VFX.rain_splash], ["FX13_water_ripples", VFX.water_ripples]]:
+		e.append(["vfx", it[0], it[1]])
+	for it in [["DT01_abandoned_wooden_bucket", STO.bucket], ["DT02_broken_crate", STO.broken_crate], ["DT03_empty_sack", STO.empty_sack],
+			["DT04_wooden_spoon", STO.spoon], ["DT05_clay_plate", STO.clay_plate], ["DT06_hanging_rope", STO.hanging_rope],
+			["DT07_old_iron_chain", STO.old_chain], ["DT08_rusted_tools", STO.rusted_tools], ["DT10_broken_wagon_wheel", STO.broken_wheel],
+			["DT12_scattered_firewood", STO.scattered_firewood], ["DT13_fallen_signboard", STO.fallen_signboard], ["DT14_stone_piles", STO.stone_piles],
+			["DT15_animal_tracks_and_hoofprints", STO.tracks], ["DT18_tattered_cloth", STO.tattered_cloth], ["DT19_old_shields", STO.old_shields],
+			["DT20_abandoned_spear", STO.abandoned_spear]]:
+		e.append(["props", it[0], it[1]])
 	return e

@@ -10,6 +10,7 @@ extends SceneTree
 ##        town_overview town_inn town_inn_in town_smith town_stable (the inn, smithy, stable, carpenter)
 ##        mk_market mk_close bs_forge bs_close (stage 4: the market and the forge dressed with props)
 ##        yd_stable yd_inn yd_inn_in yd_carpenter yd_cottage (stage 4: stable, inn, carpenter, cottage life)
+##        ls_day ls_dusk ls_story (stages 5-7: ground pieces, light and effects, story props)
 
 const WK_DIR := "res://assets/outpost/white_knights/"
 const CP_DIR := "res://assets/outpost/castle_approach/"
@@ -27,6 +28,8 @@ const TB := Vector3(-45, 0, -75)
 const PB := Vector3(-45, 0, -120)
 ## Where the stable, inn, carpenter and cottage yards stand.
 const QB := Vector3(-45, 0, -170)
+## Where the ground, light and story pieces stand.
+const RB := Vector3(-45, 0, -215)
 const BLD := preload("res://assets/outpost/buildings/buildings.gd")
 const ENV := preload("res://levels/common/tithelands_env.tres")
 const STONE := preload("res://levels/common/materials/stone.tres")
@@ -50,7 +53,7 @@ func _run() -> void:
 	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant", "cp_overview", "cp_left", "cp_right", "cp_table", "cp_dusk",
 		"b07_outside", "b07_door", "b07_in", "vil_overview", "vil_market", "vil_b08_in", "vil_shed",
 		"town_overview", "town_inn", "town_inn_in", "town_smith", "town_stable", "mk_market", "mk_close", "bs_forge", "bs_close",
-		"yd_stable", "yd_inn", "yd_inn_in", "yd_carpenter", "yd_cottage"]
+		"yd_stable", "yd_inn", "yd_inn_in", "yd_carpenter", "yd_cottage", "ls_day", "ls_dusk", "ls_story"]
 	if args.size() > 1:
 		shots = args.slice(1)
 	_build()
@@ -67,6 +70,8 @@ func _run() -> void:
 
 func _wk(id: String, pos: Vector3, yaw := 0.0) -> Node3D:
 	var dir := CP_DIR if id.begins_with("CP") else WK_DIR
+	if id.begins_with("CO"):
+		dir = "res://assets/outpost/cottages/"
 	if id.begins_with("BS"):
 		dir = "res://assets/outpost/blacksmith/"
 	elif id.begins_with("MK"):
@@ -79,6 +84,12 @@ func _wk(id: String, pos: Vector3, yaw := 0.0) -> Node3D:
 		dir = "res://assets/outpost/carpenter/"
 	elif id.begins_with("CO"):
 		dir = "res://assets/outpost/cottages/"
+	elif id.begins_with("ENV"):
+		dir = "res://assets/outpost/environment/"
+	elif id.begins_with("FX"):
+		dir = "res://assets/outpost/vfx/"
+	elif id.begins_with("DT"):
+		dir = "res://assets/outpost/props/"
 	elif id.begins_with("B"):
 		dir = "res://assets/outpost/buildings/"
 	var n := (load(dir + id + ".scn") as PackedScene).instantiate() as Node3D
@@ -161,6 +172,7 @@ func _build() -> void:
 	_build_town()
 	_build_props()
 	_build_yards()
+	_build_last()
 
 
 ## A checkpoint across a 12 m road running north (-Z) toward the castle.
@@ -503,3 +515,51 @@ func _shot_yd_carpenter() -> void:
 
 func _shot_yd_cottage() -> void:
 	_look(QB + Vector3(1.0, 4.0, 42.0), QB + Vector3(0.0, 1.2, 26.0))
+
+
+func _build_last() -> void:
+	var c := RB
+	_wk("ENV26_small_footbridge", c + Vector3(0, 0, 0))
+	_wk("ENV25_creek_rocks", c + Vector3(0, 0, 1.6))
+	_wk("ENV25_creek_rocks", c + Vector3(0.4, 0, -1.7), 120.0)
+	_wk("ENV23_stone_path_pieces", c + Vector3(3.6, 0, 0), 90.0)
+	_wk("ENV19_tree_stumps", c + Vector3(-4.5, 0, -2.5))
+	_wk("FX09_campfire", c + Vector3(-4.0, 0, 3.0))
+	_wk("FX01_standing_wooden_torch", c + Vector3(2.2, 0, 1.2))
+	_wk("FX01_standing_wooden_torch", c + Vector3(-2.2, 0, 1.2))
+	_wk("ENV07_mud_splash_decal", c + Vector3(-2.6, 0, 2.6))
+	_wk("DT15_animal_tracks_and_hoofprints", c + Vector3(6.5, 0, 0.5), 80.0)
+	_wk("IN03_outdoor_bench", c + Vector3(-5.4, 0, 4.2), 30.0)
+	_wk("FX05_candle_cluster", c + Vector3(-5.4, 0.47, 4.2))
+	_wk("DT18_tattered_cloth", c + Vector3(3.0, 0, 3.0))
+	# Story props, a little way off: what is left after a skirmish at the old post.
+	var d := RB + Vector3(14, 0, 0)
+	_wk("DT13_fallen_signboard", d + Vector3(0, 0, 0))
+	_wk("DT19_old_shields", d + Vector3(-1.8, 0, 0.6))
+	_wk("DT20_abandoned_spear", d + Vector3(0.6, 0, 1.6), 20.0)
+	_wk("DT10_broken_wagon_wheel", d + Vector3(2.6, 0, -0.8))
+	_wk("DT02_broken_crate", d + Vector3(-2.6, 0, -1.6), 30.0)
+	_wk("DT01_abandoned_wooden_bucket", d + Vector3(1.4, 0, -1.8))
+	_wk("DT03_empty_sack", d + Vector3(-0.8, 0, -1.2))
+	_wk("DT07_old_iron_chain", d + Vector3(1.0, 0, 0.6), 40.0)
+	_wk("DT12_scattered_firewood", d + Vector3(-3.6, 0, 1.4))
+	_wk("DT14_stone_piles", d + Vector3(3.6, 0, 1.8))
+	_wk("DT08_rusted_tools", d + Vector3(-1.0, 0, 2.2))
+	_wk("DT05_clay_plate", d + Vector3(0.2, 0, -0.9))
+	_wk("DT04_wooden_spoon", d + Vector3(0.5, 0, -0.7))
+
+
+func _shot_ls_day() -> void:
+	_look(RB + Vector3(1.0, 3.4, 11.0), RB + Vector3(-0.5, 0.6, 1.0))
+
+
+func _shot_ls_dusk() -> void:
+	sun.light_energy = 0.05
+	env.ambient_light_energy = 0.18
+	env.background_energy_multiplier = 0.25
+	env.fog_light_energy = 0.15
+	_look(RB + Vector3(1.0, 3.4, 11.0), RB + Vector3(-0.5, 0.6, 1.0))
+
+
+func _shot_ls_story() -> void:
+	_look(RB + Vector3(14.5, 3.6, 7.5), RB + Vector3(14.0, 0.2, 0.2))

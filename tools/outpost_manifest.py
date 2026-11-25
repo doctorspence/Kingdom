@@ -1,6 +1,6 @@
 """Writes assets/outpost/MANIFEST.md from the list below (the White Knights Outpost assets).
 Edit an asset's status here, then run:  python tools/outpost_manifest.py assets/outpost/MANIFEST.md
-Status: "b" built for the outpost, "r" a stand-in exists in the project, "" to do."""
+Status: "b" built for the outpost, "z" the zone's own system used as it is, "r" a stand-in exists in the project, "" to do."""
 import sys
 H = "hideout "
 cats = [
@@ -109,45 +109,45 @@ cats = [
  ("CO16","Clay storage jars","b","= MK14"),("CO17","Benches","b","= IN03"),("CO18","Household buckets","b","= BS15"),
 ]),
 ("J. Environment and terrain", "environment", [
- ("ENV01","Muddy road material","r","zone 1 terrain shader (road, ruts, puddles)"),("ENV02","Dirt path material","r","zone 1 terrain shader (tracks)"),("ENV03","Grass material","r","zone 1 terrain + `grass_field.gd`"),
- ("ENV04","Gravel and stone material","r","zone 1 cobble paving, scree"),("ENV05","Puddle decals","r","zone 1 terrain puddles"),("ENV06","Cart rut decals","r","zone 1 terrain ruts"),
- ("ENV07","Mud splash decals","",""),("ENV08","Small grass clumps","r","`grass_field.gd`"),("ENV09","Tall grass clumps","r","`plant_scatter.gd`"),
- ("ENV10","Ferns","r","`plant_kit.gd` bracken, scanned ferns"),("ENV11","Brambles","r","`plant_kit.gd`"),("ENV12","Bushes","r","shrubs, holly (`plant_kit.gd`)"),
- ("ENV13","Mossy rocks","r","`assets/nature/rock_moss_set_*`"),("ENV14","Large boulders","r","`boulder.gd`"),("ENV15","Fallen logs","r","zone 1 deadwood"),
- ("ENV16","Oak trees","r","`tree_species.gd` oak"),("ENV17","Beech trees","r","`tree_species.gd` beech"),("ENV18","Birch trees","r","`tree_species.gd` birch"),
- ("ENV19","Tree stumps","",""),("ENV20","Split-rail fences","b","= ST13"),("ENV21","Wattle fences","b","= CO07"),
- ("ENV22","Fence gates","b","= ST14"),("ENV23","Stone path pieces","",""),("ENV24","Creek water material","r","`water_stream.gd` (the brook)"),
- ("ENV25","Creek rocks","r","scree, `quarry_kit.gd`"),("ENV26","Small footbridge","r",H+"`bridge_3m`"),("ENV27","Wildflowers","r","`plant_kit.gd` bluebell, foxglove"),
- ("ENV28","Dead leaves and debris","r","terrain leaf litter"),
+ ("ENV01","Muddy road material","z","terrain shader: road, ruts, puddles"),("ENV02","Dirt path material","z","terrain shader: tracks"),("ENV03","Grass material","z","terrain shader + `grass_field.gd`"),
+ ("ENV04","Gravel and stone material","z","cobble paving, scree"),("ENV05","Puddle decals","z","terrain puddles (shine when wet)"),("ENV06","Cart rut decals","z","terrain ruts"),
+ ("ENV07","Mud splash decals","b","`ENV07_mud_splash_decal.scn`"),("ENV08","Small grass clumps","z","`grass_field.gd`"),("ENV09","Tall grass clumps","z","`plant_scatter.gd`"),
+ ("ENV10","Ferns","z","`plant_kit.gd` bracken, scanned ferns"),("ENV11","Brambles","z","`plant_kit.gd` brambles"),("ENV12","Bushes","z","shrubs, holly (`plant_kit.gd`)"),
+ ("ENV13","Mossy rocks","z","`assets/nature/rock_moss_set_*`"),("ENV14","Large boulders","z","`boulder.gd`"),("ENV15","Fallen logs","z","zone deadwood"),
+ ("ENV16","Oak trees","z","`tree_species.gd` oak"),("ENV17","Beech trees","z","`tree_species.gd` beech"),("ENV18","Birch trees","z","`tree_species.gd` birch"),
+ ("ENV19","Tree stumps","b","`ENV19_tree_stumps.scn`"),("ENV20","Split-rail fences","b","= ST13"),("ENV21","Wattle fences","b","= CO07"),
+ ("ENV22","Fence gates","b","= ST14"),("ENV23","Stone path pieces","b","`ENV23_stone_path_pieces.scn`"),("ENV24","Creek water material","z","`water_stream.gd` (the brook)"),
+ ("ENV25","Creek rocks","b","`ENV25_creek_rocks.scn`"),("ENV26","Small footbridge","b","`ENV26_small_footbridge.scn`"),("ENV27","Wildflowers","z","`plant_kit.gd` bluebell, foxglove"),
+ ("ENV28","Dead leaves and debris","z","terrain leaf litter"),
 ]),
 ("K. Lighting and VFX", "vfx", [
- ("FX01","Standing wooden torch","r",H+"`torch_stand`"),("FX02","Iron brazier","b","= CP05"),("FX03","Hanging lantern","b","= CP17"),
- ("FX04","Wall-mounted lantern","",""),("FX05","Candle cluster","r",H+"`candles_3`"),("FX06","Forge fire","r","hideout kit `fire_fx()`"),
- ("FX07","Smoke","r","hideout kit `fire_fx()`"),("FX08","Torch flame","r","hideout kit `fire_fx()`"),("FX09","Campfire","r",H+"`campfire_ring`"),
- ("FX10","Ground fog","r","`mist.gd`"),("FX11","Fire sparks","r","hideout kit `fire_fx()`"),("FX12","Rain splash","",""),
- ("FX13","Water ripples","",""),
+ ("FX01","Standing wooden torch","b","`FX01_standing_wooden_torch.scn`"),("FX02","Iron brazier","b","= CP05"),("FX03","Hanging lantern","b","= CP17"),
+ ("FX04","Wall-mounted lantern","b","`FX04_wall_mounted_lantern.scn`"),("FX05","Candle cluster","b","`FX05_candle_cluster.scn`"),("FX06","Forge fire","b","built into the torch holder, brazier, forge and hearths (hideout kit `fire_fx()`)"),
+ ("FX07","Smoke","b","built into the torch holder, brazier, forge and hearths (hideout kit `fire_fx()`)"),("FX08","Torch flame","b","built into the torch holder, brazier, forge and hearths (hideout kit `fire_fx()`)"),("FX09","Campfire","b","`FX09_campfire.scn`"),
+ ("FX10","Ground fog","z","`mist.gd` fog volumes"),("FX11","Fire sparks","b","built into the torch holder, brazier, forge and hearths (hideout kit `fire_fx()`)"),("FX12","Rain splash","b","`FX12_rain_splash.scn`"),
+ ("FX13","Water ripples","b","`FX13_water_ripples.scn`"),
 ]),
 ("L. Small environmental storytelling props", "props", [
- ("DT01","Abandoned wooden bucket","r",H+"`bucket_empty`"),("DT02","Broken crate","r",H+"`crate_broken`"),("DT03","Empty sack","r",H+"`sack_slumped`"),
- ("DT04","Wooden spoon","",""),("DT05","Clay plate","",""),("DT06","Hanging rope","r",H+"`hanging_rope_2m`"),
- ("DT07","Old iron chain","r",H+"`chain_1m`"),("DT08","Rusted tools","r",H+"`broken_tools`"),("DT09","Wooden handcart","b","= ST22's cart (CR11 without the load)"),
- ("DT10","Broken wagon wheel","",""),("DT11","Straw bundles","b","= ST04 / ST05"),("DT12","Scattered firewood","",""),
- ("DT13","Fallen signboard","","WK06's board, fallen"),("DT14","Stone piles","r",H+"`rubble_small`"),("DT15","Animal tracks and hoofprints","","decal"),
- ("DT16","Paper notices","b","= WK09 (plain variants still to do)"),("DT17","White Knights supply crates","b","= CP15"),("DT18","Tattered cloth","",""),
- ("DT19","Old shields","","worn WK05"),("DT20","Abandoned spear","",""),
+ ("DT01","Abandoned wooden bucket","b","`DT01_abandoned_wooden_bucket.scn`"),("DT02","Broken crate","b","`DT02_broken_crate.scn`"),("DT03","Empty sack","b","`DT03_empty_sack.scn`"),
+ ("DT04","Wooden spoon","b","`DT04_wooden_spoon.scn`"),("DT05","Clay plate","b","`DT05_clay_plate.scn`"),("DT06","Hanging rope","b","`DT06_hanging_rope.scn`"),
+ ("DT07","Old iron chain","b","`DT07_old_iron_chain.scn`"),("DT08","Rusted tools","b","`DT08_rusted_tools.scn`"),("DT09","Wooden handcart","b","= ST22's cart (CR11 without the load)"),
+ ("DT10","Broken wagon wheel","b","`DT10_broken_wagon_wheel.scn`"),("DT11","Straw bundles","b","= ST04 / ST05"),("DT12","Scattered firewood","b","`DT12_scattered_firewood.scn`"),
+ ("DT13","Fallen signboard","b","`DT13_fallen_signboard.scn`"),("DT14","Stone piles","b","`DT14_stone_piles.scn`"),("DT15","Animal tracks and hoofprints","b","`DT15_animal_tracks_and_hoofprints.scn`"),
+ ("DT16","Paper notices","b","= WK09 (plain variants still to do)"),("DT17","White Knights supply crates","b","= CP15"),("DT18","Tattered cloth","b","`DT18_tattered_cloth.scn`"),
+ ("DT19","Old shields","b","`DT19_old_shields.scn`"),("DT20","Abandoned spear","b","`DT20_abandoned_spear.scn`"),
 ]),
 ]
-icon = {"b":"✅","r":"♻️","":"⬜"}
+icon = {"b":"✅","r":"♻️","z":"🔗","":"⬜"}
 word = {"b":"built","r":"stand-in exists","":"to do"}
-tot = {"b":0,"r":0,"":0}
+tot = {"b":0,"r":0,"z":0,"":0}
 for _,_,items in cats:
     for it in items: tot[it[2]] += 1
 n = sum(tot.values())
 out = []
 out.append("# White Knights Outpost: asset manifest\n")
 out.append("*Every asset in the owner's brief (`docs/outpost/OUTPOST_BRIEF.md`, section 6), with its status. Plan and rules: `OUTPOST_PLAN.md`. Generated by `tools/outpost_manifest.py`: change an asset's status there and rerun it, rather than editing this file.*\n")
-out.append("**Status:** ✅ built for the outpost (hand-painted, baked to `assets/outpost/<folder>/<ID_name>.scn`) · ♻️ something usable already exists in the project and can stand in, but the outpost version is still to make · ⬜ to do.\n")
-out.append(f"**Totals ({n} assets):** ✅ {tot['b']} built · ♻️ {tot['r']} with a stand-in · ⬜ {tot['']} to do. Some IDs are the same asset under two names (marked \"=\" or \"same as\"); they are counted under both.\n")
+out.append("**Status:** ✅ built for the outpost (hand-painted, baked to `assets/outpost/<folder>/<ID_name>.scn`) · 🔗 the Tithelands' own system (terrain paint, grass, plants, trees, water, mist), used as it is when the outpost is placed · ♻️ something usable already exists in the project and can stand in, but the outpost version is still to make · ⬜ to do.\n")
+out.append(f"**Totals ({n} assets):** ✅ {tot['b']} built · 🔗 {tot['z']} the zone's own · ♻️ {tot['r']} with a stand-in · ⬜ {tot['']} to do. Some IDs are the same asset under two names (marked \"=\" or \"same as\"); they are counted under both.\n")
 out.append("**How each asset is made:** built in code for now (`assets/outpost/`, like the bandit-hideout kit). Any asset can later be swapped for a GLB the owner makes with an image-to-3D tool: keep the same file name, origin and size (rules in `OUTPOST_PLAN.md`, section 6).\n")
 out.append("\"hideout\" means the bandit-hideout library, `assets/hideout/<folder>/<name>.scn`.\n")
 for title, folder, items in cats:

@@ -152,6 +152,20 @@ static func straw() -> StandardMaterial3D:
 	return painted("straw", "thatch", 0.5, {"rough": 1.0, "spec": 0.1, "tint": Color(1.35, 1.2, 0.85)})
 
 
+## A Decal node (projects down its -Y) with a painted texture; size in meters.
+static func decal(nm: String, tex_name: String, size: Vector3) -> Node3D:
+	var root := Node3D.new()
+	root.name = nm
+	var d := Decal.new()
+	d.name = "Decal"
+	d.size = size
+	d.texture_albedo = load(TEX % tex_name)
+	d.position = Vector3(0, size.y * 0.5 - 0.05, 0)
+	d.cull_mask = 1
+	root.add_child(d)
+	return root
+
+
 static func shingles() -> StandardMaterial3D:
 	return painted("shingles", "shingles", 1.0, {"rough": 0.95, "spec": 0.2})
 

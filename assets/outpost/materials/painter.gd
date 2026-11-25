@@ -41,6 +41,8 @@ static func all() -> Dictionary:
 		"inn_sign": [256, 320, inn_sign],
 		"wicker": [256, 256, wicker],
 		"clay": [256, 256, clay],
+		"mud_splash": [256, 256, mud_splash],
+		"hoofprints": [256, 512, hoofprints],
 	}
 
 
@@ -492,3 +494,36 @@ static func clay(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
 	c = _shade(c, 0.95 + 0.06 * sin(v * TAU * 24.0 + 2.0 * fbm(u, v, 2, 8, 2002)))
 	c = _mix(c, Color(0.3, 0.2, 0.15), smoothstep(0.6, 0.8, fbm(u, v, 4, 4, 2003)) * 0.45)
 	return _mix(c, Color(0.75, 0.66, 0.55), smoothstep(0.66, 0.82, fbm(u, v, 5, 5, 2004)) * 0.3)
+
+
+## Mud splashed up a wall's foot or across stone (decal, alpha): dark wet mud fading upward.
+static func mud_splash(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var r := Vector2(u - 0.5, v - 0.5).length() * 2.0
+	var n := fbm(u, v, 6, 6, 2101, 4)
+	var core := smoothstep(0.75, 0.45, r + (n - 0.5) * 0.5)
+	var spots := smoothstep(0.66, 0.72, fbm(u, v, 24, 24, 2102, 2)) * smoothstep(1.0, 0.6, r)
+	var c := _shade(MUD, 0.8 + 0.4 * fbm(u, v, 10, 10, 2103))
+	c.a = clampf(core + spots, 0.0, 1.0) * 0.9
+	return c
+
+
+## A trail of hoofprints and a few boot prints pressed into mud (decal, alpha), walking up the image.
+static func hoofprints(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var c := _shade(Color(0.15, 0.11, 0.08), 0.9 + 0.2 * fbm(u, v, 8, 16, 2201))
+	var a := 0.0
+	for i in 6:
+		var cy := 0.08 + i * 0.165
+		for side in [-1.0, 1.0]:
+			var cx: float = 0.5 + side * 0.13 + (0.03 if i % 2 else -0.03)
+			var d := Vector2((u - cx) * 2.0 / 0.11, (v - cy - float(side) * 0.03) / 0.045)
+			var ring := d.length()
+			var shoe := smoothstep(1.0, 0.8, ring) * smoothstep(0.35, 0.55, ring)
+			if d.y > 0.4 and absf(d.x) < 0.35:
+				shoe = 0.0
+			a = maxf(a, shoe)
+	for i in 3:
+		var bp := Vector2(0.18 + 0.02 * i, 0.2 + i * 0.3)
+		var dd := Vector2((u - bp.x) / 0.035, (v - bp.y) / 0.075)
+		a = maxf(a, smoothstep(1.0, 0.7, dd.length()) * 0.7)
+	c.a = a * (0.7 + 0.3 * fbm(u, v, 20, 40, 2202, 2))
+	return c

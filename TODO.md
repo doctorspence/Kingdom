@@ -254,7 +254,9 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Look at `docs/outpost/mk_market.jpg`, `mk_close.jpg`, `bs_forge.jpg`, `bs_close.jpg`
 - [x] Stage 4, part 2: stable gear, inn furniture, carpenter's yard and cottage life, 57 props (`assets/outpost/stable/`, `inn/`, `carpenter/`, `cottages/`)
 - [ ] 🧪 Look at `docs/outpost/yd_*.jpg`
-- [ ] Stage 5: ground and plants (road, path, puddle and rut looks; stumps, stone paths, bushes; creek)
+- [x] Stages 5-7: ground pieces (decals, stumps, stone path, creek rocks, footbridge), light and effects (torch, wall lantern, candles, campfire, rain splash, ripples), story props (DT01-DT20). The library is complete (`assets/outpost/MANIFEST.md`: 207 built, 21 the zone's own)
+- [ ] 🧪 Look at `docs/outpost/ls_day.jpg`, `ls_dusk.jpg`, `ls_story.jpg`
+- [ ] Stage 8: place the outpost in the Tithelands (needs the owner's answer on the castle)
 - [ ] Stages 4-7: trade and village props, ground and plants, light and effects, story props
 - [ ] Stage 8: placement in the Tithelands (needs the owner's OK on the layout and on who lives there)
 - [ ] Stage 9: checks, FPS, pictures

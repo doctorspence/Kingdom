@@ -31,11 +31,12 @@ func _run() -> void:
 		var path := "res://assets/outpost/%s/%s.scn" % [e[0], e[1]]
 		var ps := load(path) as PackedScene
 		var n := ps.instantiate() if ps else null
-		if n == null or n.get_node_or_null("Mesh") == null:
+		var shows := n != null and (n.get_node_or_null("Mesh") != null or n.get_node_or_null("Decal") != null or not n.find_children("*", "GPUParticles3D", true, false).is_empty())
+		if not shows:
 			missing.append(e[1])
 		if n:
 			n.free()
-	_ck("all %d outpost assets load with a mesh %s" % [Catalog.entries().size(), missing], missing.is_empty())
+	_ck("all %d outpost assets load with something to show %s" % [Catalog.entries().size(), missing], missing.is_empty())
 	# 2. Walk into every building (all built at the buildings' SIZE, k), along paths in drawn meters.
 	var k: float = BLD.SIZE
 	var walks := [
