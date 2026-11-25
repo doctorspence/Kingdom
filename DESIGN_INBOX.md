@@ -36,6 +36,13 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 
 ## Filed
 
+### 2026-11-25: White Knight character sheet
+- **Area:** art direction / factions
+- **Decision:** The White Knight looks like the owner's character sheet: flat-topped great helm with a cross-shaped slit, breaths and brass trim; mail coif, hauberk and chausses; an ivory tabard to mid-shin with the red cross pattee front and back, red under-panels in its splits and a ragged hem; a hood bunched round the neck; steel pauldrons with a red cross, vambraces with elbow cops, plated gauntlets; a wide belt with a square buckle, a slung sword belt and a pouch; brown knee-high boots. Build it from the sheet, not from the existing armour.
+- **Details:** `docs/white_knight/white_knight_sheet.webp` and `white_knight_details.png` (pasted by the owner in chat). Palette as in the sheet (ivory, dark red, steel, tarnished brass, brown leather).
+- **Status:** decided (owner, in chat).
+- **Filed (2026-11-25):** built as `assets/characters/white_knight/` (HANDOFF, ART_NEEDS, PRIORITIES P4). The owner then asked for it on the White Knight Zealot: done, every Zealot wears it.
+
 ### 2026-11-25: The outpost's White Knights are hostile, but can be won over
 - **Area:** factions / zone 1 / quests
 - **Decision:** The White Knights at the outpost start hostile. A quest or storyline can make them friendly and give the player access to the outpost.

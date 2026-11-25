@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" uid="uid://b8jqp5schkco6" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
 [ext_resource type="Script" uid="uid://c7ne42mtltp52" path="res://game/combat/attack_data.gd" id="2_attack"]
-[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/sword_placeholder.tscn" id="3_weapon"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Weapons/Swords/steel_sword.scn" id="3_weapon"]
 [ext_resource type="Resource" path="res://data/loot/loot_zealot.tres" id="4_loot"]
-[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/kite_shield_placeholder.tscn" id="5_shield"]
+[ext_resource type="PackedScene" path="res://assets/characters/white_knight/WK_heater_shield.scn" id="5_shield"]
 
 [sub_resource type="Resource" id="Attack_combo"]
 script = ExtResource("2_attack")
