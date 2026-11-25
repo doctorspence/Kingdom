@@ -37,7 +37,10 @@ func _process(delta: float) -> void:
 	var used := 0
 	for r in ranked:
 		var l: Light3D = r[1]
-		var on: bool = used < budget and r[0] <= max_distance
+		# A light that already has shadows keeps them a little longer, so two lights at
+		# a similar distance don't swap shadows back and forth as you run past.
+		var had: bool = l.shadow_enabled
+		var on: bool = used < budget and r[0] <= max_distance + (6.0 if had else 0.0)
 		if on:
 			used += 1
 		if l.shadow_enabled != on:

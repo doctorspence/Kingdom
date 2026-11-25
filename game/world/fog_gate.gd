@@ -20,10 +20,10 @@ func _ready() -> void:
 	m.size = Vector3(width, gate_height, 0.5)
 	var mat := StandardMaterial3D.new()
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0.85, 0.82, 0.7, 0.35)
+	mat.albedo_color = Color(0.3, 0.29, 0.25, 0.35)
 	mat.emission_enabled = true
 	mat.emission = Color(0.8, 0.75, 0.55)
-	mat.emission_energy_multiplier = 0.6
+	mat.emission_energy_multiplier = 0.06
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	m.material = mat
 	_mist.mesh = m

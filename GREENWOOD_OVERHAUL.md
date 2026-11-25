@@ -19,6 +19,8 @@
 | 8. Lighting and atmosphere | **Done.** `DayNight` blends three area moods from `land.mood()` as the camera moves: deep woods (lifted green ambient, never black; exposure rises up to 45% like eyes adjusting; a little more haze for light shafts), the quarry (pale bounced light, dusty haze), the chapel and barrow (colder light, more mist). New `Mist` node (`game/world/mist.gd`): 10 local fog volumes from `land.mist_spots` (East Woods dells, brook, barrow, churchyard, river by the mill pond, ford, quarry dust), thicker at night and in rain; no global height fog. Palette colour grade: a 17x17x17 lookup built by `DayNight.palette_grade()` (shadows lean to deep woodland green, yellow-greens calmed, flowers and berries keep their colour, warm highlights); global saturation 0.8 to 0.9 since the grade is selective. `tests/visual_night.gd` gained woods shots at dawn, night and in rain. Checks pass; FPS no worse than stage 7 measured the same moment. |
 | 9. Validation | **Done and approved ("Yes: final", 2026-11-23).** Final report below; after-pictures retaken 2026-11-23 on the final build. |
 
+**Later change (2026-11-25, owner asked):** the stage 8 light values were replaced by a darker, cooler, dreary look (sky, sun, fog, grass colour, nights, firelight). Trees, terrain, rock and plants are unchanged. Details in `HANDOFF.md` ("Dark lighting pass"). The after-pictures in `docs/greenwood_after/` show the older, brighter light.
+
 ### Final report (stage 9, 2026-11-22)
 
 **Before and after.** Same 20 gameplay-camera spots: before in `docs/greenwood_before/`, after in `docs/greenwood_after/`, side by side in `docs/greenwood_after/compare_1.jpg` to `compare_4.jpg` (left before, right after).

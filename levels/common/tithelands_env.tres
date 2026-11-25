@@ -1,11 +1,11 @@
 [gd_resource type="Environment" format=3]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_dark"]
-sky_top_color = Color(0.36, 0.42, 0.5, 1)
-sky_horizon_color = Color(0.62, 0.64, 0.66, 1)
+sky_top_color = Color(0.15, 0.16, 0.19, 1)
+sky_horizon_color = Color(0.4, 0.4, 0.4, 1)
 sky_curve = 0.1
-ground_bottom_color = Color(0.17, 0.16, 0.14, 1)
-ground_horizon_color = Color(0.62, 0.64, 0.66, 1)
+ground_bottom_color = Color(0.06, 0.06, 0.06, 1)
+ground_horizon_color = Color(0.4, 0.4, 0.4, 1)
 ground_curve = 0.04
 
 [sub_resource type="Sky" id="Sky_dark_res"]
@@ -15,14 +15,14 @@ sky_material = SubResource("Sky_dark")
 background_mode = 2
 sky = SubResource("Sky_dark_res")
 ambient_light_source = 3
-ambient_light_energy = 0.95
+ambient_light_energy = 0.8
 reflected_light_source = 2
 tonemap_mode = 4
 tonemap_white = 5.0
-tonemap_exposure = 1.12
+tonemap_exposure = 1.0
 ssao_enabled = true
 ssao_radius = 1.6
-ssao_intensity = 1.5
+ssao_intensity = 2.6
 ssao_power = 1.8
 ssil_enabled = true
 ssil_radius = 5.0
@@ -33,19 +33,19 @@ glow_strength = 1.1
 glow_bloom = 0.04
 glow_hdr_threshold = 1.0
 fog_enabled = true
-fog_light_color = Color(0.56, 0.59, 0.63, 1)
-fog_light_energy = 0.85
-fog_sun_scatter = 0.12
-fog_density = 0.0021
-fog_sky_affect = 0.45
-fog_height = 0.0
-fog_height_density = 0.0
+fog_light_color = Color(0.345, 0.395, 0.395, 1)
+fog_light_energy = 0.75
+fog_sun_scatter = 0.0
+fog_density = 0.0078
+fog_sky_affect = 0.75
+fog_height = 10.0
+fog_height_density = 0.06
 volumetric_fog_enabled = true
-volumetric_fog_density = 0.011
-volumetric_fog_albedo = Color(0.7, 0.73, 0.76, 1)
-volumetric_fog_anisotropy = 0.55
+volumetric_fog_density = 0.027
+volumetric_fog_albedo = Color(0.64, 0.71, 0.7, 1)
+volumetric_fog_anisotropy = 0.35
 volumetric_fog_ambient_inject = 0.35
 adjustment_enabled = true
-adjustment_brightness = 1.04
-adjustment_contrast = 1.08
-adjustment_saturation = 0.9
+adjustment_brightness = 0.98
+adjustment_contrast = 1.1
+adjustment_saturation = 0.56

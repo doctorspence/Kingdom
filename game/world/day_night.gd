@@ -14,6 +14,33 @@ static var raining := false
 static var cave := 0.0
 ## Below this height the camera counts as underground.
 const CAVE_BELOW := 0.0
+## The open daytime look (tithelands_env.tres) is very dark and hard-edged. Where that
+## turns to solid black (night, deep woods, chapel and barrow, underground) the picture
+## settings ease toward these gentler ones.
+const EASED_EXPOSURE := 1.12
+const EASED_BRIGHTNESS := 1.04
+const EASED_CONTRAST := 1.08
+const EASED_SATURATION := 0.9
+## Night: a faint cold moon shows shapes close by, the distance sinks into black, and
+## lanterns and fires do the real lighting.
+const NIGHT_MOON_ENERGY := 0.42  # under half the day sun (zone_check: night is dark)
+const NIGHT_AMBIENT := 1.55
+## Eyes adjusted to the dark: lifts shapes near you and the pools of lantern and firelight.
+const NIGHT_EXPOSURE := 1.6
+const NIGHT_FOG_COLOR := Color(0.032, 0.046, 0.075)
+const NIGHT_FOG_DENSITY := 0.018
+const NIGHT_VOL_DENSITY := 0.012
+const NIGHT_SKY_TOP := Color(0.012, 0.019, 0.038)
+const NIGHT_SKY_HORIZON := Color(0.042, 0.058, 0.095)
+## Underground: next to no light of its own. Lanterns, torches, fires and the holes in
+## the roof (gullet.gd) are what you see by.
+const CAVE_AMBIENT := 0.2
+const CAVE_FOG_COLOR := Color(0.004, 0.0035, 0.003)
+const CAVE_FOG_DENSITY := 0.006
+const CAVE_VOL_DENSITY := 0.01
+const CAVE_SSAO := 1.8
+const RAIN_DAY := Color(0.6, 0.66, 0.74, 0.2)
+const RAIN_NIGHT := Color(0.1, 0.12, 0.17, 0.2)
 
 @export var environment: WorldEnvironment
 @export var sun: DirectionalLight3D
@@ -39,6 +66,7 @@ var _rain: GPUParticles3D
 var _stars: MeshInstance3D
 var _star_mat: ShaderMaterial
 var _glow: Material
+var _rain_mat: StandardMaterial3D
 ## How soaked the ground is: rises quickly in rain, dries slowly after.
 var wet_ground := 0.0
 ## 0 in the open .. 1 deep in the woods (eased as the camera moves).
@@ -63,9 +91,14 @@ func _ready() -> void:
 		_day = {
 			"ambient": _env.ambient_light_energy,
 			"exposure": _env.tonemap_exposure,
+			"brightness": _env.adjustment_brightness,
+			"contrast": _env.adjustment_contrast,
+			"saturation": _env.adjustment_saturation,
+			"ssao": _env.ssao_intensity,
 			"fog_color": _env.fog_light_color,
 			"fog_energy": _env.fog_light_energy,
 			"fog_density": _env.fog_density,
+			"fog_height_density": _env.fog_height_density,
 			"vol_albedo": _env.volumetric_fog_albedo,
 			"vol_density": _env.volumetric_fog_density,
 			"sky_top": _sky.sky_top_color if _sky else Color.BLACK,
@@ -81,6 +114,9 @@ func _ready() -> void:
 	zone_audio.name = "ZoneAudio"
 	zone_audio.day_night = self
 	add_child(zone_audio)
+	var spill: Node = preload("res://game/world/window_lights.gd").new()  # lit windows throw light outside
+	spill.name = "WindowLights"
+	add_child(spill)
 	_apply()
 
 
@@ -199,24 +235,35 @@ func _apply() -> void:
 		# The sun crosses the sky during the day; at night a dim blue moon stands in.
 		var arc := clampf(time / ds, 0.0, 1.0) if time < ds else (time - ds) / (1.0 - ds)
 		sun.rotation_degrees = Vector3(-lerpf(15.0, 165.0, arc), 35.0, 0.0)
-		sun.light_energy = lerpf(_day.get("sun_energy", 0.9), 0.6, night) * lerpf(1.0, 0.6, wet)
-		sun.light_color = (_day.get("sun_color", Color.WHITE) as Color).lerp(Color(1.0, 0.6, 0.32), gold * 0.8).lerp(Color(0.5, 0.6, 0.9), night)
+		sun.light_energy = lerpf(_day.get("sun_energy", 0.9), NIGHT_MOON_ENERGY, night) * lerpf(1.0, 0.6, wet)
+		sun.light_color = (_day.get("sun_color", Color.WHITE) as Color).lerp(Color(1.0, 0.6, 0.32), gold * 0.45).lerp(Color(0.5, 0.6, 0.9), night)
 		sun.shadow_enabled = night < 0.95
 	if _env:
-		_env.ambient_light_energy = lerpf(_day.ambient, 0.95, night) * lerpf(1.0, 0.8, wet)
+		_env.ambient_light_energy = lerpf(_day.ambient, NIGHT_AMBIENT, night) * lerpf(1.0, 0.85, wet)
+		_env.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED if cave > 0.5 else Environment.REFLECTION_SOURCE_SKY
 		# At night the light comes from a cold moonlit color, not the black sky.
-		_env.ambient_light_color = Color(0.32, 0.38, 0.55)
+		_env.ambient_light_color = Color(0.4, 0.48, 0.66)
 		_env.ambient_light_sky_contribution = lerpf(1.0, 0.0, night)
-		_env.fog_light_color = (_day.fog_color as Color).lerp(Color(0.82, 0.55, 0.42), gold * 0.42).lerp(Color(0.16, 0.19, 0.27), night).darkened(0.2 * wet)
-		_env.fog_light_energy = lerpf(_day.fog_energy, 0.9, night)
-		_env.fog_density = _day.fog_density * lerpf(1.0, 1.8, wet) * lerpf(1.0, 1.3, night)
+		_env.fog_light_color = (_day.fog_color as Color).lerp(Color(0.55, 0.42, 0.38), gold * 0.18).lerp(NIGHT_FOG_COLOR, night).darkened(0.12 * wet)
+		_env.fog_light_energy = lerpf(_day.fog_energy, 0.8, night)
+		_env.fog_density = lerpf(_day.fog_density, NIGHT_FOG_DENSITY, night) * lerpf(1.0, 1.35, wet)
 		_env.volumetric_fog_albedo = (_day.vol_albedo as Color).lerp(Color(0.2, 0.23, 0.3), night)
-		_env.volumetric_fog_density = _day.vol_density * lerpf(1.0, 1.6, wet)
+		_env.volumetric_fog_density = lerpf(_day.vol_density, NIGHT_VOL_DENSITY, night) * lerpf(1.0, 1.4, wet)
+		# Low ground fog thickens downward, so it fades out underground or it would bury the Gullet.
+		_env.fog_height_density = float(_day.fog_height_density) * (1.0 - cave)
 		# Deep woodland: the light under the canopy is a lifted green, never black
 		# (brief: shadows lean to #354536), with a little more haze for light shafts.
 		var cw := canopy * (1.0 - night)
-		# Eyes adjust under the trees: exposure rises gently with the canopy (readable, still dim).
-		_env.tonemap_exposure = float(_day.exposure) * (1.0 + 0.45 * cw)
+		# Eyes adjust where it is darkest (and a little in rain): softer contrast, more light.
+		var dim := clampf(maxf(maxf(night, cave), maxf(maxf(canopy, mood.z), 0.6 * wet)), 0.0, 1.0)
+		var colour_back := maxf(night, cave)  # night stays blue, the Gullet stays warm
+		_env.adjustment_brightness = lerpf(_day.brightness, EASED_BRIGHTNESS, dim)
+		_env.adjustment_contrast = lerpf(_day.contrast, EASED_CONTRAST, dim)
+		_env.adjustment_saturation = lerpf(_day.saturation, EASED_SATURATION, colour_back)
+		_env.ssao_intensity = lerpf(_day.ssao, CAVE_SSAO, cave)
+		# Under the trees exposure also rises gently with the canopy (readable, still dim).
+		_env.tonemap_exposure = lerpf(_day.exposure, EASED_EXPOSURE, dim) * (1.0 + 0.45 * cw)
+		_env.tonemap_exposure = lerpf(_env.tonemap_exposure, NIGHT_EXPOSURE, night * (1.0 - cave))
 		if cw > 0.0:
 			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.45, 0.53, 0.42), cw)
 			_env.ambient_light_sky_contribution = lerpf(_env.ambient_light_sky_contribution, 0.35, cw)
@@ -228,30 +275,32 @@ func _apply() -> void:
 		if qw > 0.0:
 			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.66, 0.65, 0.6), 0.45 * qw)
 			_env.ambient_light_energy *= 1.0 + 0.2 * qw
-			_env.volumetric_fog_albedo = _env.volumetric_fog_albedo.lerp(Color(0.8, 0.77, 0.7), 0.6 * qw)
+			_env.volumetric_fog_albedo = _env.volumetric_fog_albedo.lerp(Color(0.7, 0.73, 0.71), 0.6 * qw)
 			_env.volumetric_fog_density *= 1.0 + 0.4 * qw
 		# The chapel and the barrow: colder, quieter light and a mist close to the ground.
 		var ow := mood.z
 		if ow > 0.0:
 			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.42, 0.47, 0.56), 0.5 * ow)
-			_env.ambient_light_energy *= 1.0 - 0.12 * ow
-			_env.fog_light_color = _env.fog_light_color.lerp(Color(0.5, 0.56, 0.62), 0.4 * ow)
+			_env.ambient_light_energy *= 1.0 + 0.35 * ow
+			_env.fog_light_color = _env.fog_light_color.lerp(Color(0.34, 0.4, 0.46), 0.4 * ow * (1.0 - night))
 			_env.volumetric_fog_density *= 1.0 + 0.7 * ow
 		if _sky:
-			_sky.sky_top_color = (_day.sky_top as Color).lerp(Color(0.4, 0.42, 0.58), gold * 0.5).lerp(Color(0.05, 0.06, 0.1), night).darkened(0.25 * wet)
-			_sky.sky_horizon_color = (_day.sky_horizon as Color).lerp(Color(0.95, 0.58, 0.38), gold * 0.8).lerp(Color(0.13, 0.15, 0.21), night).darkened(0.25 * wet)
+			_sky.sky_top_color = (_day.sky_top as Color).lerp(Color(0.26, 0.27, 0.38), gold * 0.4).lerp(NIGHT_SKY_TOP, night).darkened(0.2 * wet)
+			_sky.sky_horizon_color = (_day.sky_horizon as Color).lerp(Color(0.62, 0.42, 0.32), gold * 0.45).lerp(NIGHT_SKY_HORIZON, night).darkened(0.2 * wet)
 			_sky.ground_horizon_color = _sky.sky_horizon_color
 	if cave > 0.0:
 		if sun:
 			sun.light_energy *= 1.0 - cave
 			sun.shadow_enabled = sun.shadow_enabled and cave < 0.5
 		if _env:
-			_env.ambient_light_energy = lerpf(_env.ambient_light_energy, 0.85, cave)
+			_env.ambient_light_energy = lerpf(_env.ambient_light_energy, CAVE_AMBIENT, cave)
 			_env.ambient_light_color = _env.ambient_light_color.lerp(Color(0.42, 0.32, 0.24), cave)
 			_env.ambient_light_sky_contribution = lerpf(_env.ambient_light_sky_contribution, 0.0, cave)
-			_env.fog_light_color = _env.fog_light_color.lerp(Color(0.08, 0.07, 0.06), cave)
+			_env.fog_light_color = _env.fog_light_color.lerp(CAVE_FOG_COLOR, cave)
 			_env.fog_light_energy = lerpf(_env.fog_light_energy, 0.3, cave)
 			_env.volumetric_fog_albedo = _env.volumetric_fog_albedo.lerp(Color(0.25, 0.2, 0.15), cave)
+			_env.fog_density = lerpf(_env.fog_density, CAVE_FOG_DENSITY, cave)
+			_env.volumetric_fog_density = lerpf(_env.volumetric_fog_density, CAVE_VOL_DENSITY, cave)
 	if _stars:
 		var cam_s := get_viewport().get_camera_3d()
 		if cam_s:
@@ -262,6 +311,7 @@ func _apply() -> void:
 		if sun:
 			_star_mat.set_shader_parameter("moon_dir", sun.global_transform.basis.z)
 	if _rain:
+		_rain_mat.albedo_color = RAIN_DAY.lerp(RAIN_NIGHT, night)
 		_rain.amount_ratio = wet * (1.0 - cave)
 		_rain.emitting = wet * (1.0 - cave) > 0.01
 		var cam := get_viewport().get_camera_3d()
@@ -334,7 +384,8 @@ func _build_rain() -> void:
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0.72, 0.77, 0.85, 0.22)
+	mat.albedo_color = RAIN_DAY
+	_rain_mat = mat
 	mat.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
 	mat.billboard_keep_scale = true
 	streak.material = mat

@@ -3,8 +3,8 @@ extends Node3D
 ## ([x, z, radius, height, density]) lying low in the hollows, along the brook,
 ## at the barrow and the churchyard, over the river by the mill pond, and pale
 ## dust in the quarry. Thicker at night and in rain (from DayNight), thinner by
-## day. Uses the environment's volumetric fog, so it costs little; no global
-## height fog (that would bury the Gullet's rooms).
+## day. Uses the environment's volumetric fog, so it costs little. (The global
+## height fog is set in tithelands_env.tres and faded underground by DayNight.)
 
 @export var terrain: SculptedTerrain
 
@@ -52,6 +52,6 @@ func _process(delta: float) -> void:
 		_day_night = get_tree().get_first_node_in_group(&"day_night")
 	var night: float = _day_night.get("night") if _day_night else 0.0
 	var rain: float = _day_night.get("rain_amount") if _day_night else 0.0
-	var k := lerpf(0.75, 1.5, night) * lerpf(1.0, 1.4, rain)
+	var k := lerpf(1.1, 1.5, night) * lerpf(1.0, 1.4, rain)
 	for v: Array in _volumes:
 		(v[0] as FogMaterial).density = float(v[1]) * k

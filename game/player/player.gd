@@ -2458,6 +2458,7 @@ func _update_stamina(delta: float) -> void:
 
 var _lantern: OmniLight3D
 var _lantern_glow := 0.0
+const LANTERN_POWER := 2.2
 
 
 ## A small lantern on your belt that glows at night (everyone sees each other's).
@@ -2466,8 +2467,9 @@ func _make_lantern() -> void:
 	_lantern.name = "Lantern"
 	_lantern.position = Vector3(0.28, 1.0, 0.12)
 	_lantern.light_color = Color(1.0, 0.68, 0.38)
-	_lantern.omni_range = 11.0
-	_lantern.omni_attenuation = 1.3
+	_lantern.omni_range = 15.0
+	_lantern.omni_attenuation = 1.0
+	_lantern.light_volumetric_fog_energy = 0.5
 	_lantern.light_energy = 0.0
 	_lantern.visible = false
 	_lantern.shadow_enabled = false
@@ -2482,9 +2484,9 @@ func _update_lantern(delta: float) -> void:
 	var want := maxf(smoothstep(0.35, 0.8, DayNight.night), 0.85 * smoothstep(0.2, 0.8, DayNight.cave)) * (0.0 if state == State.DEAD else 1.6)
 	_lantern_glow = move_toward(_lantern_glow, want, delta * 1.5)
 	_lantern.visible = _lantern_glow > 0.01
-	# A gentle flicker.
+	# A gentle flicker (not tied to position: running used to shift the phase and make it shimmer).
 	var t := Time.get_ticks_msec() * 0.001
-	_lantern.light_energy = _lantern_glow * (0.95 + 0.05 * sin(t * 9.0 + position.x) * sin(t * 4.3))
+	_lantern.light_energy = _lantern_glow * LANTERN_POWER * (0.97 + 0.03 * sin(t * 5.0) * sin(t * 2.3))
 
 
 ## ID of the armor worn in a slot ("head", "chest", "legs", "hands", "feet", "cloak") that has a 3D model, or empty.

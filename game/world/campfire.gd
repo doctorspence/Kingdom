@@ -38,7 +38,10 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	var t := Time.get_ticks_msec() * 0.001 + _phase
 	var flicker := 0.85 + 0.15 * sin(t * 9.0) * sin(t * 4.3) + 0.06 * sin(t * 23.0)
-	_light.light_energy = _base * flicker
+	# In the dark a fire is the main light around it: stronger, and it reaches farther.
+	var dark := DayNight.night * (1.0 - DayNight.cave)
+	_light.light_energy = _base * flicker * lerpf(1.0, 2.0, dark)
+	_light.omni_range = light_range * lerpf(1.0, 1.35, dark)
 
 
 func _build_ring() -> void:

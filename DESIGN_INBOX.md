@@ -35,6 +35,14 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 
 ## Filed
 
+### 2026-11-25: Zone 1 and the Gullet go dark and dreary
+- **Area:** art direction / zone 1 / Gullet
+- **Decision:** Bring back the darkest, dreariest look. Daytime open countryside should match the forest's mood, not bright or green; fog consistent and atmospheric, not a flat brown-grey filter. Nights darker, with only nearby things seen by lantern, but still enough to navigate and fight. Firelight lights nearby objects and characters naturally. The dungeon much darker, lit by lanterns and small holes in the cave ceiling.
+- **Details:** The owner's feedback list had an empty point 2.
+- **Status:** decided (owner, in chat).
+- **Replaces:** the Greenwood stage 8 light values and the Gullet's room fill lights.
+- **Filed (2026-11-25):** built; HANDOFF.md, DESIGN.md 11.4 and 12.1, GREENWOOD_OVERHAUL.md, GULLET_DESIGN.md.
+
 ### 2026-11-25: White Knight character sheet
 - **Area:** art direction / factions
 - **Decision:** The White Knight looks like the owner's character sheet: flat-topped great helm with a cross-shaped slit, breaths and brass trim; mail coif, hauberk and chausses; an ivory tabard to mid-shin with the red cross pattee front and back, red under-panels in its splits and a ragged hem; a hood bunched round the neck; steel pauldrons with a red cross, vambraces with elbow cops, plated gauntlets; a wide belt with a square buckle, a slung sword belt and a pouch; brown knee-high boots. Build it from the sheet, not from the existing armour.
