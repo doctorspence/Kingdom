@@ -121,6 +121,35 @@ func _run() -> void:
 	_check("...and never taunt", not taunted)
 	knights[1].health = knights[1].max_health * 0.2
 	_check("a hurt Knight keeps its shield up (no hunch)", knights[1].fight.stance() == EnemyFight.STANCE_SHIELD)
+	# The last one standing: two friends down, it may hesitate (a step back, a look).
+	for e in knights:
+		e.remove_from_group(&"enemies")
+		e.queue_free()
+	await _frames(3)
+	var trio: Array[Enemy] = []
+	for i in 3:
+		var a := TAU * i / 3.0
+		trio.append(await _add("bandit_sword", Vector3(cos(a), 0, sin(a)) * 4.0))
+	for e in trio:
+		e._aggro(player, false)
+	await _seconds(1.5)
+	trio[0].health = 0.0
+	trio[0]._die()
+	trio[1].health = 0.0
+	trio[1]._die()
+	var last := trio[2]
+	for i in 30:  # it is a 70% chance each time a friend falls
+		if last.fight.is_hesitating():
+			break
+		EnemyFight.friend_fell(trio[1])
+	_check("the last one standing hesitates", last.fight.is_hesitating())
+	var start_dist := last.global_position.distance_to(player.global_position)
+	await _seconds(0.6)
+	player._iframe_timer = 1.0
+	_check("...stepping back first", last.global_position.distance_to(player.global_position) > start_dist + 0.2 or last.state != Enemy.State.CHASE)
+	await _seconds(1.5)
+	_check("...then fights on", not last.fight.is_hesitating() and last.is_fighting())
+
 
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)

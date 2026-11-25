@@ -1092,6 +1092,7 @@ func set_home_facing(direction: Vector3) -> void:
 func _update_sheath() -> void:
 	if post == null or not post.enabled:
 		return
+	post.update_torch()
 	if state == State.IDLE:
 		model.sheathe(true)
 	elif state == State.CHASE or state == State.SUSPICIOUS:
@@ -1170,6 +1171,8 @@ func _state_chase(delta: float) -> void:
 	var to := target.global_position - global_position
 	to.y = 0.0
 	var dist := to.length()
+	if fight.hesitate(delta, to):
+		return  # the last of its group: a step back and a look at the fallen
 	model.turn_toward(to, deg_to_rad(data.turn_speed) * delta)
 	var archer := data.keep_distance > 0.0
 	# Taken a few hits in a row: raise the guard (then strike back out of it).
@@ -1564,6 +1567,8 @@ func _die() -> void:
 		var e := n as Enemy
 		if e and e != self and e.data.martyr_fury and e.global_position.distance_to(global_position) < 12.0:
 			e._enrage()
+	# The last of a group nearby may hesitate (EnemyFight).
+	EnemyFight.friend_fell(self)
 	# Loot, coins, souls and XP for everyone nearby (DESIGN.md 6.4 and 9).
 	Loot.enemy_died(self, data.loot_table, data.xp)
 

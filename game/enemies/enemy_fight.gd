@@ -133,3 +133,62 @@ func is_posing() -> bool:
 
 func is_stepping_back() -> bool:
 	return _back_left > 0.0 and Engine.get_physics_frames() - _last_frame <= 1
+
+
+# --- The last one standing (stage 6 leftover) ---------------------------------------
+## When a friend falls and this is the only one of its group still fighting (2 or
+## more friends down within GROUP_RANGE), it may hesitate: a step back, a look at
+## the fallen, then it fights on. Zealots fly into their martyr's fury instead.
+const GROUP_RANGE := 15.0
+const HESITATE_CHANCE := 0.7
+const HESITATE_BACK := 0.7   # seconds stepping back ...
+const HESITATE_LOOK := 1.1   # ... then looking at the fallen
+
+var _hesitate := -1.0        # time into the hesitation (-1 = none)
+var _look_at := Vector3.ZERO
+
+
+## Host: `fallen` just died. The last fighter of its group nearby may hesitate.
+static func friend_fell(fallen: Enemy) -> void:
+	var fighting: Array[Enemy] = []
+	var down := 0
+	for n in fallen.get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e == null or e.global_position.distance_to(fallen.global_position) > GROUP_RANGE:
+			continue
+		if e.state == Enemy.State.DEAD:
+			down += 1
+		elif e.is_fighting():
+			fighting.append(e)
+	if fighting.size() != 1 or down < 2:
+		return
+	var last := fighting[0]
+	if last.fight == null or not last.fight.enabled or last.data.martyr_fury or randf() > HESITATE_CHANCE:
+		return
+	last.fight._hesitate = 0.0
+	last.fight._look_at = fallen.global_position
+
+
+func is_hesitating() -> bool:
+	return _hesitate >= 0.0
+
+
+## Host, at the top of the chase: true while it hesitates (it moves itself).
+func hesitate(delta: float, to: Vector3) -> bool:
+	if _hesitate < 0.0:
+		return false
+	_hesitate += delta
+	if _hesitate >= HESITATE_BACK + HESITATE_LOOK:
+		_hesitate = -1.0
+		return false
+	if _hesitate < HESITATE_BACK:
+		enemy.model.turn_toward(to, deg_to_rad(enemy.data.turn_speed) * delta)
+		enemy._move(-to.normalized() * enemy.data.walk_speed * 0.7, delta)
+	else:
+		var look := _look_at - enemy.global_position
+		look.y = 0.0
+		if look.length() > 0.3:
+			enemy.model.turn_toward(look, deg_to_rad(enemy.data.turn_speed) * 0.6 * delta)
+		enemy._move(Vector3.ZERO, delta)
+	enemy.model.play(enemy.model.idle_anim, 0.2)  # in its stance, the feet stepping
+	return true
