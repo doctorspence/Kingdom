@@ -4,7 +4,7 @@
 
 **Status:** ✅ built for the outpost (hand-painted, baked to `assets/outpost/<folder>/<ID_name>.scn`) · ♻️ something usable already exists in the project and can stand in, but the outpost version is still to make · ⬜ to do.
 
-**Totals (228 assets):** ✅ 66 built · ♻️ 81 with a stand-in · ⬜ 81 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
+**Totals (228 assets):** ✅ 111 built · ♻️ 57 with a stand-in · ⬜ 60 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
 
 **How each asset is made:** built in code for now (`assets/outpost/`, like the bandit-hideout kit). Any asset can later be swapped for a GLB the owner makes with an image-to-3D tool: keep the same file name, origin and size (rules in `OUTPOST_PLAN.md`, section 6).
 
@@ -68,7 +68,7 @@
 | WK11 | Banner ropes and fittings | ✅ | `WK11_banner_ropes_and_fittings.scn` |
 | WK12 | Banner stand | ✅ | `WK12_banner_stand.scn` (WK02 hangs from it) |
 
-## D. Stable and horse area (`stable/`, 3 of 25 built)
+## D. Stable and horse area (`stable/`, 6 of 25 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
@@ -80,8 +80,8 @@
 | ST06 | Hay rack | ♻️ | built into B03; a separate piece to do |
 | ST07 | Wooden feeding trough | ⬜ | also CO14 |
 | ST08 | Water trough | ⬜ |  |
-| ST09 | Wooden water buckets | ♻️ | hideout `bucket_water` |
-| ST10 | Grain sacks | ♻️ | hideout `sack_grain` |
+| ST09 | Wooden water buckets | ✅ | = BS15 |
+| ST10 | Grain sacks | ✅ | = MK08 |
 | ST11 | Feed baskets | ♻️ | hideout `basket_empty` |
 | ST12 | Hitching posts | ⬜ |  |
 | ST13 | Horse fence sections | ⬜ |  |
@@ -90,7 +90,7 @@
 | ST16 | Saddles | ⬜ | good image-to-3D candidate |
 | ST17 | Horse blankets | ⬜ |  |
 | ST18 | Bridles and reins | ⬜ |  |
-| ST19 | Horseshoes | ⬜ | also BS16 |
+| ST19 | Horseshoes | ✅ | = BS16 |
 | ST20 | Farrier tool rack | ⬜ |  |
 | ST21 | Manure piles | ⬜ |  |
 | ST22 | Manure cart | ⬜ |  |
@@ -98,36 +98,36 @@
 | ST24 | Stable lantern | ✅ | = CP17 |
 | ST25 | Grooming equipment | ⬜ |  |
 
-## E. Market props (`market/`, 3 of 24 built)
+## E. Market props (`market/`, 24 of 24 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
 | MK01 | Merchant stall | ✅ | = B05 |
-| MK02 | Canvas awning | ⬜ | WK08 in plain linen |
+| MK02 | Canvas awning | ✅ | `MK02_canvas_awning.scn` |
 | MK03 | Red-and-ivory awning | ✅ | = WK08 |
-| MK04 | Merchant table | ♻️ | hideout `table_trestle` |
-| MK05 | Display shelves | ♻️ | hideout `shelf_3tier` |
-| MK06 | Fruit baskets | ♻️ | hideout `basket_*` (new fruit) |
-| MK07 | Vegetable baskets | ♻️ | hideout `basket_turnips` |
-| MK08 | Grain sacks | ♻️ | hideout `sack_grain` |
-| MK09 | Bread baskets | ♻️ | hideout `basket_bread` |
-| MK10 | Meat hooks | ♻️ | hideout `hook_iron` |
-| MK11 | Hanging meat | ♻️ | hideout `meat_rack`; good image-to-3D candidate |
-| MK12 | Fish basket | ⬜ |  |
-| MK13 | Pottery display | ⬜ |  |
-| MK14 | Clay pots | ⬜ | also CO16 |
-| MK15 | Ceramic jugs | ⬜ |  |
-| MK16 | Wooden bowls | ♻️ | hideout `utensils` |
-| MK17 | Weighing scales | ⬜ |  |
-| MK18 | Iron weights | ⬜ |  |
-| MK19 | Hanging cloth bolts | ⬜ |  |
-| MK20 | Folded fabric | ⬜ |  |
-| MK21 | Leather goods display | ⬜ |  |
-| MK22 | Merchant coin chest | ♻️ | hideout `chest_closed` (smaller); the coin box on CP09 |
-| MK23 | Wooden price sign | ♻️ | hideout `sign_post` |
+| MK04 | Merchant table | ✅ | `MK04_merchant_table.scn` |
+| MK05 | Display shelves | ✅ | `MK05_display_shelves.scn` |
+| MK06 | Fruit baskets | ✅ | `MK06_fruit_basket.scn` |
+| MK07 | Vegetable baskets | ✅ | `MK07_vegetable_basket.scn` |
+| MK08 | Grain sacks | ✅ | `MK08_grain_sacks.scn` |
+| MK09 | Bread baskets | ✅ | `MK09_bread_basket.scn` |
+| MK10 | Meat hooks | ✅ | `MK10_meat_hooks.scn` |
+| MK11 | Hanging meat | ✅ | `MK11_hanging_meat.scn` |
+| MK12 | Fish basket | ✅ | `MK12_fish_basket.scn` |
+| MK13 | Pottery display | ✅ | `MK13_pottery_display.scn` |
+| MK14 | Clay pots | ✅ | `MK14_clay_pots.scn` |
+| MK15 | Ceramic jugs | ✅ | `MK15_ceramic_jugs.scn` |
+| MK16 | Wooden bowls | ✅ | `MK16_wooden_bowls.scn` |
+| MK17 | Weighing scales | ✅ | `MK17_weighing_scales.scn` |
+| MK18 | Iron weights | ✅ | `MK18_iron_weights.scn` |
+| MK19 | Hanging cloth bolts | ✅ | `MK19_hanging_cloth_bolts.scn` |
+| MK20 | Folded fabric | ✅ | `MK20_folded_fabric.scn` |
+| MK21 | Leather goods display | ✅ | `MK21_leather_goods_display.scn` |
+| MK22 | Merchant coin chest | ✅ | `MK22_merchant_coin_chest.scn` |
+| MK23 | Wooden price sign | ✅ | `MK23_wooden_price_sign.scn` |
 | MK24 | Market lantern | ✅ | = CP17 |
 
-## F. Blacksmith and forge (`blacksmith/`, 6 of 22 built)
+## F. Blacksmith and forge (`blacksmith/`, 22 of 22 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
@@ -135,26 +135,26 @@
 | BS02 | Stone forge furnace | ✅ | built into B02 |
 | BS03 | Anvil | ✅ | `blacksmith/BS03_anvil_on_stump.scn` (with BS04) |
 | BS04 | Anvil stump | ✅ | = BS03 |
-| BS05 | Bellows | ♻️ | built into B02; a separate piece to do |
-| BS06 | Hammers | ♻️ | hideout `mining_hammer` |
-| BS07 | Tongs | ⬜ |  |
-| BS08 | Workbench | ♻️ | hideout `table_slab` |
-| BS09 | Tool rack | ⬜ |  |
-| BS10 | Metal ingots | ⬜ |  |
-| BS11 | Coal basket | ♻️ | hideout `basket_empty` |
-| BS12 | Coal pile | ♻️ | hideout `ore_pile` (darker) |
-| BS13 | Firewood stack | ⬜ |  |
-| BS14 | Quenching barrel | ♻️ | hideout `barrel_water` |
-| BS15 | Water bucket | ♻️ | hideout `bucket_water` |
-| BS16 | Horseshoes | ⬜ | = ST19 |
-| BS17 | Sword blade blanks | ⬜ |  |
-| BS18 | Iron tools | ♻️ | hideout `broken_tools` |
-| BS19 | Weapon rack | ♻️ | hideout `weapon_rack` |
+| BS05 | Bellows | ✅ | `BS05_bellows.scn` |
+| BS06 | Hammers | ✅ | `BS06_hammers.scn` |
+| BS07 | Tongs | ✅ | `BS07_tongs.scn` |
+| BS08 | Workbench | ✅ | `BS08_workbench.scn` |
+| BS09 | Tool rack | ✅ | `BS09_tool_rack.scn` |
+| BS10 | Metal ingots | ✅ | `BS10_metal_ingots.scn` |
+| BS11 | Coal basket | ✅ | `BS11_coal_basket.scn` |
+| BS12 | Coal pile | ✅ | `BS12_coal_pile.scn` |
+| BS13 | Firewood stack | ✅ | `BS13_firewood_stack.scn` |
+| BS14 | Quenching barrel | ✅ | `BS14_quenching_barrel.scn` |
+| BS15 | Water bucket | ✅ | `BS15_water_bucket.scn` |
+| BS16 | Horseshoes | ✅ | `BS16_horseshoes.scn` |
+| BS17 | Sword blade blanks | ✅ | `BS17_sword_blade_blanks.scn` |
+| BS18 | Iron tools | ✅ | `BS18_iron_tools.scn` |
+| BS19 | Weapon rack | ✅ | `BS19_weapon_rack.scn` |
 | BS20 | Chimney | ✅ | built into B02 |
-| BS21 | Ash pile | ⬜ |  |
+| BS21 | Ash pile | ✅ | `BS21_ash_pile.scn` |
 | BS22 | Forge lantern | ✅ | = CP17 |
 
-## G. Inn and tavern (`inn/`, 5 of 20 built)
+## G. Inn and tavern (`inn/`, 6 of 20 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
@@ -171,7 +171,7 @@
 | IN11 | Cooking pots | ♻️ | hideout `tripod_pot` |
 | IN12 | Fireplace | ✅ | built into B01 |
 | IN13 | Firewood basket | ⬜ |  |
-| IN14 | Food plates and bowls | ♻️ | hideout `utensils` |
+| IN14 | Food plates and bowls | ✅ | = MK16 |
 | IN15 | Hanging lanterns | ✅ | = CP17 |
 | IN16 | Beds and straw mattresses | ♻️ | hideout `bedding_straw` |
 | IN17 | Linen bedding | ♻️ | hideout `bedding_blanket` |
@@ -179,7 +179,7 @@
 | IN19 | Hanging herbs | ⬜ |  |
 | IN20 | Tavern notice board | ⬜ | WK09 notices on a board |
 
-## H. Carpenter and trade workshop (`carpenter/`, 2 of 16 built)
+## H. Carpenter and trade workshop (`carpenter/`, 3 of 16 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
@@ -191,7 +191,7 @@
 | CR06 | Chisels and carving tools | ⬜ |  |
 | CR07 | Timber plank piles | ⬜ |  |
 | CR08 | Cut logs | ⬜ |  |
-| CR09 | Firewood | ⬜ |  |
+| CR09 | Firewood | ✅ | = BS13 |
 | CR10 | Wood shavings | ⬜ |  |
 | CR11 | Wooden cart | ♻️ | zone 1 story props (tipped cart) |
 | CR12 | Cart wheels | ⬜ |  |
@@ -200,7 +200,7 @@
 | CR15 | Wooden pegs | ⬜ |  |
 | CR16 | Timber frame sections | ♻️ | zone 1 `building_kit.gd` frame walls |
 
-## I. Cottages and civilian life (`cottages/`, 1 of 18 built)
+## I. Cottages and civilian life (`cottages/`, 4 of 18 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
@@ -214,14 +214,14 @@
 | CO08 | Clotheslines | ⬜ |  |
 | CO09 | Hanging linen | ⬜ |  |
 | CO10 | Laundry baskets | ⬜ |  |
-| CO11 | Wood piles | ⬜ |  |
+| CO11 | Wood piles | ✅ | = BS13 |
 | CO12 | Animal pens | ⬜ |  |
 | CO13 | Chicken coop | ⬜ |  |
 | CO14 | Feed trough | ⬜ | = ST07 |
 | CO15 | Household tools | ♻️ | hideout `shovel`, `broken_tools` |
-| CO16 | Clay storage jars | ⬜ | = MK14 |
+| CO16 | Clay storage jars | ✅ | = MK14 |
 | CO17 | Benches | ⬜ | = IN03 |
-| CO18 | Household buckets | ♻️ | hideout `bucket_*` |
+| CO18 | Household buckets | ✅ | = BS15 |
 
 ## J. Environment and terrain (`environment/`, 0 of 28 built)
 

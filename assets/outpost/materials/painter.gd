@@ -39,6 +39,8 @@ static func all() -> Dictionary:
 		"earth_floor": [256, 256, earth_floor],
 		"rubble": [256, 256, rubble],
 		"inn_sign": [256, 320, inn_sign],
+		"wicker": [256, 256, wicker],
+		"clay": [256, 256, clay],
 	}
 
 
@@ -468,3 +470,25 @@ static func inn_sign(u: float, v: float, x: int, y: int, w: int, h: int) -> Colo
 	if body or handle or foam:
 		c = _mix(c, Color(paint.r, paint.g, paint.b), 0.9 * (1.0 - smoothstep(0.7, 0.8, fbm(u, v, 20, 20, 1805, 2))))
 	return c
+
+
+## Woven wicker, 1 m tile: willow strands over and under upright stakes, honey-brown.
+static func wicker(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var n := 28
+	var cu := floori(u * n)
+	var cv := floori(v * n)
+	var fu := u * n - cu
+	var fv := v * n - cv
+	var over := (cu + cv) % 2 == 0
+	var shade := sin(fv * PI) if over else sin(fu * PI)
+	var c := _shade(Color(0.52, 0.39, 0.22), 0.55 + 0.5 * shade)
+	c = _shade(c, 0.85 + 0.3 * fbm(u, v, 4, 4, 1901))
+	return _mix(c, Color(0.3, 0.27, 0.2), smoothstep(0.62, 0.8, fbm(u, v, 3, 3, 1902)) * 0.4)
+
+
+## Terracotta, 1 m tile: warm fired clay, wheel lines, darker smudges and a pale bloom.
+static func clay(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var c := _shade(Color(0.6, 0.35, 0.22), 0.82 + 0.3 * fbm(u, v, 3, 3, 2001))
+	c = _shade(c, 0.95 + 0.06 * sin(v * TAU * 24.0 + 2.0 * fbm(u, v, 2, 8, 2002)))
+	c = _mix(c, Color(0.3, 0.2, 0.15), smoothstep(0.6, 0.8, fbm(u, v, 4, 4, 2003)) * 0.45)
+	return _mix(c, Color(0.75, 0.66, 0.55), smoothstep(0.66, 0.82, fbm(u, v, 5, 5, 2004)) * 0.3)

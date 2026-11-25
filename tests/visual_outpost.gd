@@ -8,6 +8,7 @@ extends SceneTree
 ##        own camera arm: 1.7 m up, 3 m back, pulled in by walls)
 ##        vil_overview vil_market vil_b08_in vil_shed (stage 3's buildings as a village corner)
 ##        town_overview town_inn town_inn_in town_smith town_stable (the inn, smithy, stable, carpenter)
+##        mk_market mk_close bs_forge bs_close (stage 4: the market and the forge dressed with props)
 
 const WK_DIR := "res://assets/outpost/white_knights/"
 const CP_DIR := "res://assets/outpost/castle_approach/"
@@ -21,6 +22,8 @@ const CB := Vector3(-45, 0, 40)
 const VB := Vector3(-45, 0, -25)
 ## Where the inn, smithy, stable and carpenter stand.
 const TB := Vector3(-45, 0, -75)
+## Where the dressed market and forge stand.
+const PB := Vector3(-45, 0, -120)
 const BLD := preload("res://assets/outpost/buildings/buildings.gd")
 const ENV := preload("res://levels/common/tithelands_env.tres")
 const STONE := preload("res://levels/common/materials/stone.tres")
@@ -43,7 +46,7 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant", "cp_overview", "cp_left", "cp_right", "cp_table", "cp_dusk",
 		"b07_outside", "b07_door", "b07_in", "vil_overview", "vil_market", "vil_b08_in", "vil_shed",
-		"town_overview", "town_inn", "town_inn_in", "town_smith", "town_stable"]
+		"town_overview", "town_inn", "town_inn_in", "town_smith", "town_stable", "mk_market", "mk_close", "bs_forge", "bs_close"]
 	if args.size() > 1:
 		shots = args.slice(1)
 	_build()
@@ -62,6 +65,8 @@ func _wk(id: String, pos: Vector3, yaw := 0.0) -> Node3D:
 	var dir := CP_DIR if id.begins_with("CP") else WK_DIR
 	if id.begins_with("BS"):
 		dir = "res://assets/outpost/blacksmith/"
+	elif id.begins_with("MK"):
+		dir = "res://assets/outpost/market/"
 	elif id.begins_with("B"):
 		dir = "res://assets/outpost/buildings/"
 	var n := (load(dir + id + ".scn") as PackedScene).instantiate() as Node3D
@@ -142,6 +147,7 @@ func _build() -> void:
 	_build_b07()
 	_build_village()
 	_build_town()
+	_build_props()
 
 
 ## A checkpoint across a 12 m road running north (-Z) toward the castle.
@@ -336,3 +342,67 @@ func _shot_town_smith() -> void:
 
 func _shot_town_stable() -> void:
 	_look(TB + Vector3(21.0, 2.6, 12.0), TB + Vector3(18.0, 1.4, 0.0))
+
+
+func _build_props() -> void:
+	var k: float = BLD.SIZE
+	# The market: the shelter, two stalls and goods all round.
+	var m := PB + Vector3(-8, 0, 0)
+	_wk("B04_large_market_shelter", m)
+	_wk("B05_small_market_stall", m + Vector3(-2.8, 0, 0.6))
+	_wk("B05_small_market_stall", m + Vector3(2.8, 0, 0.6))
+	_wk("MK06_fruit_basket", m + Vector3(-3.4, 0.96, 1.15))
+	_wk("MK07_vegetable_basket", m + Vector3(-2.6, 0.96, 1.15))
+	_wk("MK09_bread_basket", m + Vector3(-1.95, 0.96, 1.15))
+	_wk("MK15_ceramic_jugs", m + Vector3(2.2, 0.96, 1.15))
+	_wk("MK16_wooden_bowls", m + Vector3(2.8, 0.96, 1.15))
+	_wk("MK17_weighing_scales", m + Vector3(3.4, 0.96, 1.1))
+	_wk("MK18_iron_weights", m + Vector3(3.3, 0.96, 1.32))
+	_wk("MK08_grain_sacks", m + Vector3(-0.4, 0, 1.6))
+	_wk("MK12_fish_basket", m + Vector3(0.6, 0, 2.2))
+	_wk("MK14_clay_pots", m + Vector3(4.6, 0, 1.8))
+	_wk("MK13_pottery_display", m + Vector3(0.0, 0, -2.6))
+	_wk("MK11_hanging_meat", m + Vector3(-4.2, 0, -2.4))
+	_wk("MK19_hanging_cloth_bolts", m + Vector3(4.0, 0, -2.4))
+	_wk("MK21_leather_goods_display", m + Vector3(-5.8, 0, 1.0), 70.0)
+	_wk("MK20_folded_fabric", m + Vector3(5.6, 0, 0.4))
+	_wk("MK22_merchant_coin_chest", m + Vector3(-1.4, 0, -0.6))
+	_wk("MK23_wooden_price_sign", m + Vector3(-1.4, 0, 2.6), 10.0)
+	_wk("MK04_merchant_table", m + Vector3(7.5, 0, 3.5), -20.0)
+	_wk("MK02_canvas_awning", m + Vector3(7.5, 0, 3.0), -20.0)
+	_man(m + Vector3(0.8, 0, 3.4), 160.0)
+	# The forge, working.
+	var f := PB + Vector3(10, 0, 0)
+	_wk("B02_civilian_blacksmith_workshop", f)
+	_wk("BS03_anvil_on_stump", f + Vector3(0.2, 0, 0.2) * k, 15.0)
+	_wk("BS14_quenching_barrel", f + Vector3(1.0, 0, 0.6) * k)
+	_wk("BS08_workbench", f + Vector3(-1.6, 0, -1.4) * k)
+	_wk("BS06_hammers", f + Vector3(-1.9, 1.15, -1.8))
+	_wk("BS10_metal_ingots", f + Vector3(-2.6, 1.15, -1.9))
+	_wk("BS09_tool_rack", f + Vector3(-1.0, 0, -2.6))
+	_wk("BS12_coal_pile", f + Vector3(2.9, 0, -1.6) * k)
+	_wk("BS11_coal_basket", f + Vector3(2.4, 0, -0.4) * k)
+	_wk("BS13_firewood_stack", f + Vector3(3.6, 0, 1.2) * k, -90.0)
+	_wk("BS19_weapon_rack", f + Vector3(-2.3, 0, 1.6) * k, 60.0)
+	_wk("BS15_water_bucket", f + Vector3(0.7, 0, 1.2) * k)
+	_wk("BS16_horseshoes", f + Vector3(-0.3, 0, 1.0) * k)
+	_wk("BS17_sword_blade_blanks", f + Vector3(-0.8, 0, -0.1) * k, 0.4)
+	_wk("BS21_ash_pile", f + Vector3(2.2, 0, -1.2) * k)
+	_wk("BS18_iron_tools", f + Vector3(-0.2, 0, -0.5) * k)
+	_man(f + Vector3(-0.4, 0, 0.6) * k, 120.0)
+
+
+func _shot_mk_market() -> void:
+	_look(PB + Vector3(-8, 4.2, 13.0), PB + Vector3(-8, 1.2, 0.0))
+
+
+func _shot_mk_close() -> void:
+	_look(PB + Vector3(-9.5, 1.8, 4.6), PB + Vector3(-8.5, 1.0, 0.8))
+
+
+func _shot_bs_forge() -> void:
+	_look(PB + Vector3(11.0, 3.2, 11.5), PB + Vector3(10.0, 1.0, -0.5))
+
+
+func _shot_bs_close() -> void:
+	_look(PB + Vector3(8.5, 1.9, 4.2), PB + Vector3(9.5, 0.8, -1.0))

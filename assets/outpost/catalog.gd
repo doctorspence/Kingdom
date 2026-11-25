@@ -6,6 +6,8 @@ extends RefCounted
 const WK := preload("res://assets/outpost/white_knights/white_knights.gd")
 const CP := preload("res://assets/outpost/castle_approach/castle_approach.gd")
 const BLD := preload("res://assets/outpost/buildings/buildings.gd")
+const MKT := preload("res://assets/outpost/market/market.gd")
+const BSM := preload("res://assets/outpost/blacksmith/blacksmith.gd")
 
 
 static func entries() -> Array:
@@ -53,4 +55,25 @@ static func entries() -> Array:
 	e.append([B, "B06_carpenter_workshop", BLD.carpenter])
 	e.append([B, "B09_storage_shed", BLD.storage_shed])
 	e.append(["blacksmith", "BS03_anvil_on_stump", BLD.anvil_on_stump])
+	var M := "market"
+	for it in [["MK02_canvas_awning", MKT.canvas_awning], ["MK04_merchant_table", MKT.merchant_table],
+			["MK05_display_shelves", MKT.display_shelves], ["MK06_fruit_basket", MKT.fruit_basket],
+			["MK07_vegetable_basket", MKT.vegetable_basket], ["MK08_grain_sacks", MKT.grain_sacks],
+			["MK09_bread_basket", MKT.bread_basket], ["MK10_meat_hooks", MKT.meat_hooks],
+			["MK11_hanging_meat", MKT.hanging_meat], ["MK12_fish_basket", MKT.fish_basket],
+			["MK13_pottery_display", MKT.pottery_display], ["MK14_clay_pots", MKT.clay_pots],
+			["MK15_ceramic_jugs", MKT.ceramic_jugs], ["MK16_wooden_bowls", MKT.wooden_bowls],
+			["MK17_weighing_scales", MKT.weighing_scales], ["MK18_iron_weights", MKT.iron_weights],
+			["MK19_hanging_cloth_bolts", MKT.hanging_cloth], ["MK20_folded_fabric", MKT.folded_fabric],
+			["MK21_leather_goods_display", MKT.leather_goods], ["MK22_merchant_coin_chest", MKT.coin_chest],
+			["MK23_wooden_price_sign", MKT.price_sign]]:
+		e.append([M, it[0], it[1]])
+	var S := "blacksmith"
+	for it in [["BS05_bellows", BSM.bellows], ["BS06_hammers", BSM.hammers], ["BS07_tongs", BSM.tongs],
+			["BS08_workbench", BSM.workbench], ["BS09_tool_rack", BSM.tool_rack], ["BS10_metal_ingots", BSM.ingots],
+			["BS11_coal_basket", BSM.coal_basket], ["BS12_coal_pile", BSM.coal_pile], ["BS13_firewood_stack", BSM.firewood_stack],
+			["BS14_quenching_barrel", BSM.quench_barrel], ["BS15_water_bucket", BSM.water_bucket], ["BS16_horseshoes", BSM.horseshoes],
+			["BS17_sword_blade_blanks", BSM.blade_blanks], ["BS18_iron_tools", BSM.iron_tools], ["BS19_weapon_rack", BSM.weapon_rack],
+			["BS21_ash_pile", BSM.ash_pile]]:
+		e.append([S, it[0], it[1]])
 	return e

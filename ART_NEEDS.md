@@ -125,7 +125,7 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Subclass weapons | Daggers, throwing knives, crossbows, tower shields, warhammers, ritual charms and more | Kit pieces + custom | ⭐ | ⬜ |
 
 ## White Knights Outpost (OUTPOST_PLAN.md; full list in assets/outpost/MANIFEST.md)
-228 assets in the owner's brief: 66 built, 81 with a stand-in already in the project, 81 to make. Built in code with hand-painted textures; any can be swapped for your art.
+228 assets in the owner's brief: 111 built, 57 with a stand-in already in the project, 60 to make. Built in code with hand-painted textures; any can be swapped for your art.
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|
 | White Knights set WK01-WK12 | Banners, pennant, standard, shield, signboard, plaque, awning, notice, stone insignia, fittings, banner stand | Code (`assets/outpost/white_knights/`) | | ✅ |

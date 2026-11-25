@@ -174,7 +174,9 @@ static func plaque() -> Node3D:
 ## WK08: red-and-ivory market awning: striped linen on four oak posts, sloping to the front
 ## (2.75 m back, 2.3 m front), a scalloped valance and guy ropes. 3.2 x 2.2 m under cover.
 ## Same asset as MK03. Front faces +Z.
-static func market_awning() -> Node3D:
+## cloth: another canvas (MK02 uses plain linen); red-and-ivory stripes by default.
+static func market_awning(cloth: Material = null) -> Node3D:
+	var cm: Material = cloth if cloth else K.stripes()
 	var b := HK.MB.new(108)
 	var oak := K.oak()
 	var hw := 1.6
@@ -208,7 +210,7 @@ static func market_awning() -> Node3D:
 			uvs.append(Vector2(x - x0, t * slope))
 			if j == nv - 1 and i == 0:
 				front_y = y
-	K.sheet2(b, K.stripes(), pts, uvs, nu, nv, Vector3.UP)
+	K.sheet2(b, cm, pts, uvs, nu, nv, Vector3.UP)
 	# The valance: a scalloped drop along the front edge, one scallop per stripe.
 	var vpts := PackedVector3Array()
 	var vuvs := PackedVector2Array()
@@ -221,7 +223,7 @@ static func market_awning() -> Node3D:
 			var y: float = top - drop * float(j) / (vn - 1)
 			vpts.append(Vector3(x, y, zf + 0.15 + 0.01 * float(j) / (vn - 1)))
 			vuvs.append(Vector2(x - x0, slope + (top - y)))
-	K.sheet2(b, K.stripes(), vpts, vuvs, nu * 2 - 1, vn, Vector3(0, 0, 1))
+	K.sheet2(b, cm, vpts, vuvs, nu * 2 - 1, vn, Vector3(0, 0, 1))
 	# Guy ropes and pegs at the front corners.
 	for s in [-1.0, 1.0]:
 		var peg := Vector3(s * (hw + 0.35), 0.0, zf + 1.0)

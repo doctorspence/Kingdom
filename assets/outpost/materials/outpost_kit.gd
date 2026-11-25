@@ -121,6 +121,32 @@ static func inn_sign() -> StandardMaterial3D:
 	return painted("inn_sign", "inn_sign", 0.0, {"rough": 0.85, "spec": 0.25})
 
 
+static func wicker() -> StandardMaterial3D:
+	return painted("wicker", "wicker", 1.0, {"rough": 1.0, "spec": 0.15})
+
+
+static func clay() -> StandardMaterial3D:
+	return painted("clay", "clay", 1.0, {"rough": 0.85, "spec": 0.3})
+
+
+## Undyed linen dyed a colour (cloth bolts, folded fabric, sacks).
+static func cloth(name: String, tint: Color) -> StandardMaterial3D:
+	return painted("cloth_" + name, "linen", 1.0, {"rough": 1.0, "spec": 0.15, "tint": tint})
+
+
+## A flat painted colour for small goods (fruit, bread, meat, coal), cached by name.
+static func goods(name: String, c: Color, rough := 0.85) -> StandardMaterial3D:
+	if _cache.has("goods_" + name):
+		return _cache["goods_" + name]
+	var m := StandardMaterial3D.new()
+	m.resource_name = "goods_" + name
+	m.albedo_color = c
+	m.roughness = rough
+	m.metallic_specular = 0.3
+	_cache["goods_" + name] = m
+	return m
+
+
 static func shingles() -> StandardMaterial3D:
 	return painted("shingles", "shingles", 1.0, {"rough": 0.95, "spec": 0.2})
 

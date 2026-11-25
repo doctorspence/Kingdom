@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "goods_green_apple"
+albedo_color = Color(0.45, 0.5, 0.16, 1)
+metallic_specular = 0.3
+roughness = 0.6

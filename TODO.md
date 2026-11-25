@@ -249,7 +249,9 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Walk the new buildings in `levels/sandbox/outpost_test.tscn` (pictures `docs/outpost/vil_*.jpg`)
 - [x] Stage 3: B01 inn, B02 blacksmith (and the anvil), B03 stable, B06 carpenter; all walk-in, checked by `outpost_check`
 - [ ] 🧪 Walk the inn, smithy, stable and carpenter in `levels/sandbox/outpost_test.tscn` (pictures `docs/outpost/town_*.jpg`)
-- [ ] Stage 4: trade and village props (market, forge, stable, inn, carpenter, cottage props)
+- [x] Stage 4, part 1: market goods (MK02-MK23) and forge tools (BS05-BS21), 37 props (`assets/outpost/market/`, `blacksmith/`)
+- [ ] 🧪 Look at `docs/outpost/mk_market.jpg`, `mk_close.jpg`, `bs_forge.jpg`, `bs_close.jpg`
+- [ ] Stage 4, part 2: stable, inn, carpenter and cottage props
 - [ ] Stages 4-7: trade and village props, ground and plants, light and effects, story props
 - [ ] Stage 8: placement in the Tithelands (needs the owner's OK on the layout and on who lives there)
 - [ ] Stage 9: checks, FPS, pictures

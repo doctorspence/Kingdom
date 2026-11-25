@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/clay.png" id="1_cxu3y"]
+
+[resource]
+resource_name = "clay"
+albedo_texture = ExtResource("1_cxu3y")
+metallic_specular = 0.3
+roughness = 0.85
+texture_filter = 5
