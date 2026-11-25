@@ -127,6 +127,67 @@ func _run() -> void:
 	var h := await _add("hound", Vector3(5, 0, 5), 0.0)
 	_check("hounds have no post", not h.post.enabled)
 
+	# --- Patrols: abreast, a pause at each corner to look around (stage 2) ------------
+	_clear()
+	await _go_to(Vector3(30, 0.05, -30))  # far out of sight
+	var route := PackedVector3Array([Vector3(-15, 0, 12), Vector3(-15, 0, 22), Vector3(-22, 0, 22)])
+	var walkers: Array[Enemy] = []
+	for i in 2:
+		var w := (load("res://game/enemies/bandit_sword.tscn") as PackedScene).instantiate() as Enemy
+		w.patrol_points = route
+		w.patrol_group = &"check/1"
+		w.patrol_side = -0.7 if i == 0 else 0.7
+		w.position = Vector3(-15 + w.patrol_side * -1.0, 0, 8.0 - i * 0.5)  # a few meters short of the first corner
+		_arena.add_child(w, true)
+		walkers.append(w)
+	await _seconds(1.0)
+	var gap := walkers[0].global_position.distance_to(walkers[1].global_position)
+	_check("a patrol walks side by side (gap %.1f m)" % gap, gap > 0.9 and gap < 2.2)
+	# Wait for them to reach the first corner, then watch the pause.
+	var paused_at := -1.0
+	for i in 600:
+		await get_tree().physics_frame
+		if walkers.all(func(w: Enemy) -> bool: return w.post.is_waiting()):
+			paused_at = i / 60.0
+			break
+	_check("both stop at the corner", paused_at >= 0.0)
+	var facing0 := walkers[0].model.forward()
+	await _seconds(2.0)
+	_check("...stand there a while", walkers.all(func(w: Enemy) -> bool: return w.post.is_waiting()))
+	_check("...looking around", rad_to_deg(facing0.angle_to(walkers[0].model.forward())) > 25.0)
+	_check("...weapons still sheathed", walkers.all(func(w: Enemy) -> bool: return w.model.is_sheathed()))
+	for i in 600:
+		await get_tree().physics_frame
+		if not walkers[0].post.is_waiting():
+			break
+	await _frames(2)
+	_check("...and set off together", walkers.all(func(w: Enemy) -> bool: return not w.post.is_waiting() and w.post.leg == 1))
+
+	# --- Watch posts (stage 3) -----------------------------------------------------------
+	_clear()
+	await _go_to(Vector3(0, 0.05, 60))  # far out of sight
+	var watcher := _watcher(Vector3(0, 0, 20), Vector3.BACK)  # watches toward +z
+	var plain := await _add("bandit_sword", Vector3(16, 0, 20), 0.0)  # beyond the 10 m warning range
+	plain.model.face_instantly(Vector3.BACK)
+	await _seconds(0.8)
+	_check("a watcher faces the way its post looks", rad_to_deg(watcher.model.forward().angle_to(Vector3.BACK)) < 50.0)
+	_check("...weapon sheathed", watcher.model.is_sheathed())
+	var look0 := watcher.model.forward()
+	await _seconds(6.0)
+	_check("...and scans left and right", rad_to_deg(look0.angle_to(watcher.model.forward())) > 15.0)
+	# 27 m in front of both: past a plain bandit's sight (22 m), inside the watcher's (about 30 m).
+	await _go_to(Vector3(3, 0.05, 47))
+	await _seconds(1.5)
+	_check("a watcher sees farther than others", watcher.target == player and plain.target == null)
+	# A lookout with no set direction turns its back on its camp.
+	_clear()
+	await _go_to(Vector3(0, 0.05, 60))
+	await _add("bandit_sword", Vector3(-20, 0, 0), 0.0)
+	await _add("bandit_sword", Vector3(-20, 0, 2), 0.0)
+	var lookout := await _add("bandit_lookout", Vector3(-14, 0, 1), 90.0)
+	await _seconds(0.8)
+	_check("a lookout faces away from its camp", lookout.post.watching and rad_to_deg(lookout.model.forward().angle_to(Vector3.RIGHT)) < 50.0)
+
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)
 
@@ -137,6 +198,16 @@ func _add(kind: String, at: Vector3, yaw_deg: float) -> Enemy:
 	e.rotation_degrees.y = yaw_deg
 	_arena.add_child(e, true)
 	await _frames(3)
+	return e
+
+
+## A bandit on a watch post looking along `dir` (as a "watch" spawn point makes it).
+func _watcher(at: Vector3, dir: Vector3) -> Enemy:
+	var e := (load("res://game/enemies/bandit_sword.tscn") as PackedScene).instantiate() as Enemy
+	e.position = at
+	e.set_meta(&"post_kind", "watch")
+	e.set_meta(&"watch_dir", dir)
+	_arena.add_child(e, true)
 	return e
 
 

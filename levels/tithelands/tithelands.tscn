@@ -645,11 +645,12 @@ radius = 2.5
 patrol = PackedVector3Array(0, 0, 0, 2, 0, 30, 1, 0, -22)
 
 [node name="Checkpoint" type="Marker3D" parent="EnemySpawns" unique_id=1608220689]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -110)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -110)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_pair")
 radius = 2.5
 patrol = PackedVector3Array()
+post = "watch"
 
 [node name="CheckpointExtra" type="Marker3D" parent="EnemySpawns" unique_id=1780423741]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -116)

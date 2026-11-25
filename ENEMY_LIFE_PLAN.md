@@ -1,6 +1,6 @@
 # Enemy life plan: what enemies do before the fight
 
-*Written 2026-11-25 at the owner's request. Stage 1 is being built (see "Progress" at the end).*
+*Written 2026-11-25 at the owner's request. Stages 1 and 2 are built (see "Progress" at the end).*
 
 ## Decided (owner, 2026-11-25)
 1. **Weapons while calm: on the hip (shields on the back) and drawn when the fight starts** (option B below).
@@ -100,7 +100,9 @@ Each stage is playable on its own and ends with the checks and pictures.
 | Stage | State |
 |---|---|
 | 1 | **Built 2026-11-25, not playtested by hand.** Details below. |
-| 2-4, 6, 7 | Not started. |
+| 2 | **Built 2026-11-25, not playtested by hand.** Details below. |
+| 3 | **Built 2026-11-25, not playtested by hand.** Details below. |
+| 4, 6, 7 | Not started. |
 | 5 | Moved to `STEALTH_PLAN.md` stage 2. |
 
 **Stage 1 as built:**
@@ -111,6 +113,19 @@ Each stage is playable on its own and ends with the checks and pictures.
 - Hooks in `enemy.gd`: `_notice`, `raise_alarm`, `_get_ready`, `set_home_facing`, `_update_sheath`, and `_aggro(p, spread)`. The stealth work's awareness meter should call `_notice(p)` where it would call `_aggro(p)`, so posts and stealth stack.
 - `SpawnDirector` now places a non-patrol group 1.3-2 m apart (was the spawn point's radius, usually 3 m), a little untidy.
 - Checks: `enemy_check` (huddle facing, sheathed, notice delay, group joins, drawn, back to post, hit while calm, hounds). Pictures: `tests/visual_posts.gd` (run without `--headless`).
+**Stage 2 as built (patrols):**
+- A spawn point with a patrol route and more than one enemy gives them a shared `patrol_group` and a `patrol_side` (1.4 m apart, + = right of travel). They start abreast at the first point, facing down the road, and walk the route side by side (each walks its own offset copy of the route).
+- At every corner the group stops for 3-6 s (the same pause for everyone, from the group name and corner count) and looks around: ahead, 65 degrees left, 65 degrees right, ahead. Nobody leaves until the others have arrived (at most 12 s of waiting), and when one leaves, the rest go too. Someone who got ahead slows down until the others catch up.
+- An enemy that fought and walked home rejoins its patrol at the corner its friends are walking to.
+- Lone patrollers (one enemy, or hand-placed routes) pause and look around the same way. Raiders don't (no post).
+- Code: `EnemyPost.patrol()` and friends; `enemy.gd` only hands the patrol over when the enemy has a post. Checks in `enemy_check` (abreast, both stop, look around, still sheathed, set off together).
+**Stage 3 as built (watch posts):**
+- A spawn point's new `post` setting: "auto" (as before) or "watch". Watchers stand in a line across the way the point faces (its -Z), 1.6 m apart, face that way, and slowly scan 45 degrees to each side, holding each look 2.5-4.5 s. They see 1.35 times farther (22 m becomes about 30 m, through `Enemy.sight_scale`); the sight cone and hearing are unchanged. `watch_rail = true` makes them lean on a rail in front of them (`Idle_Rail`) and only glance around.
+- Any **lookout** (an enemy id with "lookout" in it, the Gullet's B08) keeps watch on its own and turns its back on its camp (away from the friends within 15 m), so no scene changes were needed for it.
+- Watchers don't join huddles. Calm animations: standing or arms folded (bandits now and then drink). Night torches are not done (no torch prop yet).
+- **The Knights' checkpoint** (`Checkpoint` in `tithelands.tscn`) is now a watch post facing south down the road, toward where players come from.
+- The first look round (finding friends, or the watch direction) now runs on a timer 0.3 s after an enemy appears, even if it is already asleep (`EnemySleep`). Before, a far-off enemy turned to its group only when it woke up, right as the player arrived.
+- Checks in `enemy_check`: faces its watch direction, sheathed, scans, sees farther than an ordinary bandit, a lookout faces away from its camp. In the real zone at start: 20 enemies in huddles, 7 on patrol, 3 on watch, 15 standing alone, 11 without a post (hounds, bosses, ambushers).
 - Known: the archer's placeholder bow is a full ring (the placeholder mesh, same in hand), so it looks odd on the back until a real bow model exists.
 
 ## Questions for the owner (answered above, kept for the record)

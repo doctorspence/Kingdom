@@ -12,6 +12,7 @@ extends Node
 
 var _rng := RandomNumberGenerator.new()
 var _counter := 0
+var _patrols := 0
 
 
 func _ready() -> void:
@@ -82,6 +83,11 @@ func _spawn(sp: SpawnPoint, scene: PackedScene, index: int, count: int) -> void:
 		r = minf(sp.radius, 0.75 + 0.3 * count) * _rng.randf_range(0.85, 1.15)
 		a += _rng.randf_range(-0.35, 0.35)
 	var off := Vector3(cos(a), 0, sin(a)) * (r if count > 1 else 0.0)
+	if sp.post == "watch":
+		# Watchers stand in a line across the way they look, 1.6 m apart.
+		var across := (-sp.global_basis.z).cross(Vector3.UP)
+		across.y = 0.0
+		off = across.normalized() * (index - (count - 1) * 0.5) * 1.6
 	var p := sp.global_position + off
 	if terrain and sp.snap_to_terrain:
 		p.y = terrain.height_at(p.x, p.z) + 0.05
@@ -92,6 +98,26 @@ func _spawn(sp: SpawnPoint, scene: PackedScene, index: int, count: int) -> void:
 		for q in sp.patrol:
 			route.append(sp.global_transform * q)
 		e.patrol_points = route
+		if count > 1 and route.size() >= 2:
+			# A patrol of several walks the route abreast, about 1.4 m apart, starting
+			# side by side at its first point and facing down the road (EnemyPost.patrol).
+			if index == 0:
+				_patrols += 1
+			e.patrol_group = StringName("%s/%d" % [sp.name, _patrols])
+			e.patrol_side = (index - (count - 1) * 0.5) * 1.4
+			var dir := route[1] - route[0]
+			dir.y = 0.0
+			if dir.length() > 0.1:
+				dir = dir.normalized()
+				var q := route[0] + dir.cross(Vector3.UP) * e.patrol_side
+				if terrain and sp.snap_to_terrain:
+					q.y = terrain.height_at(q.x, q.z) + 0.05
+				e.position = q
+				e.basis = Basis.looking_at(dir, Vector3.UP)
+	if sp.post == "watch":
+		e.set_meta(&"post_kind", "watch")
+		e.set_meta(&"watch_dir", -sp.global_basis.z)
+		e.set_meta(&"watch_rail", sp.watch_rail)
 	e.remove_from_group(&"respawn_on_rest")
 	enemies_root.add_child(e, true)
 	e.remove_from_group(&"respawn_on_rest")  # the director handles these

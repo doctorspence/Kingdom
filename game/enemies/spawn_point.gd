@@ -19,6 +19,14 @@ extends Marker3D
 ## Don't reroll while a player is this close (meters). -1 = the director's default.
 @export var reset_distance := -1.0
 
+## What its enemies do before a fight (ENEMY_LIFE_PLAN.md). "auto": groups stand
+## together facing each other (lookouts keep watch, patrols walk). "watch": keep
+## watch the way the point faces (its -Z, the blue arrow's back), scanning left and
+## right, and see farther in that direction.
+@export_enum("auto", "watch") var post := "auto"
+## Watchers lean on a rail or palisade in front of them.
+@export var watch_rail := false
+
 ## Host only: the enemies this point made, still in the world.
 var spawned: Array[Node] = []
 

@@ -44,6 +44,10 @@ var sight_scale := 1.0
 @export var data: EnemyData
 ## Optional patrol route (world points). Empty = stand guard.
 @export var patrol_points := PackedVector3Array()
+## Patrols with friends (set by SpawnDirector): everyone with the same group walks
+## the route together, this far to the side of it (meters, + = right of travel).
+var patrol_group := &""
+var patrol_side := 0.0
 
 var state := State.IDLE
 var health := 100.0
@@ -797,7 +801,9 @@ func _state_idle(delta: float) -> void:
 		_get_ready(delta)
 		return
 	# Walk the patrol route, or stand guard.
-	if patrol_points.size() >= 2:
+	if patrol_points.size() >= 2 and post.enabled:
+		post.patrol(delta)  # side by side, stopping at corners to look around
+	elif patrol_points.size() >= 2:
 		var goal := patrol_points[_patrol_i]
 		var to := goal - global_position
 		to.y = 0.0
@@ -806,10 +812,7 @@ func _state_idle(delta: float) -> void:
 		else:
 			model.turn_toward(to, deg_to_rad(data.turn_speed) * 0.5 * delta)
 			_move(to.normalized() * data.walk_speed, delta)
-			if post.enabled:
-				post.walk(Vector3(velocity.x, 0, velocity.z).length())
-			else:
-				model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
+			model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
 	else:
 		_move(Vector3.ZERO, delta)
 		if post.enabled:
