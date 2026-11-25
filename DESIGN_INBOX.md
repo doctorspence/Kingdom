@@ -26,14 +26,6 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 
 ## Waiting
 
-### 2026-11-25: Showback and Kimbah recurring story characters
-- **Area:** world lore / characters / classes / quests
-- **Decision:** Include the owner's friends' gaming personas as major recurring KINGDOM characters. Every player encounters and defeats both as main-story boss encounters, regardless of class. Afterward they become allies and recur throughout the campaign. Class-specialization quests branch from those shared story encounters, so players who are not pursuing Rogue, Druid or Shaman specializations still experience and benefit from both characters' stories.
-- **Details:** **Showback** (owner has also spelled the name Shobek; confirm canonical spelling) is a legendary rogue inspired by the friend's WoW Rogue and streamer persona. Signature battle cry: **“BANKAI!”**, shouted immediately before a lethal attack or decisive opening. After defeat, he becomes a recurring ally and leader/center of an underground network of rogues, spies, thieves and informants. Potential later roles include intelligence/infiltration/assassination contracts, Rogue specialization trials, covert operations against traitors or faction forces, and a late-campaign allied appearance. **Kimbah** (K-I-M-B-A-H) is a forest guardian inspired by the friend's Warcraft druid/shaman persona. He protects the forest, its animals and creatures from destructive forces, including armies and those clearing or exploiting woodland. Signature phrase: **“Do it for them”**, referring to the forest animals. His initial boss conflict should arise from his fierce defense of a threatened place or creatures, not simple villainy. After defeat, he becomes a recurring ally and guide; potential later roles include rallying forest creatures, defending/restoring woodland, guiding wilderness missions, Druid/Shaman specialization trials, and joining a late-campaign battle. These later roles are story proposals to develop, not finished quests. Keep the recognizable phrases and broad personas but create original KINGDOM designs, dialogue, abilities and encounters; do not copy Warcraft IP. Confirm public use of real names/likenesses/personal details with the friends.
-- **Status:** decided that both characters are included and follow the shared boss-first, ally-afterward structure; specific questlines, designs and later appearances are **idea, not decided yet**.
-- **Replaces:** nothing.
-
-
 ### 2026-11-23: KINGDOM inventory and character panel UI standard
 - **Area:** UI / loot
 - **Decision:** Adopt the approved Champions of Norrath-inspired combined character and spatial inventory screen, with Oblivion-inspired top navigation. Owner supplied an actual in-game screenshot on 2026-11-25; it is now the visual reference for the implemented composition and styling, rather than relying only on the earlier concept. The clarified equipment layout is authoritative for the UI: one ring slot, no belt slot, and one Utility slot that also equips the cloak. Keep the existing two weapon sets and their swap behavior; the character panel shows the currently active main-hand and off-hand slots.
@@ -43,6 +35,14 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 
 ## Filed
 
+### 2026-11-25: Shobek and Kimbah recurring story characters
+- **Area:** world lore / characters / classes / quests
+- **Decision:** Include the owner's friends' gaming personas as major recurring KINGDOM characters. Every player encounters and defeats both as main-story boss encounters, regardless of class. Afterward they become allies and recur throughout the campaign. Class-specialization quests branch from those shared story encounters, so players who are not pursuing Rogue, Druid or Shaman specializations still experience and benefit from both characters' stories.
+- **Details:** **Shobek** (spelling confirmed by the owner, 2026-11-25; earlier written "Showback") is a legendary rogue inspired by the friend's WoW Rogue and streamer persona. Signature battle cry: **“BANKAI!”**, shouted immediately before a lethal attack or decisive opening. After defeat, he becomes a recurring ally and leader/center of an underground network of rogues, spies, thieves and informants. Potential later roles include intelligence/infiltration/assassination contracts, Rogue specialization trials, covert operations against traitors or faction forces, and a late-campaign allied appearance. **Kimbah** (K-I-M-B-A-H) is a forest guardian inspired by the friend's Warcraft druid/shaman persona. He protects the forest, its animals and creatures from destructive forces, including armies and those clearing or exploiting woodland. Signature phrase: **“Do it for them”**, referring to the forest animals. His initial boss conflict should arise from his fierce defense of a threatened place or creatures, not simple villainy. After defeat, he becomes a recurring ally and guide; potential later roles include rallying forest creatures, defending/restoring woodland, guiding wilderness missions, Druid/Shaman specialization trials, and joining a late-campaign battle. These later roles are story proposals to develop, not finished quests. Keep the recognizable phrases and broad personas but create original KINGDOM designs, dialogue, abilities and encounters; do not copy Warcraft IP. Confirm public use of real names/likenesses/personal details with the friends.
+- **Status:** decided that both characters are included and follow the shared boss-first, ally-afterward structure; specific questlines, designs and later appearances are **idea, not decided yet**.
+- **Replaces:** nothing.
+- **Filed (2026-11-25):** DESIGN.md section 2 ("Player-inspired recurring characters"), name corrected to Shobek everywhere. Questlines, looks and later appearances stay ideas until the quest system exists.
+
 ### 2026-11-25: Character style, a cross between OSRS, WoW and WAR
 - **Area:** art direction / characters
 - **Decision:** Characters should be a cross between Old School RuneScape, World of Warcraft and Warhammer Online, with higher poly counts. The current bandits are liked and stay for now.
@@ -50,6 +50,7 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 - **Status:** decided (owner, in chat).
 - **Replaces:** nothing; adds to DESIGN.md 12.1 and answers the question in the bandit entry below.
 - **Filed (2026-11-25):** DESIGN.md 12.1; the bandit detail upgrade is in TODO.md under Later.
+- **Confirmed again (owner, in Claude Code, 2026-11-25):** "Characters will be a little more polygons than the bandits."
 
 ### 2026-11-25: Bandits in an Old School RuneScape-inspired style
 - **Area:** art direction / characters
