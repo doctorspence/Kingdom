@@ -41,3 +41,6 @@ Every downloaded or generated asset goes here, so we always know where things ca
 | Forest Leaves 02 (leaf litter ground, 1k: diffuse, normal GL, roughness) | `assets/textures/leaf_litter/` | https://polyhaven.com/a/forest_leaves_02 | Rob Tuytel | CC0 1.0 | 2026-11-22 |
 
 **License rules**: CC0 for art and sound packs; OFL is OK for fonts (credit the author). AI-generated art you make: note the tool used.
+
+## White Knight character
+- `assets/characters/white_knight/textures/*`: cut from the owner's own White Knight character sheet (`docs/white_knight/`, owner's AI art) by `tools/white_knight_textures.py`. Owner's art.
