@@ -81,6 +81,14 @@ var cuts := [
 	{"center": Vector2(-104, -1.3), "half": Vector2(3.4, 1.0), "floor": 6.3, "edge": 0.25, "mode": "carve", "rock": 0.8, "late": true},
 	{"center": Vector2(-106, -3.0), "half": Vector2(0.8, 0.7), "floor": 6.3, "edge": 0.25, "mode": "carve", "rock": 0.8, "late": true},
 	{"center": Vector2(-98.2, -1.3), "half": Vector2(2.8, 1.0), "floor": 5.85, "edge": 0.25, "mode": "carve", "rock": 0.8, "late": true},
+	# The quarry descent (quarry_descent.gd) enters the cliff here: flatten the apron right up to the face,
+	# and the ground surface is left out (see `holes`) where the doorway passes through the cliff.
+	{"center": Vector2(-170.25, -98.0), "half": Vector2(1.25, 2.2), "floor": 12.0, "edge": 0.5, "mode": "carve", "rock": 0.6, "late": true},
+]
+
+## Rectangles (world meters) where the ground surface is left out so a tunnel can pass through a cliff.
+var holes := [
+	{"x0": -172.7, "z0": -100.4, "x1": -169.9, "z1": -95.6},  # the quarry descent through the Gullet door cliff
 ]
 
 # ---- fields: ploughed strips (ridge and furrow) and pasture, each walled in
@@ -484,6 +492,11 @@ var mist_spots := [
 	[150.0, -140.0, 24.0, 4.0, 0.06], [-50.0, 163.0, 18.0, 3.5, 0.05],
 	[-150.0, -32.0, 26.0, 3.0, 0.035], [30.0, -14.0, 18.0, 2.5, 0.03],
 	[-150.0, -100.0, 18.0, 6.0, 0.018],
+	# Banks of fog lying across the open country (2026-11-25, owner asked for more fog).
+	[-20.0, 60.0, 20.0, 3.5, 0.07], [42.0, 100.0, 22.0, 3.0, 0.062], [-72.0, 108.0, 24.0, 3.5, 0.07],
+	[4.0, -42.0, 22.0, 4.0, 0.07], [-62.0, 2.0, 20.0, 3.0, 0.07], [62.0, -22.0, 24.0, 3.5, 0.062],
+	[102.0, -82.0, 22.0, 3.5, 0.062], [-92.0, 58.0, 18.0, 3.0, 0.062], [24.0, 20.0, 20.0, 2.5, 0.075],
+	[-6.0, 100.0, 20.0, 3.0, 0.06], [34.0, 62.0, 22.0, 3.5, 0.065], [-44.0, 36.0, 20.0, 3.0, 0.065],
 ]
 
 

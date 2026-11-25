@@ -160,6 +160,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] `tests/combat_check.gd` covers all of it; `tests/visual_tempo.gd` takes screenshots
 - [x] **Pass 3:** warning sounds on white glints and red attacks; deflects in a row clang higher; **Flawless** (deflect every blow of a string, the last one hits balance twice); breaking balance cracks and jolts the screen; a clean hit during your light attack's wind-up **interrupts** it (heavies power through)
 - [x] **Pass 4:** attack reach (a swing at someone a step out of reach closes up to 1.2 m and lands); enemies read a turtle (block two blows in a row and the red or heaviest attack comes next)
+- [x] Heavy attacks wind up slower (about 0.5 s raise); jumping light and heavy attacks swing **downward** (overhead chop / overhead slam into a crouch), plunges use the slam too (owner's request 2026-11-24)
 - [ ] 🧪 Fight the Marauder and a group of bandits (with sound on): deflect a two-hit string in rhythm and listen for the rising clang, break a bandit's balance and riposte, try Steady during a combo, perfect-dodge a Captain swing. Tell me if the windows feel too tight or too loose, and whether enemies guard too often (numbers: `data/balance/player_tuning.tres` "Timing and rhythm", each enemy file "Balance and tempo")
 
 ---
@@ -212,6 +213,23 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Highcrown as a walled stronghold town backdrop, visible from the start altar (`game/world/highcrown_art.gd`); checkpoint banners, market stalls, notice board and braziers, ferns, puddles and a daytime cloud layer (`game/world/tithe_extras.gd`)
 - [x] Chapel and barrow built; mill race, sluice gate and tailrace cut; terrain bake cached on disk
 - [ ] Later: a walkable Highcrown (needs the zone extended north), LODs for distant trees
+
+## Inventory and character screen ✅ built 2026-11-23 (waiting for your test; DESIGN.md 9.2-9.3)
+- [x] One screen: backpack grid, your character on a pedestal with the slots around it, your stats; tabs Character, Inventory, Map, Talents, Quests, System (Q / E, LB / RB)
+- [x] Drag and drop, turning long items (right-click, wheel or R; Y on a gamepad), stacks, sort (Z), mark junk (J) and "Sell all junk" at merchants, filters ([ ] / LT RT); I or Tab opens it, item cards with Compare (C)
+- [x] One ring slot, the cloak in the Utility slot, no belt slot; icons for all 71 items
+- [ ] 🧪 Press I and try it with the mouse: drag a sword onto the main-hand slot, turn the bow, sort, mark junk and sell it at Old Wenna, switch tabs with Q and E. Then with a gamepad if you have one (hold A to pick up). Tell me what feels clumsy or looks wrong
+- [ ] Later: helms, gloves, boots, shoulders and cloaks only show on the character once they get worn 3D models (today only head, chest and legs pieces with a model do); a real quest list for the Quests tab; the new menu keys are not in the rebinding list yet
+
+## Movement redesign (hybrid) and camera zoom ✅ built 2026-11-23 (waiting for your test; DESIGN.md 5.2)
+- [x] Slower, weightier speed-up, stopping and turning; walk 1.5, run 5.8, sprint 8.0
+- [x] Combat stance (locked on or guard up): face the foe, slower backpedal and sidestep, legs run in reverse when backing off
+- [x] Mouse wheel zooms the camera in and out when you're not locked on
+- [ ] 🧪 Run around the Tithelands, then lock on to a bandit and circle and back away from it. Tell me if it feels too slow or floaty, and try the wheel zoom. Numbers: "Speeds" and "Weight and turning" in `data/balance/player_tuning.tres`
+- [x] Sidesteps: hips and legs turn toward the step, chest stays on the foe (no more sliding sideways); feet matched to the ground at walk, jog and sprint
+- [x] Locked-on strafing is a slow side-step (1.3 m/s): fighting stance kept, feet step out and close in, planted feet stay put (also when moving with guard up)
+- [ ] 🧪 Lock on to a dummy or bandit and hold A or D: tell me if the side-step is too slow, too quick-footed, or too wide
+- [ ] Later: real backward and sideways walk/jog animations would still look better than the leg turn
 
 ## White Knights Outpost (started 2026-11-25; plan in OUTPOST_PLAN.md, asset list in assets/outpost/MANIFEST.md)
 - [x] Stage 1: hand-painted texture painter, outpost kit, exporter and preview pictures; the White Knights set WK01-WK12 (`assets/outpost/white_knights/`, 8,691 triangles in all)

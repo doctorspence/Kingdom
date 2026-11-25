@@ -246,7 +246,7 @@ func _level() -> void:
 	var up := g.get_node("WayUp") as CaveDoor
 	up.interact(player)
 	await _seconds(0.6)
-	_check("...and the way up takes you back to the surface", player.global_position.y > -10.0)
+	_check("...and the way up takes you back to the surface", player.global_position.y > 0.0)
 
 	# Every area has floor to stand on: drop the player at a spot and see that he lands and stays.
 	var spots := {"yard": Vector3(-50, 0.4, 25), "long hall": Vector3(-27, 0.4, 18), "west loop": Vector3(-39, 0.4, 3), "chest room": Vector3(-53, 0.4, 4),

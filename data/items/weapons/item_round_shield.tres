@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="ItemData" format=3]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://blwp3y28jrfym"]
 
-[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="1_item"]
 [ext_resource type="Resource" path="res://data/shields/shield_round_wood.tres" id="2_ref"]
+[ext_resource type="Texture2D" uid="uid://dq7hykb0f6csb" path="res://assets/equipment/InventoryIcons/Weapons/item_round_shield.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
@@ -13,6 +14,5 @@ grid_size = Vector2i(2, 2)
 weight = 5.0
 value = 18
 icon_color = Color(0.4, 0.28, 0.18, 1)
-armor = 0.0
-stats = {}
+icon = ExtResource("9_icon")
 shield = ExtResource("2_ref")

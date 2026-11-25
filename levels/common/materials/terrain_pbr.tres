@@ -51,7 +51,7 @@ shader_parameter/grass_scale = 0.22
 shader_parameter/mud_scale = 0.28
 shader_parameter/path_scale = 0.3
 shader_parameter/rock_scale = 0.13
-shader_parameter/grass_tint = Color(0.56, 0.63, 0.5, 1)
+shader_parameter/grass_tint = Color(0.42, 0.45, 0.39, 1)
 shader_parameter/mud_tint = Color(0.6, 0.55, 0.5, 1)
 shader_parameter/path_tint = Color(0.72, 0.66, 0.58, 1)
 

@@ -5,10 +5,10 @@ extends RefCounted
 
 signal changed
 
-const SLOTS := ["head", "shoulders", "chest", "hands", "legs", "feet", "cloak", "neck", "ring1", "ring2",
+const SLOTS := ["head", "shoulders", "chest", "hands", "legs", "feet", "cloak", "neck", "ring1",
 		"main1", "off1", "main2", "off2"]
 const SLOT_LABELS := {"head": "Head", "shoulders": "Shoulders", "chest": "Chest", "hands": "Hands", "legs": "Legs",
-		"feet": "Feet", "cloak": "Cloak", "neck": "Neck", "ring1": "Ring", "ring2": "Ring",
+		"feet": "Feet", "cloak": "Utility", "neck": "Neck", "ring1": "Ring",
 		"main1": "Weapon (set 1)", "off1": "Off hand (set 1)", "main2": "Weapon (set 2)", "off2": "Off hand (set 2)"}
 const BANK_WIDTH := 12
 const BANK_START_ROWS := 4
@@ -47,7 +47,7 @@ func slots_for(item: ItemInstance) -> PackedStringArray:
 		ItemData.Slot.FEET: return PackedStringArray(["feet"])
 		ItemData.Slot.CLOAK: return PackedStringArray(["cloak"])
 		ItemData.Slot.NECK: return PackedStringArray(["neck"])
-		ItemData.Slot.RING: return PackedStringArray(["ring1", "ring2"])
+		ItemData.Slot.RING: return PackedStringArray(["ring1"])
 		ItemData.Slot.MAIN_HAND, ItemData.Slot.TWO_HAND: return PackedStringArray(["main%d" % active_set, "main%d" % (3 - active_set)])
 		ItemData.Slot.OFF_HAND: return PackedStringArray(["off%d" % active_set, "off%d" % (3 - active_set)])
 	return PackedStringArray()
@@ -124,6 +124,67 @@ func unequip(slot: String) -> String:
 	backpack.add(item)
 	changed.emit()
 	return ""
+
+
+## Take off an equipped item and put it at a chosen backpack spot (drag and drop).
+func unequip_to(slot: String, at: Vector2i, rot := false) -> String:
+	var item: ItemInstance = equipped.get(slot)
+	if item == null:
+		return ""
+	if not backpack.can_place(item, at, "", rot):
+		return "It doesn't fit there"
+	equipped.erase(slot)
+	backpack.place(item, at, rot)
+	changed.emit()
+	return ""
+
+
+## Move (and maybe turn) a backpack item. Dropping a stack on the same kind of stack pours it in.
+func move_in_backpack(uid: String, at: Vector2i, rot := false) -> String:
+	var item: ItemInstance = backpack.items.get(uid)
+	if item == null:
+		return "Not in your backpack"
+	var under := backpack.item_at(at)
+	if under and under != item and under.base == item.base and item.base.stack_max > 1:
+		if backpack.merge(uid, under.uid) == 0:
+			return "That stack is full"
+		changed.emit()
+		return ""
+	if not backpack.move(uid, at, rot):
+		return "It doesn't fit there"
+	changed.emit()
+	return ""
+
+
+## Tidy the backpack (see ItemGrid.sort).
+func sort_backpack() -> String:
+	if not backpack.sort():
+		return "Can't tidy: it wouldn't all fit"
+	changed.emit()
+	return ""
+
+
+func toggle_junk(uid: String) -> bool:
+	var item: ItemInstance = backpack.items.get(uid)
+	if item == null:
+		return false
+	item.junk = not item.junk
+	changed.emit()
+	return item.junk
+
+
+func junk_items() -> Array[ItemInstance]:
+	var out: Array[ItemInstance] = []
+	for uid in backpack.items:
+		if backpack.items[uid].junk:
+			out.append(backpack.items[uid])
+	return out
+
+
+## Equip load you can carry before you count as fully loaded (the player's roll
+## speed depends on equipped weight ÷ this).
+static func load_capacity(strength: float) -> float:
+	return 60.0 + 0.5 * strength
 
 
 func swap_weapon_set() -> void:
@@ -279,6 +340,14 @@ func load_dict(d: Dictionary) -> void:
 			equipped[s] = it
 	backpack.load_dict(d.get("backpack", {}))
 	bank.load_dict(d.get("bank", {}))
+	# Old saves had a second ring slot: wear it if the one slot is free, else pack it away.
+	if equipped.has("ring2"):
+		var ring: ItemInstance = equipped["ring2"]
+		if not equipped.has("ring1"):
+			equipped["ring1"] = ring
+			equipped.erase("ring2")
+		elif backpack.add(ring) or bank.add(ring):
+			equipped.erase("ring2")
 	coins = int(d.get("coins", d.get("gold", 0)))  # old saves used "gold"
 	souls = int(d.get("souls", 0))
 	active_set = int(d.get("active_set", 1))

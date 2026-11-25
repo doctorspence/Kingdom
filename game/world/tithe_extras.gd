@@ -120,8 +120,8 @@ func _checkpoint() -> void:
 		var l := OmniLight3D.new()
 		l.position = p + Vector3(0, 1.8, 0)
 		l.light_color = Color(1.0, 0.6, 0.3)
-		l.light_energy = 1.8
-		l.omni_range = 11.0
+		l.light_energy = 3.0
+		l.omni_range = 12.0
 		root.add_child(l)
 
 

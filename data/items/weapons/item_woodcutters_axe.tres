@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
 [ext_resource type="Resource" path="res://data/weapons/weapon_woodcutters_axe.tres" id="2_ref"]
+[ext_resource type="Texture2D" uid="uid://mcoyonutf7qk" path="res://assets/equipment/InventoryIcons/Weapons/item_woodcutters_axe.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
+icon = ExtResource("9_icon")
 id = &"item_woodcutters_axe"
 display_name = "Woodcutter's Axe"
 flavor = "It has split more than wood."

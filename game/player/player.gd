@@ -181,6 +181,9 @@ var net_off := &""
 var net_head := &""
 var net_chest := &""
 var net_legs := &""
+var net_hands := &""
+var net_feet := &""
+var net_cloak := &""
 var spawn_yaw := 0.0
 var player_name := ""
 
@@ -287,6 +290,9 @@ func _refresh_gear() -> void:
 		net_head = _worn_id("head")
 		net_chest = _worn_id("chest")
 		net_legs = _worn_id("legs")
+		net_hands = _worn_id("hands")
+		net_feet = _worn_id("feet")
+		net_cloak = _worn_id("cloak")
 	var main_item := ItemDB.get_item(net_main) if net_main != &"" else null
 	var off_item := ItemDB.get_item(net_off) if net_off != &"" else null
 	weapon = main_item.weapon if main_item and main_item.weapon else FISTS
@@ -305,7 +311,7 @@ func _on_gear_changed() -> void:
 
 
 func _apply_look() -> void:
-	var key := "%s/%d/%d/%s/%s/%s/%s/%s" % [stats.class_data.id, net_body, net_color, net_main, net_off, net_head, net_chest, net_legs]
+	var key := "%s/%d/%d/%s/%s/%s/%s/%s/%s/%s/%s" % [stats.class_data.id, net_body, net_color, net_main, net_off, net_head, net_chest, net_legs, net_hands, net_feet, net_cloak]
 	if key == _shown_look:
 		return
 	_shown_look = key
@@ -315,7 +321,8 @@ func _apply_look() -> void:
 	if shield and shield.visual_scene:
 		model.attach_to_hand(shield.visual_scene.instantiate(), "l")
 	model.set_body(net_body == 1)
-	for pair in [["head", net_head], ["chest", net_chest], ["legs", net_legs]]:
+	model.set_outfit(true, net_body == 1)
+	for pair in [["head", net_head], ["chest", net_chest], ["legs", net_legs], ["hands", net_hands], ["feet", net_feet], ["cloak", net_cloak]]:
 		var worn := ItemDB.get_item(pair[1]) if pair[1] != &"" else null
 		model.set_armor(pair[0], worn.model_scene if worn else null)
 	model.set_tint(Classes.LOOK_COLORS[clampi(net_color, 0, Classes.LOOK_COLORS.size() - 1)])
@@ -1483,7 +1490,7 @@ func _state_move(delta: float) -> void:
 			thing.call(&"interact", self)
 
 	# Blocking
-	var wants_block := Input.is_action_pressed("block")
+	var wants_block := Input.is_action_pressed("block") and not Net.in_menu  # LB / right-click work the menus
 	if wants_block and not is_blocking:
 		_begin_guard()
 	elif not wants_block and is_blocking:
@@ -1506,21 +1513,30 @@ func _state_move(delta: float) -> void:
 		speed = tuning.lock_on_speed
 	speed *= effects.move_mult() * (1.0 + inventory.stat_total("move_speed")) * _water_mult()
 
+	# Combat stance (locked on, or guard up): the body faces the foe, or where the
+	# camera looks, and you sidestep and backpedal around that facing.
+	var stance := (locked or is_blocking) and not is_sprinting
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var target_velocity := Vector3.ZERO
 	if is_sprinting:
 		# Sprinting turns in wide arcs: you go where your body points.
 		model.turn_smooth(dir, 5.0, tuning.sprint_turn_speed * 0.5, delta)
 		target_velocity = model.forward() * speed
+	elif stance:
+		if locked:
+			model.turn_smooth(targeting.target_point() - global_position, 14.0, 180.0, delta)
+		else:
+			model.turn_smooth(camera_rig.flat_basis() * Vector3.FORWARD, tuning.turn_sharpness, 180.0, delta)
+		if amount > 0.0:
+			target_velocity = dir.normalized() * _stance_speed(dir, speed)
 	else:
 		if amount > 0.0:
 			target_velocity = dir.normalized() * speed
-		if locked:
-			model.turn_smooth(targeting.target_point() - global_position, 14.0, 180.0, delta)
-		elif amount > 0.0:
-			model.turn_smooth(dir, 14.0, 180.0, delta)
+			model.turn_smooth(dir, tuning.turn_sharpness, 180.0, delta)
 
-	horizontal = _steer(horizontal, target_velocity, speed, amount > 0.0 and not is_sprinting, delta)
+	# In stance, changing direction slows through a stop instead of swinging round.
+	horizontal = _steer(horizontal, target_velocity, target_velocity.length() if stance else speed,
+			amount > 0.0 and not is_sprinting and not stance, delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 	if not is_on_floor():
@@ -1535,7 +1551,23 @@ func _state_move(delta: float) -> void:
 		if _guard_react <= 0.0:
 			model.play(CharacterModel.ANIM_BLOCK, 0.12)
 	else:
-		model.update_locomotion(Vector3(velocity.x, 0.0, velocity.z).length(), is_sprinting, is_walking)
+		var ground := Vector3(velocity.x, 0.0, velocity.z)
+		var side_stepping := stance and amount > 0.0 and absf(dir.normalized().dot(model.forward())) < 0.5
+		if side_stepping:
+			# Keep the fighting stance; the model steps the feet out and in (StanceSteps).
+			model.play(model.idle_anim, 0.25)
+		else:
+			var backward := stance and ground.length() > 0.15 and ground.normalized().dot(model.forward()) < -0.5
+			model.update_locomotion(ground.length(), is_sprinting, is_walking, backward)
+
+
+## Combat stance speed for a push in `dir`: full `speed` straight at the foe, slower
+## backing off, and a slow side-step across. Diagonals lean toward the side-step.
+func _stance_speed(dir: Vector3, speed: float) -> float:
+	var ahead := dir.normalized().dot(model.forward())
+	var straight := speed * (tuning.stance_back_mult if ahead < 0.0 else 1.0)
+	var side := minf(speed, tuning.stance_side_speed)
+	return lerpf(side, straight, pow(absf(ahead), 4.0))
 
 
 ## Move the current velocity toward the wanted one. While walking or running,
@@ -1652,6 +1684,9 @@ func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
 	_arrow_fired = false
 	_set_state(State.ATTACK)
 	_attack.start(a, model)
+	# Heavy swings take their time: the raise plays slower, so they hit with weight (and can be read).
+	if a == weapon.heavy and a.projectile_speed <= 0.0:
+		_attack.windup_scale = tuning.heavy_windup_scale
 
 
 ## Turn toward the locked target, or the best nearby enemy, or where you push.
@@ -2423,6 +2458,7 @@ func _update_stamina(delta: float) -> void:
 
 var _lantern: OmniLight3D
 var _lantern_glow := 0.0
+const LANTERN_POWER := 2.2
 
 
 ## A small lantern on your belt that glows at night (everyone sees each other's).
@@ -2431,8 +2467,9 @@ func _make_lantern() -> void:
 	_lantern.name = "Lantern"
 	_lantern.position = Vector3(0.28, 1.0, 0.12)
 	_lantern.light_color = Color(1.0, 0.68, 0.38)
-	_lantern.omni_range = 11.0
-	_lantern.omni_attenuation = 1.3
+	_lantern.omni_range = 15.0
+	_lantern.omni_attenuation = 1.0
+	_lantern.light_volumetric_fog_energy = 0.5
 	_lantern.light_energy = 0.0
 	_lantern.visible = false
 	_lantern.shadow_enabled = false
@@ -2444,15 +2481,15 @@ func lantern_lit() -> bool:
 
 
 func _update_lantern(delta: float) -> void:
-	var want := maxf(smoothstep(0.35, 0.8, DayNight.night), 0.85 if global_position.y < DayNight.CAVE_BELOW else 0.0) * (0.0 if state == State.DEAD else 1.6)
+	var want := maxf(smoothstep(0.35, 0.8, DayNight.night), 0.85 * smoothstep(0.2, 0.8, DayNight.cave)) * (0.0 if state == State.DEAD else 1.6)
 	_lantern_glow = move_toward(_lantern_glow, want, delta * 1.5)
 	_lantern.visible = _lantern_glow > 0.01
-	# A gentle flicker.
+	# A gentle flicker (not tied to position: running used to shift the phase and make it shimmer).
 	var t := Time.get_ticks_msec() * 0.001
-	_lantern.light_energy = _lantern_glow * (0.95 + 0.05 * sin(t * 9.0 + position.x) * sin(t * 4.3))
+	_lantern.light_energy = _lantern_glow * LANTERN_POWER * (0.97 + 0.03 * sin(t * 5.0) * sin(t * 2.3))
 
 
-## ID of the armor worn in a slot ("head", "chest", "legs") that has a 3D model, or empty.
+## ID of the armor worn in a slot ("head", "chest", "legs", "hands", "feet", "cloak") that has a 3D model, or empty.
 func _worn_id(slot: String) -> StringName:
 	var it: ItemInstance = inventory.equipped.get(slot)
 	return it.base.id if it and it.base.model_scene else &""

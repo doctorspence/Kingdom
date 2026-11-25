@@ -17,7 +17,7 @@ The matching floor plan with legend and enemy positions is the "The Gullet: Dung
 | Story | An abandoned quarry occupied by desperate outlaws, who dug into a sealed passage and found a black stone. Travelers vanish on the forest road. Full text lives in the designer's brief (`THE GULLET` attachment). |
 | Factions | The boss is **not** a Dark Ages member. He is an ordinary man changed by the stone, which shows forbidden power existed before either faction claimed it. |
 | Boss name | **Harl the Delver** (working name; the designer doesn't mind it changing). A rough bandit nickname, since these are bandits raiding the quarry for supplies. Not "Foreman" or any job title. |
-| Look | Narrow rough rock, wooden supports, carts, ropes, picks. Torches and campfires are the light: warm orange with deep shadow. No glowing crystals. Bandits look like ordinary medieval outlaws. The last chamber is an accidental discovery, not a built arena. |
+| Look | Narrow rough rock, wooden supports, carts, ropes, picks. Torches and campfires are the light: warm orange with deep shadow. *(2026-11-25)* Much darker: no invisible fill lights; hung miners' lanterns, torches, braziers, the fire and small holes in the roof (daylight by day, faint moonlight by night). No glowing crystals. Bandits look like ordinary medieval outlaws. The last chamber is an accidental discovery, not a built arena. |
 | Healing | Flasks stay the main heal. Food and potions are small extra heals (start values: bread 10%, cooked meat 20%, health potion 25% of max health; a flask is 40%). Eating takes about 1.5 s and you can be hit mid-bite. |
 | Gear tiers | Bronze and iron are Common (white). Steel is Uncommon (green). Chase items are Rare (blue) or Epic (purple). |
 | New weapon types | Iron dagger = a fast sword-type weapon. Steel pickaxe = a mace or axe type with mining flavor. |
@@ -42,6 +42,7 @@ The matching floor plan with legend and enemy positions is the "The Gullet: Dung
 
 - **Shortcuts:** after the first boss kill, a corridor opens from the Deep Chamber back to the Entrance Yard (closed until then). A **barricade** in the Old Tunnels is lifted from the far (camp) side and gives a short path from the long hall straight to the camp, skipping the western loop (the second patrol pair and the hidden chest route).
 - **Farming loop:** from the halfway shrine, a boss attempt is about 5 minutes (Excavation, approach, boss). A full run from the entrance is about 10.
+- **The way in (2026-11-23):** there is no door. The quarry's timber-framed adit leads straight into a hewn incline (`game/world/quarry_descent.gd`): about 130 m of ramp with timber cleats, oak frames and lanterns, three corners with flat landings, 52 m down from the quarry floor to the Entrance Yard, which it enters through a doorway in the yard's west wall. The light fades in with distance along the tunnel (`QuarryDescent.depth_cave`, read by `DayNight.cave`, the cave sounds, the player's lantern and the level-of-detail switch), so daylight, ambient light and sound change gradually instead of at a height. The old teleport doors (`CaveDoor`, "Descend" and "Climb out") are kept but disabled.
 - **Route options:** the camp's upper walkway links over the rope bridge to the Excavation's north and west galleries, so players can skip part of the ground fight at the cost of facing archers.
 
 ---

@@ -133,7 +133,7 @@ func _map(anim_name: StringName) -> StringName:
 	return anim_name
 
 
-func update_locomotion(ground_speed: float, _sprinting: bool, _walking: bool) -> void:
+func update_locomotion(ground_speed: float, _sprinting: bool, _walking: bool, _backward := false) -> void:
 	if ground_speed < 0.15:
 		play(&"idle")
 	elif ground_speed < 3.0:

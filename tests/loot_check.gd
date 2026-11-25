@@ -60,15 +60,36 @@ func _run() -> void:
 	_check("heavier gear = heavier load (%.0f%%)" % (player.equip_load * 100.0), player.equip_load > 0.2)
 
 	# --- Backpack grid ---------------------------------------------------------------
+	var tiny := ItemGrid.new(2, 2)
+	var big := ItemDB.make_item(ItemDB.get_item(&"item_rusty_hauberk"), 1, 0)  # 2x3
+	_check("grid: a 2x3 chest doesn't fit a 2x2 grid", not tiny.add(big))
 	var g := ItemGrid.new(4, 2)
-	var big := ItemDB.make_item(ItemDB.get_item(&"item_rusty_hauberk"), 1, 0)  # 2x3: too tall
 	var ring1 := ItemDB.make_item(ring, 1, 0)
-	_check("grid: a 2x3 chest doesn't fit a 4x2 grid; a ring does", not g.add(big) and g.add(ring1))
+	_check("grid: in a 4x2 grid the 2x3 chest lies on its side (3x2), and a ring still fits",
+			g.add(big) and g.is_rotated(big.uid) and g.size_of(big.uid) == Vector2i(3, 2) and g.add(ring1))
+	_check("grid: no overlaps, nothing outside", not g.can_place(ring1, Vector2i(0, 0), ring1.uid) and not g.can_place(ring1, Vector2i(4, 0)))
+	g.remove(ring1.uid)
+	_check("grid: turn it upright where it doesn't fit (blocked), back on its side where it does",
+			not g.move(big.uid, Vector2i(0, 0), false) and g.move(big.uid, Vector2i(1, 0), true))
 	var potion := ItemDB.make_item(ItemDB.get_item(&"item_antidote"), 1, 0)
 	var potion2 := ItemDB.make_item(ItemDB.get_item(&"item_antidote"), 1, 0)
 	g.add(potion)
 	g.add(potion2)
 	_check("consumables stack (x%d)" % potion.count, potion.count == 2 and g.items.size() == 2)
+	var sorted_ok := g.sort()
+	_check("sort: everything still fits, nothing overlaps", sorted_ok and g.items.size() == 2 and g.can_place(potion, g.positions[potion.uid], potion.uid))
+	var saved_grid := ItemGrid.new()
+	saved_grid.load_dict(JSON.parse_string(JSON.stringify(g.to_dict())))
+	_check("grid save keeps turned items turned", saved_grid.is_rotated(big.uid) == g.is_rotated(big.uid))
+	# One ring slot: an old save with two rings keeps one on and packs the other.
+	var old := Inventory.new()
+	var r_a := ItemDB.make_item(ring, 1, 0)
+	var r_b := ItemDB.make_item(ring, 1, 0)
+	old.load_dict({"equipped": {"ring1": r_a.to_dict(), "ring2": r_b.to_dict()}})
+	_check("one ring slot: an old second ring goes to the backpack", old.equipped.has("ring1")
+			and not old.equipped.has("ring2") and old.backpack.items.has(r_b.uid))
+	r_a.junk = true
+	_check("junk mark is saved", ItemInstance.from_dict(JSON.parse_string(JSON.stringify(r_a.to_dict()))).junk)
 
 	# --- Drops, pickup, coins and souls ---------------------------------------------------
 	var rich: LootTable = table.duplicate()

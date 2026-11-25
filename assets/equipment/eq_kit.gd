@@ -25,7 +25,14 @@ const DEFS := {
 	"cloth_grey": ["Cloth", "cloth", Color(0.32, 0.32, 0.34), 0.0, 0.3],
 	"cloth_red": ["Cloth", "cloth", Color(0.5, 0.15, 0.12), 0.0, 0.3],
 	"cloth_trim": ["Cloth", "cloth", Color(0.62, 0.47, 0.2), 0.0, 0.3],
-	"gem_purple": ["Gemstones", "", Color(0.45, 0.2, 0.75), 0.0, 1.0],
+	# the base Outcast outfit (eq_outcast.gd)
+	"linen": ["Cloth", "cloth", Color(0.9, 0.84, 0.7), 0.0, 0.3],
+	"wool_olive": ["Cloth", "cloth", Color(0.32, 0.36, 0.17), 0.0, 0.3],
+	"wool_brown": ["Cloth", "cloth", Color(0.3, 0.22, 0.16), 0.0, 0.3],
+	"leather_boot": ["Leather", "leather", Color(0.85, 0.68, 0.52), 0.0, 0.5],
+	"hair_brown": ["Cloth", "cloth", Color(0.2, 0.12, 0.07), 0.0, 0.12],
+	"hair_auburn": ["Cloth", "cloth", Color(0.36, 0.17, 0.08), 0.0, 0.12],
+	"gem_purple":["Gemstones", "", Color(0.45, 0.2, 0.75), 0.0, 1.0],
 }
 
 
@@ -82,3 +89,11 @@ static func build(name: String) -> StandardMaterial3D:
 
 static func all_names() -> Array:
 	return DEFS.keys()
+
+
+## The name a shared material was built under, or "".
+static func name_of(mat: Material) -> String:
+	for k in _cache:
+		if _cache[k] == mat:
+			return k
+	return ""

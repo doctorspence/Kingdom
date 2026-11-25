@@ -41,10 +41,21 @@ func _ready() -> void:
 	_add("swap_weapons", [_key(KEY_X), _button(JOY_BUTTON_DPAD_RIGHT)])
 
 	# Menus
-	_add("inventory", [_key(KEY_I), _button(JOY_BUTTON_BACK)])
+	_add("inventory", [_key(KEY_I), _key(KEY_TAB), _button(JOY_BUTTON_BACK)])
 	_add("map", [_key(KEY_M), _button(JOY_BUTTON_DPAD_UP)])
 	_add("chat", [_key(KEY_ENTER)])
 	_add("menu", [_key(KEY_ESCAPE), _button(JOY_BUTTON_START)])
+	# Inside the menu book (inventory, map, talents...): the player can't act there,
+	# so these reuse keys and buttons that mean something else in the world.
+	_add("menu_tab_prev", [_key(KEY_Q), _button(JOY_BUTTON_LEFT_SHOULDER)])
+	_add("menu_tab_next", [_key(KEY_E), _button(JOY_BUTTON_RIGHT_SHOULDER)])
+	_add("menu_filter_prev", [_key(KEY_BRACKETLEFT), _axis(JOY_AXIS_TRIGGER_LEFT, 1.0)], TRIGGER_DEADZONE)
+	_add("menu_filter_next", [_key(KEY_BRACKETRIGHT), _axis(JOY_AXIS_TRIGGER_RIGHT, 1.0)], TRIGGER_DEADZONE)
+	_add("inv_compare", [_key(KEY_C), _button(JOY_BUTTON_X)])
+	_add("inv_drop", [_key(KEY_DELETE), _button(JOY_BUTTON_Y)])
+	_add("inv_junk", [_key(KEY_J), _button(JOY_BUTTON_LEFT_STICK)])
+	_add("inv_sort", [_key(KEY_Z), _button(JOY_BUTTON_RIGHT_STICK)])
+	_add("inv_rotate", [_key(KEY_R)])
 
 	# Test helpers (only for development)
 	_add("debug_help", [_key(KEY_F1)])

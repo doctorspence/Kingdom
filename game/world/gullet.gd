@@ -35,6 +35,7 @@ const CARVES := [
 	[47, 3.5, 51, 24, 3.8],           #   corridor south to the fog gate
 	[6, 23.2, 59, 41, 9.0],           # 6 deep chamber
 	[-43.5, 28.5, 6.5, 31.5, 3.6],    #   shortcut back to the entrance (opens after the boss)
+	[-62.5, 20.85, -57.5, 24.15, 3.6], #   the way in: the quarry descent (quarry_descent.gd) arrives here, open on its west end
 ]
 ## Rock around everything: center x, y, z, then size.
 const ROCK := [0.0, 6.0, 0.0, 150.0, 18.0, 100.0]
@@ -66,6 +67,17 @@ const LIGHTS := [
 ## Pillars in the deep chamber (cover from Harl's Black Shard): map pixels.
 const PILLARS := [[880, 700], [880, 800], [1080, 690], [1080, 810], [1200, 730], [960, 750]]
 
+
+## How wide the roof holes are cut, as a share of the radius in SHAFTS: small holes.
+const HOLE_SCALE := 0.6
+## Light through a hole by day, the share left under the moon, and the bounce off the floor.
+const SHAFT_ENERGY := 11.0
+const SHAFT_NIGHT := 0.12
+const SHAFT_BOUNCE := 0.5
+const SHAFT_HAZE_ALPHA := 0.006
+
+var _shaft_lights: Array = []  # [Light3D, day energy]
+var _shaft_mat: StandardMaterial3D
 
 ## Ceiling holes: [x, z, radius, ceiling y at that spot]
 const SHAFTS := [
@@ -120,7 +132,7 @@ func _ready() -> void:
 	for s in SHAFTS:
 		var hole := CSGCylinder3D.new()
 		hole.operation = CSGShape3D.OPERATION_SUBTRACTION
-		hole.radius = s[2]
+		hole.radius = s[2] * HOLE_SCALE
 		hole.height = 20.0
 		hole.sides = 9
 		hole.position = Vector3(s[0], s[3] + 9.0, s[1])
@@ -133,8 +145,6 @@ func _ready() -> void:
 	_build_cave_detail(mat)
 	_build_shafts()
 	_build_timbers()
-	_build_excavation_light()
-	_build_room_glow()
 	_build_rails()
 	_build_scaffolds()
 	_build_atmosphere()
@@ -217,11 +227,12 @@ func _build_props() -> void:
 			_rock_chunk(c + Vector3(randf_range(-1.2, 1.2), 0.2, randf_range(-1.2, 1.2)), randf_range(0.25, 0.7))
 
 
-## Blue daylight pouring through each ceiling hole: a spotlight, a faint glowing
-## shaft, and a cool fill light near the floor so the rooms are not black.
+## Daylight (or moonlight) falling through each ceiling hole: a narrow spotlight, a
+## faint shaft in the dust, and a weak bounce off the floor beneath it.
 func _build_shafts() -> void:
 	var shaft_mat := StandardMaterial3D.new()
-	shaft_mat.albedo_color = Color(0.5, 0.75, 1.0, 0.022)
+	shaft_mat.albedo_color = Color(0.5, 0.7, 0.95, SHAFT_HAZE_ALPHA)
+	_shaft_mat = shaft_mat
 	shaft_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	shaft_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	shaft_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
@@ -232,22 +243,24 @@ func _build_shafts() -> void:
 		spot.position = Vector3(s[0], top + 1.5, s[1])
 		spot.rotation_degrees = Vector3(-90, 0, 0)
 		spot.light_color = Color(0.45, 0.7, 1.0)
-		spot.light_energy = 14.0
+		spot.light_energy = SHAFT_ENERGY
 		spot.spot_range = top + 6.0
-		spot.spot_angle = 26.0
+		spot.spot_angle = 19.0
 		spot.spot_angle_attenuation = 0.6
 		spot.shadow_enabled = true
 		add_child(spot)
 		var fill := OmniLight3D.new()
 		fill.position = Vector3(s[0], 1.6, s[1])
 		fill.light_color = Color(0.4, 0.62, 1.0)
-		fill.light_energy = 4.0
-		fill.omni_range = 22.0
+		fill.light_energy = SHAFT_BOUNCE
+		fill.omni_range = 8.0
 		add_child(fill)
+		_shaft_lights.append([spot, SHAFT_ENERGY])
+		_shaft_lights.append([fill, SHAFT_BOUNCE])
 		var cone := MeshInstance3D.new()
 		var cm := CylinderMesh.new()
-		cm.top_radius = s[2] * 0.9
-		cm.bottom_radius = s[2] * 1.8
+		cm.top_radius = s[2] * HOLE_SCALE * 0.9
+		cm.bottom_radius = s[2] * HOLE_SCALE * 2.2
 		cm.height = top
 		cm.radial_segments = 12
 		cm.material = shaft_mat
@@ -255,6 +268,15 @@ func _build_shafts() -> void:
 		cone.position = Vector3(s[0], top * 0.5, s[1])
 		cone.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(cone)
+
+
+## The roof holes follow the sky: bright and blue by day, barely there at night.
+func _process(_delta: float) -> void:
+	var k := lerpf(1.0, SHAFT_NIGHT, DayNight.night)
+	for s: Array in _shaft_lights:
+		(s[0] as Light3D).light_energy = float(s[1]) * k
+	if _shaft_mat:
+		_shaft_mat.albedo_color.a = SHAFT_HAZE_ALPHA * k
 
 
 ## Roughs up the straight carved walls: jagged boulders and slabs jutting from every
@@ -344,13 +366,7 @@ func _build_river() -> void:
 func _build_lights() -> void:
 	for l in LIGHTS:
 		var v := px(l[0], l[1])
-		var light := OmniLight3D.new()
-		light.position = Vector3(v.x, l[3], v.z)
-		light.light_color = Color(1.0, 0.68, 0.38)
-		light.light_energy = l[2] * 5.5
-		light.omni_range = 16.0
-		light.omni_attenuation = 1.4
-		add_child(light)
+		_hung_lantern(Vector3(v.x, l[3], v.z), l[2])
 	var fire := Campfire.new()
 	fire.position = px(765, 400)
 	fire.light_energy = 3.6
@@ -358,7 +374,39 @@ func _build_lights() -> void:
 	add_child(fire)
 
 
+## A miner's lantern hanging on its rope: every lamp light in the dungeon comes from
+## something you can see.
+func _hung_lantern(at: Vector3, strength: float) -> void:
+	_timber_between(at + Vector3(0, 0.2, 0), at + Vector3(0, 1.4, 0), 0.025)
+	_iron_box(at + Vector3(0, 0.18, 0), Vector3(0.24, 0.05, 0.24))
+	_iron_box(at - Vector3(0, 0.18, 0), Vector3(0.22, 0.04, 0.22))
+	var glass := StandardMaterial3D.new()
+	glass.albedo_color = Color(1.0, 0.8, 0.45)
+	glass.emission_enabled = true
+	glass.emission = Color(1.0, 0.58, 0.2)
+	glass.emission_energy_multiplier = 2.2
+	var box := BoxMesh.new()
+	box.size = Vector3(0.15, 0.28, 0.15)
+	box.material = glass
+	var pane := MeshInstance3D.new()
+	pane.mesh = box
+	pane.position = at
+	pane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(pane)
+	var light := OmniLight3D.new()
+	light.position = at
+	light.light_color = Color(1.0, 0.64, 0.32)
+	light.light_energy = strength * 3.8
+	light.omni_range = 11.0
+	light.omni_attenuation = 1.3
+	add_child(light)
+	var tw := light.create_tween().set_loops()
+	tw.tween_property(light, "light_energy", strength * 4.1, randf_range(0.25, 0.5))
+	tw.tween_property(light, "light_energy", strength * 3.5, randf_range(0.25, 0.5))
+
+
 func _build_stairs_and_ladders() -> void:
+
 	# West stairs up to the camp walkway: 20 steps, 4 m up, running north.
 	var stairs := GrayboxStairs.new()
 	stairs.steps = 20
@@ -381,18 +429,6 @@ func _ladder(at: Vector3) -> void:
 	l.top_exit = Vector3(0, 4.0, -0.9)
 	l.position = at
 	add_child(l)
-
-
-## A dim cool glow in the middle of every carved room, so no room is pitch black.
-func _build_room_glow() -> void:
-	for c in CARVES:
-		var y0: float = c[5] if c.size() > 5 else 0.0
-		var l := OmniLight3D.new()
-		l.position = Vector3((c[0] + c[2]) * 0.5, y0 + minf(c[4] - y0, 6.0) * 0.6, (c[1] + c[3]) * 0.5)
-		l.light_color = Color(0.75, 0.62, 0.5)
-		l.light_energy = 4.5
-		l.omni_range = clampf(maxf(c[2] - c[0], c[3] - c[1]) * 0.7, 9.0, 30.0)
-		add_child(l)
 
 
 # ---- Rough cave surface -------------------------------------------------------
@@ -462,6 +498,8 @@ func _roughen(combiner: CSGCombiner3D) -> void:
 				collide.append_array(PackedVector3Array([a, b, c]))
 				continue
 			if _on_outer_shell(a, b, c):
+				continue
+			if _is_descent_cap(a, b, c):
 				continue
 			var n := ns[ia]
 			var sign_ := 1.0 if (b - a).cross(c - a).dot(n) >= 0.0 else -1.0
@@ -548,10 +586,7 @@ func _build_backing(bv: PackedVector3Array, bn: PackedVector3Array) -> void:
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	var fill := StandardMaterial3D.new()
-	fill.albedo_color = Color(0.2, 0.15, 0.11)
-	fill.emission_enabled = true
-	fill.emission = Color(0.2, 0.145, 0.1)
-	fill.emission_energy_multiplier = 1.0
+	fill.albedo_color = Color(0.05, 0.038, 0.028)  # unlit: it only closes the cracks
 	fill.roughness = 1.0
 	mesh.surface_set_material(0, fill)
 	var mi := MeshInstance3D.new()
@@ -1016,7 +1051,7 @@ func _shards(pos: Vector3, scale_: float, seed_: int) -> void:
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.emission_enabled = true
 	mat.emission = Color(0.16, 0.03, 0.28)
-	mat.emission_energy_multiplier = 0.35
+	mat.emission_energy_multiplier = 0.12
 	for i in 9:
 		var big := i == 0
 		var h := scale_ * rng.randf_range(0.9, 2.6) * (1.9 if big else 1.0)
@@ -1045,21 +1080,9 @@ func _shards(pos: Vector3, scale_: float, seed_: int) -> void:
 	var glow := OmniLight3D.new()
 	glow.position = pos + Vector3(0, scale_ * 1.5, 0)
 	glow.light_color = Color(0.55, 0.25, 1.0)
-	glow.light_energy = 1.6
-	glow.omni_range = 7.0
+	glow.light_energy = 0.35
+	glow.omni_range = 4.0
 	add_child(glow)
-
-
-## Extra warm and cool light for the big Excavation, which was too dark.
-func _build_excavation_light() -> void:
-	for x in [36.0, 46.0, 56.0, 64.0]:
-		for z in [-22.0, -4.0]:
-			var l := OmniLight3D.new()
-			l.position = Vector3(x, 6.0, z)
-			l.light_color = Color(1.0, 0.65, 0.35) if int(x + z) % 2 == 0 else Color(0.45, 0.65, 1.0)
-			l.light_energy = 5.0
-			l.omni_range = 18.0
-			add_child(l)
 
 
 var _floor_v := PackedVector3Array()
@@ -1186,7 +1209,7 @@ func _build_atmosphere() -> void:
 				Vector3(w, 2.0, d), Color(0.55, 0.65, 0.8), 0.012)
 	for s in SHAFTS:
 		_fog_volume(RenderingServer.FOG_VOLUME_SHAPE_CYLINDER, Vector3(s[0], s[3] * 0.5, s[1]),
-				Vector3(s[2] * 3.2, s[3], s[2] * 3.2), Color(0.5, 0.7, 1.0), 0.07, Color(0.0, 0.01, 0.02))
+				Vector3(s[2] * 2.4, s[3], s[2] * 2.4), Color(0.5, 0.7, 1.0), 0.045)
 
 
 ## Waterfalls spilling from clefts in the Excavation's south wall into the river,
@@ -1251,7 +1274,6 @@ func _splash(pos: Vector3, radius: float) -> void:
 	var q := QuadMesh.new()
 	q.size = Vector2(0.07, 0.07)
 	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	mat.albedo_color = Color(0.9, 0.96, 1.0, 0.7)
@@ -1299,12 +1321,6 @@ func _build_falls() -> void:
 		_splash(Vector3(x, 0.2, wallz - 0.7), width * 0.35)
 		_fog_volume(RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID, Vector3(x, 1.4, wallz - 1.0),
 				Vector3(5.0, 2.6, 4.0), Color(0.8, 0.9, 1.0), 0.12)
-		var glow := OmniLight3D.new()
-		glow.position = Vector3(x, 2.0, wallz - 1.2)
-		glow.light_color = Color(0.4, 0.75, 1.0)
-		glow.light_energy = 1.4
-		glow.omni_range = 11.0
-		add_child(glow)
 
 
 # ---- The bandit camp: a lived-in layout ----------------------------------------
@@ -1692,7 +1708,7 @@ func _dust(pos: Vector3, extents: Vector3, amount: int) -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	mat.albedo_color = Color(0.8, 0.88, 1.0, 0.5)
+	mat.albedo_color = Color(0.8, 0.88, 1.0, 0.14)
 	mat.albedo_texture = _soft_dot()
 	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	q.material = mat
@@ -1724,3 +1740,13 @@ func _soft_dot() -> GradientTexture2D:
 	t.gradient = Gradient.new()
 	t.gradient.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0)])
 	return t
+
+
+## The west end of the doorway the quarry descent comes through is left open: the tunnel
+## (quarry_descent.gd) carries on from there, so its end wall must not be drawn or collide.
+func _is_descent_cap(a: Vector3, b: Vector3, c: Vector3) -> bool:
+	var cap: Array = CARVES[CARVES.size() - 1]
+	for v in [a, b, c]:
+		if absf(v.x - cap[0]) > 0.02 or v.z < cap[1] - 0.02 or v.z > cap[3] + 0.02 or v.y < -0.1 or v.y > cap[4] + 0.1:
+			return false
+	return true

@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://d1c4itygoqu3x"]
 
-[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" uid="uid://b50pgerr3oi1t" path="res://assets/equipment/InventoryIcons/Armor/item_rusty_hauberk.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
@@ -12,5 +13,8 @@ grid_size = Vector2i(2, 3)
 weight = 12.0
 value = 30
 icon_color = Color(0.4, 0.3, 0.25, 1)
+icon = ExtResource("9_icon")
 armor = 14.0
-stats = {"vitality": 2}
+stats = {
+"vitality": 2
+}

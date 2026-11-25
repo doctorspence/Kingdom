@@ -651,6 +651,7 @@ func _rebuild() -> void:
 	_bake()
 	if not _grid_ready:
 		return
+	_load_holes()
 	if _built:
 		_built.queue_free()
 	_built = Node3D.new()
@@ -701,11 +702,16 @@ func _rebuild() -> void:
 	var hs := HeightMapShape3D.new()
 	hs.map_width = _n
 	hs.map_depth = _n
-	hs.map_data = _h
+	hs.map_data = _collision_heights()
 	var cs := CollisionShape3D.new()
 	cs.shape = hs
 	cs.scale = Vector3(cell, 1.0, cell)
 	body.add_child(cs)
+	var patch := _hole_patch_shape()
+	if patch != null:
+		var pcs := CollisionShape3D.new()
+		pcs.shape = patch
+		body.add_child(pcs)
 	_built.add_child(body)
 	_built.add_child(_water_mesh())
 	if land.get("brook") != null:
@@ -779,7 +785,13 @@ func _chunk_arrays(cx0: int, cz0: int, cx1: int, cz1: int, step := 1) -> Array:
 			var b := a + 1
 			var c := a + w
 			var d := c + 1
-			idx.append_array([a, b, d, a, d, c])
+			if _holes.is_empty():
+				idx.append_array([a, b, d, a, d, c])
+			else:
+				if not _tri_in_hole(verts[a], verts[b], verts[d]):
+					idx.append_array([a, b, d])
+				if not _tri_in_hole(verts[a], verts[d], verts[c]):
+					idx.append_array([a, d, c])
 	if step > 1:
 		# Skirt: a strip dropping 2 m down along all four edges of the chunk.
 		var edge: Array = []
@@ -1045,3 +1057,92 @@ func map_image(px := 256) -> Image:
 			c = Color(c.r * shade, c.g * shade, c.b * shade).lightened(0.12)
 			img.set_pixel(i, j, c)
 	return img
+
+
+# ---- holes (doorways through the ground) ----------------------------------------------------
+# land.holes: [{"x0","z0","x1","z1"}] rectangles (world meters) where the ground surface is
+# left out so a tunnel can pass through a cliff (the quarry descent). Ground triangles whose
+# centre is inside a rectangle are dropped from the drawn mesh. For collision, the height
+# field marks every grid point of those cells as a hole (Jolt then drops all triangles touching
+# them) and the surrounding triangles are put back, minus the ones inside the rectangle,
+# as a small separate shape.
+
+var _holes: Array = []
+
+
+func _load_holes() -> void:
+	_holes = []
+	var h: Variant = land.get("holes")
+	if h is Array:
+		_holes = h
+
+
+func _tri_in_hole(a: Vector3, b: Vector3, c: Vector3) -> bool:
+	var cx := (a.x + b.x + c.x) / 3.0
+	var cz := (a.z + b.z + c.z) / 3.0
+	for r: Dictionary in _holes:
+		if cx >= r.x0 and cx <= r.x1 and cz >= r.z0 and cz <= r.z1:
+			return true
+	return false
+
+
+func _hole_cell_range(r: Dictionary) -> Array:
+	# Grid cells (min ix, min iz, max ix, max iz) whose triangle centres can fall inside the rectangle.
+	return [maxi(0, int(floor((r.x0 + _half) / cell)) - 1), maxi(0, int(floor((r.z0 + _half) / cell)) - 1),
+			mini(_n - 2, int(floor((r.x1 + _half) / cell)) + 1), mini(_n - 2, int(floor((r.z1 + _half) / cell)) + 1)]
+
+
+## Height-field data for collision: NaN where a hole rectangle touches a cell.
+func _collision_heights() -> PackedFloat32Array:
+	if _holes.is_empty():
+		return _h
+	var d := _h.duplicate()
+	for r: Dictionary in _holes:
+		var cr := _hole_cell_range(r)
+		for iz in range(cr[1], cr[3] + 1):
+			for ix in range(cr[0], cr[2] + 1):
+				var tri_a := Vector3(-_half + (ix + 0.5) * cell, 0, -_half + (iz + 0.5) * cell)
+				if _tri_in_hole(tri_a, tri_a, tri_a) or _cell_touches_hole(ix, iz):
+					for dz in 2:
+						for dx in 2:
+							d[(iz + dz) * _n + ix + dx] = NAN
+	return d
+
+
+func _cell_touches_hole(ix: int, iz: int) -> bool:
+	var v := _cell_tris(ix, iz)
+	for i in range(0, v.size(), 3):
+		if _tri_in_hole(v[i], v[i + 1], v[i + 2]):
+			return true
+	return false
+
+
+func _cell_tris(ix: int, iz: int) -> PackedVector3Array:
+	var p := func(x: int, z: int) -> Vector3:
+		return Vector3(-_half + x * cell, _h[z * _n + x], -_half + z * cell)
+	var a: Vector3 = p.call(ix, iz)
+	var b: Vector3 = p.call(ix + 1, iz)
+	var c: Vector3 = p.call(ix, iz + 1)
+	var dd: Vector3 = p.call(ix + 1, iz + 1)
+	return PackedVector3Array([a, b, dd, a, dd, c])
+
+
+## The ground around a hole, put back as triangles minus those inside the hole rectangle.
+func _hole_patch_shape() -> ConcavePolygonShape3D:
+	if _holes.is_empty():
+		return null
+	var faces := PackedVector3Array()
+	for r: Dictionary in _holes:
+		var cr := _hole_cell_range(r)
+		for iz in range(maxi(0, cr[1] - 1), mini(_n - 2, cr[3] + 1) + 1):
+			for ix in range(maxi(0, cr[0] - 1), mini(_n - 2, cr[2] + 1) + 1):
+				var t := _cell_tris(ix, iz)
+				for i in range(0, 6, 3):
+					if not _tri_in_hole(t[i], t[i + 1], t[i + 2]):
+						faces.append_array(PackedVector3Array([t[i], t[i + 1], t[i + 2]]))
+	if faces.is_empty():
+		return null
+	var s := ConcavePolygonShape3D.new()
+	s.set_faces(faces)
+	s.backface_collision = true
+	return s

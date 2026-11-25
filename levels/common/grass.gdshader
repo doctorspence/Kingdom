@@ -4,10 +4,10 @@ render_mode cull_disabled, diffuse_lambert, specular_schlick_ggx;
 // the tip, with big soft patches of lush and dry grass across the ground and a slow wind that
 // moves in waves. COLOR.r is the height along the blade (0 root, 1 tip), COLOR.g a random shade.
 
-uniform vec3 base_color : source_color = vec3(0.025, 0.05, 0.015);
-uniform vec3 mid_color : source_color = vec3(0.13, 0.22, 0.05);
-uniform vec3 tip_color : source_color = vec3(0.33, 0.38, 0.19);
-uniform vec3 dry_color : source_color = vec3(0.4, 0.37, 0.24);
+uniform vec3 base_color : source_color = vec3(0.022, 0.034, 0.018);
+uniform vec3 mid_color : source_color = vec3(0.085, 0.115, 0.06);
+uniform vec3 tip_color : source_color = vec3(0.19, 0.215, 0.15);
+uniform vec3 dry_color : source_color = vec3(0.25, 0.235, 0.18);
 uniform float sway = 0.1;
 uniform float wind_speed = 1.3;
 global uniform float wetness;  // 0 dry .. 1 soaked (set by DayNight)
@@ -59,5 +59,5 @@ void fragment() {
 	ALBEDO = col * (1.0 - 0.3 * wetness);
 	ROUGHNESS = mix(0.85, 0.45, wetness);
 	SPECULAR = 0.05;
-	BACKLIGHT = vec3(0.1, 0.16, 0.04) * (0.3 + 0.7 * h);
+	BACKLIGHT = vec3(0.04, 0.06, 0.03) * (0.3 + 0.7 * h);
 }

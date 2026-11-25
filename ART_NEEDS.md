@@ -32,8 +32,8 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|
-| Player body (male + female) | Rigged humanoid on the standard skeleton, ~1.85 m, swappable gear pieces. Phase 2 uses a free stand-in; detailed version later | Stand-in: Quaternius mannequin (male in use, female ready). Final: AI art + cleanup | ⭐ final | 🟨 mannequin |
-| Player animations | Idle, walk, run, sprint, **strafe ×4 (missing: you "moonwalk" sideways when locked on)**, jump/fall/land, roll (3 speeds), 1H sword light combo ×3, heavy + charge, block idle/hit, parry, riposte, hit react light/heavy, stagger, guard break, death, drink flask, interact | Have: UAL1 + UAL2 Standard (idle, walk, jog, sprint, jump, roll, death, hit, sword combos, block). Missing: strafes, backstep, parry, riposte, guard break | | 🟨 partly |
+| Player body (male + female) | Rigged humanoid on the standard skeleton, ~1.85 m, swappable gear pieces. Phase 2 uses a free stand-in; detailed version later. **Final look: the base Outcast (`DESIGN.md` 12.1)**, worn when gear slots are empty: linen shirt, olive hooded cloak, wool trousers, belt with pouches and red cloth, wrapped boots, satchel, sword. Hand-painted textures, UAL1 skeleton, modular pieces (shirt, cloak, trousers, belt kit, boots), 30–60k triangles | Stand-in: Quaternius mannequin (male in use, female ready). Final: AI art + cleanup. Concept sheets: male in `docs/concept/outcast_male_sheet.webp`; female in `docs/concept/outcast_female_sheet.jpg` (brief in `DESIGN_INBOX.md`) | ⭐ final | 🟨 male: real model (TRELLIS, `assets/characters/outcast/`), rigged to UAL1; female: code stand-in until her model is made |
+| Player animations | Idle, walk, run, sprint, **strafe ×4 (missing: you "moonwalk" sideways when locked on)**, jump/fall/land, roll (3 speeds), 1H sword light combo ×3, heavy + charge, block idle/hit, parry, riposte, hit react light/heavy, stagger, guard break, death, drink flask, interact | Have: UAL1 + UAL2 Standard (idle, walk, jog, sprint, jump, roll, death, hit, sword combos, block). Missing: strafes, backstep, **walk/jog backward and sideways for combat stance (2026-11-23 movement redesign; for now backpedal plays walk/jog in reverse and sidesteps turn the legs procedurally, `leg_twist.gd`)**, turn-in-place, start/stop steps, parry, riposte, guard break | | 🟨 partly |
 | Sword, shield, Marauder axe | First weapon set | AI art / modeled; stand-ins built from simple shapes in `assets/placeholder/weapons/` | ⭐ | 🟨 shapes |
 | Training dummy | Wooden post with straw | Primitive is fine | | ⬜ |
 | Dark Ages Marauder | Big brute, black iron and rust, two-handed axe | Humanoid + outfit pieces | ⭐ textures | 🟨 rust-tinted mannequin |
@@ -65,10 +65,10 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 ## Phase 6: Loot
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|
-| **Item icons** (lots) | Every weapon, armor piece, ring, amulet, consumable; same lighting and angle | n/a | ⭐⭐ | ⬜ |
-| Rarity frames | White, green, blue, purple, orange borders and glows | n/a | ⭐ | ⬜ |
-| Inventory and paperdoll | Grid background, slot silhouettes, character panel | Kenney UI, recolored | ⭐ | ⬜ |
-| Gold and soul icons | Coin, soul wisp | n/a | ⭐ | ⬜ |
+| **Item icons** (lots) | Every weapon, armor piece, ring, amulet, consumable; same lighting and angle | n/a | ⭐⭐ | 🟨 all 71 items have one, rendered from 3D (`tools/render_equipment_icons.gd`, and stand-in models in `tools/render_extra_icons.gd`); replace with real art when items get real models |
+| Rarity frames | White, green, blue, purple, orange borders and glows | n/a | ⭐ | 🟨 drawn in code (`game/ui/ui_style.gd`) |
+| Inventory and paperdoll | Grid background, slot silhouettes, character panel | drawn in code: gold frames, serif text, torch-lit stone, 3D pedestal and arch (2026-11-23). Hand-painted frame art could replace it later | ⭐ | 🟨 |
+| Coin and soul icons | Coin, soul wisp | n/a | ⭐ | 🟨 drawn in code |
 | Vendors | Old Wenna (gold), the Soul Broker (hooded, no face) | Humanoid + outfits | ⭐ concept | ⬜ |
 | Weapon models | Axe, mace, greatsword, spear, bow, staff (several variants each by tier) | KayKit / Quaternius weapons | ⭐ textures | ⬜ |
 | Weapon animations | A moveset per weapon type | Animation libraries | | ⬜ |

@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode blend_mix, cull_disabled, shadows_disabled, unshaded;
+render_mode blend_mix, cull_disabled, shadows_disabled, diffuse_lambert_wrap;
 // A waterfall sheet: falls and fans out from the lip, streaky white water with thin
 // transparent gaps, fading at the edges. UV.y runs 0 at the lip to 1 at the base.
 
@@ -20,6 +20,8 @@ void fragment() {
 	float edge = smoothstep(0.0, 0.14, UV.x) * smoothstep(1.0, 0.86, UV.x);
 	float lip = smoothstep(0.0, 0.03, UV.y);
 	float spray = smoothstep(0.82, 1.0, UV.y);
-	ALBEDO = mix(tint * 0.55, vec3(1.0), streak + spray * 0.4);
+	ALBEDO = mix(tint * 0.55, vec3(1.0), clamp(streak + spray * 0.4, 0.0, 1.0));
+	ROUGHNESS = 0.35;
+	NORMAL = VIEW;
 	ALPHA = clamp((0.22 + 0.7 * streak + spray * 0.25) * edge * lip, 0.0, 0.92);
 }

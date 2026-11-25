@@ -36,6 +36,7 @@ func _run() -> void:
 	await _tap("light_attack")
 	await _frames(2)
 	_check("light attack in the air is a jump attack", player.state == Player.State.ATTACK and player._attack.attack == w.move(&"jump_light"))
+	_check("...a downward chop, not the ground swing (playing %s)" % player.model.current_anim(), player.model.current_anim() == &"cut/Jump_Chop")
 	await _seconds(0.9)
 	var jump_light := hp - e.health
 	_check("...and it hurts (%.0f)" % jump_light, jump_light > 0.0)
@@ -50,6 +51,7 @@ func _run() -> void:
 	await _tap("heavy_attack")
 	await _frames(2)
 	_check("heavy attack in the air is a jump heavy", player.state == Player.State.ATTACK and player._attack.attack == w.move(&"jump_heavy"))
+	_check("...an overhead slam (playing %s)" % player.model.current_anim(), player.model.current_anim() == &"cut/Jump_Slam")
 	await _seconds(1.1)
 	var jump_heavy := hp - e.health
 	_check("...and hits harder than the jump light (%.0f vs %.0f)" % [jump_heavy, jump_light], jump_heavy > jump_light)
@@ -73,6 +75,7 @@ func _run() -> void:
 	await _seconds(0.8)
 
 	# --- Guard counter -----------------------------------------------------------------------------
+	_calm(e)
 	await _go_to(Vector3(0, 0.05, 0))
 	await _settle()
 	_send("block", true)
@@ -169,6 +172,7 @@ func _dummy_enemy(at: Vector3) -> Enemy:
 	e.data = e.data.duplicate()
 	e.data.sight_range = 0.0
 	e.data.hearing_range = 0.0
+	e.data.guard_after_hits = 0  # never raises its guard (and so never strikes back out of it)
 	return e
 
 
@@ -232,3 +236,12 @@ func _settle() -> void:
 		await get_tree().physics_frame
 	player.stamina = player.max_stamina()
 	await _frames(10)
+
+
+## The dummy got knocked about by the jump attacks and the plunge: recovering from a
+## stagger resets its attack cooldown, so put it back to standing still and harmless.
+func _calm(e: Enemy) -> void:
+	e._set_state(Enemy.State.IDLE)
+	e.target = null
+	e._cooldown = 1.0e9
+	e._poise = e.max_poise

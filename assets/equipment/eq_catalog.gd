@@ -60,7 +60,7 @@ static func armor_entries() -> Array:
 	return A.catalog()
 
 
-static func build_model(e: Dictionary) -> Node3D:
+static func build_model(e: Dictionary, profile := "outcast") -> Node3D:
 	var t: String = e.tier
 	match e.build:
 		"dagger": return W.sword_like("dagger", t)
@@ -71,5 +71,5 @@ static func build_model(e: Dictionary) -> Node3D:
 		"bow": return W.bow(t)
 		"staff": return W.staff()
 		"mystic_staff": return W.mystic_staff()
-		_: return A.build(e.build)
+		_: return A.build(e.build, profile)
 	return null

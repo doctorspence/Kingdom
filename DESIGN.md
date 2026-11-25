@@ -78,6 +78,7 @@ You host your world; two friends join by IP. You rest at the Crossroads shrine a
 | Sprint | Shift (hold) | B (hold) |
 | Jump | Space | A |
 | Lock-on / switch target | Q / mouse wheel | R3 / flick right stick |
+| Camera zoom (not locked on) | Mouse wheel (1.6–6 m) | n/a |
 | Drink flask | R | X |
 | Interact (shrines, doors, loot, revive) | E | Y |
 | Abilities 1–6 | 1–6 | Hold LT + A / B / X / Y / RB / RT |
@@ -99,8 +100,11 @@ Dark Souls pace: every swing commits you, every hit hurts, and stamina is the cl
 - If stamina hits 0 while you block, your **guard breaks** (1.2 s stagger).
 
 ### 5.2 Movement
-- **Weighty**: acceleration and turning take time; no instant 180s while sprinting.
-- Speeds *(start)*: walk 2.6 m/s, run 6.8 m/s, sprint 9.6 m/s, moving while locked on 5.0 m/s (Nioh 2-style snappy; see `data/balance`).
+- **Weighty** *(movement redesign 2026-11-23)*: getting up to speed takes ~0.35 s, stopping ~0.3 s, and turning takes time; no instant 180s.
+- **Two kinds of movement (hybrid):**
+  - **Exploring**: camera-relative. Push a direction and you turn and go that way.
+  - **Combat stance** (locked on, or guard raised): your body faces the foe (or where the camera looks, if guarding with no target) and you move relative to it. You sidestep and backpedal, and backing off is slower (0.7× of forward speed). **Moving sideways is a slow, careful side-step** *(owner, 2026-11-23, "like Gloria Victis")*: you keep your fighting stance and the feet step out and close in (lead foot out, trail foot in, never crossing), at 1.3 m/s (owner: "a tiny bit faster" than 1.1). Moving with guard up steps the feet the same way.
+- Speeds *(start)*: walk 1.5 m/s (a real person walks ~1.4; owner chose realistic 2026-11-23), run 5.8 m/s, sprint 8.0 m/s, locked on 5.0 m/s forward (3.5 back, 1.3 side-step), guarding 2.6 m/s forward. All in `data/balance/player_tuning.tres`.
 - **Jump**: ~1.1 m high, short i-frames at take-off (~0.12 s).
 - **Dodge roll** with i-frames. Speed depends on **equip load** (gear weight ÷ capacity; capacity = 60 + 0.5 × Strength *(start)*):
 
@@ -115,7 +119,7 @@ Dark Souls pace: every swing commits you, every hit hurts, and stamina is the cl
 - **Ladders** only for climbing. **No swimming yet**: water in zone 1 is shallow (wading slows you), and deep water counts as a fatal fall.
 
 ### 5.3 Attacks & weapons
-Light attacks chain into 2–3 hit combos. Heavy attacks can be charged. Running, rolling and jumping attacks come per weapon. Each weapon type has its own moveset:
+Light attacks chain into 2–3 hit combos. Heavy attacks wind up slowly (the raise takes about 0.5 s, `heavy_windup_scale` in the player tuning) and can be charged by holding at the top. Running, rolling and jumping attacks come per weapon. Each weapon type has its own moveset:
 
 | Weapon | Hands | Scales with | Feel |
 |---|---|---|---|
@@ -133,8 +137,8 @@ Every weapon also has these, made from its light and heavy attacks unless its da
 
 | Move | How |
 |---|---|
-| Jump light / jump heavy | Attack while in the air |
-| Plunging attack | Attack while falling from 2.5 m or more above the ground: you dive and land with a wide heavy blow (no fall damage) |
+| Jump light / jump heavy | Attack while in the air. Both swing **downward**: light is a straight overhead chop (sword up overhead, cocked back, then down past your right side; built by `overhead_chop.gd`, which bends the sword arm over a plain airborne pose, because no library animation chops straight down), heavy a two-handed overhead slam that lands in a crouch (`cut/Jump_Slam`, cut from the heavy combo in `character_model.gd`) |
+| Plunging attack | Attack while falling from 2.5 m or more above the ground: you dive with the blade held overhead and slam it down as you land, a wide heavy blow (no fall damage) |
 | Running light / running heavy | Attack while sprinting |
 | Rolling light / rolling heavy | Attack right after a roll |
 | Backstep attack | Light attack right after a backstep (a roll with no direction held) |
@@ -365,10 +369,25 @@ Bonus rolls (section 9) can also add: crit chance, poise, stamina regen, bleed/p
 - **Drop rates** *(start)*: ordinary enemies sometimes drop an item (mostly Common/Uncommon, rarely Rare+); elites always drop something; named rares drop their unique plus a Rare+; bosses drop 2–3 items, at least one Rare+, with a small Legendary chance.
 
 ### 9.2 Gear slots (inspired by Champions of Norrath's paperdoll)
-Head, Shoulders, Chest, Hands, Legs, Feet, Cloak, Neck, Ring ×2, and **two weapon sets** (main hand + off hand each), swapped with a key.
+Head, Shoulders, Chest, Hands, Legs, Feet, Neck, **one Ring**, Utility (holds the cloak), and **two weapon sets** (main hand + off hand each), swapped with a key. The off hand takes shields and other off-hand items. *(Changed 2026-11-23 by the owner's inventory brief: one ring slot instead of two, the cloak moves to the Utility slot, no belt slot for now. Old saves with a second ring wear it if the slot is free, otherwise it goes to the backpack.)*
+
+**The inventory screen** *(2026-11-23)*: one screen with the backpack grid on the left, your character on a pedestal in the middle with the slots around it (left: helmet, shoulders, chest, gloves, legs, boots; right: necklace, ring, main hand, off hand, utility, weapon-set switch), and your stats on the right (level and XP; Strength, Agility, Intellect, Vitality; Attack, Defense, Ability Power, Critical; Health, Stamina and your class resource). Tabs on top: Character, Inventory, Map, Talents, Quests, System (Q / E or LB / RB). Look: aged-gold frames, ivory serif text, a torch-lit stone backdrop.
+
+**Actual in-game reference screenshot (owner supplied 2026-11-25):** The screenshot shows the implemented menu, not a concept mockup. Treat its overall composition and visual treatment as the current visual reference to preserve and refine:
+- A narrow black top navigation strip with the six tabs **Character, Inventory, Map, Talents, Quests, System**, centered across the top, with subtle gold active-tab emphasis and Q / E navigation hints.
+- A large left inventory panel framed in ornate aged gold. It has a category/filter row (All selected, followed by item-category icons and Junk), an **All Items** heading, an equipped-load/weight readout, a blue class-resource icon and value, and a coin count.
+- A spatial backpack grid with dark cells, visible item footprints, and rarity-colored borders around item icons. Keep the inventory dense and readable; the screenshot demonstrates item footprints spanning multiple cells rather than a simple list.
+- A bottom action strip with keyboard hints for **Equip, Compare, Drop, Sort, Mark Junk**. Keep contextual item actions visible and controller-compatible.
+- A central character/paperdoll panel with the full 3D character displayed on a raised circular stone pedestal against a warm, torch-lit stone/wood backdrop. Equipment slots flank the character on both sides. The active weapon slot has a clear purple rarity/selection border. The weapon-set selector sits near the lower-right of the paperdoll.
+- A right-hand character-stat panel with level and class at the top, a horizontal XP bar, then primary attributes, combat statistics, and resource bars. The current screenshot visibly groups Strength, Agility, Intellect and Vitality; Attack, Defense, Ability Power and Critical; then Health, Stamina and the class resource.
+- Visual language: near-black and dark brown panel surfaces, thin ornate aged-gold borders, muted ivory serif text, restrained gold highlights, and a warm environmental backdrop. Maintain strong contrast and avoid bright modern UI styling.
+
+This screenshot records the current implementation's composition and styling. Treat displayed character values, item examples, current resource names/amounts and current equipment contents as screenshot-state data, not new balance or itemization decisions. Preserve the already-decided equipment rules above: one Ring, no Belt, cloak in Utility, and two weapon sets with only the active set shown on the paperdoll.
 
 ### 9.3 Grid inventory
-- Items take up shapes on a grid: a ring is 1×1, a sword 1×3, a shield 2×2, a chest piece 2×3. Backpack 10×6 *(start)*.
+- Items take up shapes on a grid: a ring is 1×1, a dagger 1×2, a sword 1×3, a greatsword or staff 1×4, a shield or helm 2×2, a chest piece 2×3. Backpack 10×6 *(start)*.
+- Long items can be **turned on their side** (a 1×3 sword lies as 3×1). Drag and drop with the mouse, or hold A to pick up with a gamepad. Potions and food **stack**. **Sort** tidies the backpack. Items can be **marked as junk**: they sort last and a merchant buys them all with one button. The border color shows rarity. Filters: weapons, off hand, armor, jewelry, consumables, junk.
+- The weight shown is your **equip load** against what you can carry (60 + half your Strength); it sets how fast you roll. Backpack items don't count.
 - **Bank** at every shrine: a bigger grid (12×10 *(start)*), per character, safe from death.
 
 ### 9.4 Group loot & trading
@@ -414,7 +433,7 @@ Rest to heal, refill flasks, respawn enemies and set your respawn point. Also: *
 
 ### 11.4 Map, time & weather
 - **Fog-of-war map**: reveals as you explore (saved per character, per world). Shows found shrines and party members.
-- **Day/night cycle**: about 48 real minutes per day (32 day, 16 night) *(start, a server setting)*. Nights are very dark and more dangerous; you carry a belt lantern.
+- **Day/night cycle**: about 48 real minutes per day (32 day, 16 night) *(start, a server setting)*. Nights are very dark and more dangerous; you carry a belt lantern. *(2026-11-25)* Distance sinks into blue-black; the lantern, fires and lit windows show what is close, with just enough moonlight to make out shapes and fight.
 - **Weather**: mostly overcast and foggy, with rain showers on and off.
 
 ### 11.5 The Camp and night raids *(my first design: tell me and I'll change any of it)*
@@ -453,8 +472,10 @@ Quests and public quests, more zones and an open world, world bosses, New Game+.
   - **Buildings and ruins come from modular kits** (wall, corner, arch, floor pieces) so a few detailed pieces build a whole village.
   - **Budget:** scanned models are often millions of triangles and must be simplified before use. Rough limits: hero tree 20–50k triangles, rock 2–10k, player character with gear 30–60k.
 - **Armor gets louder with level**: levels 1–10 are grounded (gambesons, leather, rusty mail, kettle helms). Levels 11–20 add real plate and bigger pauldrons. Levels 21–30 go big: spikes, skulls, chains, tattered banners.
+- **The base Outcast look** *(owner's brief 2026-11-23; sheet in `docs/concept/outcast_male_sheet.webp`)*: what every character wears with **empty gear slots**. Armor you equip covers it, and starting armor stays as it is. He's an ordinary 12th–13th century English countryside wanderer with **no armor at all**: a loose off-white linen shirt with rolled sleeves and a laced neck, a dark olive-green hooded wool cloak with a torn hem and a simple iron or bronze clasp, loose dark-brown or charcoal wool trousers, a plain leather belt with pouches and a faded red cloth, worn brown boots with leg wraps, a small satchel, rope, a knife and a plain worn sword at the waist. Ordinary athletic build, slightly chunky proportions, weathered face. **Male and female** versions wear the same clothes. She has a slim, athletic build, a fitted cream linen blouse with a low, open laced neckline (as on her sheet), wrist wraps, auburn or dark-brown hair in loose braids, light freckles and no makeup: a believable traveler, not a pin-up or a princess. No Viking, Renaissance, pirate or modern-fantasy styling. Built on the UAL1 skeleton from modular pieces, 30–60k triangles equipped.
+- **Characters are hand-painted** *(2026-11-23)*: characters and their gear get chunky shapes and hand-painted, painterly textures (classic MMORPG style: not photoreal, not pixel art). The world keeps its scanned textures for now. Once a painted character stands in Zone 1, the owner decides whether the world follows.
 - **Palette**: washed-out earth tones (mud brown, moss green, slate gray). White Knights *(decided 2026-11-25)*: ivory `#E5E0CE`, dark red `#A52F35`, tarnished gold `#C3A45B`, charcoal iron `#292B30`, with **one emblem on everything: a red Templar cross (cross pattee) on a white field** (it replaces the gold cross; shape in `assets/outpost/materials/painter.gd`). The Dark Ages are rust red and black iron. **Shrines are the only warm, safe light** (amber). Loot rarity colors pop against the gray.
-- **Lighting from day one**: overcast sky, volumetric fog, filmic tone mapping, desaturation and ambient occlusion, so even gray boxes look moody. Nights are cold, blue and genuinely dark.
+- **Lighting from day one**: overcast sky, volumetric fog, filmic tone mapping, desaturation and ambient occlusion, so even gray boxes look moody. Nights are cold, blue and genuinely dark. *(2026-11-25)* Days are dim, cool and washed out, open fields as moody as the woods; underground, only things you can see give light (lanterns, torches, fires, holes in the roof).
 - **The White Knights Outpost** (north end of the Tithelands, `OUTPOST_PLAN.md`) uses **hand-painted textures**: painted light, shade, dirt and wear, high roughness, no photo detail, per the owner's brief of 2026-11-25. Whether the rest of the game moves to hand-painted is open (OUTPOST_PLAN.md section 7).
 - **Sources**: free CC0 assets plus your AI-generated art. Poly Haven and ambientCG (detailed textures, rocks, scanned plants) are final-quality. Quaternius, KayKit and Kenney are low-poly, so they're **stand-ins only**, except for things like UI and sound. Detailed characters, armor and props come mostly from your AI art (textures, and image-to-3D for armor and props), cleaned up and fitted to the shared skeleton. See `ART_NEEDS.md`. Every asset gets logged in `assets/CREDITS.md`.
 
@@ -467,7 +488,56 @@ Quests and public quests, more zones and an open world, world bosses, New Game+.
 
 ### 12.3 HUD & menus (minimal, Souls-style)
 - **On screen**: health, stamina and class resource bars; flask count; ability hotbar with cooldown sweeps; party frames (name, health, class, downed); boss bar; status buildup meters; floating numbers; enemy health bars (toggle); chat (fades out).
-- **Menus**: main menu (Play/Host, Join, Characters, Settings, Quit), character creator, grid inventory + paperdoll + stats, talents, map, shrine menu (rest, travel, bank, vendors), loot roll pop-ups, settings (graphics, audio, controls, gameplay toggles).
+- **Menus**: main menu (Play/Host, Join, Characters, Settings, Quit), character creator, the menu book (tabs Character, Inventory, Map, Talents, Quests, System; see 9.2), talents, map, shrine menu (rest, travel, bank, vendors), loot roll pop-ups, settings (graphics, audio, controls, gameplay toggles).
+
+
+### 12.4 Typography *(owner-approved direction, 2026-11-25)*
+
+KINGDOM uses a **hybrid typographic identity**: the precise, compact readability of an old-school PC MMORPG interface (OSRS-inspired) combined with the literary, medieval atmosphere of The Elder Scrolls IV: Oblivion. The game should feel like a functional classic MMORPG set inside a bleak medieval world. Do not make every screen look like a medieval manuscript.
+
+**Primary typefaces**
+
+| Typeface | Role | Use |
+|---|---|---|
+| **IBM Plex Sans Condensed** | Functional interface | HUD labels and values, inventory, equipment, menus, buttons, tooltips, status labels and compact UI |
+| **Cinzel** | Formal display | Main menu titles, region and dungeon names, faction names, major headings, boss introductions and important announcements |
+| **EB Garamond** | Literary reading | NPC dialogue, quest descriptions, books, journals, lore entries and item flavor text |
+| **IBM Plex Mono** *(optional specialist)* | Technical/numeric | Debug information, coordinates and selected precise numerical readouts; use sparingly |
+
+Use the official font distributions and retain their license files in the project. Bundle only the required font weights and styles. Do not extract or redistribute OSRS's proprietary game fonts.
+
+**Typography rules**
+- HUD and gameplay text must be crisp, compact and readable at a glance. Favor IBM Plex Sans Condensed.
+- Use Cinzel selectively. It is for hierarchy and atmosphere, not paragraphs, tiny labels or dense inventory information.
+- Use EB Garamond for longer narrative reading and literary emphasis. Keep body text comfortably readable.
+- Use consistent weights and hierarchy. Avoid excessive all-caps, ornamental lettering, blackletter, distressed effects and unnecessary italics.
+- Numbers, item stats, cooldowns and combat information must remain easy to scan.
+- Maintain strong contrast against dark panels and the world. Use muted ivory or warm off-white for primary text, subdued grey for secondary text, and restrained aged-gold accents for emphasis.
+- The font combination must work at gameplay distance and across supported resolutions, including gamepad navigation and accessibility scaling.
+
+**Starting size guide at 1920×1080** *(tune in-game; not fixed pixel requirements)*
+
+| Element | Starting size |
+|---|---:|
+| HUD labels | 14–16 px |
+| HUD values | 16–18 px |
+| Inventory and item names | 16 px |
+| Item descriptions | 16–18 px |
+| Dialogue body | 20–22 px |
+| Quest headings | 24–28 px |
+| Region and dungeon titles | 36–48 px |
+| Main menu title | 56–72 px |
+
+Scale typography with the UI rather than assuming a fixed 1080p display. Check readability at common window sizes and UI scale settings.
+
+**Visual treatment**
+- Pair compact, precise interface typography with dark charcoal panels, muted ivory text, restrained aged-gold accents, thin dividers and subtle medieval framing.
+- Reserve parchment-like surfaces and more ornamental treatments for books, journals, maps, quest records and lore-focused screens.
+- Avoid excessive scrollwork, glowing text, bright saturated UI colors and decorative borders that compete with information.
+- Preserve the existing dark, subdued KINGDOM palette. Typography should reinforce the world rather than make the interface feel like a modern web app or a generic fantasy template.
+
+**Implementation standard**
+Create a reusable Godot Theme/resource for the typography system. Define named styles for HUD, body, compact UI, buttons, headings, dialogue, item descriptions and numerical readouts. Apply the same theme consistently across menus and gameplay UI. Avoid hardcoding font choices independently in individual controls. Test font rendering, line spacing, truncation, localization headroom, and gamepad focus states before applying the theme project-wide.
 
 ---
 

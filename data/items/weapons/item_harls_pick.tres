@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
 [ext_resource type="Resource" path="res://data/weapons/weapon_harls_pick.tres" id="2_ref"]
+[ext_resource type="Texture2D" uid="uid://u0rufro07kuu" path="res://assets/equipment/InventoryIcons/Weapons/item_harls_pick.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
+icon = ExtResource("9_icon")
 id = &"item_harls_pick"
 display_name = "Harl's Black Pick"
 flavor = "The head is cut from the stone itself, and it is warm."

@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
 [ext_resource type="Resource" path="res://data/weapons/weapon_steel_pickaxe.tres" id="2_ref"]
+[ext_resource type="Texture2D" uid="uid://bx5n0y5atku6" path="res://assets/equipment/InventoryIcons/Weapons/item_steel_pickaxe.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
+icon = ExtResource("9_icon")
 id = &"item_steel_pickaxe"
 display_name = "Steel Pickaxe"
 flavor = "A miner's tool that learned a second trade."

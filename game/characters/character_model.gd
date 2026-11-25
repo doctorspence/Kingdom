@@ -38,17 +38,39 @@ const ANIM_DRINK := &"ual2/Consume"
 static var _library_cache := {}
 
 ## Speed (m/s) at which each looping animation's feet match the ground.
-@export var walk_anim_speed := 1.6
-@export var run_anim_speed := 6.2
-@export var sprint_anim_speed := 9.2
-## Legs cycle this much faster than the ground speed alone needs, so strides are quick but long.
-@export var leg_speed_mult := 1.35
+## Measured from the animations with tests/stride_check.gd (2026-11-23).
+@export var walk_anim_speed := 0.95
+@export var run_anim_speed := 5.25
+@export var sprint_anim_speed := 7.6
+## Legs cycle this much faster than the ground needs (1 = planted feet don't slide).
+@export var leg_speed_mult := 1.0
 ## Share of the roll animation that plays during a roll (the rest is the get-up).
 @export_range(0.3, 1.0) var roll_anim_portion := 0.8
 ## Recolor the whole body (alpha 0 = keep the model's own colors).
 @export var body_tint := Color(0, 0, 0, 0)
 ## Idle animation (enemies can use a different one).
 @export var idle_anim := ANIM_IDLE
+## Sidesteps: the hips and legs turn up to this far toward the way you step while
+## the chest keeps facing forward (degrees; 0 = off). See LegTwist.
+@export_range(0.0, 90.0) var leg_twist_max := 75.0
+## How quickly the legs swing to a new stepping direction (higher = quicker).
+@export var leg_twist_sharpness := 10.0
+
+## Moving while in a standing pose (fighting stance, guard up): the feet step
+## instead of gliding. See StanceSteps. Side-steps travel this far per cycle (meters) ...
+@export var side_step_stride := 0.6
+## ... forward and back steps this far ...
+@export var shuffle_stride := 0.9
+## ... and no more than this many cycles a second (faster = longer steps instead).
+@export var max_step_rate := 2.0
+
+## Standing poses the feet can step from.
+const STANCE_POSES: Array[StringName] = [ANIM_IDLE, &"Sword_Idle", ANIM_BLOCK]
+
+var _twist: LegTwist
+var _steps: StanceSteps
+var _last_pos := Vector3.ZERO
+var _step_velocity := Vector3.ZERO
 
 var _anim: AnimationPlayer
 var _skeleton: Skeleton3D
@@ -68,6 +90,27 @@ func _ready() -> void:
 	for m in find_children("*", "MeshInstance3D", true, false):
 		_meshes.append(m)
 	_merge_extra_libraries()
+	var twist := LegTwist.new()
+	twist.name = "LegTwist"
+	if leg_twist_max > 0.0 and twist.setup(_skeleton):
+		_skeleton.add_child(twist)
+		_twist = twist
+	else:
+		twist.free()
+	var steps := StanceSteps.new()
+	steps.name = "StanceSteps"
+	if steps.setup(_skeleton):
+		_skeleton.add_child(steps)
+		_steps = steps
+	else:
+		steps.free()
+	var chop := OverheadChop.new()
+	chop.name = "OverheadChop"
+	if chop.setup(_skeleton, _anim, self):
+		_skeleton.add_child(chop)
+	else:
+		chop.free()
+	_last_pos = global_position
 	for anim_name in FORCE_LOOP:
 		if _anim.has_animation(anim_name):
 			_anim.get_animation(anim_name).loop_mode = Animation.LOOP_LINEAR
@@ -97,6 +140,59 @@ func _merge_extra_libraries() -> void:
 			_library_cache[lib_name] = source.get_animation_library(&"")
 			scene.free()
 		_anim.add_animation_library(lib_name, _library_cache[lib_name])
+	_add_cut_clips()
+
+
+## Clips cut out of longer animations, played as "cut/<name>" like any other:
+## name -> [source animation, from, to] (seconds).
+const CUT_CLIPS := {
+	# Jumping heavy attack: the overhead slam at the end of the heavy combo, down into a crouch.
+	&"Jump_Slam": [&"ual2/Sword_Heavy_Combo", 2.2, 3.4],
+	# Jumping light attack: a plain airborne pose; OverheadChop (overhead_chop.gd) swings
+	# the sword arm through a straight overhead chop on top of it.
+	&"Jump_Chop": [&"Jump", 0.4, 1.15],
+}
+
+
+func _add_cut_clips() -> void:
+	if _anim.has_animation_library(&"cut"):
+		return
+	if not _library_cache.has(&"cut"):
+		var lib := AnimationLibrary.new()
+		for clip_name: StringName in CUT_CLIPS:
+			var spec: Array = CUT_CLIPS[clip_name]
+			if not _anim.has_animation(spec[0]):
+				return  # not a humanoid with the sword animations (a hound...)
+			lib.add_animation(clip_name, _cut(_anim.get_animation(spec[0]), spec[1], spec[2]))
+		_library_cache[&"cut"] = lib
+	_anim.add_animation_library(&"cut", _library_cache[&"cut"])
+
+
+## A copy of part of `src` (from..to seconds), resampled at 30 fps and starting at 0.
+static func _cut(src: Animation, from: float, to: float) -> Animation:
+	var out := Animation.new()
+	out.length = to - from
+	var step := 1.0 / 30.0
+	for i in src.get_track_count():
+		var type := src.track_get_type(i)
+		if type != Animation.TYPE_POSITION_3D and type != Animation.TYPE_ROTATION_3D and type != Animation.TYPE_SCALE_3D:
+			continue
+		var j := out.add_track(type)
+		out.track_set_path(j, src.track_get_path(i))
+		var t := from
+		while true:
+			var at := minf(t, to)
+			match type:
+				Animation.TYPE_POSITION_3D:
+					out.position_track_insert_key(j, at - from, src.position_track_interpolate(i, at))
+				Animation.TYPE_ROTATION_3D:
+					out.rotation_track_insert_key(j, at - from, src.rotation_track_interpolate(i, at))
+				Animation.TYPE_SCALE_3D:
+					out.scale_track_insert_key(j, at - from, src.scale_track_interpolate(i, at))
+			if at >= to:
+				break
+			t += step
+	return out
 
 
 # --- Facing -------------------------------------------------------------------
@@ -122,6 +218,56 @@ func turn_smooth(direction: Vector3, sharpness: float, min_degrees_per_sec: floa
 	turn_toward(direction, step)
 
 
+## Watch which way the body actually travels, and turn the legs that way when
+## it's stepping sideways (works for players, other players' copies and enemies).
+func _physics_process(delta: float) -> void:
+	if _twist == null or delta <= 0.0:
+		return
+	var moved := global_position - _last_pos
+	_last_pos = global_position
+	moved.y = 0.0
+	var v := moved / delta
+	if v.length() > 20.0:
+		v = Vector3.ZERO  # a teleport or respawn, not a step
+	_step_velocity = _step_velocity.lerp(v, 1.0 - exp(-12.0 * delta))
+	var target := 0.0
+	var stepping := _current == ANIM_WALK or _current == ANIM_RUN
+	if stepping and _step_velocity.length() > 0.3:
+		var fwd := forward()
+		fwd.y = 0.0
+		var angle := fwd.signed_angle_to(_step_velocity, Vector3.UP)
+		if get_speed() < 0.0:
+			angle = wrapf(angle + PI, -PI, PI)  # walking backwards: legs face away from travel
+		var limit := deg_to_rad(leg_twist_max)
+		target = clampf(angle, -limit, limit)
+	_twist.yaw = lerp_angle(_twist.yaw, target, 1.0 - exp(-leg_twist_sharpness * delta))
+	_update_stance_steps(delta)
+
+
+## Moving while in a fighting stance or with guard up: step the feet.
+func _update_stance_steps(delta: float) -> void:
+	if _steps == null:
+		return
+	var speed := _step_velocity.length()
+	var want := 0.0
+	if (_current == idle_anim or STANCE_POSES.has(_current)) and speed > 0.2:
+		want = clampf((speed - 0.2) / 0.3, 0.0, 1.0)
+		var fwd := forward()
+		fwd.y = 0.0
+		fwd = fwd.normalized()
+		var dir := _step_velocity / speed
+		_steps.facing = fwd
+		_steps.move_dir = dir
+		var sideways := absf(dir.dot(fwd.cross(Vector3.UP)))
+		var stride := lerpf(shuffle_stride, side_step_stride, sideways)
+		_steps.stride = maxf(stride, speed / max_step_rate)
+		# Feet must not cross: the wider each step, the wider the stance.
+		_steps.widen = maxf(0.08, _steps.stride * 0.25 - 0.04)
+		_steps.phase = fposmod(_steps.phase + speed * delta / _steps.stride, 1.0)
+	# Fade in and out quickly, so starting and stopping don't snap.
+	_steps.weight = move_toward(_steps.weight, want, delta / 0.15)
+
+
 func face_instantly(direction: Vector3) -> void:
 	turn_toward(direction, TAU)
 
@@ -133,15 +279,18 @@ func forward() -> Vector3:
 # --- Animation ----------------------------------------------------------------
 
 ## Pick idle / walk / run / sprint from how fast the character is actually moving.
-func update_locomotion(ground_speed: float, sprinting: bool, walking: bool) -> void:
+## `backward`: backpedalling in combat stance. Until real backward animations
+## exist, the walk/jog plays in reverse.
+func update_locomotion(ground_speed: float, sprinting: bool, walking: bool, backward := false) -> void:
+	var dir_sign := -1.0 if backward else 1.0
 	if ground_speed < 0.15:
 		play(idle_anim, 0.2)
 	elif sprinting:
 		play(ANIM_SPRINT, 0.2, clampf(ground_speed / sprint_anim_speed * leg_speed_mult, 0.6, 2.0))
-	elif walking or ground_speed < 2.6:
-		play(ANIM_WALK, 0.2, clampf(ground_speed / walk_anim_speed, 0.5, 1.6))
+	elif walking or ground_speed < 2.3:
+		play(ANIM_WALK, 0.2, dir_sign * clampf(ground_speed / walk_anim_speed, 0.5, 2.4))
 	else:
-		play(ANIM_RUN, 0.2, clampf(ground_speed / run_anim_speed * leg_speed_mult, 0.6, 2.0))
+		play(ANIM_RUN, 0.2, dir_sign * clampf(ground_speed / run_anim_speed * leg_speed_mult, 0.6, 2.0))
 
 
 func play_roll(duration: float) -> void:
@@ -248,6 +397,10 @@ func anim_length(anim_name: StringName) -> float:
 	return _anim.get_animation(anim_name).length if _anim and _anim.has_animation(anim_name) else 1.0
 
 
+func has_anim(anim_name: StringName) -> bool:
+	return _anim != null and _anim.has_animation(anim_name)
+
+
 func current_anim() -> StringName:
 	return _current
 
@@ -264,6 +417,10 @@ func clear_hands() -> void:
 		if is_instance_valid(h):
 			h.queue_free()
 	_held.clear()
+	_hand_holders.clear()
+	_hand_items.clear()
+	_stow_holders.clear()
+	_sheathed = false
 
 
 ## Recolor the body (placeholder for real outfits).
@@ -296,10 +453,20 @@ func set_body(slender: bool) -> void:
 		_female_mesh.skeleton = NodePath("..")
 		_meshes.append(_female_mesh)
 		set_tint(body_tint)
+	_body_slender = slender
+	_show_body()
+
+
+var _body_slender := false
+
+
+## The mannequin shows unless a full Outcast model (head, hands and all) is worn over it.
+func _show_body() -> void:
+	var covered := _outfit.has("head") or _outfit.has("body")
 	if _female_mesh:
-		_female_mesh.visible = slender
+		_female_mesh.visible = _body_slender and not covered
 	if _body_mesh_original:
-		_body_mesh_original.visible = not slender
+		_body_mesh_original.visible = not _body_slender and not covered
 
 
 ## Put a weapon (or shield) in a hand. Weapons are built with the grip at their
@@ -310,10 +477,104 @@ func attach_to_hand(item: Node3D, side: String) -> void:
 	_skeleton.add_child(holder)
 	holder.add_child(item)
 	_held.append(holder)
-	# In the hand bone, fingers point along +Y and the knuckles along +Z, so a
-	# held blade points along +Z. Rotate the item's +Y onto +Z.
+	_hand_holders[side] = holder
+	_hand_items[side] = item
+	_place_in_hand(item)
+
+
+## In the hand bone, fingers point along +Y and the knuckles along +Z, so a
+## held blade points along +Z. Rotate the item's +Y onto +Z.
+func _place_in_hand(item: Node3D) -> void:
 	item.position = Vector3(0.0, 0.08, 0.0)
 	item.rotation_degrees = Vector3(90.0, 0.0, 0.0)
+
+
+# --- Weapons on the belt and back ----------------------------------------------
+## While calm (enemies on their post) the hand items are stowed: the weapon on the
+## left hip, grip forward for a right-hand draw; the off-hand item (shield) on the
+## back; a bow across the back. Positions are in the model's own space (+Z is
+## forward, +X the character's left), measured from a bone's rest pose.
+
+## Per hand: "hip", "back" or "bow" (across the back). Set before sheathe().
+var stow_places := {"r": "hip", "l": "back"}
+var _sheathed := false
+var _hand_holders := {}   # side -> BoneAttachment3D in the hand
+var _hand_items := {}     # side -> the item
+var _stow_holders := {}   # side -> BoneAttachment3D on the hip / back
+
+const STOW := {
+	# place: [bone, offset from the bone, item +Y (blade / handle up), item +Z,
+	#         true = the item's middle goes there (false = its grip)]
+	"hip": [&"pelvis", Vector3(0.2, 0.04, 0.1), Vector3(0.18, -0.75, -0.62), Vector3(1.0, 0.0, 0.0), false],
+	"back": [&"spine_03", Vector3(0.0, -0.12, -0.24), Vector3(0.0, 1.0, 0.0), Vector3(0.0, 0.0, 1.0), true],
+	"bow": [&"spine_03", Vector3(0.0, -0.1, -0.2), Vector3(0.6, 0.8, 0.0), Vector3(0.0, 0.0, -1.0), true],
+}
+
+
+func is_sheathed() -> bool:
+	return _sheathed
+
+
+## Stow the hand items (true) or take them back in hand (false). Instant: the
+## enemy's alert step covers the moment of the draw.
+func sheathe(on: bool) -> void:
+	if on == _sheathed or _skeleton == null:
+		return
+	_sheathed = on
+	for side: String in _hand_items:
+		var item := _hand_items[side] as Node3D
+		if not is_instance_valid(item):
+			continue
+		if on:
+			var holder := _stow_holder(side)
+			if holder == null:
+				continue
+			item.reparent(holder, false)
+			item.transform = holder.get_meta(&"stow") as Transform3D
+		else:
+			item.reparent(_hand_holders[side], false)
+			_place_in_hand(item)
+
+
+func _stow_holder(side: String) -> BoneAttachment3D:
+	if _stow_holders.has(side) and is_instance_valid(_stow_holders[side]):
+		return _stow_holders[side]
+	var spec: Array = STOW.get(stow_places.get(side, "hip"), STOW["hip"])
+	var bone := _skeleton.find_bone(spec[0])
+	if bone < 0:
+		return null
+	var holder := BoneAttachment3D.new()
+	holder.bone_name = spec[0]
+	_skeleton.add_child(holder)
+	_held.append(holder)
+	_stow_holders[side] = holder
+	# Wanted place in model space -> the bone's own space (rest pose).
+	var model_from_skel := global_transform.affine_inverse() * _skeleton.global_transform
+	var rest := model_from_skel * _skeleton.get_bone_global_rest(bone)
+	var up := (spec[2] as Vector3).normalized()
+	var fwd := spec[3] as Vector3
+	fwd = (fwd - up * up.dot(fwd)).normalized()
+	var basis := Basis(up.cross(fwd), up, fwd)
+	var spot := rest.origin + (spec[1] as Vector3)
+	if spec[4]:
+		spot -= basis * _middle_of(_hand_items[side])
+	var local := rest.affine_inverse() * Transform3D(basis, spot)
+	local.basis = local.basis.orthonormalized()
+	holder.set_meta(&"stow", local)
+	return holder
+
+
+## The middle of an item's meshes, in the item's own space.
+func _middle_of(item: Node3D) -> Vector3:
+	var box := AABB()
+	var first := true
+	for m in item.find_children("*", "MeshInstance3D", true, false):
+		var mi := m as MeshInstance3D
+		var to_item := item.global_transform.affine_inverse() * mi.global_transform
+		var b := to_item * mi.get_aabb()
+		box = b if first else box.merge(b)
+		first = false
+	return box.get_center() if not first else Vector3.ZERO
 
 
 # --- Worn armor ----------------------------------------------------------------
@@ -329,8 +590,14 @@ func set_armor(slot: String, scene: PackedScene) -> void:
 			old.queue_free()
 	_armor.erase(slot)
 	if scene == null or _skeleton == null:
+		_refresh_outfit()
 		return
 	var made: Array = []
+	# armor is fitted to the real Outcast; the slender mannequin body wears the "<id>_f.scn" fit
+	if _body_slender and scene.resource_path.ends_with(".scn"):
+		var alt := scene.resource_path.replace(".scn", "_f.scn")
+		if ResourceLoader.exists(alt):
+			scene = load(alt)
 	var inst: Node = scene.instantiate()
 	for mi in inst.find_children("*", "MeshInstance3D", true, false):
 		var src := mi as MeshInstance3D
@@ -346,10 +613,59 @@ func set_armor(slot: String, scene: PackedScene) -> void:
 	if _overlay_kind != "":
 		for n in made:
 			n.material_overlay = _overlay
+	_refresh_outfit()
 
 
 func armor_in(slot: String) -> bool:
 	return _armor.has(slot)
+
+
+# --- Base outfit ---------------------------------------------------------------
+
+const Outcast := preload("res://assets/equipment/eq_outcast.gd")
+var _outfit := {}  # piece ("shirt", "cloak", "hair", ...) -> Array[MeshInstance3D]
+var _outfit_female := false
+
+
+## Wear the base Outcast clothes (DESIGN.md 12.1), sized for the broad or slender body. Each piece
+## hides while armor covers that part of the body. on = false takes the outfit off.
+func set_outfit(on: bool, female := false) -> void:
+	if on and not _outfit.is_empty() and female == _outfit_female:
+		_refresh_outfit()
+		return
+	for piece in _outfit:
+		for n in _outfit[piece]:
+			if is_instance_valid(n):
+				n.queue_free()
+	_outfit.clear()
+	if not on or _skeleton == null:
+		_show_body()
+		return
+	_outfit_female = female
+	var parts: Dictionary = Outcast.parts(female)
+	for piece in parts:
+		var made: Array = []
+		for pair in parts[piece]:
+			var n := MeshInstance3D.new()
+			n.name = "Outfit_" + piece
+			n.mesh = pair[0]
+			n.skin = pair[1]
+			_skeleton.add_child(n)
+			n.skeleton = NodePath("..")
+			if _overlay_kind != "":
+				n.material_overlay = _overlay
+			made.append(n)
+		_outfit[piece] = made
+	_refresh_outfit()
+	_show_body()
+
+
+func _refresh_outfit() -> void:
+	for piece in _outfit:
+		var by: String = Outcast.HIDDEN_BY.get(piece, "")
+		for n in _outfit[piece]:
+			if is_instance_valid(n):
+				n.visible = (by == "" or not _armor.has(by)) and not (piece == "cloak" and not _armor.is_empty())
 
 
 # --- Tints --------------------------------------------------------------------
@@ -363,10 +679,11 @@ func set_overlay(kind: String, color := Color.WHITE) -> void:
 	_overlay.albedo_color = color
 	for m in _meshes:
 		m.material_overlay = _overlay if kind != "" else null
-	for slot in _armor:
-		for n in _armor[slot]:
-			if is_instance_valid(n):
-				n.material_overlay = _overlay if kind != "" else null
+	for group in [_armor, _outfit]:
+		for slot in group:
+			for n in group[slot]:
+				if is_instance_valid(n):
+					n.material_overlay = _overlay if kind != "" else null
 
 
 func overlay_kind() -> String:

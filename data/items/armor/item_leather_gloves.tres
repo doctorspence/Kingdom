@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
 [ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Armor/Leather/leather_gloves.scn" id="2_ebjqd"]
+[ext_resource type="Texture2D" path="res://assets/equipment/InventoryIcons/Armor/item_leather_gloves.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
@@ -8,8 +10,12 @@ id = &"item_leather_gloves"
 display_name = "Leather Gloves"
 slot = 4
 grid_size = Vector2i(2, 2)
-weight = 1.0
 value = 8
-icon_color = Color(0.4, 0.3, 0.2, 1)
+icon_color = Color(0.45, 0.33, 0.22, 1)
+icon = ExtResource("9_icon")
+model_scene = ExtResource("2_ebjqd")
+tier = &"leather"
 armor = 2.0
-stats = {"agility": 1}
+stats = {
+"agility": 1
+}

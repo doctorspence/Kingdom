@@ -120,7 +120,7 @@ fov = 70.0
 far = 600.0
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=759966011]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09266186, -0.03086853, 0.003616333)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.101085, -1.8263092, 0.06423569)
 material_override = SubResource("Mat_ground")
 mesh = SubResource("Mesh_ground")
 

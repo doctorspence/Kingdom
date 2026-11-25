@@ -85,6 +85,10 @@ extends Resource
 @export var attack_cooldown_min := 0.6
 @export var attack_cooldown_max := 1.6
 @export var attacks: Array[AttackData] = []
+## How it passes the time on its post before a fight (ENEMY_LIFE_PLAN.md):
+## "loose" (bandits: chatting, drinking, slouching), "disciplined" (Knights:
+## upright, arms folded, few words) or "none" (always in fighting stance).
+@export_enum("loose", "disciplined", "none") var calm_style := "loose"
 
 @export_group("Look")
 @export var body_tint := Color(0.2, 0.07, 0.06)

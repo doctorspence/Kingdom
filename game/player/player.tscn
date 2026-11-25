@@ -75,6 +75,15 @@ properties/18/replication_mode = 2
 properties/19/path = NodePath(".:net_legs")
 properties/19/spawn = true
 properties/19/replication_mode = 2
+properties/20/path = NodePath(".:net_hands")
+properties/20/spawn = true
+properties/20/replication_mode = 2
+properties/21/path = NodePath(".:net_feet")
+properties/21/spawn = true
+properties/21/replication_mode = 2
+properties/22/path = NodePath(".:net_cloak")
+properties/22/spawn = true
+properties/22/replication_mode = 2
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2

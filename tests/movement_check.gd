@@ -52,7 +52,8 @@ func _run() -> void:
 		reverse_time += 1.0 / Engine.physics_ticks_per_second
 		if player.velocity.z > t.run_speed * 0.9:
 			break
-	_check("seconds to reverse direction at full run", reverse_time, 0.15, 0.15)
+	# Weighty: a full about-turn at a run takes a moment (2026-11-23 movement redesign).
+	_check("seconds to reverse direction at full run", reverse_time, 0.45, 0.15)
 	# Roll while running: come out still running
 	await _tap("dodge_sprint")
 	await _seconds(t.roll_duration[0] + 0.05)
@@ -125,6 +126,54 @@ func _run() -> void:
 	var first := player.targeting.target
 	player.targeting.switch_target(1)
 	_check_true("switch target changes it (%s)" % player.targeting.target.name, player.targeting.target != first)
+	# Combat stance: backpedal and sidestep are slower than forward, and you keep facing the foe.
+	await _seconds(0.6)
+	Input.action_press("move_back")
+	await _seconds(1.2)
+	_check("locked-on backpedal speed", _speed(), t.lock_on_speed * t.stance_back_mult, 0.3)
+	var to_foe := _flat(player.targeting.target_point() - player.global_position).normalized()
+	_check_true("still facing the foe while backing off", player.model.forward().dot(to_foe) > 0.9)
+	_check_true("backpedal plays the legs in reverse", player.model.get_speed() < 0.0)
+	Input.action_release("move_back")
+	Input.action_press("move_right")
+	await _seconds(1.2)
+	_check("locked-on side-step speed (slow and careful)", _speed(), t.stance_side_speed, 0.25)
+	_check_true("side-step keeps the fighting stance (%s)" % player.model.current_anim(),
+			player.model.current_anim() == player.model.idle_anim)
+	_check_true("feet are stepping (weight %.2f)" % player.model._steps.weight, player.model._steps.weight > 0.9)
+	# A planted foot must stay put on the ground while the other steps. Feet are read
+	# right after the skeleton updates (the stepping is applied there, after the animation).
+	var skel: Skeleton3D = player.model.find_children("*", "Skeleton3D", true, false)[0]
+	var samples: Array = []  # [phase, left foot, right foot]
+	var record := func() -> void:
+		samples.append([player.model._steps.phase,
+				skel.global_transform * skel.get_bone_global_pose(skel.find_bone("foot_l")).origin,
+				skel.global_transform * skel.get_bone_global_pose(skel.find_bone("foot_r")).origin])
+	skel.skeleton_updated.connect(record)
+	await _seconds(1.2)
+	skel.skeleton_updated.disconnect(record)
+	var worst := 0.0
+	var lift := 0.0
+	for leg in 2:
+		var anchor := Vector3.INF
+		var ground := INF
+		for s in samples:
+			ground = minf(ground, s[1 + leg].y)
+		for s in samples:
+			# The left foot is planted for the second half of each cycle, the right for the first.
+			var q := fposmod(s[0] + (0.0 if leg == 0 else 0.5), 1.0)
+			var planted := q > 0.55 and q < 0.95  # skip the moments of touch-down and lift-off
+			if planted:
+				if anchor == Vector3.INF:
+					anchor = s[1 + leg]
+				worst = maxf(worst, _flat(s[1 + leg] - anchor).length())
+			else:
+				anchor = Vector3.INF
+				lift = maxf(lift, s[1 + leg].y - ground)
+	_check("planted foot drift during a side-step (m)", worst, 0.0, 0.03)
+	_check("stepping foot lifts (m)", lift, 0.09, 0.04)
+	Input.action_release("move_right")
+	await _seconds(0.6)
 	player.targeting.toggle()
 	_check_true("lock-on toggles off", not player.targeting.has_target())
 

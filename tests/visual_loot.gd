@@ -32,9 +32,8 @@ func _run() -> void:
 	var hud: Hud
 	for n in get_tree().root.find_children("*", "Hud", true, false):
 		hud = n
-	hud._inventory_panel.open(player)
-	hud._inventory_panel._grid.cursor = Vector2i(0, 0)
-	hud._inventory_panel._on_grid_selected(inv.backpack.item_at(Vector2i(0, 0)))
+	hud._show_book_page("inventory")
+	hud._book._cursor = Vector2i(0, 0)
 	await _frames(10)
 	await _shot("loot_inventory")
 	hud._close_panels()

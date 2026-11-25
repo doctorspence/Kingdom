@@ -34,6 +34,7 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
   4. A camp raid (F5 / F7)
   5. Tithelands with sound on
   6. Settings and rebinding
+  7. The new inventory screen (I): drag, turn, sort, junk, tabs (added 2026-11-23)
 
   Note what's too loud, too hard, too empty or broken. All 15 🧪 lines are in `TODO.md`.
 - [ ] **CC: Fix what the playtest finds.** Nothing new until those are fixed.

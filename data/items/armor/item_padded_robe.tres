@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" format=3]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://um2dx5eu3n0q"]
 
-[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://bmn75ftdk4t4g" path="res://game/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" uid="uid://dm80aeqv0a2ig" path="res://assets/equipment/InventoryIcons/Armor/item_padded_robe.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_item")
@@ -11,5 +12,8 @@ grid_size = Vector2i(2, 3)
 weight = 3.0
 value = 18
 icon_color = Color(0.5, 0.45, 0.55, 1)
+icon = ExtResource("9_icon")
 armor = 5.0
-stats = {"intellect": 2}
+stats = {
+"intellect": 2
+}
