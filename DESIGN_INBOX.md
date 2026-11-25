@@ -35,6 +35,14 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 
 ## Filed
 
+### 2026-11-25: Drifting mist
+- **Area:** art direction / zone 1
+- **Decision:** The Tithelands mist moves: banks creep and thicken and thin, so shapes appear and vanish. This was picked over the other eerie ideas offered (sounds, flickering windows, more darkness).
+- **Details:** Owner, in chat, asked how to make the zone darker and more eerie, then chose "Mist only".
+- **Status:** decided (owner, in Claude Code).
+- **Replaces:** nothing.
+- **Filed (2026-11-25):** built in `game/world/mist.gd`; DESIGN.md 12.1 and HANDOFF.md.
+
 ### 2026-11-25: Shobek and Kimbah recurring story characters
 - **Area:** world lore / characters / classes / quests
 - **Decision:** Include the owner's friends' gaming personas as major recurring KINGDOM characters. Every player encounters and defeats both as main-story boss encounters, regardless of class. Afterward they become allies and recur throughout the campaign. Class-specialization quests branch from those shared story encounters, so players who are not pursuing Rogue, Druid or Shaman specializations still experience and benefit from both characters' stories.
