@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
 [ext_resource type="Resource" path="res://data/loot/loot_bandit.tres" id="4_loot"]
-[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/bow_placeholder.tscn" id="3_weapon"]
+[ext_resource type="PackedScene" path="res://assets/characters/bandit/BD_crossbow.scn" id="3_weapon"]
 
 [sub_resource type="Resource" id="A_shot"]
 script = ExtResource("2_attack")

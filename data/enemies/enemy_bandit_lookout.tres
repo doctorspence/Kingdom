@@ -3,7 +3,8 @@
 [ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
 [ext_resource type="Resource" path="res://data/loot/loot_bandit.tres" id="4_loot"]
-[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/sword_placeholder.tscn" id="3_weapon"]
+[ext_resource type="PackedScene" path="res://assets/equipment/Weapons/Daggers/steel_dagger.scn" id="3_weapon"]
+[ext_resource type="PackedScene" path="res://assets/characters/bandit/BD_shield_iron.scn" id="7_shield"]
 
 [sub_resource type="Resource" id="A_combo"]
 script = ExtResource("2_attack")
@@ -79,3 +80,4 @@ attacks = Array[ExtResource("2_attack")]([SubResource("A_combo"), SubResource("A
 body_tint = Color(0.42, 0.34, 0.26, 1)
 scale = 1.08
 weapon_scene = ExtResource("3_weapon")
+offhand_scene = ExtResource("7_shield")

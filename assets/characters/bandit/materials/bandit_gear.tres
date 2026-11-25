@@ -1,0 +1,12 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/characters/bandit/textures/bandit_gear.png" id="1_gqnud"]
+
+[resource]
+resource_name = "bandit_gear"
+cull_mode = 2
+albedo_texture = ExtResource("1_gqnud")
+metallic = 0.14
+metallic_specular = 0.2
+roughness = 0.74
+texture_filter = 5

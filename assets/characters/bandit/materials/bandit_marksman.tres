@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/characters/bandit/textures/bandit_marksman.png" id="1_7rffd"]
+
+[resource]
+resource_name = "bandit_marksman"
+cull_mode = 2
+albedo_texture = ExtResource("1_7rffd")
+metallic_specular = 0.08
+roughness = 0.96
+texture_filter = 5

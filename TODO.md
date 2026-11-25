@@ -291,3 +291,5 @@ Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces th
 - [x] 10. Atmosphere: torch and fire light, campfire, deep gloom (the existing cave sound bed and boss track play; quarry-specific audio later)
 - [x] 11a. Tests and 3-player check pass (2026-11-22)
 - [x] 11b. Friends build re-exported (2026-11-22)
+- [x] Bandit characters: swordsman, mace man, hooded lookout, crossbowman (2026-11-25)
+- [ ] 🧪 Walk the Gullet and look at the four bandits calm and fighting: can you tell them apart in the dark, and does the lookout's dagger feel like it reaches too far?

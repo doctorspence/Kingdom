@@ -26,6 +26,13 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 
 ## Waiting
 
+### 2026-11-25: Bandits in an Old School RuneScape-inspired style
+- **Area:** art direction / characters
+- **Decision:** Bandits use chunky low-poly shapes, low-resolution hand-painted textures and strong equipment silhouettes, as an original design (no assets, names or designs copied). Weapon variants: sword, mace, dagger, crossbow.
+- **Details:** Built 2026-11-25 (see `HANDOFF.md`, "Bandit characters"). Reference sheet: `docs/bandit/reference_bandit_sheet.webp`; the hooded dagger and crossbow sheets were pasted into chat and are not saved as files. Muted earth palette: dirty olive, dark brown, weathered leather, muted grey, dull iron.
+- **Status:** decided for the bandits; **open question for the owner:** `DESIGN.md` 12.1 says "detailed, not low-poly". Is this style only for bandits, or the new direction for characters?
+- **Replaces:** nothing yet.
+
 ### 2026-11-23: KINGDOM inventory and character panel UI standard
 - **Area:** UI / loot
 - **Decision:** Adopt the approved Champions of Norrath-inspired combined character and spatial inventory screen, with Oblivion-inspired top navigation. The clarified equipment layout is authoritative for the UI: one ring slot, no belt slot, and one Utility slot that also equips the cloak. Keep the existing two weapon sets and their swap behavior; the character panel shows the currently active main-hand and off-hand slots.
