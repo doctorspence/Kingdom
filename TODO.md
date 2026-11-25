@@ -213,6 +213,15 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [x] Chapel and barrow built; mill race, sluice gate and tailrace cut; terrain bake cached on disk
 - [ ] Later: a walkable Highcrown (needs the zone extended north), LODs for distant trees
 
+## White Knights Outpost (started 2026-11-25; plan in OUTPOST_PLAN.md, asset list in assets/outpost/MANIFEST.md)
+- [x] Stage 1: hand-painted texture painter, outpost kit, exporter and preview pictures; the White Knights set WK01-WK12 (`assets/outpost/white_knights/`, 8,691 triangles in all)
+- [ ] 🧪 Look at `docs/outpost/wk_overview.jpg`, `wk_wall.jpg`, `wk_stand.jpg`, `wk_pennant.jpg` (or double-click any `.scn` in `assets/outpost/white_knights/` in the editor): is the emblem right, too clean, too bright?
+- [ ] Stage 2: checkpoint and castle approach (CP01-CP20)
+- [ ] Stage 3: buildings (needs the scale decision)
+- [ ] Stages 4-7: trade and village props, ground and plants, light and effects, story props
+- [ ] Stage 8: placement in the Tithelands (needs the owner's OK on the layout and on who lives there)
+- [ ] Stage 9: checks, FPS, pictures
+
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
 - Quests and public quests

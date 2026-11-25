@@ -58,6 +58,7 @@ Weapons, shields and enemies are in `data/weapons/`, `data/shields/` and `data/e
 | `ZONE1_OVERHAUL.md` | Zone 1 rebuild and performance plan |
 | `GREENWOOD_OVERHAUL.md` | Zone 1 Greenwood look: trees, limestone, plants, light |
 | `GULLET_DESIGN.md` | The Gullet dungeon and Harl the Delver (map: `GULLET_MAP.svg`) |
+| `OUTPOST_PLAN.md` | The White Knights Outpost at the north end of the Tithelands (asset list: `assets/outpost/MANIFEST.md`, brief and pictures: `docs/outpost/`) |
 | `CLASS_PLAN.md` | Plan for the Martial / Vanguard / Mystic classes, nine subclasses and the three factions (not built yet) |
 | `ART_NEEDS.md` | Art & audio shopping list |
 | `assets/` | Art and sound. Every file is logged in `assets/CREDITS.md` |

@@ -1,6 +1,6 @@
 # HANDOFF: where we are
 
-*Updated 2026-11-23. Read this first in a new session. One screen on purpose: the checklists live elsewhere (see "Which file is which").*
+*Updated 2026-11-25. Read this first in a new session. One screen on purpose: the checklists live elsewhere (see "Which file is which").*
 
 ## How to resume
 1. Open `C:\Users\reals\Documents\Kingdom` in Claude Code. Close the Godot editor or use Project > Reload Current Project, so it doesn't hold old copies of files.
@@ -17,6 +17,8 @@ Phases 1-15 are built: movement, combat, multiplayer, three classes with talents
 
 **Greenwood overhaul (2026-11-22, merged into `main` 2026-11-23):** the owner's Greenwood biome brief was applied to the Tithelands; plan and progress in `GREENWOOD_OVERHAUL.md`. Stages 0-5 done (ground shader, five-species tree library, firs removed, landmark trees, canopy light, terrain shaping with the brook and the chapel lane, worked limestone quarry with a timber-shored Gullet entrance, ground plants, props and story dressing, lighting and atmosphere) and stage 9 validated (all checks and the 3-player check pass; report at the end of the Progress table). Performance pass done (per-tree detail switch, cheaper tree shadows, load cache: load 10.6 s to 6.9 s, triangles in the woods down 35-60%; see "Performance pass" in GREENWOOD_OVERHAUL.md). Clean measurement done: idle far-off enemies now sleep (game/world/enemy_sleep.gd), every spot 100-171 FPS at 1080p, above the original zone. Load cache lives in user://bake_cache (safe to delete; it refills). Merged into `main` on 2026-11-23 (fast-forward, all checks passed); `greenwood` and `main` are the same commit, and work can carry on in either. Not playtested by hand yet.
 
+**White Knights Outpost (started 2026-11-25, on branch `claude/adoring-sagan-kb4cko`):** the owner's brief for a settlement in front of Highcrown's moat that replaces the Knight's Gap checkpoint. Plan, decisions and open questions in `OUTPOST_PLAN.md`; all 228 assets and their status in `assets/outpost/MANIFEST.md`; the brief word for word and the pictures in `docs/outpost/`. Decided: location; emblem = red Templar cross (cross pattee) on white, everywhere; hand-painted look. Stage 1 built: a code texture painter (`assets/outpost/materials/painter.gd`, PNGs you can paint over), the outpost kit on top of the hideout kit, `tools/export_outpost.gd`, `tests/visual_outpost.gd`, and the White Knights set WK01-WK12. Nothing in the zone is changed yet. Waiting on the owner: the scale question (blocks buildings), who lives there and moving the castle closer (block placement).
+
 ## Which file is which
 | File | Use |
 |---|---|
@@ -24,7 +26,7 @@ Phases 1-15 are built: movement, combat, multiplayer, three classes with talents
 | `TODO.md` | The checklist by phase, including every 🧪 playtest item. |
 | `SPEC.md` | The owner's original brief. Never edit. |
 | `DESIGN.md` | Game design and numbers. |
-| `CLASS_PLAN.md`, `GULLET_DESIGN.md`, `ZONES_DESIGN.md`, `ZONE1_OVERHAUL.md`, `ART_NEEDS.md` | Detail for one area. `ZONE1_OVERHAUL.md` also holds the stage 7 performance plan. |
+| `CLASS_PLAN.md`, `GULLET_DESIGN.md`, `ZONES_DESIGN.md`, `ZONE1_OVERHAUL.md`, `OUTPOST_PLAN.md`, `ART_NEEDS.md` | Detail for one area. `ZONE1_OVERHAUL.md` also holds the stage 7 performance plan. |
 
 ## Things to know
 - **Checks:** run one with `--headless --script res://tests/run.gd -- <name>` (README.md). Names: movement, combat, moves, enemy, death, loot, class, subclass, boss, camp, gullet, zone, audio, sound, prefs. Plus the 3-player check `tests/run_net_check.ps1`. Also `save_check`. Run them one at a time (shared port 31499, and timing checks fail under load). If a timing check fails once, rerun it before suspecting a bug.
@@ -40,6 +42,8 @@ Phases 1-15 are built: movement, combat, multiplayer, three classes with talents
 - **Brother Tallow and the acolytes** are unused data (the old Gullet). Keep or delete is an open decision in `PRIORITIES.md` P2.
 - **Reusing art:** shared materials are in `levels/common/materials/`, textures in `assets/textures/`, camp props in `levels/tithelands/props/`. Do not use height fog in an environment (it buries underground rooms).
 - **Seeing a zone without playing:** `Godot --path . --resolution 1280x720 --script res://tests/run.gd -- visual_env` writes PNGs to `%APPDATA%\Godot\app_userdata\Kingdom\shots`.
+
+- **Cloud sessions (Linux, no Windows Godot):** download `Godot_v4.7.2-stable_linux.x86_64.zip` from the godotengine GitHub releases into the scratchpad, run `--headless --path . --import` once, then scripts as usual. Pictures render on the CPU with `VK_ICD_FILENAMES=/opt/lavapipe/lvp_icd.json xvfb-run -a <godot> --path . --resolution 1600x900 --script ...` (about 15 s a shot). Don't commit the `.uid` files the import creates for other people's scripts.
 
 ## Known loose ends
 - Quarry-specific Gullet audio and a Harl boss track are not made (the old cave beds and boss track play).

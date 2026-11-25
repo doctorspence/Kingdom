@@ -45,6 +45,8 @@ The Gullet already says the black stone existed before either faction, and its l
 
 Low, wet farm valley. The road runs north from the Crossroads over the broken bridge, past the tithe barn and the Knights' checkpoint, and ends at the zone's north edge with Highcrown's walls in the fog. Nothing about zone 1 has to change, except two small fixes so it joins zone 2 cleanly (see section 6).
 
+**2026-11-25:** the **White Knights Outpost** (`OUTPOST_PLAN.md`) will replace the Knights' checkpoint in Knight's Gap. Its layout proposal brings the Highcrown backdrop south to about z -200, behind a new moat and drawbridge; if the owner approves that, the zone 2 join in section 6 (Highcrown at -255, the Tithe Causeway and Mudside) must be redrawn. Not decided yet.
+
 ---
 
 ## 4. Zone 2: Highcrown

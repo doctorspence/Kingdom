@@ -123,6 +123,15 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Faction banners and looks | White Knights (noble, disciplined, medieval), Dark Ages (darker, unsettling, ritual), Outcasts (mismatched, travel-worn) | AI concept art | ⭐⭐ | ⬜ |
 | Subclass weapons | Daggers, throwing knives, crossbows, tower shields, warhammers, ritual charms and more | Kit pieces + custom | ⭐ | ⬜ |
 
+## White Knights Outpost (OUTPOST_PLAN.md; full list in assets/outpost/MANIFEST.md)
+228 assets in the owner's brief: 17 built, 99 with a stand-in already in the project, 112 to make. Built in code with hand-painted textures; any can be swapped for your art.
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| White Knights set WK01-WK12 | Banners, pennant, standard, shield, signboard, plaque, awning, notice, stone insignia, fittings, banner stand | Code (`assets/outpost/white_knights/`) | | ✅ |
+| Hand-painted textures | Emblem, oak, iron, gold, linen, stripes, rope, limestone, parchment (`assets/outpost/materials/textures/*.png`). Paint over them or replace with AI art, same name and size | Code now | ⭐⭐ | 🟨 code-painted |
+| Organic props | Saddles, anvil, hanging meat, pottery, bellows: good image-to-3D candidates (one object per image, three-quarter view, plain background, no text) | Image-to-3D (e.g. Modelado) or code | ⭐⭐ | ⬜ |
+| Buildings | Inn, blacksmith, stable, market shelter, carpenter, cottages, shed, guard shelter (waits on the scale decision) | Code kit | ⭐ textures | ⬜ |
+
 ## Camp and raids (Phase 13, gray-box now)
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|

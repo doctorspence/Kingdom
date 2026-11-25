@@ -1,7 +1,7 @@
 # KINGDOM: Design Document
 
 *Working title. A living document that we update as we build and playtest.*
-*Last updated: 2026-11-22 (combat rhythm pass: deflects, enemy balance, guard and counter, Steady, perfect dodge).*
+*Last updated: 2026-11-25 (White Knights emblem and palette, hand-painted outpost; 12.1). Before that 2026-11-22 (combat rhythm pass).*
 
 > **How to read this.** Sections 1–12 describe the game: what players see and do. Section 13 is the technical plan: how we build it. Numbers marked *(start)* are first guesses. We tune them by playing.
 
@@ -453,8 +453,9 @@ Quests and public quests, more zones and an open world, world bosses, New Game+.
   - **Buildings and ruins come from modular kits** (wall, corner, arch, floor pieces) so a few detailed pieces build a whole village.
   - **Budget:** scanned models are often millions of triangles and must be simplified before use. Rough limits: hero tree 20–50k triangles, rock 2–10k, player character with gear 30–60k.
 - **Armor gets louder with level**: levels 1–10 are grounded (gambesons, leather, rusty mail, kettle helms). Levels 11–20 add real plate and bigger pauldrons. Levels 21–30 go big: spikes, skulls, chains, tattered banners.
-- **Palette**: washed-out earth tones (mud brown, moss green, slate gray). White Knights are off-white and tarnished gold; the Dark Ages are rust red and black iron. **Shrines are the only warm, safe light** (amber). Loot rarity colors pop against the gray.
+- **Palette**: washed-out earth tones (mud brown, moss green, slate gray). White Knights *(decided 2026-11-25)*: ivory `#E5E0CE`, dark red `#A52F35`, tarnished gold `#C3A45B`, charcoal iron `#292B30`, with **one emblem on everything: a red Templar cross (cross pattee) on a white field** (it replaces the gold cross; shape in `assets/outpost/materials/painter.gd`). The Dark Ages are rust red and black iron. **Shrines are the only warm, safe light** (amber). Loot rarity colors pop against the gray.
 - **Lighting from day one**: overcast sky, volumetric fog, filmic tone mapping, desaturation and ambient occlusion, so even gray boxes look moody. Nights are cold, blue and genuinely dark.
+- **The White Knights Outpost** (north end of the Tithelands, `OUTPOST_PLAN.md`) uses **hand-painted textures**: painted light, shade, dirt and wear, high roughness, no photo detail, per the owner's brief of 2026-11-25. Whether the rest of the game moves to hand-painted is open (OUTPOST_PLAN.md section 7).
 - **Sources**: free CC0 assets plus your AI-generated art. Poly Haven and ambientCG (detailed textures, rocks, scanned plants) are final-quality. Quaternius, KayKit and Kenney are low-poly, so they're **stand-ins only**, except for things like UI and sound. Detailed characters, armor and props come mostly from your AI art (textures, and image-to-3D for armor and props), cleaned up and fitted to the shared skeleton. See `ART_NEEDS.md`. Every asset gets logged in `assets/CREDITS.md`.
 
 ### 12.2 Audio

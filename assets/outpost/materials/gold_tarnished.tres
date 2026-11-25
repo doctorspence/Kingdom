@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/gold.png" id="1_6831k"]
+
+[resource]
+resource_name = "gold_tarnished"
+albedo_texture = ExtResource("1_6831k")
+metallic = 0.55
+roughness = 0.5
+uv1_scale = Vector3(2, 2, 1)
+texture_filter = 5
