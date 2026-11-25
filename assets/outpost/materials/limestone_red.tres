@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/limestone.png" id="1_u1ii8"]
+
+[resource]
+resource_name = "limestone_red"
+albedo_color = Color(1.05, 0.42, 0.42, 1)
+albedo_texture = ExtResource("1_u1ii8")
+metallic_specular = 0.2
+roughness = 0.9
+texture_filter = 5

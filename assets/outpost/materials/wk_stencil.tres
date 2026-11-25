@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/stencil.png" id="1_82civ"]
+
+[resource]
+resource_name = "wk_stencil"
+transparency = 2
+alpha_scissor_threshold = 0.5
+alpha_antialiasing_mode = 1
+alpha_antialiasing_edge = 0.3
+albedo_texture = ExtResource("1_82civ")
+metallic_specular = 0.2
+roughness = 0.9
+texture_filter = 5

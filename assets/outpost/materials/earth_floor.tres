@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/earth_floor.png" id="1_w66c4"]
+
+[resource]
+resource_name = "earth_floor"
+albedo_texture = ExtResource("1_w66c4")
+metallic_specular = 0.1
+uv1_scale = Vector3(0.5, 0.5, 1)
+texture_filter = 5

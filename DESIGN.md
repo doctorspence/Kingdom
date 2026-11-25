@@ -1,7 +1,7 @@
 # KINGDOM: Design Document
 
 *Working title. A living document that we update as we build and playtest.*
-*Last updated: 2026-11-22 (combat rhythm pass: deflects, enemy balance, guard and counter, Steady, perfect dodge).*
+*Last updated: 2026-11-25 (White Knights emblem and palette, hand-painted outpost; 12.1). Before that 2026-11-22 (combat rhythm pass).*
 
 > **How to read this.** Sections 1–12 describe the game: what players see and do. Section 13 is the technical plan: how we build it. Numbers marked *(start)* are first guesses. We tune them by playing.
 
@@ -49,7 +49,7 @@
 > **Planned lore update (not built yet; see `CLASS_PLAN.md`).** Three major groups: the **White Knights** (claim to keep order, really want control; publicly condemn forbidden magic while secretly using it), the **Dark Ages** (embrace forbidden magic as the next step of civilization; blood, ritual and sacrifice) and the **Outcasts** (mercenaries, exiles, survivors who refuse both; the natural starting point for player characters). Faction ties are lore only and never restrict a class or subclass. The bullets below are the current, shorter version.
 
 - **The land.** A grounded medieval kingdom: mud, stone, rain, plague pits, tithe barns. It starts low fantasy (humans only, magic rare and doubtful) and gets darker and stranger the deeper you go. Dwarves, elves and open sorcery come later.
-- **The White Knights.** A zealous holy order of brainwashed try-hards. Bleached tabards, tarnished gold and endless rules. They "cleanse" villages and tax what's left. They hold the castle city of **Highcrown**.
+- **The White Knights.** A zealous holy order of brainwashed try-hards. Bleached tabards, tarnished gold and endless rules. They "cleanse" villages and tax what's left. They hold the castle city of **Highcrown**. *(Decided 2026-11-25, not built:)* the Knights at the **White Knights Outpost** outside Highcrown's gate (`OUTPOST_PLAN.md`) start hostile, but a quest or storyline can win them over and open the outpost to the player.
 - **The Dark Ages.** Straight evil: raiders, cultists and warlords who burn things because burning is the point. Rust, black iron, trophies.
 - **The players.** A third party caught between them as a new age begins. Your souls are bound to **old shrines** that neither faction controls (placeholder death lore), so you keep coming back. Try-hard heroes get wiped out; you survive by being cunning and experienced.
 - **Storytelling.** No cutscenes. Item descriptions are one or two lines, cryptic, often darkly funny:
@@ -442,7 +442,7 @@ Quests and public quests, more zones and an open world, world bosses, New Game+.
 - **Detail target: detailed, not low-poly.** We aim for the level of detail of Warhammer Online and Champions of Norrath: chunky readable silhouettes, slightly exaggerated proportions (big shoulders, big hands, big weapons), rich textures. **The designs are all our own**, never their armor, symbols or factions.
 - **Gray shapes first, art later.** Gameplay gets built with placeholder shapes and the art is swapped in afterward. These rules keep the swap painless:
   1. **One standard humanoid skeleton** for every human-shaped character: the 65-bone Unreal-style skeleton used by Quaternius's free animation libraries (bones named `pelvis`, `spine_01`, `upperarm_l` ...). Any model or animation built on it drops straight in. Others can be converted with Godot's retargeting.
-  2. **Fixed character size:** about 1.85 m tall, chunky build. Camera distance, doorways (at least 1.6 m wide, 2.6 m tall), weapon reach and level spacing are built around it.
+  2. **Fixed character size:** about 1.85 m tall, chunky build. Camera distance, weapon reach and level spacing are built around it. **Buildings are 1.3x real-world size** *(decided 2026-11-25, OUTPOST_PLAN.md)*: doors about 1.4 x 2.6 m and roomy interiors, so the over-the-shoulder camera works indoors. **Props and furniture stay real-world size** (they fit the body). The Tithelands' existing buildings are still real-world size; resizing them is an open question.
   3. **Gear you can see:** every gear slot (head, shoulders, chest, hands, legs, feet, cloak, weapons) is its own swappable piece on the shared skeleton.
   4. **Real materials and lighting:** standard PBR materials (color, roughness, normal maps) under the shared fog and lighting setup, so detailed and placeholder art sit in the same world.
 - **Detail goes where eyes go:** your character and gear, enemies, and anything within a few meters of the camera get the most detail. Distant things stay simpler; fog hides the rest.
@@ -453,8 +453,9 @@ Quests and public quests, more zones and an open world, world bosses, New Game+.
   - **Buildings and ruins come from modular kits** (wall, corner, arch, floor pieces) so a few detailed pieces build a whole village.
   - **Budget:** scanned models are often millions of triangles and must be simplified before use. Rough limits: hero tree 20–50k triangles, rock 2–10k, player character with gear 30–60k.
 - **Armor gets louder with level**: levels 1–10 are grounded (gambesons, leather, rusty mail, kettle helms). Levels 11–20 add real plate and bigger pauldrons. Levels 21–30 go big: spikes, skulls, chains, tattered banners.
-- **Palette**: washed-out earth tones (mud brown, moss green, slate gray). White Knights are off-white and tarnished gold; the Dark Ages are rust red and black iron. **Shrines are the only warm, safe light** (amber). Loot rarity colors pop against the gray.
+- **Palette**: washed-out earth tones (mud brown, moss green, slate gray). White Knights *(decided 2026-11-25)*: ivory `#E5E0CE`, dark red `#A52F35`, tarnished gold `#C3A45B`, charcoal iron `#292B30`, with **one emblem on everything: a red Templar cross (cross pattee) on a white field** (it replaces the gold cross; shape in `assets/outpost/materials/painter.gd`). The Dark Ages are rust red and black iron. **Shrines are the only warm, safe light** (amber). Loot rarity colors pop against the gray.
 - **Lighting from day one**: overcast sky, volumetric fog, filmic tone mapping, desaturation and ambient occlusion, so even gray boxes look moody. Nights are cold, blue and genuinely dark.
+- **The White Knights Outpost** (north end of the Tithelands, `OUTPOST_PLAN.md`) uses **hand-painted textures**: painted light, shade, dirt and wear, high roughness, no photo detail, per the owner's brief of 2026-11-25. Whether the rest of the game moves to hand-painted is open (OUTPOST_PLAN.md section 7).
 - **Sources**: free CC0 assets plus your AI-generated art. Poly Haven and ambientCG (detailed textures, rocks, scanned plants) are final-quality. Quaternius, KayKit and Kenney are low-poly, so they're **stand-ins only**, except for things like UI and sound. Detailed characters, armor and props come mostly from your AI art (textures, and image-to-3D for armor and props), cleaned up and fitted to the shared skeleton. See `ART_NEEDS.md`. Every asset gets logged in `assets/CREDITS.md`.
 
 ### 12.2 Audio

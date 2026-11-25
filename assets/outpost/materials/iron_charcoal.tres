@@ -1,0 +1,12 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/iron.png" id="1_ub7y3"]
+
+[resource]
+resource_name = "iron_charcoal"
+albedo_texture = ExtResource("1_ub7y3")
+metallic = 0.35
+metallic_specular = 0.4
+roughness = 0.7
+uv1_scale = Vector3(2, 2, 1)
+texture_filter = 5

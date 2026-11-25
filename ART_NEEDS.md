@@ -93,7 +93,8 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Shrines (3–4) | Old stone shrine with amber flame | Kit pieces + custom | ⭐ concept | 🟨 cylinder |
 | Overcast sky | Gray cloudy sky image | Poly Haven HDRI | | 🟨 gradient |
 | Rain | Rain particles, splashes, wet-surface look | Particles + shader | | 🟨 streaks only |
-| White Knight Zealot | Off-white tabard, tarnished gold, sword and shield, horn | Humanoid + outfits | ⭐ textures | ⬜ |
+| White Knight Zealot | Wears the White Knight character, red-cross heater shield, steel sword | `assets/characters/white_knight/` | ⭐ textures | ✅ (horn still missing) |
+| White Knight (character) | Great helm, mail, ivory tabard with the red cross, pauldrons, boots (owner's sheet, `docs/white_knight/`) | Code, textured from the owner's sheet (`assets/characters/white_knight/`) | ⭐⭐ | ✅ (the Zealot wears it) |
 | Gaunt Hound | Starved wolf-like dog, rigged (run, bite, lunge, howl) | Quaternius animals | ⭐ textures | 🟨 box body |
 | Hobb the Unhanged | Bandit chief with a noose around his neck | Humanoid + outfits | ⭐ | ⬜ |
 | Map | Parchment map art, icons (shrine, party, you) | n/a | ⭐⭐ | 🟨 shaded terrain |
@@ -122,6 +123,16 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Class icons | Martial, Vanguard, Mystic and the nine subclasses | AI art | ⭐⭐ | ⬜ |
 | Faction banners and looks | White Knights (noble, disciplined, medieval), Dark Ages (darker, unsettling, ritual), Outcasts (mismatched, travel-worn) | AI concept art | ⭐⭐ | ⬜ |
 | Subclass weapons | Daggers, throwing knives, crossbows, tower shields, warhammers, ritual charms and more | Kit pieces + custom | ⭐ | ⬜ |
+
+## White Knights Outpost (OUTPOST_PLAN.md; full list in assets/outpost/MANIFEST.md)
+228 assets in the owner's brief: 49 built, 80 with a stand-in already in the project, 99 to make. Built in code with hand-painted textures; any can be swapped for your art.
+| Need | Details | Likely source | AI | Status |
+|---|---|---|---|---|
+| White Knights set WK01-WK12 | Banners, pennant, standard, shield, signboard, plaque, awning, notice, stone insignia, fittings, banner stand | Code (`assets/outpost/white_knights/`) | | ✅ |
+| Checkpoint CP01-CP20 | Barrier, barricade, guard shelter, toll table, bench, racks, chest, braziers, torch holders, lantern, stencilled barrels and crates, rope and chain, warning sign, boundary marker | Code (`assets/outpost/castle_approach/`) | | ✅ |
+| Hand-painted textures | Emblem, oak, iron, gold, linen, stripes, rope, limestone, parchment (`assets/outpost/materials/textures/*.png`). Paint over them or replace with AI art, same name and size | Code now | ⭐⭐ | 🟨 code-painted |
+| Organic props | Saddles, anvil, hanging meat, pottery, bellows: good image-to-3D candidates (one object per image, three-quarter view, plain background, no text) | Image-to-3D (e.g. Modelado) or code | ⭐⭐ | ⬜ |
+| Buildings | Inn, blacksmith, stable, market shelter, carpenter, cottages, shed, guard shelter. All at 1.3x real-world size. Cottages, shed, market shelter and stall built; inn, blacksmith, stable, carpenter to do | Code kit (`assets/outpost/buildings/`) | ⭐ textures | 🟨 6 of 10 |
 
 ## Camp and raids (Phase 13, gray-box now)
 | Need | Details | Likely source | AI | Status |

@@ -25,7 +25,36 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 ---
 
 ## Waiting
-_(nothing yet)_
+
+### 2026-11-23: KINGDOM inventory and character panel UI standard
+- **Area:** UI / loot
+- **Decision:** Adopt the approved Champions of Norrath-inspired combined character and spatial inventory screen, with Oblivion-inspired top navigation. The clarified equipment layout is authoritative for the UI: one ring slot, no belt slot, and one Utility slot that also equips the cloak. Keep the existing two weapon sets and their swap behavior; the character panel shows the currently active main-hand and off-hand slots.
+- **Details:** Keep the player character visible beside the backpack at all times. Left: spatial backpack grid with real item footprints, stack counts, rarity borders, weight/capacity, sorting, drag-and-drop, and rotation where appropriate. Center: 3D character on a pedestal with equipment slots around the paperdoll. Right: level/XP, attributes, combat stats, health, mana, stamina. Equipment slots: Head, Shoulders (directly beneath Head), Chest, Hands, Legs, Feet, Neck, Ring (exactly one), Utility (cloak uses this slot), active Main Hand, active Off Hand (weapon or shield). There is no Belt slot. Existing two weapon sets remain a gameplay feature; provide a way to inspect/swap the active set without adding four permanent paperdoll slots. Top tabs, in order: Character, Inventory, Map, Talents, Quests, System. Remove Magic and Help. Preserve the dark, ornate, aged-gold medieval fantasy look and controller navigation. Item footprints must be data-driven and prevent overlap/out-of-bounds placement; item selection supports inspect, compare, equip, drop and mark-junk actions.
+- **Status:** decided
+- **Replaces:** The previous UI mockup slot arrangement (including belt and separate ring/utility assumptions); clarifies DESIGN.md 9.2 for the displayed equipment slots. Does not remove the existing two-weapon-set gameplay system.
+
 
 ## Filed
-_(nothing yet)_
+
+### 2026-11-25: White Knight character sheet
+- **Area:** art direction / factions
+- **Decision:** The White Knight looks like the owner's character sheet: flat-topped great helm with a cross-shaped slit, breaths and brass trim; mail coif, hauberk and chausses; an ivory tabard to mid-shin with the red cross pattee front and back, red under-panels in its splits and a ragged hem; a hood bunched round the neck; steel pauldrons with a red cross, vambraces with elbow cops, plated gauntlets; a wide belt with a square buckle, a slung sword belt and a pouch; brown knee-high boots. Build it from the sheet, not from the existing armour.
+- **Details:** `docs/white_knight/white_knight_sheet.webp` and `white_knight_details.png` (pasted by the owner in chat). Palette as in the sheet (ivory, dark red, steel, tarnished brass, brown leather).
+- **Status:** decided (owner, in chat).
+- **Filed (2026-11-25):** built as `assets/characters/white_knight/` (HANDOFF, ART_NEEDS, PRIORITIES P4). The owner then asked for it on the White Knight Zealot: done, every Zealot wears it.
+
+### 2026-11-25: The outpost's White Knights are hostile, but can be won over
+- **Area:** factions / zone 1 / quests
+- **Decision:** The White Knights at the outpost start hostile. A quest or storyline can make them friendly and give the player access to the outpost.
+- **Details:** Needs a quest system (not built yet; PRIORITIES P4) and a saved "truce" flag. Until then the outpost is simply hostile. Open: does the truce belong to one character or to the whole world; what access gives (the inn, smith and market as vendors, resting, passage toward the castle); can it be lost; does it change Knights elsewhere?
+- **Status:** decided (the owner, in chat, 2026-11-25).
+- **Replaces:** nothing. It refines SPEC.md's "both factions are enemies of the players" for this outpost (SPEC.md itself is not edited).
+- **Filed (2026-11-25):** OUTPOST_PLAN.md sections 2 and 7; DESIGN.md section 2; PRIORITIES.md P4 (quest system).
+
+### 2026-11-25: White Knights Outpost (north end of the Tithelands, in front of Highcrown's moat)
+- **Area:** zone 1 / art direction / factions
+- **Decision:** A small permanent medieval settlement just outside Highcrown's gate (inn, civilian blacksmith, stables and farrier, market, carpenter, cottages, well), with a White Knights checkpoint at the drawbridge. It replaces the Knights' checkpoint (banner poles, tents, stalls) in Knight's Gap. Built as a reusable library of 228 modular assets with a manifest. Hand-painted look; 12th-13th century England. The castle itself is not part of this job.
+- **Details:** White Knights palette ivory `#E5E0CE`, dark red `#A52F35`, tarnished gold `#C3A45B`, charcoal iron `#292B30`. Emblem (owner, 2026-11-25): white field with a red Templar cross (cross pattee), the same on everything; the gold lion in the in-game concept picture is not used. Size targets: road and drawbridge 12 m, checkpoint 14 m, market about 28 x 24 m, outpost about 160 x 120 m. Brief word for word: `docs/outpost/OUTPOST_BRIEF.md` (the paste stops partway through section 9).
+- **Status:** decided (pasted by the owner into Claude Code, 2026-11-25; location and emblem confirmed in chat the same day).
+- **Replaces:** the gold cross on the White Knight banners; DESIGN.md 12.1's "off-white and tarnished gold" line for the Knights.
+- **Filed (2026-11-25):** `OUTPOST_PLAN.md` (decisions, what exists, layout proposal, stages, asset rules, open questions); `assets/outpost/MANIFEST.md` (all 228 assets); DESIGN.md 12.1 (palette, emblem, hand-painted outpost); ZONES_DESIGN.md section 3; ART_NEEDS.md; PRIORITIES.md P4; TODO.md. Stage 1 (the White Knights set, WK01-WK12) is built. Still open, in OUTPOST_PLAN.md section 7: scale, who lives there, moving the castle closer, GLBs, hand-painted everywhere, the rest of the brief.
