@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/warning_board.png" id="1_5dbpq"]
+
+[resource]
+resource_name = "warning_board"
+albedo_texture = ExtResource("1_5dbpq")
+metallic_specular = 0.25
+roughness = 0.85
+texture_filter = 5

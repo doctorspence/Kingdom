@@ -24,7 +24,7 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 
 ## P1: Reach the milestone (this is the real goal)
 
-- [x] **You: Answer the scale question now** *(Decided 2026-11-23: the scale is good as it is. Doors, corridors and props stay their current size against the player.)* ("make doors, corridors and props bigger against the player?"). Every new building and cave pass makes changing scale more expensive. Decide before more art.
+- [x] **You: Answer the scale question now** ("make doors, corridors and props bigger against the player?"). *Decided 2026-11-25: new buildings are 1.3x real-world size (doors about 1.4 x 2.6 m); props and furniture stay real-world. You compared both sizes of the outpost cottage and left the pick to Claude Code (DESIGN.md 12.1, OUTPOST_PLAN.md). Still open: resize the Tithelands' existing buildings to match (P2).*
 - [x] **CC: Get the frame rate playable.** *(Done 2026-11-22: worst of the 10 spots 45 -> 72 FPS at 1920x1080 via terrain LODs, size-based prop draw distance and a shadow budget for point lights; tree LODs not needed, trees already batch and cull at 175 m. Measure again with `tests/perf_zone.gd`.)* Original note: The audit measured 22–28 FPS at the spawn and the farms. Hiding the underground Gullet has helped since then, but trees still have no distance versions (LODs). Trees, shrubs and boulders cost 1.5–4 M primitives in busy views, and the zone takes 8.7 s to load. Target 60 FPS at the spawn. Measure at the 10 fixed spots from ZONE1_OVERHAUL stage 7. Friends' PCs may be slower than yours.
 - [x] **CC: Re-export the friends build** *(2026-11-22, 176 MB)* (`build/Kingdom-windows.zip`). The current one is from before the camp, the environment pass, the new Gullet and the equipment system.
 - [ ] **You: The playtest round, solo.** In this order:
@@ -47,6 +47,7 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 - [x] **Cryptic descriptions** already exist as drafts and are in the item files (`flavor =`). Change any you don't like: Steel Pickaxe "A miner's tool that learned a second trade." · Blackstone Amulet "A chip of the black stone on a leather cord. It never quite reaches room temperature." · Harl's Black Pick "The head is cut from the stone itself, and it is warm." · Bread "Hard, but it is food." · Health Potion "Tastes of iron and bad decisions."
 - [x] Harl's unique weapon stays **Harl's Black Pick** (decided 2026-11-22). [ ] Still open: rename "Rook the Cutthroat" (`data/enemies/enemy_bandit_rook.tres`).
 - [ ] The open questions in `DESIGN.md` section 14.
+- [ ] Resize the Tithelands' existing buildings (cottages, tithe barn, mill, chapel, watchtower) to 1.3x so they match the outpost? (2026-11-25)
 - [x] Chapel and barrow: **used later** (decided 2026-11-22), nothing to build now.
 - [x] Brother Tallow and the acolytes: **keep** (decided 2026-11-22; for a later zone).
 - [ ] Class abilities: you will change these later (the 🧪 ability lines in `TODO.md` are ticked as played).
@@ -62,11 +63,13 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 
 ## P4: Content and art (after the milestone)
 
+- [x] **White Knight character** *(2026-11-25)*: built from the owner's sheet, `assets/characters/white_knight/` (see HANDOFF). The White Knight Zealot wears it, with a red-cross shield. Open: a sword and scabbard, a helmless/hooded variant and the fur-cloak variant from the sheet are not made.
 - [ ] **Art pipeline test.** Take one bandit from AI concept to a rigged model on the standard skeleton (`ART_NEEDS.md`, `GULLET_DESIGN.md` section 10). The world now looks detailed, but every character is still a mannequin. That's the biggest visual gap left.
 - [ ] Tithelands polish: judge the foliage fade in a dense wood, add a mill race for the wheel, make the weir crossing readable, LODs for distant trees.
 - [ ] Gullet look pass 2: only if you're not happy with pass 1.
 - [ ] Harl extras: charge-in, sweep-into-backhand, pick throw.
-- [ ] **A quest system.** It's in the spec, and subclass initiation (Phase 11 P6) needs it.
+- [ ] **A quest system.** It's in the spec, and subclass initiation (Phase 11 P6) needs it. So does the outpost: its White Knights start hostile, and a quest or storyline can win them over and open the outpost (decided 2026-11-25, OUTPOST_PLAN.md).
 - [ ] Subclasses: 6 of 9 are still "coming later" (Paladin, Mage, Rogue, Ranger, Warlock, Warden), plus the factions.
+- [ ] **White Knights Outpost** (`OUTPOST_PLAN.md`, started 2026-11-25 at the owner's request; it replaces the Knight's Gap checkpoint). Stages 1-2 done (the White Knights set and the checkpoint: 29 assets, on `main`). Stage 3: five of ten buildings done (small and medium cottage, shed, market shelter, stall; B10 is the guard shelter). Next: inn, blacksmith, stable, carpenter. Owner decisions in OUTPOST_PLAN.md section 7 (scale, who lives there, moving the castle closer).
 - [ ] Zones 2 and 3 (`ZONES_DESIGN.md`), then a walkable Highcrown.
 - [ ] **The long gap:** the spec says level cap 30 and about 30 hours of play. Content now covers about levels 1–6. Plan zones and loot tiers against that.

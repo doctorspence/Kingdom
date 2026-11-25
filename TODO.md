@@ -231,6 +231,21 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Lock on to a dummy or bandit and hold A or D: tell me if the side-step is too slow, too quick-footed, or too wide
 - [ ] Later: real backward and sideways walk/jog animations would still look better than the leg turn
 
+## White Knights Outpost (started 2026-11-25; plan in OUTPOST_PLAN.md, asset list in assets/outpost/MANIFEST.md)
+- [x] Stage 1: hand-painted texture painter, outpost kit, exporter and preview pictures; the White Knights set WK01-WK12 (`assets/outpost/white_knights/`, 8,691 triangles in all)
+- [ ] 🧪 Look at `docs/outpost/wk_overview.jpg`, `wk_wall.jpg`, `wk_stand.jpg`, `wk_pennant.jpg` (or double-click any `.scn` in `assets/outpost/white_knights/` in the editor): is the emblem right, too clean, too bright?
+- [x] Stage 2: checkpoint and castle approach (CP01-CP20, `assets/outpost/castle_approach/`; 29 assets, 19,987 triangles in all)
+- [ ] 🧪 Look at `docs/outpost/cp_overview.jpg`, `cp_left.jpg`, `cp_right.jpg`, `cp_table.jpg`, `cp_dusk.jpg`: does it say "the Knights control this road"? Anything missing at a checkpoint?
+- [x] Stage 3 started: B07 small cottage, enterable with a lit hearth, at the chosen 1.3x building size (compared against real-world size: `docs/outpost/scale_compare_*.jpg`); the guard shelter CP08 rebuilt at 1.3x; test map `levels/sandbox/outpost_test.tscn`; new check `outpost_check` (all assets load, a player walks into the cottage and the shelter, walls block)
+- [x] 🧪 Compare the cottage at both sizes *(the owner left the pick to Claude Code: 1.3x)*
+- [ ] 🧪 Open `levels/sandbox/outpost_test.tscn`, press F6, walk into the cottage and the guard shelter: does the size feel right with the camera?
+- [x] Stage 3: B08 medium cottage, B09 storage shed, B04 large market shelter, B05 small market stall (B10 = the guard shelter CP08); all walk-in, checked by `outpost_check`
+- [ ] 🧪 Walk the new buildings in `levels/sandbox/outpost_test.tscn` (pictures `docs/outpost/vil_*.jpg`)
+- [ ] Stage 3: B01 inn, B02 blacksmith, B03 stable, B06 carpenter
+- [ ] Stages 4-7: trade and village props, ground and plants, light and effects, story props
+- [ ] Stage 8: placement in the Tithelands (needs the owner's OK on the layout and on who lives there)
+- [ ] Stage 9: checks, FPS, pictures
+
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
 - Quests and public quests

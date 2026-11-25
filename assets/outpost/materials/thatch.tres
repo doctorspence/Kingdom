@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/thatch.png" id="1_em416"]
+
+[resource]
+resource_name = "thatch"
+albedo_texture = ExtResource("1_em416")
+metallic_specular = 0.1
+texture_filter = 5

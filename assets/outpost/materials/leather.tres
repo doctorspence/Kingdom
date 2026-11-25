@@ -1,0 +1,12 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/oak_stained.png" id="1_7grtr"]
+
+[resource]
+resource_name = "leather"
+albedo_color = Color(0.9, 0.62, 0.5, 1)
+albedo_texture = ExtResource("1_7grtr")
+metallic_specular = 0.3
+roughness = 0.8
+uv1_scale = Vector3(3.030303, 3.030303, 1)
+texture_filter = 5

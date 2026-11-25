@@ -26,13 +26,14 @@ In the editor: **Debug → Customize Run Instances...** → tick **Enable Multip
 - Other test maps: in the editor's **FileSystem** panel (bottom left), open one and press **F6** ("run this scene"):
   - `levels/sandbox/movement_test.tscn`: slopes, stairs, fall heights
   - `levels/sandbox/look_test.tscn`: the Phase 1 mood map
+  - `levels/sandbox/outpost_test.tscn`: the White Knights Outpost's finished buildings and some checkpoint pieces; walk in and around them
 
 ## Automated checks
 I run these before handing you a build. You can too (PowerShell, in this folder):
 ```
 & "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/run.gd -- combat_check
 ```
-(Swap `combat_check` for `movement_check`, `class_check`, `loot_check`, `death_check`, `enemy_check`, `zone_check`, `boss_check` (the Gullet and the boss) `moves_check` (extra attacks, lock-on flick, enemy spacing), `audio_check` (volume groups and sliders), `sound_check` (combat sounds), `subclass_check` (subclasses), `prefs_check` (settings and key rebinding) or `camp_check` (the camp and raids) to run the others.) Each ends with PASS or FAIL.
+(Swap `combat_check` for `movement_check`, `class_check`, `loot_check`, `death_check`, `enemy_check`, `zone_check`, `boss_check` (the Gullet and the boss) `moves_check` (extra attacks, lock-on flick, enemy spacing), `audio_check` (volume groups and sliders), `sound_check` (combat sounds), `subclass_check` (subclasses), `prefs_check` (settings and key rebinding), `camp_check` (the camp and raids) or `outpost_check` (the outpost assets load; a player can walk into its buildings) to run the others.) Each ends with PASS or FAIL.
 
 The 3-player network check starts three copies of the game and prints what each one saw:
 ```
@@ -58,6 +59,7 @@ Weapons, shields and enemies are in `data/weapons/`, `data/shields/` and `data/e
 | `ZONE1_OVERHAUL.md` | Zone 1 rebuild and performance plan |
 | `GREENWOOD_OVERHAUL.md` | Zone 1 Greenwood look: trees, limestone, plants, light |
 | `GULLET_DESIGN.md` | The Gullet dungeon and Harl the Delver (map: `GULLET_MAP.svg`) |
+| `OUTPOST_PLAN.md` | The White Knights Outpost at the north end of the Tithelands (asset list: `assets/outpost/MANIFEST.md`, brief and pictures: `docs/outpost/`) |
 | `CLASS_PLAN.md` | Plan for the Martial / Vanguard / Mystic classes, nine subclasses and the three factions (not built yet) |
 | `ART_NEEDS.md` | Art & audio shopping list |
 | `assets/` | Art and sound. Every file is logged in `assets/CREDITS.md` |
