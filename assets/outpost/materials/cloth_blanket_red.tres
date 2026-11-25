@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/outpost/materials/textures/linen.png" id="1_nojb6"]
+
+[resource]
+resource_name = "cloth_blanket_red"
+albedo_color = Color(0.6, 0.22, 0.2, 1)
+albedo_texture = ExtResource("1_nojb6")
+metallic_specular = 0.15
+texture_filter = 5

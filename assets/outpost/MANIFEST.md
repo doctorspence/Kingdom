@@ -4,7 +4,7 @@
 
 **Status:** ✅ built for the outpost (hand-painted, baked to `assets/outpost/<folder>/<ID_name>.scn`) · ♻️ something usable already exists in the project and can stand in, but the outpost version is still to make · ⬜ to do.
 
-**Totals (228 assets):** ✅ 111 built · ♻️ 57 with a stand-in · ⬜ 60 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
+**Totals (228 assets):** ✅ 176 built · ♻️ 37 with a stand-in · ⬜ 15 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
 
 **How each asset is made:** built in code for now (`assets/outpost/`, like the bandit-hideout kit). Any asset can later be swapped for a GLB the owner makes with an image-to-3D tool: keep the same file name, origin and size (rules in `OUTPOST_PLAN.md`, section 6).
 
@@ -68,35 +68,35 @@
 | WK11 | Banner ropes and fittings | ✅ | `WK11_banner_ropes_and_fittings.scn` |
 | WK12 | Banner stand | ✅ | `WK12_banner_stand.scn` (WK02 hangs from it) |
 
-## D. Stable and horse area (`stable/`, 6 of 25 built)
+## D. Stable and horse area (`stable/`, 25 of 25 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
 | ST01 | Timber stable | ✅ | = B03 |
 | ST02 | Stall partitions | ✅ | built into B03 |
-| ST03 | Stable doors | ♻️ | hideout `door_gate` |
-| ST04 | Rectangular hay bales | ⬜ |  |
-| ST05 | Loose hay piles | ⬜ |  |
-| ST06 | Hay rack | ♻️ | built into B03; a separate piece to do |
-| ST07 | Wooden feeding trough | ⬜ | also CO14 |
-| ST08 | Water trough | ⬜ |  |
+| ST03 | Stable doors | ✅ | `ST03_stable_doors.scn` |
+| ST04 | Rectangular hay bales | ✅ | `ST04_rectangular_hay_bales.scn` |
+| ST05 | Loose hay piles | ✅ | `ST05_loose_hay_piles.scn` |
+| ST06 | Hay rack | ✅ | `ST06_hay_rack.scn` |
+| ST07 | Wooden feeding trough | ✅ | `ST07_wooden_feeding_trough.scn` |
+| ST08 | Water trough | ✅ | `ST08_water_trough.scn` |
 | ST09 | Wooden water buckets | ✅ | = BS15 |
 | ST10 | Grain sacks | ✅ | = MK08 |
-| ST11 | Feed baskets | ♻️ | hideout `basket_empty` |
-| ST12 | Hitching posts | ⬜ |  |
-| ST13 | Horse fence sections | ⬜ |  |
-| ST14 | Stable gate | ⬜ |  |
-| ST15 | Saddle rack | ⬜ |  |
-| ST16 | Saddles | ⬜ | good image-to-3D candidate |
-| ST17 | Horse blankets | ⬜ |  |
-| ST18 | Bridles and reins | ⬜ |  |
+| ST11 | Feed baskets | ✅ | `ST11_feed_baskets.scn` |
+| ST12 | Hitching posts | ✅ | `ST12_hitching_post.scn` |
+| ST13 | Horse fence sections | ✅ | `ST13_horse_fence_section.scn` |
+| ST14 | Stable gate | ✅ | `ST14_stable_gate.scn` |
+| ST15 | Saddle rack | ✅ | `ST15_saddle_rack.scn` |
+| ST16 | Saddles | ✅ | `ST16_saddle.scn` |
+| ST17 | Horse blankets | ✅ | `ST17_horse_blankets.scn` |
+| ST18 | Bridles and reins | ✅ | `ST18_bridles_and_reins.scn` |
 | ST19 | Horseshoes | ✅ | = BS16 |
-| ST20 | Farrier tool rack | ⬜ |  |
-| ST21 | Manure piles | ⬜ |  |
-| ST22 | Manure cart | ⬜ |  |
-| ST23 | Wheelbarrow | ♻️ | hideout `wheelbarrow_empty`, `wheelbarrow_loaded` |
+| ST20 | Farrier tool rack | ✅ | `ST20_farrier_tool_box.scn` |
+| ST21 | Manure piles | ✅ | `ST21_manure_pile.scn` |
+| ST22 | Manure cart | ✅ | `ST22_manure_cart.scn` |
+| ST23 | Wheelbarrow | ✅ | `ST23_wheelbarrow.scn` |
 | ST24 | Stable lantern | ✅ | = CP17 |
-| ST25 | Grooming equipment | ⬜ |  |
+| ST25 | Grooming equipment | ✅ | `ST25_grooming_equipment.scn` |
 
 ## E. Market props (`market/`, 24 of 24 built)
 
@@ -154,76 +154,76 @@
 | BS21 | Ash pile | ✅ | `BS21_ash_pile.scn` |
 | BS22 | Forge lantern | ✅ | = CP17 |
 
-## G. Inn and tavern (`inn/`, 6 of 20 built)
+## G. Inn and tavern (`inn/`, 20 of 20 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
 | IN01 | Inn building | ✅ | = B01 |
 | IN02 | Tavern hanging sign | ✅ | built into B01 (a painted tankard) |
-| IN03 | Outdoor benches | ⬜ | also CO17 |
-| IN04 | Outdoor tables | ♻️ | hideout `table_trestle` |
-| IN05 | Dining tables | ♻️ | hideout `table_trestle` |
-| IN06 | Wooden stools | ♻️ | hideout `stool_0`-`stool_2` |
+| IN03 | Outdoor benches | ✅ | `IN03_outdoor_bench.scn` |
+| IN04 | Outdoor tables | ✅ | `IN04_outdoor_table.scn` |
+| IN05 | Dining tables | ✅ | `IN05_dining_table.scn` |
+| IN06 | Wooden stools | ✅ | `IN06_wooden_stools.scn` |
 | IN07 | Bar counter | ✅ | built into B01 |
-| IN08 | Ale barrels | ♻️ | hideout `barrel_large`, `barrel_stack` |
-| IN09 | Wooden drinking mugs | ⬜ |  |
-| IN10 | Ceramic tankards | ⬜ |  |
-| IN11 | Cooking pots | ♻️ | hideout `tripod_pot` |
+| IN08 | Ale barrels | ✅ | `IN08_ale_barrels.scn` |
+| IN09 | Wooden drinking mugs | ✅ | `IN09_wooden_mugs.scn` |
+| IN10 | Ceramic tankards | ✅ | `IN10_ceramic_tankards.scn` |
+| IN11 | Cooking pots | ✅ | `IN11_cooking_pot.scn` |
 | IN12 | Fireplace | ✅ | built into B01 |
-| IN13 | Firewood basket | ⬜ |  |
+| IN13 | Firewood basket | ✅ | `IN13_firewood_basket.scn` |
 | IN14 | Food plates and bowls | ✅ | = MK16 |
 | IN15 | Hanging lanterns | ✅ | = CP17 |
-| IN16 | Beds and straw mattresses | ♻️ | hideout `bedding_straw` |
-| IN17 | Linen bedding | ♻️ | hideout `bedding_blanket` |
-| IN18 | Wall shelves | ♻️ | hideout `shelf_3tier` |
-| IN19 | Hanging herbs | ⬜ |  |
-| IN20 | Tavern notice board | ⬜ | WK09 notices on a board |
+| IN16 | Beds and straw mattresses | ✅ | `IN16_bed_straw_mattress.scn` |
+| IN17 | Linen bedding | ✅ | `IN17_bed_linen_bedding.scn` |
+| IN18 | Wall shelves | ✅ | `IN18_wall_shelves.scn` |
+| IN19 | Hanging herbs | ✅ | `IN19_hanging_herbs.scn` |
+| IN20 | Tavern notice board | ✅ | `IN20_tavern_notice_board.scn` |
 
-## H. Carpenter and trade workshop (`carpenter/`, 3 of 16 built)
+## H. Carpenter and trade workshop (`carpenter/`, 16 of 16 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
 | CR01 | Carpenter workshop | ✅ | = B06 |
-| CR02 | Workbench | ✅ | built into B06 |
-| CR03 | Sawhorse | ⬜ |  |
-| CR04 | Hand saw | ⬜ |  |
-| CR05 | Wooden mallet | ⬜ |  |
-| CR06 | Chisels and carving tools | ⬜ |  |
-| CR07 | Timber plank piles | ⬜ |  |
-| CR08 | Cut logs | ⬜ |  |
+| CR02 | Workbench | ✅ | `CR02_workbench.scn` |
+| CR03 | Sawhorse | ✅ | `CR03_sawhorse.scn` |
+| CR04 | Hand saw | ✅ | `CR04_hand_saw.scn` |
+| CR05 | Wooden mallet | ✅ | `CR05_wooden_mallet.scn` |
+| CR06 | Chisels and carving tools | ✅ | `CR06_chisels_and_carving_tools.scn` |
+| CR07 | Timber plank piles | ✅ | `CR07_timber_plank_pile.scn` |
+| CR08 | Cut logs | ✅ | `CR08_cut_logs.scn` |
 | CR09 | Firewood | ✅ | = BS13 |
-| CR10 | Wood shavings | ⬜ |  |
-| CR11 | Wooden cart | ♻️ | zone 1 story props (tipped cart) |
-| CR12 | Cart wheels | ⬜ |  |
-| CR13 | Wagon axle | ⬜ |  |
-| CR14 | Rope coils | ♻️ | hideout `rope_coil` |
-| CR15 | Wooden pegs | ⬜ |  |
-| CR16 | Timber frame sections | ♻️ | zone 1 `building_kit.gd` frame walls |
+| CR10 | Wood shavings | ✅ | `CR10_wood_shavings.scn` |
+| CR11 | Wooden cart | ✅ | `CR11_wooden_cart.scn` |
+| CR12 | Cart wheels | ✅ | `CR12_cart_wheels.scn` |
+| CR13 | Wagon axle | ✅ | `CR13_wagon_axle.scn` |
+| CR14 | Rope coils | ✅ | = CP16 |
+| CR15 | Wooden pegs | ✅ | `CR15_wooden_pegs.scn` |
+| CR16 | Timber frame sections | ✅ | `CR16_timber_frame_section.scn` |
 
-## I. Cottages and civilian life (`cottages/`, 4 of 18 built)
+## I. Cottages and civilian life (`cottages/`, 18 of 18 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
 | CO01 | Small thatched cottage | ✅ | = B07 |
-| CO02 | Wattle-and-daub cottage | ♻️ | zone 1 `building_kit.gd` |
-| CO03 | Cottage doors | ♻️ | zone 1 `building_kit.gd` |
-| CO04 | Wooden shutters | ♻️ | zone 1 `building_kit.gd` |
-| CO05 | Chimneys | ♻️ | built into B07; a separate piece to do |
-| CO06 | Vegetable gardens | ⬜ |  |
-| CO07 | Garden fences | ⬜ |  |
-| CO08 | Clotheslines | ⬜ |  |
-| CO09 | Hanging linen | ⬜ |  |
-| CO10 | Laundry baskets | ⬜ |  |
+| CO02 | Wattle-and-daub cottage | ✅ | = B08 (wattle-and-daub) |
+| CO03 | Cottage doors | ✅ | `CO03_cottage_door.scn` |
+| CO04 | Wooden shutters | ✅ | `CO04_wooden_shutters.scn` |
+| CO05 | Chimneys | ✅ | `CO05_chimney_stack.scn` |
+| CO06 | Vegetable gardens | ✅ | `CO06_vegetable_garden.scn` |
+| CO07 | Garden fences | ✅ | `CO07_garden_fence.scn` |
+| CO08 | Clotheslines | ✅ | `CO08_clothesline.scn` |
+| CO09 | Hanging linen | ✅ | `CO09_hanging_linen.scn` |
+| CO10 | Laundry baskets | ✅ | `CO10_laundry_basket.scn` |
 | CO11 | Wood piles | ✅ | = BS13 |
-| CO12 | Animal pens | ⬜ |  |
-| CO13 | Chicken coop | ⬜ |  |
-| CO14 | Feed trough | ⬜ | = ST07 |
-| CO15 | Household tools | ♻️ | hideout `shovel`, `broken_tools` |
+| CO12 | Animal pens | ✅ | `CO12_animal_pen.scn` |
+| CO13 | Chicken coop | ✅ | `CO13_chicken_coop.scn` |
+| CO14 | Feed trough | ✅ | = ST07 |
+| CO15 | Household tools | ✅ | `CO15_household_tools.scn` |
 | CO16 | Clay storage jars | ✅ | = MK14 |
-| CO17 | Benches | ⬜ | = IN03 |
+| CO17 | Benches | ✅ | = IN03 |
 | CO18 | Household buckets | ✅ | = BS15 |
 
-## J. Environment and terrain (`environment/`, 0 of 28 built)
+## J. Environment and terrain (`environment/`, 3 of 28 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
@@ -246,9 +246,9 @@
 | ENV17 | Beech trees | ♻️ | `tree_species.gd` beech |
 | ENV18 | Birch trees | ♻️ | `tree_species.gd` birch |
 | ENV19 | Tree stumps | ⬜ |  |
-| ENV20 | Split-rail fences | ⬜ |  |
-| ENV21 | Wattle fences | ⬜ |  |
-| ENV22 | Fence gates | ⬜ |  |
+| ENV20 | Split-rail fences | ✅ | = ST13 |
+| ENV21 | Wattle fences | ✅ | = CO07 |
+| ENV22 | Fence gates | ✅ | = ST14 |
 | ENV23 | Stone path pieces | ⬜ |  |
 | ENV24 | Creek water material | ♻️ | `water_stream.gd` (the brook) |
 | ENV25 | Creek rocks | ♻️ | scree, `quarry_kit.gd` |
@@ -274,7 +274,7 @@
 | FX12 | Rain splash | ⬜ |  |
 | FX13 | Water ripples | ⬜ |  |
 
-## L. Small environmental storytelling props (`props/`, 2 of 20 built)
+## L. Small environmental storytelling props (`props/`, 4 of 20 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
@@ -286,9 +286,9 @@
 | DT06 | Hanging rope | ♻️ | hideout `hanging_rope_2m` |
 | DT07 | Old iron chain | ♻️ | hideout `chain_1m` |
 | DT08 | Rusted tools | ♻️ | hideout `broken_tools` |
-| DT09 | Wooden handcart | ⬜ |  |
+| DT09 | Wooden handcart | ✅ | = ST22's cart (CR11 without the load) |
 | DT10 | Broken wagon wheel | ⬜ |  |
-| DT11 | Straw bundles | ⬜ |  |
+| DT11 | Straw bundles | ✅ | = ST04 / ST05 |
 | DT12 | Scattered firewood | ⬜ |  |
 | DT13 | Fallen signboard | ⬜ | WK06's board, fallen |
 | DT14 | Stone piles | ♻️ | hideout `rubble_small` |

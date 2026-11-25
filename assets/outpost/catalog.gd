@@ -8,6 +8,10 @@ const CP := preload("res://assets/outpost/castle_approach/castle_approach.gd")
 const BLD := preload("res://assets/outpost/buildings/buildings.gd")
 const MKT := preload("res://assets/outpost/market/market.gd")
 const BSM := preload("res://assets/outpost/blacksmith/blacksmith.gd")
+const STB := preload("res://assets/outpost/stable/stable.gd")
+const INN := preload("res://assets/outpost/inn/inn.gd")
+const CRP := preload("res://assets/outpost/carpenter/carpenter.gd")
+const COT := preload("res://assets/outpost/cottages/cottages.gd")
 
 
 static func entries() -> Array:
@@ -76,4 +80,29 @@ static func entries() -> Array:
 			["BS17_sword_blade_blanks", BSM.blade_blanks], ["BS18_iron_tools", BSM.iron_tools], ["BS19_weapon_rack", BSM.weapon_rack],
 			["BS21_ash_pile", BSM.ash_pile]]:
 		e.append([S, it[0], it[1]])
+	for it in [["ST03_stable_doors", STB.stable_doors], ["ST04_rectangular_hay_bales", STB.hay_bales], ["ST05_loose_hay_piles", STB.hay_piles],
+			["ST06_hay_rack", STB.hay_rack], ["ST07_wooden_feeding_trough", STB.feed_trough], ["ST08_water_trough", STB.water_trough],
+			["ST11_feed_baskets", STB.feed_baskets], ["ST12_hitching_post", STB.hitching_post], ["ST13_horse_fence_section", STB.fence_section],
+			["ST14_stable_gate", STB.stable_gate], ["ST15_saddle_rack", STB.saddle_rack], ["ST16_saddle", STB.saddle],
+			["ST17_horse_blankets", STB.horse_blankets], ["ST18_bridles_and_reins", STB.bridles], ["ST20_farrier_tool_box", STB.farrier_tools],
+			["ST21_manure_pile", STB.manure_pile], ["ST22_manure_cart", STB.manure_cart], ["ST23_wheelbarrow", STB.wheelbarrow],
+			["ST25_grooming_equipment", STB.grooming]]:
+		e.append(["stable", it[0], it[1]])
+	for it in [["IN03_outdoor_bench", INN.outdoor_bench], ["IN04_outdoor_table", INN.outdoor_table], ["IN05_dining_table", INN.dining_table],
+			["IN06_wooden_stools", INN.stools], ["IN08_ale_barrels", INN.ale_barrels], ["IN09_wooden_mugs", INN.mugs],
+			["IN10_ceramic_tankards", INN.tankards], ["IN11_cooking_pot", INN.cooking_pot], ["IN13_firewood_basket", INN.firewood_basket],
+			["IN16_bed_straw_mattress", INN.bed], ["IN17_bed_linen_bedding", INN.bed_linen], ["IN18_wall_shelves", INN.wall_shelves],
+			["IN19_hanging_herbs", INN.hanging_herbs], ["IN20_tavern_notice_board", INN.notice_board]]:
+		e.append(["inn", it[0], it[1]])
+	for it in [["CR02_workbench", CRP.workbench], ["CR03_sawhorse", CRP.sawhorse], ["CR04_hand_saw", CRP.hand_saw],
+			["CR05_wooden_mallet", CRP.mallet], ["CR06_chisels_and_carving_tools", CRP.chisels], ["CR07_timber_plank_pile", CRP.plank_pile],
+			["CR08_cut_logs", CRP.cut_logs], ["CR10_wood_shavings", CRP.shavings], ["CR11_wooden_cart", CRP.wooden_cart],
+			["CR12_cart_wheels", CRP.cart_wheels], ["CR13_wagon_axle", CRP.wagon_axle], ["CR15_wooden_pegs", CRP.pegs],
+			["CR16_timber_frame_section", CRP.frame_section]]:
+		e.append(["carpenter", it[0], it[1]])
+	for it in [["CO03_cottage_door", COT.cottage_door], ["CO04_wooden_shutters", COT.shutters], ["CO05_chimney_stack", COT.chimney],
+			["CO06_vegetable_garden", COT.vegetable_garden], ["CO07_garden_fence", COT.garden_fence], ["CO08_clothesline", COT.clothesline],
+			["CO09_hanging_linen", COT.hanging_linen], ["CO10_laundry_basket", COT.laundry_basket], ["CO12_animal_pen", COT.animal_pen],
+			["CO13_chicken_coop", COT.chicken_coop], ["CO15_household_tools", COT.household_tools]]:
+		e.append(["cottages", it[0], it[1]])
 	return e
