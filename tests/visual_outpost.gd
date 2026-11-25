@@ -2,15 +2,22 @@ extends SceneTree
 ## Pictures of the White Knights Outpost asset library (not a pass/fail check). Windowed.
 ## Uses the baked scenes in assets/outpost/, so bake first (tools/export_outpost.gd).
 ##   Godot_console --path . --resolution 1600x900 --script res://tests/visual_outpost.gd -- <out dir> [shots...]
-## Shots: wk_overview wk_wall wk_stand wk_pennant
+## Shots: wk_overview wk_wall wk_stand wk_pennant (the White Knights set)
+##        cp_overview cp_left cp_right cp_table cp_dusk (a checkpoint laid out with stage 2's pieces)
 
 const WK_DIR := "res://assets/outpost/white_knights/"
+const CP_DIR := "res://assets/outpost/castle_approach/"
 const WK := preload("res://assets/outpost/white_knights/white_knights.gd")
+const CP := preload("res://assets/outpost/castle_approach/castle_approach.gd")
+## Where the checkpoint layout stands, away from the White Knights set.
+const CPO := Vector3(40, 0, 0)
 const ENV := preload("res://levels/common/tithelands_env.tres")
 const STONE := preload("res://levels/common/materials/stone.tres")
 
 var stage: Node3D
 var cam: Camera3D
+var sun: DirectionalLight3D
+var env: Environment
 
 
 func _initialize() -> void:
@@ -21,7 +28,7 @@ func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	var out_dir := args[0] if args.size() > 0 else "user://shots"
 	DirAccess.make_dir_recursive_absolute(out_dir)
-	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant"]
+	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant", "cp_overview", "cp_left", "cp_right", "cp_table", "cp_dusk"]
 	if args.size() > 1:
 		shots = args.slice(1)
 	_build()
@@ -36,7 +43,8 @@ func _run() -> void:
 
 
 func _wk(id: String, pos: Vector3, yaw := 0.0) -> Node3D:
-	var n := (load(WK_DIR + id + ".scn") as PackedScene).instantiate() as Node3D
+	var dir := CP_DIR if id.begins_with("CP") else WK_DIR
+	var n := (load(dir + id + ".scn") as PackedScene).instantiate() as Node3D
 	n.position = pos
 	n.rotation_degrees.y = yaw
 	stage.add_child(n)
@@ -47,12 +55,12 @@ func _build() -> void:
 	stage = Node3D.new()
 	root.add_child(stage)
 	var we := WorldEnvironment.new()
-	var env := ENV.duplicate() as Environment
+	env = ENV.duplicate() as Environment
 	env.volumetric_fog_enabled = false  # slow on a software renderer; ordinary fog stays
 	env.ssil_enabled = false
 	we.environment = env
 	stage.add_child(we)
-	var sun := DirectionalLight3D.new()
+	sun = DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-32, 35, 0)
 	sun.light_energy = 1.15
 	sun.light_color = Color(1.0, 0.93, 0.82)
@@ -66,10 +74,10 @@ func _build() -> void:
 	gm.albedo_texture = load("res://assets/textures/path/color.jpg")
 	gm.normal_enabled = true
 	gm.normal_texture = load("res://assets/textures/path/normal.jpg")
-	gm.uv1_scale = Vector3(18, 18, 1)
+	gm.uv1_scale = Vector3(54, 54, 1)
 	var ground := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
-	pm.size = Vector2(80, 80)
+	pm.size = Vector2(240, 240)
 	ground.mesh = pm
 	ground.material_override = gm
 	stage.add_child(ground)
@@ -110,6 +118,36 @@ func _build() -> void:
 	man.position = Vector3(2.9, 0, 0.9)
 	man.rotation_degrees.y = 200.0
 	stage.add_child(man)
+	_build_cp()
+
+
+## A checkpoint across a 12 m road running north (-Z) toward the castle.
+func _build_cp() -> void:
+	var o := CPO
+	for s in [-1.0, 1.0]:
+		_wk("CP06_wooden_road_barrier", o + Vector3(s * 6.2, 0, -2.0), 0.0 if s < 0.0 else 180.0)
+		_wk("CP08_guard_inspection_shelter", o + Vector3(s * 9.2, 0, -3.6), -90.0 * s)
+		_wk("CP17_iron_lantern", o + Vector3(s * 7.9, 2.62, -3.6))
+		_wk("CP05_standing_iron_brazier", o + Vector3(s * 6.6, 0, 0.9))
+		_wk("CP04_stone_torch_holder", o + Vector3(s * 6.9, 0, -6.4))
+		_wk("CP03_banner_pole", o + Vector3(s * 7.6, 0, 2.8))
+		_wk("WK03_small_triangular_pennant", o + Vector3(s * 7.6, 0, 2.8) + CP.POLE_PENNANT, 0.0 if s < 0.0 else 180.0)
+		_wk("WK04_mounted_standard", o + Vector3(s * 6.4, 0, -10.5))
+	_wk("CP09_toll_inspection_table", o + Vector3(-4.4, 0, 1.6))
+	_wk("CP10_guard_bench", o + Vector3(-10.4, 0, 1.4), 90.0)
+	_wk("CP11_spear_rack", o + Vector3(10.6, 0, 0.6), -90.0)
+	_wk("CP12_weapon_storage_chest", o + Vector3(9.8, 0, -7.0), -90.0)
+	_wk("CP13_wooden_shield_display", o + Vector3(-11.0, 0, -7.6), 90.0)
+	_wk("CP14_supply_barrels", o + Vector3(11.2, 0, -2.8), -60.0)
+	_wk("CP15_supply_crates", o + Vector3(-11.4, 0, -1.2), 80.0)
+	_wk("CP16_rope_and_chain_bundles", o + Vector3(10.0, 0, 3.2))
+	_wk("CP07_movable_timber_barricade", o + Vector3(9.0, 0, 5.6), 15.0)
+	_wk("CP18_warning_sign", o + Vector3(7.4, 0, 7.4), -10.0)
+	_wk("CP20_stone_boundary_marker", o + Vector3(-7.6, 0, 9.2), 15.0)
+	var man := (load("res://assets/characters/mannequin/Mannequin_F.glb") as PackedScene).instantiate() as Node3D
+	man.position = o + Vector3(-1.4, 0, 3.8)
+	man.rotation_degrees.y = 160.0
+	stage.add_child(man)
 
 
 func _look(from: Vector3, at: Vector3) -> void:
@@ -131,3 +169,28 @@ func _shot_wk_stand() -> void:
 
 func _shot_wk_pennant() -> void:
 	_look(Vector3(9.4, 3.0, 2.6), Vector3(10.9, 2.95, 0.2))
+
+
+func _shot_cp_overview() -> void:
+	_look(CPO + Vector3(0, 5.0, 21.0), CPO + Vector3(0, 1.2, -3.0))
+
+
+func _shot_cp_left() -> void:
+	_look(CPO + Vector3(-2.5, 2.3, 7.5), CPO + Vector3(-9.0, 1.4, -2.5))
+
+
+func _shot_cp_right() -> void:
+	_look(CPO + Vector3(3.0, 2.3, 8.0), CPO + Vector3(9.8, 1.0, -1.5))
+
+
+func _shot_cp_table() -> void:
+	_look(CPO + Vector3(-2.6, 1.9, 5.0), CPO + Vector3(-4.6, 0.85, 1.4))
+
+
+## The same view at nightfall, to see the braziers, torches and lanterns.
+func _shot_cp_dusk() -> void:
+	sun.light_energy = 0.05
+	env.ambient_light_energy = 0.18
+	env.background_energy_multiplier = 0.25
+	env.fog_light_energy = 0.15
+	_look(CPO + Vector3(0, 3.2, 15.0), CPO + Vector3(0, 1.2, -3.0))

@@ -31,6 +31,9 @@ static func all() -> Dictionary:
 		"rope": [64, 256, rope],
 		"limestone": [256, 256, limestone],
 		"parchment": [256, 320, parchment],
+		"shingles": [256, 256, shingles],
+		"stencil": [256, 256, stencil],
+		"warning_board": [256, 320, warning_board],
 	}
 
 
@@ -307,4 +310,69 @@ static func parchment(u: float, v: float, x: int, y: int, w: int, h: int) -> Col
 			c = _mix(c, Color(0.16, 0.11, 0.09), ink)
 	if fbm(u, v, 5, 5, 905) > 0.7:
 		c = _mix(c, Color(0.55, 0.42, 0.26), 0.25)
+	return c
+
+
+## Oak roof shingles, 1 m tile: four staggered rows a meter, five or six shingles a row,
+## each a slightly different grey-brown, dark joints and a shadow under the row above.
+static func shingles(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var rows := 4
+	var row := floori(v * rows)
+	var vy := v * rows - row
+	var n := 5 + (row % 2)
+	var su := u * n + _hash(row, 1, 1101) * n
+	var idx := floori(su)
+	var fu := su - idx
+	var k := posmod(idx, n)
+	var tone := 0.8 + 0.35 * _hash(k, row, 1102)
+	var c := _shade(Color(0.36, 0.3, 0.25), tone)
+	# Grain runs down the shingle.
+	c = _shade(c, 0.88 + 0.24 * fbm(u, v, 24, 3, 1103, 3))
+	# Light catching the lower half, shadow under the row above, dark joints.
+	c = _shade(c, lerpf(0.55, 1.0, smoothstep(0.0, 0.16, vy)) * (1.0 + 0.1 * smoothstep(0.5, 0.95, vy)))
+	c = _shade(c, lerpf(0.5, 1.0, smoothstep(0.0, 0.05, minf(fu, 1.0 - fu))))
+	# Moss and wet streaks.
+	c = _mix(c, Color(0.27, 0.3, 0.17), smoothstep(0.62, 0.78, fbm(u, v, 4, 4, 1104)) * 0.5)
+	return c
+
+
+## The cross as a painted stencil (alpha outside): rough brushed edges, worn patches.
+## For barrels, crates and chests: White Knights property.
+static func stencil(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var r := 0.42 * w
+	var a := (x - 0.5 * w) / r
+	var b := (y - 0.5 * h) / r
+	var d := cross_sdf(a, b) + 0.03 * (fbm(u, v, 16, 16, 1201, 3) - 0.5)
+	var cov := clampf(0.5 - d / (1.6 / r), 0.0, 1.0)
+	cov *= 1.0 - smoothstep(0.62, 0.72, fbm(u, v, 10, 10, 1202, 3))
+	var c := _shade(Color(0.5, 0.13, 0.13), 0.85 + 0.25 * fbm(u * 0.2, v, 2, 24, 1203, 3))
+	c.a = 1.0 if cov > 0.5 else 0.0
+	return c
+
+
+## A Knights' warning board: dark stained planks, a red painted border, the cross at the
+## top and three lines of blocky ivory lettering (unreadable from afar, as intended).
+static func warning_board(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var plank := floori(v * 4.0)
+	var pv := v * 4.0 - plank
+	var c := _shade(Color(0.2, 0.14, 0.1), 0.8 + 0.35 * fbm(u, v + plank * 0.3, 2, 20, 1301, 3) + 0.08 * _hash(plank, 0, 1302))
+	c = _shade(c, lerpf(0.45, 1.0, smoothstep(0.0, 0.04, minf(pv, 1.0 - pv))))
+	var edge := minf(minf(u, 1.0 - u), minf(v, 1.0 - v) * 1.25)
+	if edge > 0.04 and edge < 0.085:
+		c = _mix(c, _shade(RED, 0.8), 0.85 * (1.0 - smoothstep(0.66, 0.74, fbm(u, v, 20, 20, 1303, 2))))
+	var r := 0.11 * w
+	c = _emblem(c, (x - 0.5 * w) / r, (y - 0.2 * h) / r, 1.0 / r, u, v, 1304)
+	# Lettering: three lines of blocky strokes.
+	for line in 3:
+		var y0 := 0.42 + line * 0.15
+		if v > y0 and v < y0 + 0.08 and u > 0.12 and u < 0.88:
+			var gx := floori((u - 0.12) / 0.76 * 9.0)
+			var lu := fposmod((u - 0.12) / 0.76 * 9.0, 1.0)
+			var lv := (v - y0) / 0.08
+			var cell := Vector2i(floori(lu * 3.0), floori(lv * 4.0))
+			var on := _hash(gx * 17 + cell.x, line * 13 + cell.y, 1305) > 0.42 and lu < 0.82
+			if cell.x == 0 or cell.y == 0:
+				on = on or _hash(gx, line, 1306) > 0.3
+			if on and fbm(u, v, 30, 30, 1307, 2) < 0.68:
+				c = _mix(c, _shade(IVORY, 0.85), 0.9)
 	return c

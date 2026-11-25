@@ -67,6 +67,6 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 - [ ] Harl extras: charge-in, sweep-into-backhand, pick throw.
 - [ ] **A quest system.** It's in the spec, and subclass initiation (Phase 11 P6) needs it.
 - [ ] Subclasses: 6 of 9 are still "coming later" (Paladin, Mage, Rogue, Ranger, Warlock, Warden), plus the factions.
-- [ ] **White Knights Outpost** (`OUTPOST_PLAN.md`, started 2026-11-25 at the owner's request; it replaces the Knight's Gap checkpoint). Stage 1 done (White Knights set WK01-WK12). Next: stage 2, the checkpoint props. Owner decisions in OUTPOST_PLAN.md section 7 (scale, who lives there, moving the castle closer).
+- [ ] **White Knights Outpost** (`OUTPOST_PLAN.md`, started 2026-11-25 at the owner's request; it replaces the Knight's Gap checkpoint). Stages 1-2 done (the White Knights set and the checkpoint: 29 assets, on `main`). Next: stage 3, buildings, once the scale is decided; otherwise stage 4, the trade and village props. Owner decisions in OUTPOST_PLAN.md section 7 (scale, who lives there, moving the castle closer).
 - [ ] Zones 2 and 3 (`ZONES_DESIGN.md`), then a walkable Highcrown.
 - [ ] **The long gap:** the spec says level cap 30 and about 30 hours of play. Content now covers about levels 1–6. Plan zones and loot tiers against that.

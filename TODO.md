@@ -216,7 +216,8 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 ## White Knights Outpost (started 2026-11-25; plan in OUTPOST_PLAN.md, asset list in assets/outpost/MANIFEST.md)
 - [x] Stage 1: hand-painted texture painter, outpost kit, exporter and preview pictures; the White Knights set WK01-WK12 (`assets/outpost/white_knights/`, 8,691 triangles in all)
 - [ ] 🧪 Look at `docs/outpost/wk_overview.jpg`, `wk_wall.jpg`, `wk_stand.jpg`, `wk_pennant.jpg` (or double-click any `.scn` in `assets/outpost/white_knights/` in the editor): is the emblem right, too clean, too bright?
-- [ ] Stage 2: checkpoint and castle approach (CP01-CP20)
+- [x] Stage 2: checkpoint and castle approach (CP01-CP20, `assets/outpost/castle_approach/`; 29 assets, 19,987 triangles in all)
+- [ ] 🧪 Look at `docs/outpost/cp_overview.jpg`, `cp_left.jpg`, `cp_right.jpg`, `cp_table.jpg`, `cp_dusk.jpg`: does it say "the Knights control this road"? Anything missing at a checkpoint?
 - [ ] Stage 3: buildings (needs the scale decision)
 - [ ] Stages 4-7: trade and village props, ground and plants, light and effects, story props
 - [ ] Stage 8: placement in the Tithelands (needs the owner's OK on the layout and on who lives there)

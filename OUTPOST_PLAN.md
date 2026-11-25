@@ -45,8 +45,8 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 | Stage | What | State |
 |---|---|---|
 | 1. Foundations and the White Knights set | Hand-painted texture painter, outpost kit, exporter, preview pictures, the emblem; WK01-WK12. | **Done 2026-11-25.** Pictures: `docs/outpost/wk_*.jpg`. |
-| 2. Checkpoint and castle approach | CP01-CP20 (barrier, barricade, guard shelter, toll table, racks, braziers, lanterns, supply barrels and crates with the emblem stencil, boundary marker). Mostly hideout pieces restyled. | Next. Scale-neutral except the guard shelter. |
-| 3. Buildings | **Needs the scale decision.** A modular kit (walls, roof sections, doors, windows, shutters, chimneys, beams, foundations), then B01-B10. | Waiting on the owner. |
+| 2. Checkpoint and castle approach | CP01-CP20: banner pole, stone torch holder, iron brazier, red-and-ivory road barrier, spiked timber barricade, guard shelter, toll table, bench, spear rack, weapon chest, shield display, barrels and crates stencilled with the cross, rope and chain, iron lantern, warning sign, boundary marker. | **Done 2026-11-25.** Pictures: `docs/outpost/cp_*.jpg` (a checkpoint laid out across a 12 m road, by day and at dusk). The guard shelter is open-fronted, so the scale question doesn't change it much. |
+| 3. Buildings | **Needs the scale decision.** A modular kit (walls, roof sections, doors, windows, shutters, chimneys, beams, foundations), then B01-B10. | Waiting on the owner. Stage 4 can go first if the answer is slow. |
 | 4. Trade and village props | Market, blacksmith, stable, inn, carpenter, cottage props. | |
 | 5. Ground and plants | Road, path, puddle and rut looks; fences, stumps, stone paths. Trees and plants mostly exist. | |
 | 6. Light and effects | Torches, braziers, lanterns, forge fire, smoke, ground fog, rain splash. Most exist in the hideout kit. | |
@@ -58,8 +58,9 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 
 - **Where:** `assets/outpost/<folder>/<ID_name>.scn`, folders as in the brief: `buildings`, `castle_approach`, `white_knights`, `market`, `stable`, `blacksmith`, `inn`, `carpenter`, `cottages`, `props`, `environment`, `vfx`, plus `materials`. Names keep the brief's IDs (`WK01_large_white_knights_banner.scn`).
 - **Units and origins:** meters, +Y up. Standing props: centre of the base on y = 0. Hanging things: the top attachment point. Wall-mounted things: on the wall, facing +Z.
-- **Materials:** shared, hand-painted (`assets/outpost/materials/*.tres`, textures in `materials/textures/*.png`, painted by `painter.gd`). Tiling textures cover a fixed size in meters (oak 2 m, iron and gold 0.5 m, linen and stripes 1 m, limestone 1 m), so the paint has the same density on every asset. The PNGs can be painted over by hand or replaced by AI art with the same name and size.
-- **Triangles:** small props under 2,000; buildings under 8,000; anything over 2,500 gets automatic distance versions (LODs). The 12 White Knights assets total 8,691.
+- **Materials:** shared, hand-painted (`assets/outpost/materials/*.tres`, textures in `materials/textures/*.png`, painted by `painter.gd`). Tiling textures cover a fixed size in meters (oak 2 m, iron and gold 0.5 m, linen, stripes, shingles and limestone 1 m), so the paint has the same density on every asset. Knights' stores carry the cross as a stencil (`stencil.png`, a cut-out laid a few millimetres off the surface). The PNGs can be painted over by hand or replaced by AI art with the same name and size.
+- **Triangles:** small props under 2,000; buildings under 8,000; anything over 2,500 gets automatic distance versions (LODs). The 29 assets built so far total 19,987 (the largest, the rope and chain heap, 1,880).
+- **Lights:** braziers, torch holders and lanterns carry their own flickering light (and fire particles). Only the brazier casts shadows; the zone's shadow budget node limits how many do at once.
 - **Collision:** simple boxes and cylinders (posts, boards, shield fronts); none for cloth, ropes and small fittings above head height.
 - **Swapping in a GLB (image-to-3D):** one object per source image (three-quarter view, plain background, no text). Clean up the GLB to the same size, origin and facing as the code-built asset, keep the shared materials where possible, give it the same file name, and check the triangle budget. Never claim a model exists until the GLB is in the project.
 

@@ -101,6 +101,55 @@ static func parchment() -> StandardMaterial3D:
 	return painted("parchment", "parchment", 0.0, {"rough": 1.0, "spec": 0.1})
 
 
+static func shingles() -> StandardMaterial3D:
+	return painted("shingles", "shingles", 1.0, {"rough": 0.95, "spec": 0.2})
+
+
+## The cross stencilled on barrels, crates and chests (alpha cut-out, laid 3 mm off a surface).
+static func stencil() -> StandardMaterial3D:
+	return painted("wk_stencil", "stencil", 0.0, {"rough": 0.9, "spec": 0.2, "scissor": true})
+
+
+static func warning_board() -> StandardMaterial3D:
+	return painted("warning_board", "warning_board", 0.0, {"rough": 0.85, "spec": 0.25})
+
+
+## Warm horn panes of a lit lantern.
+static func lantern_glow() -> StandardMaterial3D:
+	if _cache.has("lantern_glow"):
+		return _cache["lantern_glow"]
+	var m := StandardMaterial3D.new()
+	m.resource_name = "lantern_glow"
+	m.albedo_color = Color(0.85, 0.62, 0.32)
+	m.emission_enabled = true
+	m.emission = Color(1.0, 0.62, 0.26)
+	m.emission_energy_multiplier = 1.6
+	m.roughness = 0.6
+	_cache["lantern_glow"] = m
+	return m
+
+
+## Brown leather (ledger covers, straps).
+static func leather() -> StandardMaterial3D:
+	return painted("leather", "oak_stained", 0.33, {"rough": 0.8, "spec": 0.3, "tint": Color(0.9, 0.62, 0.5)})
+
+
+## A flickering warm light (lanterns, candles), saved with the scene.
+static func flicker_light(parent: Node3D, pos: Vector3, energy: float, range_: float, shadows := false) -> OmniLight3D:
+	var l := OmniLight3D.new()
+	l.name = "Light"
+	l.position = pos
+	l.light_color = Color(1.0, 0.62, 0.3)
+	l.light_energy = energy
+	l.omni_range = range_
+	l.omni_attenuation = 1.4
+	l.shadow_enabled = shadows
+	parent.add_child(l)
+	l.set_script(HK.FLICKER)
+	l.set("base_energy", energy)
+	return l
+
+
 static func wax() -> StandardMaterial3D:
 	if _cache.has("wax"):
 		return _cache["wax"]
@@ -209,9 +258,8 @@ static func hem(shape: String, xn: float) -> float:
 
 ## A banner hanging from y = 0 (its top edge) down to -length, centred on x, facing +Z.
 ## Soft vertical folds and a slight billow; both sides; heraldry UVs 0..1.
-static func banner(b: HK.MB, m: Material, width: float, length: float, shape := "straight", seed_ := 0, folds := 3.0) -> void:
-	var nu := 13
-	var nv := 14
+## nu, nv: grid resolution (fewer for small cloths).
+static func banner(b: HK.MB, m: Material, width: float, length: float, shape := "straight", seed_ := 0, folds := 3.0, nu := 13, nv := 14) -> void:
 	var ph := float(seed_) * 1.7
 	var pts := PackedVector3Array()
 	var uvs := PackedVector2Array()
@@ -246,7 +294,7 @@ static func pennant(b: HK.MB, m: Material, length: float, hoist: float, seed_ :=
 
 ## A flat polygon (in the XY plane) extruded along +Z from z0 by depth: front face with UVs
 ## mapped from rect (0..1, v down), side walls in meters. Used for carved and embossed shapes.
-static func extrude(b: HK.MB, m_front: Material, m_side: Material, poly: PackedVector2Array, z0: float, depth: float, rect: Rect2) -> void:
+static func extrude(b: HK.MB, m_front: Material, m_side: Material, poly: PackedVector2Array, z0: float, depth: float, rect: Rect2, back := false) -> void:
 	var idx := Geometry2D.triangulate_polygon(poly)
 	var zf := z0 + depth
 	for t in range(0, idx.size(), 3):
@@ -255,6 +303,8 @@ static func extrude(b: HK.MB, m_front: Material, m_side: Material, poly: PackedV
 		for q in p:
 			uv.append(Vector2((q.x - rect.position.x) / rect.size.x, 1.0 - (q.y - rect.position.y) / rect.size.y))
 		b.tri(m_front, Vector3(p[0].x, p[0].y, zf), Vector3(p[1].x, p[1].y, zf), Vector3(p[2].x, p[2].y, zf), Vector3(0, 0, 1), uv[0], uv[1], uv[2])
+		if back:
+			b.tri(m_side, Vector3(p[0].x, p[0].y, z0), Vector3(p[1].x, p[1].y, z0), Vector3(p[2].x, p[2].y, z0), Vector3(0, 0, -1), uv[0], uv[1], uv[2])
 	var cen := Vector2.ZERO
 	for q in poly:
 		cen += q
@@ -297,13 +347,13 @@ static func knob(b: HK.MB, m: Material, pos: Vector3, r: float, sides := 10) -> 
 
 
 ## A ring (torus) of radius rr made of short bars, around axis (its plane's normal).
-static func ring(b: HK.MB, m: Material, center: Vector3, axis: Vector3, rr: float, thick: float, segs := 10) -> void:
+static func ring(b: HK.MB, m: Material, center: Vector3, axis: Vector3, rr: float, thick: float, segs := 10, sides := 5) -> void:
 	var u := HK.basis_y(axis).x
 	var v := axis.normalized().cross(u)
 	for i in segs:
 		var a0 := TAU * float(i) / segs
 		var a1 := TAU * float(i + 1) / segs
-		b.cyl(m, center + (u * cos(a0) + v * sin(a0)) * rr, center + (u * cos(a1) + v * sin(a1)) * rr, thick, thick, 5, 0.0, false)
+		b.cyl(m, center + (u * cos(a0) + v * sin(a0)) * rr, center + (u * cos(a1) + v * sin(a1)) * rr, thick, thick, sides, 0.0, false)
 
 
 ## Bottom edge of a heater shield at |x| (hw = half width, y0 = where the sides start to curve):

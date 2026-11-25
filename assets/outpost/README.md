@@ -1,6 +1,6 @@
 # White Knights Outpost asset library
 
-Reusable 3D assets for the White Knights Outpost at the north end of the Tithelands: the Knights' banners, shields, signs and fittings now; the checkpoint, buildings, market, stable, forge, inn, carpenter, cottages and props to come. Plan: `OUTPOST_PLAN.md`. Every planned asset and its status: `MANIFEST.md`.
+Reusable 3D assets for the White Knights Outpost at the north end of the Tithelands: the Knights' banners, shields, signs and fittings, and the checkpoint now; the buildings, market, stable, forge, inn, carpenter, cottages and props to come. Plan: `OUTPOST_PLAN.md`. Every planned asset and its status: `MANIFEST.md`.
 
 Built in GDScript on top of the bandit-hideout kit (`assets/hideout/`): the same mesh builder and the same asset layout, with hand-painted materials and simple collision.
 
@@ -22,6 +22,7 @@ Each asset root is a `Node3D` with a `Mesh` (one mesh, a surface per material) a
 | `materials/outpost_kit.gd` | Materials, cloth (banners, pennants), the heater shield, carved and embossed shapes, the asset node |
 | `materials/*.tres` | The shared materials, saved by the exporter |
 | `white_knights/white_knights.gd` | Builders for WK01-WK12 |
+| `castle_approach/castle_approach.gd` | Builders for the checkpoint, CP03-CP20 (CP01, CP02 and CP19 are WK01, WK03 and WK05) |
 | `catalog.gd` | Every built asset: folder, file name, builder |
 | `<folder>/<ID_name>.scn` | The baked assets |
 
@@ -36,7 +37,7 @@ Windows, from the project folder (`<godot>` = the console exe in HANDOFF.md):
 & "<godot>" --path . --resolution 1600x900 --script res://tests/visual_outpost.gd -- <out dir>   # preview pictures
 ```
 
-Preview shots: `wk_overview wk_wall wk_stand wk_pennant`. Committed copies are in `docs/outpost/`.
+Preview shots: `wk_overview wk_wall wk_stand wk_pennant` (the White Knights set) and `cp_overview cp_left cp_right cp_table cp_dusk` (a checkpoint laid out across a 12 m road). Committed copies are in `docs/outpost/`. After building an asset, update its status in `tools/outpost_manifest.py` and run `python tools/outpost_manifest.py assets/outpost/MANIFEST.md`.
 
 ## Conventions
 
