@@ -26,13 +26,6 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 
 ## Waiting
 
-### 2026-11-25: Bandits in an Old School RuneScape-inspired style
-- **Area:** art direction / characters
-- **Decision:** Bandits use chunky low-poly shapes, low-resolution hand-painted textures and strong equipment silhouettes, as an original design (no assets, names or designs copied). Weapon variants: sword, mace, dagger, crossbow.
-- **Details:** Built 2026-11-25 (see `HANDOFF.md`, "Bandit characters"). Reference sheet: `docs/bandit/reference_bandit_sheet.webp`; the hooded dagger and crossbow sheets were pasted into chat and are not saved as files. Muted earth palette: dirty olive, dark brown, weathered leather, muted grey, dull iron.
-- **Status:** decided for the bandits; **open question for the owner:** `DESIGN.md` 12.1 says "detailed, not low-poly". Is this style only for bandits, or the new direction for characters?
-- **Replaces:** nothing yet.
-
 ### 2026-11-25: Showback and Kimbah recurring story characters
 - **Area:** world lore / characters / classes / quests
 - **Decision:** Include the owner's friends' gaming personas as major recurring KINGDOM characters. Every player encounters and defeats both as main-story boss encounters, regardless of class. Afterward they become allies and recur throughout the campaign. Class-specialization quests branch from those shared story encounters, so players who are not pursuing Rogue, Druid or Shaman specializations still experience and benefit from both characters' stories.
@@ -49,6 +42,22 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 - **Replaces:** The previous UI mockup slot arrangement (including belt and separate ring/utility assumptions); clarifies DESIGN.md 9.2 for the displayed equipment slots. Does not remove the existing two-weapon-set gameplay system.
 
 ## Filed
+
+### 2026-11-25: Character style, a cross between OSRS, WoW and WAR
+- **Area:** art direction / characters
+- **Decision:** Characters should be a cross between Old School RuneScape, World of Warcraft and Warhammer Online, with higher poly counts. The current bandits are liked and stay for now.
+- **Details:** Owner, in chat: "I'd like higher poly on the characters but I like this for now. Cross between osrs and wow and WAR" ("WAR" read as Warhammer Online). Style references only; designs stay original.
+- **Status:** decided (owner, in chat).
+- **Replaces:** nothing; adds to DESIGN.md 12.1 and answers the question in the bandit entry below.
+- **Filed (2026-11-25):** DESIGN.md 12.1; the bandit detail upgrade is in TODO.md under Later.
+
+### 2026-11-25: Bandits in an Old School RuneScape-inspired style
+- **Area:** art direction / characters
+- **Decision:** Bandits use chunky low-poly shapes, low-resolution hand-painted textures and strong equipment silhouettes, as an original design (no assets, names or designs copied). Weapon variants: sword, mace, dagger, crossbow.
+- **Details:** Built 2026-11-25 (see `HANDOFF.md`, "Bandit characters"). Reference sheet: `docs/bandit/reference_bandit_sheet.webp`; the hooded dagger and crossbow sheets were pasted into chat and are not saved as files. Muted earth palette: dirty olive, dark brown, weathered leather, muted grey, dull iron.
+- **Status:** decided for the bandits (owner, in chat).
+- **Replaces:** nothing.
+- **Filed (2026-11-25):** built; HANDOFF.md. The wider style question is answered in the entry above.
 
 ### 2026-11-25: Zone 1 and the Gullet go dark and dreary
 - **Area:** art direction / zone 1 / Gullet

@@ -271,6 +271,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] Stage 5: tune the numbers after the owner's playtest (Gullet entrance yard, a road patrol)
 
 ## Later (after the milestone)
+- Higher-poly characters in the OSRS / WoW / Warhammer Online mix (`DESIGN.md` 12.1), starting with the bandits when the owner asks
 - Camp that enemies raid at night; upgrades
 - Quests and public quests
 - More zones, zone unlocks, more open world
