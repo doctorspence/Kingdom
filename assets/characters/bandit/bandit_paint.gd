@@ -61,6 +61,11 @@ const STYLES := {
 	"quiver": ["leather", Color(0.330, 0.200, 0.105)],
 	"arrow_shaft": ["flat", Color(0.390, 0.280, 0.160)],
 	"fletch": ["flat", Color(0.610, 0.600, 0.555)],
+	"fur": ["hair", Color(0.270, 0.205, 0.140)],
+	"rope": ["rope", Color(0.560, 0.455, 0.270)],
+	"plate": ["metal", Color(0.262, 0.255, 0.250)],
+	"haft": ["haft", Color(0.300, 0.188, 0.100)],
+	"axe_edge": ["metal", Color(0.600, 0.585, 0.545)],
 }
 
 const DIRT := Color(0.165, 0.122, 0.072)
@@ -205,7 +210,8 @@ static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vect
 				if n.y > 0.4 and (absf(x - 0.855) < 0.008 or absf(x - 0.901) < 0.006):
 					col = _mix(col, Color(0.82, 0.55, 0.38), 0.5)
 				col = _mix(col, DIRT, smoothstep(0.935, 0.965, x) * 0.5)
-			if family == "face":
+			# (the head's one style covers the back of the skull too: features only in front)
+			if family == "face" and p.z > -0.01:
 				var ax := absf(p.x)
 				# deep-set eyes
 				var socket := Vector2((ax - 0.033) / 0.030, (p.y - 1.690) / 0.017).length()
@@ -290,6 +296,16 @@ static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vect
 			col = col * (1.0 + 0.22 * grain + 0.06 * stroke)
 			col = _mix(col, col * 1.45, smoothstep(0.4, 0.85, nz.blob(p, 0.030, 93.0)) * 0.45)
 			col = _mix(col, DIRT, smoothstep(0.2, 0.75, nz.blob(p, 0.045, 95.0)) * 0.5)
+		"haft":
+			# a long ash handle, grain running along it, darkened by hands
+			var grain := nz.blob(Vector3(p.x, p.y * 0.12, p.z), 0.010, 97.0)
+			col = col * (1.0 + 0.22 * grain + 0.06 * stroke)
+			col = _mix(col, DIRT, smoothstep(0.2, 0.75, nz.blob(p, 0.045, 99.0)) * 0.55)
+		"rope":
+			# twisted strands
+			var twist := fposmod((p.x + p.y * 1.3 + p.z * 0.6) / 0.019, 1.0)
+			col = col * (1.0 + 0.08 * soft + 0.05 * stroke) * (0.72 + 0.42 * smoothstep(0.0, 0.55, twist))
+			col = _mix(col, DIRT, smoothstep(0.25, 0.75, nz.blob(p, 0.03, 101.0)) * 0.45)
 		"wrap":
 			var ang := atan2(p.z + 0.068, p.y - 1.441)
 			var s := fposmod((absf(p.x) + ang * 0.011) / 0.027, 1.0)

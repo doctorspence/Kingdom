@@ -37,6 +37,10 @@ static func build(m, o: Dictionary) -> void:
 		_mask(m)
 	if o.cloak:
 		_cloak(m)
+	if o.get("fur", false):
+		_fur(m)
+	if o.get("noose", false):
+		_noose(m)
 
 
 static func _tunic(m) -> void:
@@ -361,6 +365,73 @@ static func cloak_weights(p: Vector3) -> Dictionary:
 	var legs := clampf((1.02 - p.y) / 0.45, 0.0, 1.0) * 0.6
 	var left := clampf(0.5 + p.x / 0.20, 0.0, 1.0)
 	return {"pelvis": 1.0 - legs, "thigh_l": legs * left, "thigh_r": legs * (1.0 - left)}
+
+
+## A shaggy fur mantle over the shoulders, its outline broken into pointed tufts.
+static func _fur(m) -> void:
+	var n := 18
+	var neck := _cowl_ring(n, 1.556, 0.074, 0.058, -0.092, 0.010)
+	var crest := _cowl_ring(n, 1.600, 0.150, 0.118, -0.168, 0.012)
+	var shoulder := []
+	var edge := []
+	for i in n:
+		var a := TAU * i / n
+		var side := pow(sin(a), 2.0)
+		var back := maxf(-cos(a), 0.0)
+		# high over the shoulders, dipping to the chest and the back
+		var rough := 0.012 if i % 2 == 0 else -0.012
+		shoulder.append(Vector3(sin(a) * 0.236, lerpf(1.500, 1.566, side) + rough * 0.5,
+				-0.025 + cos(a) * lerpf(0.200, 0.212, back)))
+		edge.append(Vector3(sin(a) * 0.292, lerpf(lerpf(1.415, 1.385, back), 1.514, side) + rough * 1.6,
+				-0.025 + cos(a) * lerpf(0.222, 0.235, back)))
+	var inside := Vector3(0, 1.40, -0.02)
+	m.loft("fur", [neck, crest, shoulder, edge], cowl_weights, {"inside": inside})
+	# tufts hanging from the edge, and a few standing up along the crest
+	for i in n:
+		var a: Vector3 = edge[i]
+		var b: Vector3 = edge[(i + 1) % n]
+		var mid := (a + b) * 0.5
+		var out := Vector3(mid.x, 0.0, mid.z + 0.025).normalized()
+		var drop := 0.075 if i % 2 == 0 else 0.048
+		var tip := mid + out * 0.016 + Vector3.DOWN * drop * (1.0 - smoothstep(0.14, 0.26, absf(mid.x)) * 0.55)
+		m.poly("fur", [a, b, tip], cowl_weights, inside)
+		var c: Vector3 = crest[i]
+		var d: Vector3 = crest[(i + 1) % n]
+		var up := (c + d) * 0.5
+		up += Vector3(up.x * 0.10, 0.016 if i % 3 == 0 else 0.004, (up.z + 0.025) * 0.10)
+		m.poly("fur", [c, d, up], cowl_weights, inside)
+
+
+## Hobb's rope: two turns round the neck, a fat knot, and the cut end hanging down the chest.
+static func _noose(m) -> void:
+	var neck := {"neck_01": 0.35, "spine_03": 0.65}
+	var n := 12
+	for turn in 2:
+		var radius := 0.092 - turn * 0.012
+		var pts := []
+		for i in n:
+			var a := TAU * i / n
+			pts.append(Vector3(sin(a) * radius, 1.552 + turn * 0.026 - cos(a) * 0.022, -0.016 + cos(a) * radius * 1.08))
+		for i in n:
+			var p: Vector3 = pts[i]
+			var q: Vector3 = pts[(i + 1) % n]
+			m.bar("rope", p, q + (q - p) * 0.12, 0.024, 0.024, Vector3.UP, neck)
+	# the knot sits off-centre, where the loop meets the collar
+	var knot := Shape.torso_face(0.036, 1.476, 1.0, 0.042)
+	var rings := []
+	for r in [[0.052, 0.014], [0.036, 0.030], [0.004, 0.026], [-0.004, 0.032], [-0.038, 0.029], [-0.050, 0.015]]:
+		rings.append(Mesh_.ring(knot + Vector3(0, r[0], 0), Vector3.RIGHT, Vector3.BACK, r[1], r[1] * 0.85, 7))
+	m.loft("rope", rings, Shape.torso_weights, {"cap_start": true, "cap_end": true})
+	m.bar("rope", Vector3(0.050, 1.556, 0.070), knot + Vector3(0, 0.046, -0.006), 0.024, 0.024, Vector3.BACK, neck)
+	var path := [knot + Vector3(0, -0.044, 0)]
+	for q in [[0.050, 1.385], [0.058, 1.310], [0.052, 1.245]]:
+		path.append(Shape.torso_face(q[0], q[1], 1.0, 0.040))
+	for i in path.size() - 1:
+		m.bar("rope", path[i], path[i + 1], 0.022, 0.022, Vector3.BACK, Shape.torso_weights)
+	# frayed strands at the cut end
+	var end: Vector3 = path[path.size() - 1]
+	for x in [-0.018, 0.0, 0.017]:
+		m.bar("rope", end, end + Vector3(x, -0.044 - absf(x) * 0.6, 0.004), 0.008, 0.008, Vector3.BACK, Shape.torso_weights)
 
 
 static func _cowl_ring(n: int, y: float, hw: float, front: float, back: float, jitter: float) -> Array:

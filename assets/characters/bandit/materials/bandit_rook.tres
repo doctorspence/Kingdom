@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/characters/bandit/textures/bandit_rook.png" id="1_xevda"]
+
+[resource]
+resource_name = "bandit_rook"
+cull_mode = 2
+albedo_texture = ExtResource("1_xevda")
+metallic_specular = 0.08
+roughness = 0.96
+texture_filter = 5

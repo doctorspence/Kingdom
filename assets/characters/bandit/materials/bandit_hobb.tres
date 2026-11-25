@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/characters/bandit/textures/bandit_hobb.png" id="1_b3jqx"]
+
+[resource]
+resource_name = "bandit_hobb"
+cull_mode = 2
+albedo_texture = ExtResource("1_b3jqx")
+metallic_specular = 0.08
+roughness = 0.96
+texture_filter = 5

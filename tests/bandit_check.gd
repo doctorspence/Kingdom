@@ -3,7 +3,8 @@ extends Node
 ## in the hands, feet on the ground, and that each one still fights, takes hits and dies.
 ##   ... --headless --script res://tests/run.gd -- bandit_check
 
-const BANDITS := ["bandit_sword", "bandit_pick", "bandit_lookout", "bandit_archer", "bandit_archer_ambush"]
+const BANDITS := ["bandit_sword", "bandit_pick", "bandit_lookout", "bandit_archer", "bandit_archer_ambush",
+		"marauder", "bandit_captain", "bandit_rook", "hobb"]
 const MAX_TRIANGLES := 6000
 
 var failures := 0
@@ -29,6 +30,7 @@ func _run() -> void:
 	var home := player.global_position
 	for id: String in BANDITS:
 		await _one(id, scene, player, home)
+	await _looks(scene)
 	print("PASS: 0 problem(s)" if failures == 0 else "FAIL: %d problem(s)" % failures)
 	get_tree().quit(1 if failures > 0 else 0)
 
@@ -83,7 +85,7 @@ func _one(id: String, scene: Node, player: Player, home: Vector3) -> void:
 	_check("same collision capsule as before", is_equal_approx(shape.radius, 0.42) and is_equal_approx(shape.height, 2.0))
 	_check("stands on the floor (feet %.3f m)" % (_lowest(e, sk, shown)), absf(_lowest(e, sk, shown)) < 0.05)
 	var top := _highest(e, sk, shown)
-	_check("a man's height (%.2f m)" % top, top > 1.75 and top < 2.15)
+	_check("a man's height (%.2f m)" % top, top > 1.75 and top < 1.98 * e.data.scale)
 
 	# it notices you and fights
 	if not ambush:
@@ -136,6 +138,33 @@ func _one(id: String, scene: Node, player: Player, home: Vector3) -> void:
 	e.global_position = Vector3(90, 0, 90 + failures)
 	e.queue_free()
 	await _frames(5)
+
+
+## Marauders come in two looks, picked from the name, so every player sees the same one.
+func _looks(scene: Node) -> void:
+	print("--- marauder looks")
+	var seen := {}
+	var steady := true
+	for i in 8:
+		var name_ := "Spawn_%d" % i
+		var mesh: Mesh = null
+		for again in 2:
+			var e := (load("res://game/enemies/marauder.tscn") as PackedScene).instantiate() as Enemy
+			e.name = name_
+			e.position = Vector3(80, 0, 80)
+			scene.get_node("Enemies").add_child(e)
+			await _frames(2)
+			var body := (e.model.find_child("ClothingMesh", true, false) as MeshInstance3D)
+			var armor := (e.model.find_child("ArmorMesh", true, false) as MeshInstance3D)
+			if again == 0:
+				mesh = armor.mesh
+			else:
+				steady = steady and armor.mesh == mesh and body != null
+			e.free()
+			await _frames(2)
+		seen[mesh] = true
+	_check("marauders wear both looks (%d seen)" % seen.size(), seen.size() == 2)
+	_check("the same name always gets the same look", steady)
 
 
 ## Heights of the posed model above the enemy's origin, skinned on the CPU.

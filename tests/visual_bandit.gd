@@ -1,11 +1,11 @@
 extends Node
 ## Pictures of the bandits in their inspection room (not a pass/fail check). Windowed:
 ##   Godot_console --path . --resolution 1600x900 --script res://tests/run.gd -- visual_bandit [out dir] [shots...]
-## Shots: "lineup", "lineup_back", or <bandit>:<shot> with bandit = rough brute rogue marksman and
-## shot = front three_quarter side back face third_person
+## Shots: "lineup", "lineup_back", or <bandit>:<shot> with bandit = rough brute rogue marksman
+## marauder marauder_b captain rook hobb and shot = front three_quarter side back face third_person
 ##        idle walk run combat_idle attack attack2 hit death
 
-const KEYS := ["rough", "brute", "rogue", "marksman"]
+const KEYS := ["rough", "brute", "rogue", "marksman", "marauder", "marauder_b", "captain", "rook", "hobb"]
 const PRESETS := {"front": 2, "three_quarter": 3, "side": 4, "back": 5, "face": 6, "third_person": 7}
 ## shot: [animation, time (s), camera orbit (degrees)]; "attack" / "attack2" use the enemy's own attacks
 const POSED := {
@@ -58,7 +58,7 @@ func _take(shot: String) -> void:
 		var line: Array = room.get(&"lineup")
 		for i in line.size():
 			var b: Node3D = line[i]
-			b.rotation_degrees.y = [14.0, 5.0, -5.0, -14.0][i] + (180.0 if shot == "lineup_back" else 0.0)
+			b.rotation_degrees.y = room.call(&"lineup_yaw", i) + (180.0 if shot == "lineup_back" else 0.0)
 			_pose(b, &"Idle", 0.5)
 		for l in get_tree().get_nodes_in_group(&"showroom_text"):
 			(l as Node3D).visible = shot == "lineup"

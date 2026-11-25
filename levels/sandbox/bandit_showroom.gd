@@ -1,17 +1,24 @@
 extends Node3D
 ## The bandit inspection room. Open levels/sandbox/bandit_showroom.tscn in Godot and press F6.
 ##
-## Keys: 1 all four bandits   2 front   3 three-quarter   4 side   5 back   6 face
+## Keys: 1 all the bandits   2 front   3 three-quarter   4 side   5 back   6 face
 ##       7 behind-the-player view   V next bandit
 ##       Space / Right: next animation   Left: previous   A / D: turn the camera   H: hide text
 
-## The four bandits, each as the game wears him: [key, name, character scene, enemy data (gear, attacks)]
+## Every bandit, each as the game wears him: [key, name, character scene, enemy data (gear, attacks)]
 const VARIANTS := [
 	["rough", "Swordsman", "res://assets/characters/bandit/bandit.tscn", "res://data/enemies/enemy_bandit_sword.tres"],
 	["brute", "Mace man", "res://assets/characters/bandit/bandit_brute.tscn", "res://data/enemies/enemy_bandit_pick.tres"],
 	["rogue", "Knife lookout", "res://assets/characters/bandit/bandit_rogue.tscn", "res://data/enemies/enemy_bandit_lookout.tres"],
 	["marksman", "Crossbowman", "res://assets/characters/bandit/bandit_marksman.tscn", "res://data/enemies/enemy_bandit_archer.tres"],
+	["marauder", "Marauder", "res://assets/characters/bandit/bandit_marauder.tscn", "res://data/enemies/enemy_marauder.tres"],
+	["marauder_b", "Marauder", "res://assets/characters/bandit/bandit_marauder_b.tscn", "res://data/enemies/enemy_marauder.tres"],
+	["captain", "Captain", "res://assets/characters/bandit/bandit_captain.tscn", "res://data/enemies/enemy_bandit_captain.tres"],
+	["rook", "Rook", "res://assets/characters/bandit/bandit_rook.tscn", "res://data/enemies/enemy_bandit_rook.tres"],
+	["hobb", "Hobb", "res://assets/characters/bandit/bandit_hobb.tscn", "res://data/enemies/enemy_hobb.tres"],
 ]
+## Space between bandits in the line-up (meters).
+const SPACING := 1.22
 ## Camera presets: how the single bandit is turned (degrees).
 const YAWS := {2: 0.0, 3: -38.0, 4: -90.0, 5: 180.0, 6: -22.0, 7: 0.0}
 
@@ -36,8 +43,8 @@ func _ready() -> void:
 	for i in VARIANTS.size():
 		var b := make_bandit(i)
 		add_child(b)
-		b.position = Vector3(-2.25 + i * 1.5, 0, 0)
-		b.rotation_degrees.y = [14.0, 5.0, -5.0, -14.0][i]
+		b.position = Vector3((i - (VARIANTS.size() - 1) * 0.5) * SPACING, 0, 0)
+		b.rotation_degrees.y = lineup_yaw(i)
 		b.call(&"play", &"Idle", 0.0)
 		var l := Label3D.new()
 		l.text = VARIANTS[i][1]
@@ -61,6 +68,11 @@ func _ready() -> void:
 	ui.add_child(_info)
 	choose(0)
 	view(1)
+
+
+## Each bandit in the line-up is turned a little toward the middle (degrees).
+func lineup_yaw(i: int) -> float:
+	return lerpf(16.0, -16.0, float(i) / (VARIANTS.size() - 1))
 
 
 ## A bandit as the game wears him: the character scene plus the gear named in his enemy data.
@@ -102,8 +114,8 @@ func view(n: int) -> void:
 	match n:
 		1:
 			_focus = Vector3(0, 1.02, 0)
-			_distance = 6.0
-			_height = 0.55
+			_distance = 10.4
+			_height = 0.9
 		6:
 			_focus = Vector3(0, 1.58, 0)
 			_distance = 1.35
@@ -161,8 +173,8 @@ func _lights() -> void:
 
 func _floor() -> void:
 	var mesh := CylinderMesh.new()
-	mesh.top_radius = 7.0
-	mesh.bottom_radius = 7.0
+	mesh.top_radius = 9.0
+	mesh.bottom_radius = 9.0
 	mesh.height = 0.2
 	mesh.radial_segments = 48
 	var mat := StandardMaterial3D.new()

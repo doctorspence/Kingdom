@@ -6,6 +6,7 @@ extends RefCounted
 const Shape := preload("res://assets/characters/bandit/bandit_shape.gd")
 const Mesh_ := preload("res://assets/characters/bandit/bandit_mesh.gd")
 const Clothes := preload("res://assets/characters/bandit/bandit_clothes.gd")
+const Body := preload("res://assets/characters/bandit/bandit_body.gd")
 
 ## How far the vest sits out from the tunic.
 const VEST := 0.013
@@ -34,11 +35,47 @@ static func build(m, o: Dictionary) -> void:
 	_belt(m, skin)
 	_pouch(m)
 	for s: float in o.pauldrons:
-		_shoulder(m, s)
+		_shoulder(m, s, o.get("pauldron_style", "pauldron"))
 	for s: float in o.forearms:
 		_forearm(m, s, o.forearms[s] == "bracer")
 	if o.quiver:
 		_quiver(m)
+	if o.get("helm", false):
+		_helm(m)
+
+
+## A dented iron cap with a riveted rim, a ridge over the crown and a bar down the nose.
+static func _helm(m) -> void:
+	var w := {"Head": 1.0}
+	var rings := []
+	for r in [[1.730, 0.012], [1.766, 0.017], [1.806, 0.019]]:
+		var ring: Array = Body.head_ring(r[0], r[1])
+		if rings.is_empty():
+			# lifted over the brows
+			for i in ring.size():
+				ring[i].y += 0.018 * clampf((ring[i].z - 0.02) / 0.08, 0.0, 1.0)
+		rings.append(ring)
+	for r in [[1.842, 0.80], [1.868, 0.46]]:
+		var ring := []
+		for p: Vector3 in Body.head_ring(1.806, 0.019):
+			ring.append(Vector3(p.x * r[1], r[0], (p.z - Body.HEAD_Z) * r[1] + Body.HEAD_Z - 0.006))
+		rings.append(ring)
+	m.loft("plate", rings, w, {"cap_end": true})
+	var rim: Array = rings[0]
+	for i in rim.size():
+		var p: Vector3 = rim[i]
+		var q: Vector3 = rim[(i + 1) % rim.size()]
+		m.bar("iron", p, q, 0.022, 0.012, Vector3(p.x + q.x, 0.0, p.z + q.z), w)
+		m.box("metal", p + Vector3(p.x, 0.0, p.z - Body.HEAD_Z).normalized() * 0.008, Vector3(0.011, 0.011, 0.011), w)
+	# the ridge, front to back
+	var ridge := [(rings[0] as Array)[6], (rings[1] as Array)[6], (rings[2] as Array)[6], (rings[3] as Array)[6],
+			(rings[4] as Array)[6], (rings[4] as Array)[0], (rings[3] as Array)[0], (rings[2] as Array)[0], (rings[0] as Array)[0]]
+	for i in ridge.size() - 1:
+		m.bar("iron", ridge[i] + Vector3(0, 0.004, 0), ridge[i + 1] + Vector3(0, 0.004, 0), 0.020, 0.012, Vector3.RIGHT, w)
+	# the nasal
+	var top: Vector3 = (rim[6] as Vector3) + Vector3(0, 0.004, 0.006)
+	var low := Vector3(0.0, 1.652, Body.face_z(0.0, 1.652) + 0.042)
+	m.bar("iron", top, low, 0.022, 0.010, Vector3.BACK, w)
 
 
 static func _vest(m, open_front: bool) -> void:
@@ -169,7 +206,7 @@ static func _pouch(m) -> void:
 
 
 ## Two overlapping leather plates over a shoulder (s = +1 left), laced on and riveted.
-static func _shoulder(m, s: float) -> void:
+static func _shoulder(m, s: float, style := "pauldron") -> void:
 	var upper: String = Shape.sided("upperarm", s)
 	var clavicle: String = Shape.sided("clavicle", s)
 	var plates := [
@@ -192,7 +229,7 @@ static func _shoulder(m, s: float) -> void:
 				ws.append({clavicle: 0.2, upper: 0.8})
 			else:
 				ws.append({upper: 1.0})
-		m.loft("pauldron", rings, ws, {"closed": false, "inside": Vector3((plate[0][0][0] + plate[0][-1][0]) * 0.5 * s, 1.43, -0.062)})
+		m.loft(style, rings, ws,{"closed": false, "inside": Vector3((plate[0][0][0] + plate[0][-1][0]) * 0.5 * s, 1.43, -0.062)})
 		# a thick rolled edge along the lower end
 		var last: Array = rings[rings.size() - 1]
 		for i in last.size() - 1:

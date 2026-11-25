@@ -7,8 +7,11 @@ extends CharacterModel
 const CrossbowHold := preload("res://assets/characters/bandit/crossbow_hold.gd")
 const Gear := preload("res://assets/characters/bandit/bandit_gear.gd")
 
-## Which bandit this is (BD_rough, BD_brute, BD_rogue or BD_marksman).
+## Which bandit this is (one of the BD_*.scn outfits).
 @export var outfit: PackedScene = preload("res://assets/characters/bandit/BD_rough.scn")
+## Other looks this kind of bandit may wear instead. Which one is picked from the character's
+## name, so every player in a multiplayer game sees the same one.
+@export var other_outfits: Array[PackedScene] = []
 ## Hold the right-hand item as a crossbow, in both hands.
 @export var holds_crossbow := false
 
@@ -36,7 +39,10 @@ func _wear() -> void:
 		m.visible = false
 		m.queue_free()
 	_meshes.clear()
-	var inst: Node = outfit.instantiate()
+	var looks: Array[PackedScene] = [outfit]
+	looks.append_array(other_outfits)
+	var who := get_parent().name if get_parent() else name
+	var inst: Node = looks[posmod(String(who).hash(), looks.size())].instantiate()
 	_shield_back = inst.get_meta(&"shield_back", _shield_back)
 	for src in inst.find_children("*", "MeshInstance3D", true, false):
 		var n := MeshInstance3D.new()
@@ -52,7 +58,8 @@ func _wear() -> void:
 
 
 ## Where a calm bandit's gear hangs. The base model's places suit most of it; the round shield
-## goes flat on the back, and the crossbow hangs nose-down at the left hip (the quiver has the back).
+## goes flat on the back, the crossbow hangs nose-down at the left hip (the quiver has the back),
+## and an axe hangs with its blade up.
 func _stow_holder(side: String) -> BoneAttachment3D:
 	if _stow_holders.has(side) and is_instance_valid(_stow_holders[side]):
 		return _stow_holders[side]
@@ -64,6 +71,13 @@ func _stow_holder(side: String) -> BoneAttachment3D:
 		var facing := Basis(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(-1, 0, 0))   # the shield's face looks backward
 		# spine_02, not spine_03: it keeps the shield closer to the back when sitting
 		spot = [&"spine_02", Transform3D(facing, Vector3(0.0, 1.19, _shield_back) - facing * Gear.SHIELD_CENTRE)]
+	elif side == "r" and _hand_items.has("r") and String((_hand_items["r"] as Node).name).begins_with("BD_axe"):
+		# on the hip like a sword, but with the blade turned up so the head clears the ground
+		var axe_holder := super._stow_holder(side)
+		if axe_holder:
+			var hung: Transform3D = axe_holder.get_meta(&"stow")
+			axe_holder.set_meta(&"stow", hung * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO))
+		return axe_holder
 	else:
 		return super._stow_holder(side)
 	var bone := _skeleton.find_bone(spot[0])

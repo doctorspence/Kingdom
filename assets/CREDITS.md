@@ -44,7 +44,7 @@ Every downloaded or generated asset goes here, so we always know where things ca
 **License rules**: CC0 for art and sound packs; OFL is OK for fonts (credit the author). AI-generated art you make: note the tool used.
 
 ## Bandit characters
-- `assets/characters/bandit/BD_*.scn` and `textures/*.png`: modelled and painted in code (`bandit_*.gd`, `tools/build_bandit.gd`). Original work for this project, guided by the owner's AI-made reference sheets (`docs/bandit/`). No third-party art.
+- `assets/characters/bandit/BD_*.scn` and `textures/*.png`: modelled and painted in code (`bandit_*.gd`, `tools/build_bandit.gd`). Original work for this project, guided by the owner's AI-made reference sheets (`docs/bandit/`). No third-party art. The Marauder, Captain, Rook, Hobb and axe models follow the same style with no new reference art.
 
 ## White Knight character
 - `assets/characters/white_knight/textures/*`: cut from the owner's own White Knight character sheet (`docs/white_knight/`, owner's AI art) by `tools/white_knight_textures.py`. Owner's art.

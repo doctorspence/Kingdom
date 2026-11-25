@@ -324,4 +324,6 @@ Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces th
 - [x] 11a. Tests and 3-player check pass (2026-11-22)
 - [x] 11b. Friends build re-exported (2026-11-22)
 - [x] Bandit characters: swordsman, mace man, hooded lookout, crossbowman (2026-11-25)
+- [x] New looks for every other bandit: Marauders (quarry, camps, raids), Bandit Captain, Rook, Hobb (2026-11-25)
+- [ ] 🧪 Walk the quarry and the Hobb camp: do the Marauders, the Captain, Rook and Hobb look right beside the Gullet bandits? Harl is still the old stand-in: say when you want a look for Harl
 - [ ] 🧪 Walk the Gullet and look at the four bandits calm and fighting: can you tell them apart in the dark, and does the lookout's dagger feel like it reaches too far?

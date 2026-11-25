@@ -1,10 +1,12 @@
 extends RefCounted
 ## The bandits' own held gear (their swords, daggers and maces are the game's existing weapon
-## models): the battered round plank shield, with a wooden or an iron rim, and a rough crossbow.
+## models): the battered round plank shield, with a wooden or an iron rim, a rough crossbow and
+## a bearded axe.
 ## Everything follows the game's hand convention (CharacterModel.attach_to_hand).
 ##  - Shield: grip at the origin, its face looks along -X (the back of the left hand).
 ##  - Crossbow: grip at the origin, it shoots along -Z with its top toward +Y (crossbow_hold.gd
 ##    turns the hands to suit).
+##  - Axe (the marauders' and Hobb's): grip at the origin, haft along +Y, blade toward +X.
 
 const Mesh_ := preload("res://assets/characters/bandit/bandit_mesh.gd")
 
@@ -57,6 +59,51 @@ static func crossbow(m) -> void:
 		m.poly("iron", [q[0], tip, q[1]], none, Vector3(0, 0.090, -0.390))
 	for s in [1.0, -1.0]:
 		m.poly("fletch", [Vector3(0, 0.094, -0.100), Vector3(0.020 * s, 0.100, -0.092), Vector3(0.018 * s, 0.098, -0.140), Vector3(0, 0.094, -0.150)], none, Vector3(0, 0.05, -0.12))
+
+
+## A heavy bearded axe. The haft runs along +Y from the grip, the blade faces +X.
+static func axe(m) -> void:
+	m.group = "Axe"
+	m.density = 1.0
+	var none := {}
+	# the haft, thicker toward the butt, with a wrapped grip
+	var haft := []
+	for r in [[-0.270, 0.032], [-0.220, 0.027], [0.300, 0.025], [0.820, 0.024], [1.055, 0.027]]:
+		haft.append(Mesh_.ring(Vector3(0, r[0], 0), Vector3.RIGHT, Vector3.BACK, r[1], r[1] * 0.86, 7))
+	m.loft("haft", haft, none, {"cap_start": true, "cap_end": true})
+	for part in [["grip", -0.095, 0.150, 0.031], ["iron", -0.285, -0.245, 0.037], ["iron", 0.760, 0.785, 0.031]]:
+		var band := []
+		for y: float in [part[1], part[2]]:
+			band.append(Mesh_.ring(Vector3(0, y, 0), Vector3.RIGHT, Vector3.BACK, part[3], part[3] * 0.88, 7))
+		m.loft(part[0], band, none, {"cap_start": true, "cap_end": true})
+	# the head: iron cheeks widening into the blade. [x, top, bottom, half thickness]
+	var cols := [[-0.040, 0.995, 0.855, 0.034], [0.044, 0.990, 0.858, 0.032], [0.140, 1.004, 0.862, 0.016], [0.248, 1.048, 0.758, 0.010]]
+	var rings := []
+	for c in cols:
+		rings.append([Vector3(c[0], c[2], c[3]), Vector3(c[0], c[1], c[3]), Vector3(c[0], c[1], -c[3]), Vector3(c[0], c[2], -c[3])])
+	m.loft("iron", rings, none, {"cap_start": true})
+	# the ground edge, curved and bright
+	var back_line := []
+	for i in 5:
+		back_line.append(Vector2(0.248, lerpf(1.048, 0.758, i / 4.0)))
+	var edge := [Vector2(0.292, 1.072), Vector2(0.332, 0.992), Vector2(0.342, 0.900), Vector2(0.322, 0.806), Vector2(0.268, 0.724)]
+	for i in 4:
+		for s in [1.0, -1.0]:
+			m.poly("axe_edge", [Vector3(back_line[i].x, back_line[i].y, 0.010 * s), Vector3(edge[i].x, edge[i].y, 0.001 * s),
+					Vector3(edge[i + 1].x, edge[i + 1].y, 0.001 * s), Vector3(back_line[i + 1].x, back_line[i + 1].y, 0.010 * s)],
+					none, Vector3(0.26, 0.9, 0.0))
+	# close the two horns of the blade
+	for k in [[0, 0], [4, 4]]:
+		var b: Vector2 = back_line[k[0]]
+		var e: Vector2 = edge[k[1]]
+		m.poly("axe_edge", [Vector3(b.x, b.y, 0.010), Vector3(e.x, e.y, 0.0), Vector3(b.x, b.y, -0.010)], none, Vector3(0.26, 0.9, 0.0))
+	# a short spike behind
+	var point := Vector3(-0.138, 0.925, 0.0)
+	var base := [Vector3(-0.038, 0.965, 0.022), Vector3(-0.038, 0.965, -0.022), Vector3(-0.038, 0.885, -0.022), Vector3(-0.038, 0.885, 0.022)]
+	for i in 4:
+		m.poly("iron", [base[i], base[(i + 1) % 4], point], none, Vector3(-0.05, 0.925, 0.0))
+	# the haft shows through the top of the socket, wedged
+	m.box("metal", Vector3(0, 1.058, 0), Vector3(0.014, 0.012, 0.034), none)
 
 
 static func shield(m, iron := false) -> void:

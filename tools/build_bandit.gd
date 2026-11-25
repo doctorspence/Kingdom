@@ -24,7 +24,9 @@ const BODY_ATLAS := 768
 const GEAR_ATLAS := 384
 const MESH_NAMES := {"Body": "BodyMesh", "Head": "HeadMesh", "Hair": "HairMesh", "Clothing": "ClothingMesh", "Armor": "ArmorMesh"}
 ## held gear: mesh group -> scene name
-const GEAR := {"Shield": "BD_shield", "ShieldIron": "BD_shield_iron", "Crossbow": "BD_crossbow"}
+const GEAR := {"Shield": "BD_shield", "ShieldIron": "BD_shield_iron", "Crossbow": "BD_crossbow", "Axe": "BD_axe"}
+## where the weapon trail comes from, on the gear that needs it
+const TIPS := {"Crossbow": Gear.CROSSBOW_TIP, "Axe": Vector3(0.3, 0.92, 0.0)}
 
 
 func _initialize() -> void:
@@ -53,6 +55,7 @@ func _run() -> void:
 	Gear.shield(gear)
 	Gear.shield(gear, true)
 	Gear.crossbow(gear)
+	Gear.axe(gear)
 	gear.pack(GEAR_ATLAS)
 	missing = _paint(gear, GEAR_ATLAS, "bandit_gear", true, {}, true) or missing
 	print("painted textures in %.1f s" % ((Time.get_ticks_msec() - t0) / 1000.0))
@@ -107,10 +110,10 @@ func _run() -> void:
 		mi.mesh = held[group]
 		item.add_child(mi)
 		mi.owner = item
-		if group == "Crossbow":
+		if TIPS.has(group):
 			var tip := Marker3D.new()
 			tip.name = "Tip"
-			tip.position = Gear.CROSSBOW_TIP
+			tip.position = TIPS[group]
 			item.add_child(tip)
 			tip.owner = item
 		print("%-14s %5d triangles" % [GEAR[group], (held[group] as ArrayMesh).surface_get_array_len(0) / 3])
