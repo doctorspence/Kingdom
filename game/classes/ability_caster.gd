@@ -330,11 +330,15 @@ func dash_hit(a: AbilityData, already: Array[Node]) -> void:
 
 # --- Helpers that reach across the network ----------------------------------------
 
-func _strike(e: Node3D, damage: float, poise: float, status: Effects.Status, status_amount: float, threat_mult: float) -> void:
+func _strike(e: Node3D, damage: float, poise: float, status: Effects.Status, status_amount: float, threat_mult: float, positional := false) -> void:
 	var hit := player.make_hit(damage, poise)
 	hit.status = status
 	hit.status_amount = status_amount
 	hit.threat_mult *= threat_mult
+	if positional:
+		# Thrown and fired abilities get the sneak attack and from-behind bonuses too.
+		var sneak := player.is_sneak_target(e)
+		hit.damage *= player.position_bonus(e, hit, sneak)
 	e.call(&"receive_hit", hit)
 
 
@@ -416,7 +420,7 @@ func strike_enemy(e: Node3D, damage: float) -> void:
 
 ## A direct hit from a thrown or fired ability.
 func strike(e: Node3D, damage: float, poise: float, threat_mult: float) -> void:
-	_strike(e, damage, poise, Effects.Status.NONE, 0.0, threat_mult)
+	_strike(e, damage, poise, Effects.Status.NONE, 0.0, threat_mult, true)
 
 
 # --- Primary class abilities ---------------------------------------------------------

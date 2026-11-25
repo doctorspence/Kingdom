@@ -6,7 +6,7 @@ extends CanvasLayer
 
 const HELP_TEXT := """CONTROLS (F1 to hide)
 Move: WASD / left stick (tilt gently to walk)
-Walk: hold Ctrl
+Crouch: Ctrl or C / click left stick (toggle)
 Look: mouse / right stick
 Roll: tap Shift / tap B
 Sprint: hold Shift / hold B
@@ -34,6 +34,7 @@ F5: skip ahead 3 hours (host)    F6: rain on/off (host)    F7: start a camp raid
 H: enemy health bars on/off    N: damage numbers on/off
 Page Up: gain a level    Page Down: back to level 1"""
 
+const StealthEyeScript := preload("res://game/ui/stealth_eye.gd")
 const CHAT_LINES := 8
 const CHAT_FADE_TIME := 12.0
 
@@ -41,6 +42,7 @@ var player: Player
 
 var _health_bar: ResourceBar
 var _stamina_bar: ResourceBar
+var _eye: Control  # the stealth eye, shown while crouched
 var _flask_label: Label
 var _prompt_label: Label
 var _marker: Control
@@ -173,6 +175,7 @@ func _process(delta: float) -> void:
 		return
 	if _debug_label.visible:
 		_debug_label.text = _debug_text()
+	_update_eye()
 	_update_prompt()
 	_update_party()
 	_money_label.text = "Coins %d   Souls %d" % [player.inventory.coins, player.inventory.souls]
@@ -200,6 +203,32 @@ func _process(delta: float) -> void:
 	_down_label.visible = player.is_downed()
 	if player.is_downed():
 		_down_label.text = "You're down! Bleeding out: %d\nA friend can hold Interact next to you to revive you." % ceili(player.bleed_time_left())
+
+
+## The stealth eye, shown only while you are crouched. The host reads the enemies'
+## awareness meters (STEALTH_PLAN.md). A friend's game doesn't have them, so it
+## guesses from the shared enemy states within 25 m: fighting = open and red,
+## suspicious = half open, else closed.
+func _update_eye() -> void:
+	_eye.visible = player.is_crouching and not player.is_dead()
+	if not _eye.visible:
+		return
+	var host := not multiplayer.has_multiplayer_peer() or multiplayer.is_server()
+	var open := 0.0
+	var fighting := false
+	for n in get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e == null or e.state == Enemy.State.DEAD or e.global_position.distance_to(player.global_position) > 25.0:
+			continue
+		if host:
+			fighting = fighting or (e.is_fighting() and e.target == player)
+			open = maxf(open, e.awareness_of(player))
+		elif e.state in [Enemy.State.CHASE, Enemy.State.ATTACK, Enemy.State.STAGGER, Enemy.State.PARRIED, Enemy.State.RIPOSTED, Enemy.State.GUARD, Enemy.State.CALL]:
+			fighting = true
+		elif e.state == Enemy.State.SUSPICIOUS:
+			open = maxf(open, 0.55)
+	_eye.set(&"openness", 1.0 if fighting else open)
+	_eye.set(&"alert", fighting)
 
 
 func _update_prompt() -> void:
@@ -487,7 +516,7 @@ func _debug_text() -> String:
 	var tier_names := ["light", "medium", "heavy", "OVERLOADED"]
 	var speed := Vector2(p.velocity.x, p.velocity.z).length()
 	var lines := PackedStringArray([
-		"State: %s%s" % [p.state_name(), "  (sprinting)" if p.is_sprinting else ("  (walking)" if p.is_walking else "")],
+		"State: %s%s" % [p.state_name(), "  (sprinting)" if p.is_sprinting else ("  (crouching)" if p.is_crouching else ("  (walking)" if p.is_walking else ""))],
 		"Speed: %.1f m/s" % speed,
 		"Health: %d / %d    Stamina: %d / %d" % [p.health, p.max_health(), p.stamina, p.max_stamina()],
 		"Equip load: %d%% (%s)   [F3 to change]" % [roundi(p.equip_load * 100.0), tier_names[p.load_tier()]],
@@ -685,6 +714,11 @@ func _build() -> void:
 	_marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_marker.draw.connect(_draw_marker)
 	root.add_child(_marker)
+
+	_eye = StealthEyeScript.new()
+	_eye.position = Vector2(40, 2)
+	_eye.visible = false
+	root.add_child(_eye)
 
 	var bars := VBoxContainer.new()
 	bars.position = Vector2(40, 36)

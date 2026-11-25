@@ -12,7 +12,7 @@ extends Node
 ## The actions you can rebind, in menu order: [action, label].
 const REBINDABLE := [
 	["move_forward", "Move forward"], ["move_back", "Move back"], ["move_left", "Move left"], ["move_right", "Move right"],
-	["jump", "Jump"], ["dodge_sprint", "Roll / sprint"], ["walk", "Walk (hold)"],
+	["jump", "Jump"], ["dodge_sprint", "Roll / sprint"], ["walk", "Walk (hold, unbound)"], ["crouch", "Crouch (toggle)"],
 	["light_attack", "Light attack"], ["heavy_attack", "Heavy attack"], ["block", "Block / parry"],
 	["lock_on", "Lock on"], ["target_next", "Next target"], ["target_prev", "Previous target"],
 	["flask", "Drink flask"], ["interact", "Interact"], ["swap_weapons", "Swap weapons"],

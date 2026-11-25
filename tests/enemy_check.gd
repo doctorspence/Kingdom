@@ -23,14 +23,14 @@ func _run() -> void:
 
 	# --- Senses: sees in front, not behind; hears up close --------------------------
 	var z := await _add("zealot", Vector3(0, 0, -10), 180.0)  # faces the player
-	await _seconds(0.5)
+	await _seconds(2.0)
 	_check("a Zealot sees you in front of it", z.state != Enemy.State.IDLE)
 	_clear()
 	z = await _add("zealot", Vector3(0, 0, -10), 0.0)  # back turned
 	await _seconds(1.0)
 	_check("...but not from behind", z.state == Enemy.State.IDLE)
-	await _go_to(Vector3(0, 0.05, -6))  # 4 m behind it
-	await _seconds(0.5)
+	await _go_to(Vector3(0, 0.05, -8.5))  # 1.5 m behind it (a still player is heard within 1.8 m)
+	await _seconds(1.0)
 	_check("...and hears you up close", z.state != Enemy.State.IDLE)
 
 	# --- Horn call --------------------------------------------------------------------------
@@ -39,9 +39,12 @@ func _run() -> void:
 	var caller := await _add("zealot", Vector3(0, 0, -10), 180.0)
 	var friend := await _add("zealot", Vector3(10, 0, -10), 0.0)  # looking away
 	var hound := await _add("hound", Vector3(-11, 0, -10), 0.0)  # not its kind
-	await _seconds(0.4)
+	for i in 240:
+		await get_tree().physics_frame
+		if caller.state == Enemy.State.CALL:
+			break
 	_check("the Zealot stops to blow its horn", caller.state == Enemy.State.CALL)
-	await _seconds(1.6)
+	await _seconds(1.8)
 	_check("the horn brings the other Zealot", friend.state == Enemy.State.CHASE and friend.target == player)
 	_check("...but not a hound", hound.state == Enemy.State.IDLE)
 
@@ -76,7 +79,7 @@ func _run() -> void:
 	await _seconds(0.5)
 	_check("at night they don't see as far", z.state == Enemy.State.IDLE)
 	Enemy.sight_mult = 1.0
-	await _seconds(0.3)
+	await _seconds(3.0)
 	_check("...but do in daylight", z.state != Enemy.State.IDLE)
 
 	# --- Hobb ------------------------------------------------------------------------------
@@ -95,10 +98,13 @@ func _run() -> void:
 	_check("...not in fighting stance", b1.model.current_anim() != &"Sword_Idle" and b2.model.current_anim() != &"Sword_Idle")
 	# Walk into one's view only: both join, a moment apart.
 	await _go_to(Vector3(-9, 0.05, -10))  # 8 m behind b1 (out of earshot), 10 m in front of b2
-	await _seconds(0.15)
+	for i in 300:
+		await get_tree().physics_frame
+		if b2.target == player:
+			break
 	var spotted := b2.target == player
 	_check("the one facing you notices you", spotted)
-	_check("...and takes a moment to get ready (no instant charge)", b2.state == Enemy.State.IDLE)
+	_check("...and takes a moment to get ready (no instant charge)", b2.state != Enemy.State.CHASE)
 	_check("...and warns its friend", b1.target == player)
 	await _seconds(1.2)
 	_check("both fight together", b1.state != Enemy.State.IDLE and b2.state != Enemy.State.IDLE)
@@ -177,7 +183,7 @@ func _run() -> void:
 	_check("...and scans left and right", rad_to_deg(look0.angle_to(watcher.model.forward())) > 15.0)
 	# 27 m in front of both: past a plain bandit's sight (22 m), inside the watcher's (about 30 m).
 	await _go_to(Vector3(3, 0.05, 47))
-	await _seconds(1.5)
+	await _seconds(4.0)
 	_check("a watcher sees farther than others", watcher.target == player and plain.target == null)
 	# A lookout with no set direction turns its back on its camp.
 	_clear()
@@ -187,6 +193,85 @@ func _run() -> void:
 	var lookout := await _add("bandit_lookout", Vector3(-14, 0, 1), 90.0)
 	await _seconds(0.8)
 	_check("a lookout faces away from its camp", lookout.post.watching and rad_to_deg(lookout.model.forward().angle_to(Vector3.RIGHT)) < 50.0)
+
+	# --- Stealth: the awareness meter (STEALTH_PLAN.md stage 2) -----------------------
+	_clear()
+	player.is_crouching = true
+	var side := Vector3(12.0 * sin(deg_to_rad(50.0)), 0.05, -20.0 - 12.0 * cos(deg_to_rad(50.0)))
+	await _go_to(side)  # 12 m away, 50 degrees off where the bandit faces
+	var sentry := await _add("bandit_sword", Vector3(0, 0, -20), 0.0)  # faces -z
+	await _seconds(5.0)
+	_check("a crouched player 12 m off to the side stays unnoticed for 5 s", sentry.state == Enemy.State.IDLE and sentry.target == null)
+	player.is_crouching = false
+	await _seconds(3.0)
+	_check("...a standing one at the same place is noticed", sentry.state != Enemy.State.IDLE or sentry.target == player)
+	# Straight at its face, crouched: noticed before 3 m. Creeping up behind it: reaches 1.5 m unnoticed.
+	_clear()
+	player.is_crouching = true
+	var guard := await _add("bandit_sword", Vector3(0, 0, -30), 0.0)  # faces -z, away from the north start
+	await _go_to(Vector3(0, 0.05, -45))  # in front of it (it faces -z)
+	var closest := 99.0
+	for i in 900:
+		var d := player.global_position.distance_to(guard.global_position)
+		closest = minf(closest, d)
+		if guard.target == player or guard.state != Enemy.State.IDLE and guard.state != Enemy.State.SUSPICIOUS:
+			break
+		player.global_position.z += 2.2 / 60.0
+		await get_tree().physics_frame
+	_check("a crouched player walking at its face is noticed before 3 m (at %.1f m)" % closest, closest > 3.0 and (guard.target == player or guard.state != Enemy.State.IDLE))
+	_clear()
+	guard = await _add("bandit_sword", Vector3(0, 0, -30), 0.0)
+	await _go_to(Vector3(0, 0.05, -18))  # 12 m behind it
+	closest = 99.0
+	for i in 900:
+		closest = minf(closest, player.global_position.distance_to(guard.global_position))
+		if closest <= 1.5:
+			break
+		player.global_position.z -= 2.2 / 60.0
+		await get_tree().physics_frame
+	_check("creeping up behind it reaches %.1f m unnoticed" % closest, closest <= 1.5 and guard.target == null and guard.is_unaware())
+	# The meter goes suspicious, then back to idle when the player backs off and waits.
+	_clear()
+	player.is_crouching = true
+	await _go_to(Vector3(0, 0.05, -20))
+	var watcher2 := await _add("bandit_sword", Vector3(0, 0, -26), 180.0)  # 6 m away, facing you
+	var was_suspicious := false
+	for i in 300:
+		await get_tree().physics_frame
+		if watcher2.state == Enemy.State.SUSPICIOUS:
+			was_suspicious = true
+			break
+		if watcher2.state != Enemy.State.IDLE:
+			break
+	_check("a half-noticed player makes it suspicious", was_suspicious and watcher2.is_unaware() and not watcher2.is_fighting())
+	_check("...with its weapon drawn", not watcher2.model.is_sheathed())
+	await _go_to(Vector3(0, 0.05, 20))  # backs far off
+	await _seconds(7.0)
+	_check("...and it gives up and goes back to its post", watcher2.state in [Enemy.State.IDLE, Enemy.State.RETURN] and watcher2.target == null)
+	# A blow on a suspicious enemy: it fights at once.
+	_clear()
+	player.is_crouching = true
+	await _go_to(Vector3(0, 0.05, -20))
+	var wary := await _add("bandit_sword", Vector3(0, 0, -26), 180.0)
+	for i in 300:
+		await get_tree().physics_frame
+		if wary.state == Enemy.State.SUSPICIOUS:
+			break
+	var poke := HitInfo.new()
+	poke.damage = 1.0
+	poke.attacker = player
+	poke.origin = player.global_position
+	wary.receive_hit(poke)
+	await _frames(3)
+	_check("hit while suspicious, it fights at once", wary.state != Enemy.State.IDLE and wary.state != Enemy.State.SUSPICIOUS)
+	_check("...and a fighting enemy is no longer unaware", not wary.is_unaware())
+	player.is_crouching = false
+	# Ambushers keep the old instant way.
+	_clear()
+	await _go_to(Vector3(0, 0.05, 0))
+	var ambusher := await _add("bandit_archer_ambush", Vector3(0, 0, -4), 0.0)
+	await _seconds(0.4)
+	_check("an ambusher wakes at once when you are right on top of it", ambusher.state != Enemy.State.IDLE)
 
 	print("\n%s: %d problem(s)" % ["PASS" if failures == 0 else "FAIL", failures])
 	get_tree().quit(1 if failures > 0 else 0)

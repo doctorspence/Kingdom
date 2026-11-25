@@ -20,6 +20,7 @@ Before working on an area, read its doc:
 | White Knights Outpost (north end of zone 1), its asset library | `OUTPOST_PLAN.md` + `assets/outpost/MANIFEST.md` + `docs/outpost/` |
 | Martial / Vanguard / Mystic classes, subclasses, factions | `CLASS_PLAN.md` |
 | Enemy posts, idle life, alert ladder, patrols (plan, not built) | `ENEMY_LIFE_PLAN.md` |
+| Crouch, stealth, awareness meter, sneak attack (plan, not built) | `STEALTH_PLAN.md` |
 | Art and audio shopping list | `ART_NEEDS.md` |
 | Checklist by phase, playtest (🧪) items | `TODO.md` |
 

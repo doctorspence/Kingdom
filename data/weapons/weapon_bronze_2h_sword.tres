@@ -127,6 +127,7 @@ id = &"weapon_bronze_2h_sword"
 display_name = "Bronze 2H Sword"
 visual_scene = ExtResource("3_wj7tl")
 damage = 26.0
+sneak_multiplier = 1.5
 poise_damage = 20.0
 two_handed = true
 light_combo = Array[ExtResource("1_jqsvu")]([SubResource("Resource_8bdra"), SubResource("Resource_vcncl")])

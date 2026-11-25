@@ -10,6 +10,9 @@ extends Resource
 @export var poise_damage := 12.0
 @export_range(0.0, 1.0) var crit_chance := 0.05
 @export var crit_multiplier := 1.5
+## Damage multiplier for the first blow on an enemy that hasn't noticed you (a
+## sneak attack). Daggers 3.0, two-handers 1.5. It replaces the crit multiplier.
+@export var sneak_multiplier := 2.0
 ## Share of damage stopped when you block with this weapon (no shield).
 @export_range(0.0, 1.0) var block_reduction := 0.6
 ## Damage bonus per stat point = scaling ÷ 100 (DESIGN.md 5.12).

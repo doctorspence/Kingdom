@@ -473,6 +473,38 @@ func _run() -> void:
 	_check_true("crushing blow breaks player poise (stagger)", staggered)
 	await _seconds(1.0)
 
+	# --- Sneak attack and hits from behind (STEALTH_PLAN.md stage 3) ------------------
+	await _setup_duel()
+	enemy.global_position = Vector3(40, 0, -40)
+	var crit_keep := player.weapon.crit_chance
+	var block_keep := enemy.data.block_chance
+	player.weapon.crit_chance = -10.0
+	enemy.data.block_chance = 0.0
+	var sneak_mult := player.weapon.sneak_multiplier
+	var flank_mult := player.tuning.flank_damage_mult
+	var plain_dmg := _land(Enemy.State.CHASE, false)
+	var sneaked := _land(Enemy.State.IDLE, false)
+	_check_true("a sneak attack does sneak_multiplier x the normal damage (%.1f vs %.1f)" % [sneaked, plain_dmg], absf(sneaked / plain_dmg - sneak_mult) < 0.05)
+	_check_true("...the enemy now fights, so the next blow is plain_dmg", not enemy.is_unaware() and absf(_land(enemy.state, false) / plain_dmg - 1.0) < 0.05)
+	var probe := HitInfo.new()
+	probe.poise_damage = 10.0
+	enemy._set_state(Enemy.State.IDLE)
+	var bonus := player.position_bonus(enemy, probe, player.is_sneak_target(enemy))
+	_check_true("...always a crit, with double balance damage", probe.is_crit and absf(probe.poise_damage - 10.0 * player.tuning.sneak_poise_mult) < 0.01 and bonus > 1.0)
+	_check_true("a suspicious enemy counts as unaware too", _land(Enemy.State.SUSPICIOUS, false) / plain_dmg > sneak_mult - 0.05)
+	enemy.data.named = true
+	_check_true("named rares take at most x%.1f" % player.tuning.sneak_named_cap, absf(_land(Enemy.State.IDLE, false) / plain_dmg - minf(sneak_mult, player.tuning.sneak_named_cap)) < 0.05)
+	enemy.data.named = false
+	enemy.data.boss = true
+	_check_true("bosses are never unaware", not enemy.is_unaware())
+	enemy.data.boss = false
+	var behind := _land(Enemy.State.CHASE, true)
+	_check_true("a hit from behind does x%.1f in a fight (%.1f vs %.1f)" % [flank_mult, behind, plain_dmg], absf(behind / plain_dmg - flank_mult) < 0.05)
+	var both := _land(Enemy.State.IDLE, true)
+	_check_true("sneak from behind uses the larger bonus, no stacking", absf(both / plain_dmg - maxf(sneak_mult, flank_mult)) < 0.05)
+	player.weapon.crit_chance = crit_keep
+	enemy.data.block_chance = block_keep
+
 	# --- Flasks and shrine ----------------------------------------------------
 	await _setup_duel()
 	enemy.global_position = Vector3(40, 0, -40)
@@ -506,6 +538,22 @@ func _run() -> void:
 
 
 ## A light hit after the class's stat bonus and the Marauder's armor (DESIGN.md 5.12).
+## Land one light attack on the Marauder in `st`, facing the player (or away), and
+## return the health it lost.
+func _land(st: Enemy.State, away: bool) -> float:
+	enemy.global_position = player.global_position + Vector3(0, 0, -1.8)
+	enemy.reset_physics_interpolation()
+	var to := player.global_position - enemy.global_position
+	enemy.model.face_instantly(-to if away else to)
+	enemy.health = enemy.max_health
+	enemy.target = null
+	enemy._poise = enemy.max_poise
+	enemy._set_state(st)
+	var before := enemy.health
+	player._land_hit(enemy, player.weapon.light_combo[0], 0.0)
+	return before - enemy.health
+
+
 func _expected_hit() -> float:
 	return player.weapon_damage() * (1.0 - HitInfo.armor_reduction(enemy.armor(), player.level()))
 

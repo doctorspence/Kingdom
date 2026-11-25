@@ -127,6 +127,7 @@ id = &"weapon_executioner_greatsword"
 display_name = "Executioner's Greatsword"
 visual_scene = ExtResource("3_visual")
 damage = 30.0
+sneak_multiplier = 1.5
 poise_damage = 20.0
 two_handed = true
 light_combo = Array[ExtResource("2_attack")]([SubResource("Attack_light1"), SubResource("Attack_light2")])

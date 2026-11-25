@@ -127,6 +127,7 @@ id = &"weapon_steel_2h_sword"
 display_name = "Steel 2H Sword"
 visual_scene = ExtResource("3_75pvd")
 damage = 35.0
+sneak_multiplier = 1.5
 poise_damage = 20.0
 two_handed = true
 light_combo = Array[ExtResource("1_d7bqf")]([SubResource("Resource_5iv7n"), SubResource("Resource_wn81v")])

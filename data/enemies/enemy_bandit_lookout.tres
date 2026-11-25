@@ -67,6 +67,7 @@ walk_speed = 1.5
 run_speed = 3.8
 sight_range = 22.0
 hearing_range = 7.0
+perception = 1.5
 caller = true
 call_range = 45.0
 call_family = &"bandits"

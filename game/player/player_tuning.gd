@@ -23,6 +23,29 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var stance_side_speed := 1.3
 ## Below this stick tilt (0–1) you walk instead of run.
 @export_range(0.1, 0.9) var walk_stick_threshold := 0.55
+## Crouched (toggle): slow and quiet. A gently tilted stick is a little slower still.
+@export var crouch_speed := 2.2
+@export_range(0.3, 1.0) var crouch_gentle_mult := 0.7
+
+@export_group("Stealth")
+## Multiplies an enemy's sight range while you are crouched and moving ...
+@export var crouch_seen_mult := 0.45
+## ... and crouched and still.
+@export var crouch_still_seen_mult := 0.35
+## Multiplies an enemy's hearing range: crouched and moving, walking, standing still,
+## and loud (sprinting, attacking, rolling).
+@export var crouch_heard_mult := 0.35
+@export var walk_heard_mult := 0.6
+@export var still_heard_mult := 0.3
+@export var loud_heard_mult := 2.0
+## Sneak attack (first blow on an enemy that hasn't noticed you): balance damage
+## multiplier, and the most a named rare can take from the damage bonus.
+@export var sneak_poise_mult := 2.0
+@export var sneak_named_cap := 1.5
+## Hits from behind (more than this many degrees off its facing) always do this
+## much more damage, in or out of a fight. A sneak attack uses the larger: no stacking.
+@export var flank_angle := 120.0
+@export var flank_damage_mult := 1.5
 
 @export_group("Weight and turning")
 ## How fast you reach your target speed (m/s per second).

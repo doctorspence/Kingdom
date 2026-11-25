@@ -252,6 +252,20 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] Stage 8: placement in the Tithelands (needs the owner's OK on the layout and on who lives there)
 - [ ] Stage 9: checks, FPS, pictures
 
+## Stealth (plan in STEALTH_PLAN.md)
+- [x] Stage 1: crouch (Ctrl or C / left stick click, toggle; built 2026-11-25; `movement_check`)
+- [ ] 🧪 Crouch around in the Tithelands: slow, low, the crouch animations, stands up when you roll, jump, sprint, block or get hit
+- [x] Stage 2: awareness meter, "?" and "!" over enemy heads, suspicious enemies investigate then give up (built 2026-11-25; `enemy_check`)
+- [x] Stage 3: sneak attack (x2 / dagger x3 / 2h x1.5, always a crit, double balance, "Sneak attack"), from-behind x1.5, arrows and bolts too (`combat_check`)
+- [x] Stage 4: HUD eye while crouched (closed / half open grey / open red)
+- [ ] 🧪 Creep up behind a bandit crouched and hit him: "Sneak attack", about double damage. Try a dagger (x3) and a two-hander (x1.5)
+- [ ] 🧪 Walk straight at a bandit's face crouched: he should turn ("?") and then charge ("!") before you reach him; standing, he should notice you almost as fast as before
+- [ ] 🧪 Back off after a "?" and wait: he should shrug and go back to his post or patrol
+- [ ] 🧪 The eye above the health bar: closed while unseen, half open when someone is suspicious, red when fought; also on a friend's machine (a guess from enemy states)
+- [ ] 🧪 Hits from behind (not crouched, mid-fight) feel a bit stronger (x1.5); say if it is too much or too little
+- [ ] 🧪 Hit a suspicious enemy with an arrow from the bushes; check the "?" / "!" words are visible and a lookout or hound notices quicker
+- [ ] Stage 5: tune the numbers after the owner's playtest (Gullet entrance yard, a road patrol)
+
 ## Later (after the milestone)
 - Camp that enemies raid at night; upgrades
 - Quests and public quests

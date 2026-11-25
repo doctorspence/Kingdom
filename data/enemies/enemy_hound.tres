@@ -63,6 +63,7 @@ run_speed = 6.8
 turn_speed = 540.0
 sight_range = 26.0
 hearing_range = 9.0
+perception = 1.5
 caller = true
 call_range = 25.0
 call_anim = &"howl"

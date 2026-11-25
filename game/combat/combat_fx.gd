@@ -62,9 +62,9 @@ func damage_number(where: Vector3, amount: float, kind := NumberKind.NORMAL) -> 
 
 
 ## Gray words like "Blocked", "Deflect!", "Off balance!", "Steady".
-func word(where: Vector3, text: String) -> void:
+func word(where: Vector3, text: String, color := Color(0.75, 0.75, 0.72)) -> void:
 	if show_damage_numbers:
-		_float_text(where, text, Color(0.75, 0.75, 0.72), 44)
+		_float_text(where, text, color, 44)
 
 
 func _float_text(where: Vector3, text: String, color: Color, size: int) -> void:

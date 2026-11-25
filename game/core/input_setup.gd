@@ -19,7 +19,8 @@ func _ready() -> void:
 	_add("look_right", [_axis(JOY_AXIS_RIGHT_X, 1.0)])
 	_add("look_up", [_axis(JOY_AXIS_RIGHT_Y, -1.0)])
 	_add("look_down", [_axis(JOY_AXIS_RIGHT_Y, 1.0)])
-	_add("walk", [_key(KEY_CTRL)])  # gamepad: just tilt the stick gently
+	_add("walk", [])  # no key by default (rebindable); gamepad: just tilt the stick gently
+	_add("crouch", [_key(KEY_CTRL), _key(KEY_C), _button(JOY_BUTTON_LEFT_STICK)])  # toggle
 	# Shift / gamepad B: tap = roll, hold = sprint (handled in the player script)
 	_add("dodge_sprint", [_key(KEY_SHIFT), _button(JOY_BUTTON_B)])
 	_add("jump", [_key(KEY_SPACE), _button(JOY_BUTTON_A)])

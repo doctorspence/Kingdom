@@ -60,6 +60,9 @@ extends Resource
 @export var sight_angle := 120.0
 ## Hears you this close (doubled while you sprint or fight).
 @export var hearing_range := 6.0
+## How quickly it notices you: multiplies how fast its awareness meter fills
+## (lookouts and hounds are keen, sleepy ones lower). See STEALTH_PLAN.md.
+@export var perception := 1.0
 
 @export_group("Special behavior")
 ## Blows a horn / howls when it spots you: everyone of its kind nearby joins in.

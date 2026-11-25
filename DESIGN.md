@@ -70,7 +70,8 @@ You host your world; two friends join by IP. You rest at the Crossroads shrine a
 | Action | Mouse & keyboard | Gamepad (Xbox names) |
 |---|---|---|
 | Move / camera | WASD / mouse | Left stick / right stick |
-| Walk | Ctrl (hold) | Tilt the stick gently |
+| Crouch (toggle) | Ctrl or C | Click the left stick |
+| Walk | No key by default (rebindable "Walk (hold)") | Tilt the stick gently |
 | Light attack | Left mouse | RB |
 | Heavy attack (hold to charge) | Middle mouse | RT |
 | Block (tap at the last moment = parry) | Right mouse (hold) | LB |

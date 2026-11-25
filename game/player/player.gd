@@ -81,6 +81,11 @@ var stamina := 100.0
 var flasks := 4
 var is_sprinting := false
 var is_walking := false
+## Crouched (toggle with the crouch key). Quiet and slow; see seen_mult() and heard_mult().
+var is_crouching := false
+## Set when you swing from a crouch; you drop back into the crouch after it only if nothing was hit.
+var _recrouch := false
+var _attack_landed := false
 var is_blocking := false
 ## Show debug visuals (invincibility tint). The HUD's F2 toggles this.
 var show_debug := false
@@ -165,6 +170,8 @@ var net_anim := &""
 var net_anim_speed := 1.0
 var net_anim_count := 0
 var net_state := 0
+## How noisy and visible this player is for enemies: 0 normal, 1 walking or still, 2 crouch moving, 3 crouch still, 4 loud (sprint, attack, roll).
+var net_stealth := 0
 var net_health := 100.0
 var net_max_health := 100.0
 var net_bleed := 0.0
@@ -441,6 +448,7 @@ func is_parrying() -> bool:
 ## press for every blow of a combo does).
 func _begin_guard() -> void:
 	is_blocking = true
+	is_crouching = false
 	var base := (shield.parry_window if _shield_in_hand() else tuning.deflect_window_weapon) \
 			+ (stats.mod_add("parry_window_add") if stats else 0.0)
 	if _clock - _last_guard_press < tuning.deflect_spam_time:
@@ -1339,6 +1347,7 @@ func _write_net_state() -> void:
 	net_anim_speed = model.get_speed()
 	net_anim_count = model.play_count
 	net_state = state
+	net_stealth = _stealth_code()
 	net_health = health
 	net_max_health = max_health()
 	net_bleed = _bleed
@@ -1441,8 +1450,56 @@ func _tick_effects(delta: float) -> void:
 
 
 func _set_state(new_state: State) -> void:
+	# Leaving MOVE stands you up. A swing from a crouch remembers it, to crouch again if it hits nothing.
+	if new_state != State.MOVE:
+		var from_crouch := new_state == State.ATTACK and (is_crouching or (state == State.ATTACK and _recrouch))
+		if from_crouch and state != State.ATTACK:
+			_attack_landed = false
+		_recrouch = from_crouch
+		is_crouching = false
+	elif _recrouch:
+		is_crouching = not _attack_landed and _can_crouch()
+		_recrouch = false
 	state = new_state
 	_state_time = 0.0
+
+
+## Crouching isn't possible while overloaded or wading in the river.
+func _can_crouch() -> bool:
+	return load_tier() != PlayerTuning.LoadTier.OVERLOADED and _water_mult() >= 1.0
+
+
+## 0 normal, 1 walking or still, 2 crouch moving, 3 crouch still, 4 loud (sprint, attack, roll).
+func _stealth_code() -> int:
+	var moving := Vector2(velocity.x, velocity.z).length() > 0.3
+	if is_sprinting or state == State.ATTACK or state == State.ROLL:
+		return 4
+	if is_crouching:
+		return 2 if moving else 3
+	return 1 if (is_walking or not moving) else 0
+
+
+## How far enemies can see you, as a share of their sight range (enemies use it from stage 2).
+func seen_mult() -> float:
+	match net_stealth if not is_multiplayer_authority() else _stealth_code():
+		2: return tuning.crouch_seen_mult
+		3: return tuning.crouch_still_seen_mult
+	return 1.0
+
+
+## How far enemies can hear you, as a share of their hearing range (enemies use it from stage 2).
+## Friends' copies only know "walking or still" (code 1), so they count as walking.
+func heard_mult() -> float:
+	var code := net_stealth if not is_multiplayer_authority() else _stealth_code()
+	match code:
+		4: return tuning.loud_heard_mult
+		3: return 0.0
+		2: return tuning.crouch_heard_mult
+		1:
+			if is_multiplayer_authority() and not is_walking and Vector2(velocity.x, velocity.z).length() <= 0.3:
+				return tuning.still_heard_mult
+			return tuning.walk_heard_mult
+	return 1.0
 
 
 func _state_move(delta: float) -> void:
@@ -1498,15 +1555,22 @@ func _state_move(delta: float) -> void:
 
 	var locked := targeting.has_target()
 	var overloaded := load_tier() == PlayerTuning.LoadTier.OVERLOADED
+	# Crouch is a toggle on the ground; blocking, sprinting, heavy load and deep water stand you up.
+	if Input.is_action_just_pressed("crouch") and not (Net.typing or Net.in_menu) and is_on_floor():
+		is_crouching = not is_crouching and not is_blocking and not overloaded and _water_mult() >= 1.0
 	is_walking = Input.is_action_pressed("walk") or (amount > 0.0 and amount < tuning.walk_stick_threshold)
 	is_sprinting = _wants_sprint() and amount > 0.3 and not overloaded and not _sprint_locked \
 			and stamina > 0.0 and not is_blocking
+	if is_crouching and (is_sprinting or is_blocking or overloaded or _water_mult() < 1.0):
+		is_crouching = false
 
 	var speed := tuning.run_speed
 	if is_sprinting:
 		speed = tuning.sprint_speed
 	elif is_blocking:
 		speed = tuning.block_move_speed
+	elif is_crouching:
+		speed = tuning.crouch_speed * (tuning.crouch_gentle_mult if amount < tuning.walk_stick_threshold else 1.0)
 	elif is_walking:
 		speed = tuning.walk_speed
 	elif locked:
@@ -1552,6 +1616,13 @@ func _state_move(delta: float) -> void:
 			model.play(CharacterModel.ANIM_BLOCK, 0.12)
 	else:
 		var ground := Vector3(velocity.x, 0.0, velocity.z)
+		if is_crouching:
+			# Low and slow: the crouch clips, scaled to how fast you creep.
+			if ground.length() > 0.15:
+				model.play(&"Crouch_Fwd", 0.2, clampf(ground.length() / tuning.crouch_speed, 0.5, 1.2))
+			else:
+				model.play(&"Crouch_Idle", 0.2)
+			return
 		var side_stepping := stance and amount > 0.0 and absf(dir.normalized().dot(model.forward())) < 0.5
 		if side_stepping:
 			# Keep the fighting stance; the model steps the feet out and in (StanceSteps).
@@ -1903,6 +1974,7 @@ func arrow_hit(target: Node3D, a: AttackData, charge: float) -> void:
 
 
 func _land_hit(target: Node3D, a: AttackData = null, charge := -1.0) -> void:
+	_attack_landed = true
 	if a == null:
 		a = _attack.attack
 	if charge < 0.0:
@@ -1924,11 +1996,14 @@ func _land_hit(target: Node3D, a: AttackData = null, charge := -1.0) -> void:
 	if charge > 0.0:
 		dmg *= 1.0 + weapon.heavy_charge_bonus * clampf(charge / weapon.heavy_charge_time, 0.0, 1.0)
 	var guaranteed := effects.any("guaranteed_crit")
-	hit.is_crit = _is_riposte or guaranteed or randf() < stats.crit_chance(weapon)
+	var sneak := is_sneak_target(target)
+	hit.is_crit = sneak or _is_riposte or guaranteed or randf() < stats.crit_chance(weapon)
 	if guaranteed:
 		effects.remove_mod(&"feint")
-	if hit.is_crit and not _is_riposte:
+	# A sneak attack is always a crit, but its bonus replaces the crit multiplier.
+	if hit.is_crit and not _is_riposte and not sneak:
 		dmg *= weapon.crit_multiplier
+	dmg *= position_bonus(target, hit, sneak)
 	# Headsman passive: extra damage to bleeding targets.
 	if target.has_method("is_bleeding") and target.call(&"is_bleeding"):
 		dmg *= stats.mod_mult("bleeding_target_damage_mult")
@@ -1953,6 +2028,29 @@ func _land_hit(target: Node3D, a: AttackData = null, charge := -1.0) -> void:
 		var steal := effects.total("lifesteal")
 		if steal > 0.0:
 			_receive_heal(hit.damage * steal, player_name)
+
+
+## Is this a sneak attack: the target hasn't noticed you (idle or suspicious)?
+func is_sneak_target(target: Node3D) -> bool:
+	return target.has_method("is_unaware") and bool(target.call(&"is_unaware"))
+
+
+## The damage bonus for where and how a blow lands: a sneak attack uses the weapon's
+## sneak multiplier (named rares are capped), a hit from behind always does a smaller
+## flank bonus, and when both apply the larger wins (they don't stack). A sneak attack
+## also hits the target's balance harder and shows "Sneak attack". Changes `hit`.
+func position_bonus(target: Node3D, hit: HitInfo, sneak: bool) -> float:
+	var bonus := 1.0
+	if sneak:
+		bonus = weapon.sneak_multiplier
+		if target.has_method("is_named") and bool(target.call(&"is_named")):
+			bonus = minf(bonus, tuning.sneak_named_cap)
+		hit.is_crit = true
+		hit.poise_damage *= tuning.sneak_poise_mult
+		CombatFx.word(target.global_position + Vector3.UP * 2.6, "Sneak attack")
+	if target.has_method("is_flanked_by") and bool(target.call(&"is_flanked_by", global_position, tuning.flank_angle)):
+		bonus = maxf(bonus, tuning.flank_damage_mult)
+	return bonus
 
 
 func _find_riposte_victim() -> Node3D:
@@ -2032,6 +2130,8 @@ func _state_drink(delta: float) -> void:
 # --- Being hit ----------------------------------------------------------------
 
 func _apply_damage(amount: float) -> void:
+	is_crouching = false
+	_recrouch = false
 	health = maxf(0.0, health - amount)
 	if health <= 0.0 and effects.any("min_health"):
 		health = 1.0  # Unbroken

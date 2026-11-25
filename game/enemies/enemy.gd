@@ -13,6 +13,11 @@ extends CharacterBody3D
 ##   DEAD     dead until someone rests at a shrine
 ##   CALL     blowing a horn / howling for help (callers only)
 ##   GUARD    guard raised after taking a few hits in a row; strikes back out of it
+##   SUSPICIOUS  half-noticed you (awareness 0.5 to 1): stops, looks, may walk over
+##
+## Awareness (STEALTH_PLAN.md): while calm, each player has a 0..1 meter that fills
+## while the enemy sees or hears them and drains when it can't. Half way it turns
+## suspicious ("?"); full, it notices them ("!") exactly as it always did.
 ##
 ## Balance (poise): every hit and every deflect you land drains it, and it only
 ## refills gradually after a pause (slower when the enemy is hurt). When it runs
@@ -25,7 +30,7 @@ extends CharacterBody3D
 
 signal died
 
-enum State { IDLE, CHASE, ATTACK, STAGGER, PARRIED, RIPOSTED, RETURN, DEAD, CALL, GUARD }
+enum State { IDLE, CHASE, ATTACK, STAGGER, PARRIED, RIPOSTED, RETURN, DEAD, CALL, GUARD, SUSPICIOUS }
 
 const HEALTH_BAR_SHOW_TIME := 6.0
 ## Group scaling (DESIGN.md 8.4): extra health and poise per extra player.
@@ -40,6 +45,22 @@ static var sight_mult := 1.0
 ## This enemy sees farther or shorter than normal (camp Watchfires level 3
 ## shorten raiders' sight).
 var sight_scale := 1.0
+
+## Awareness meter numbers (STEALTH_PLAN.md section 2).
+## Seconds to fill the meter from sight: at the edge of its range / at point blank.
+const SIGHT_FILL_FAR := 2.5
+const SIGHT_FILL_NEAR := 0.2
+## Seconds to fill it from a noise, however close.
+const HEAR_FILL := 0.6
+## Nothing seen or heard for this long, then the meter drains this much per second.
+const DRAIN_DELAY := 1.5
+const DRAIN_RATE := 0.2
+const SUSPICIOUS_AT := 0.5
+const GIVE_UP_AT := 0.25
+## A visible player this close (in front of it) is noticed at once.
+const POINT_BLANK := 1.2
+## A suspicious enemy looks this long before it walks over to check.
+const LOOK_TIME := 1.0
 
 @export var data: EnemyData
 ## Optional patrol route (world points). Empty = stand guard.
@@ -111,6 +132,11 @@ var post: EnemyPost
 var fight: EnemyFight  # stance, taunts and hurt look in a fight (enemy_fight.gd)
 var _alarm_time := -1.0  # noticed a player: seconds left to get ready (< 0 = not alarmed)
 var _alarm_horn := true  # when ready, a caller may still blow its horn
+## Awareness (host only): player network id -> 0..1, and seconds since it last
+## saw or heard that player.
+var _awareness := {}
+var _quiet := {}
+var _last_noticed := Vector3.ZERO  # where it last saw or heard someone
 
 @onready var model: CharacterModel = $Visual
 
@@ -172,6 +198,8 @@ func _reset() -> void:
 	_free_adds()
 	_patrol_i = 0
 	_alarm_time = -1.0
+	_awareness.clear()
+	_quiet.clear()
 	collision_layer = 4
 	_set_state(State.IDLE)
 	model.set_overlay("")
@@ -200,6 +228,31 @@ func can_be_riposted() -> bool:
 
 func health_ratio() -> float:
 	return health / max_health
+
+
+## Has it not noticed you yet? Idle or suspicious (also while it is getting ready,
+## which is still IDLE). A blow now is a sneak attack. Bosses are never unaware.
+func is_unaware() -> bool:
+	return (state == State.IDLE or state == State.SUSPICIOUS) and not data.boss
+
+
+## Named rares only take a smaller sneak attack bonus.
+func is_named() -> bool:
+	return data.named
+
+
+## Is `origin` behind it (more than `angle` degrees off the way it faces)?
+func is_flanked_by(origin: Vector3, angle: float) -> bool:
+	var from := origin - global_position
+	from.y = 0.0
+	if from.length() < 0.01:
+		return false
+	return rad_to_deg(model.forward().angle_to(from)) > angle
+
+
+## Host: how much it has noticed this player (0 to 1), for the HUD eye.
+func awareness_of(p: Player) -> float:
+	return _awareness.get(p.get_multiplayer_authority(), 0.0)
 
 
 ## Balance lost, 0 (steady) to 1 (about to break). Shown under the health bar.
@@ -269,7 +322,7 @@ func _taunt(peer: int, duration: float) -> void:
 	var p := _player_of_peer(peer)
 	if p:
 		target = p
-		if state == State.IDLE or state == State.RETURN:
+		if state == State.IDLE or state == State.RETURN or state == State.SUSPICIOUS:
 			_set_state(State.CHASE)
 
 
@@ -446,7 +499,7 @@ func _show_hit(damage: float, is_crit: bool, origin: Vector3) -> void:
 ## Host only: take the damage, poise and state changes.
 func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 	# Shield-bearers block blows from the front when they aren't swinging.
-	if data.block_chance > 0.0 and not hit.is_riposte and state in [State.IDLE, State.CHASE, State.RETURN]:
+	if data.block_chance > 0.0 and not hit.is_riposte and state in [State.IDLE, State.CHASE, State.RETURN, State.SUSPICIOUS]:
 		var from := hit.origin - global_position
 		from.y = 0.0
 		if rad_to_deg(model.forward().angle_to(from)) < 60.0 and randf() < data.block_chance:
@@ -473,6 +526,7 @@ func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 	_hitstop = maxf(_hitstop, hit.hit_stop)
 	if hit.attacker is Player:
 		add_threat(hit.attacker.get_multiplayer_authority(), damage * hit.threat_mult)
+		_awareness[hit.attacker.get_multiplayer_authority()] = 1.0  # it knows who hit it
 		if target == null:
 			target = hit.attacker
 	if hit.slow > 0.0:
@@ -502,9 +556,9 @@ func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 		_cooldown = maxf(_cooldown, 0.35)
 		_pressure += 1
 		_pressure_timer = 1.2
-		if state == State.IDLE:
+		if state == State.IDLE or state == State.SUSPICIOUS:
 			if target:
-				_aggro(target)
+				_aggro(target)  # any blow means a fight, never a slow notice
 	return HitInfo.Result.HIT
 
 
@@ -751,6 +805,8 @@ func _physics_process(delta: float) -> void:
 			_state_return(delta)
 		State.CALL:
 			_state_call(delta)
+		State.SUSPICIOUS:
+			_state_suspicious(delta)
 		State.DEAD:
 			_move(Vector3.ZERO, delta)
 	_update_sheath()
@@ -823,9 +879,23 @@ func _state_idle(delta: float) -> void:
 			post.tick(delta)
 		else:
 			model.play(model.idle_anim, 0.25)
-	var p := _find_player()
-	if p:
-		_notice(p)
+	# Bosses and ambushers spot you the old instant way; everyone else fills a meter.
+	if data.boss or data.ambush_range > 0.0:
+		var p := _find_player()
+		if p:
+			_notice(p)
+		return
+	var seen := _sense(delta)
+	if seen:
+		_spotted(seen)
+	elif _top_awareness() >= SUSPICIOUS_AT:
+		_become_suspicious()
+
+
+## The meter is full: a red "!", then the usual notice.
+func _spotted(p: Player) -> void:
+	_alert_word("!", Color(0.9, 0.18, 0.12))
+	_notice(p)
 
 
 ## Spotted a player while calm on its post: get ready (a moment to turn and draw)
@@ -839,6 +909,145 @@ func _notice(p: Player) -> void:
 	_alarm_time = EnemyPost.READY_TIME
 	_alarm_horn = true
 	post.alert_friends(p)
+	_wake_suspicious_friends(p)
+
+
+## Half-noticed: stop, look toward it and show a grey "?".
+func _become_suspicious() -> void:
+	_set_state(State.SUSPICIOUS)
+	_alert_word("?", Color(0.75, 0.75, 0.72))
+	post.get_up()  # off its seat or away from its job first (EnemyPost)
+
+
+## A word over its head on every machine ("?" and "!").
+func _alert_word(text: String, color: Color) -> void:
+	_alert_fx(text, color)
+	_net_alert_fx.rpc(text, color)
+
+
+func _alert_fx(text: String, color: Color) -> void:
+	CombatFx.word(global_position + Vector3.UP * 2.4 * data.scale, text, color)
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_alert_fx(text: String, color: Color) -> void:
+	_alert_fx(text, color)
+
+
+## EnemyPost only warns friends that are standing calm (IDLE); suspicious ones that
+## are close notice `p` at once instead.
+func _wake_suspicious_friends(p: Player) -> void:
+	for n in get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e and e != self and e.state == State.SUSPICIOUS and e.global_position.distance_to(global_position) <= EnemyPost.ALERT_RANGE:
+			e._awareness[p.get_multiplayer_authority()] = 1.0
+
+
+## Awareness steps (host): fill the meters from what it sees and hears. Returns the
+## player whose meter just filled (or null). STEALTH_PLAN.md section 2.
+func _sense(delta: float) -> Player:
+	var found: Player
+	var found_level := 0.0
+	var nearest := INF
+	var present := {}
+	for n in get_tree().get_nodes_in_group(&"player"):
+		var p := n as Player
+		if p == null or p.is_out_of_fight():
+			continue
+		var peer := p.get_multiplayer_authority()
+		present[peer] = true
+		var level: float = _awareness.get(peer, 0.0)
+		var rate := _fill_rate(p)
+		if rate > 0.0:
+			level = minf(1.0, level + rate * delta)
+			_quiet[peer] = 0.0
+			var d := p.global_position.distance_to(global_position)
+			if d < nearest:
+				nearest = d
+				_last_noticed = p.global_position
+		else:
+			var quiet: float = _quiet.get(peer, 0.0) + delta
+			_quiet[peer] = quiet
+			if quiet > DRAIN_DELAY:
+				level = maxf(0.0, level - DRAIN_RATE * delta)
+		_awareness[peer] = level
+		if level >= 1.0 and level > found_level:
+			found = p
+			found_level = level
+	# Forget players who left or went down.
+	for peer in _awareness.keys():
+		if not present.has(peer):
+			_awareness.erase(peer)
+			_quiet.erase(peer)
+	return found
+
+
+## How fast this player fills the meter right now, per second (0 = not sensed).
+func _fill_rate(p: Player) -> float:
+	var to := p.global_position - global_position
+	var d := to.length()
+	var flat := Vector3(to.x, 0, to.z)
+	var angle := rad_to_deg(model.forward().angle_to(flat))
+	var in_front := angle <= data.sight_angle * 0.5
+	var sight_range := data.sight_range * sight_mult * sight_scale * p.seen_mult()
+	var hear_range := data.hearing_range * p.heard_mult()
+	var sees := in_front and d <= sight_range
+	var hears := d <= hear_range
+	if not (sees or hears) and not (in_front and d <= POINT_BLANK):
+		return 0.0
+	if not _can_see(p):
+		return 0.0
+	if in_front and d <= POINT_BLANK:
+		return 1000.0  # face to face: noticed at once
+	var rate := 0.0
+	if sees:
+		rate += 1.0 / lerpf(SIGHT_FILL_NEAR, SIGHT_FILL_FAR, clampf(d / maxf(sight_range, 0.01), 0.0, 1.0))
+	if hears:
+		rate += 1.0 / HEAR_FILL
+	return rate * data.perception
+
+
+## The highest meter toward any player.
+func _top_awareness() -> float:
+	var top := 0.0
+	for v in _awareness.values():
+		top = maxf(top, v)
+	return top
+
+
+## Suspicious: stop and look toward where it noticed you, then after a moment walk
+## over to check. A full meter is a fight; the meter draining away is a shrug.
+func _state_suspicious(delta: float) -> void:
+	if _alarm_time >= 0.0:
+		_get_ready(delta)  # the meter filled and it is drawing its weapon
+		return
+	var seen := _sense(delta)
+	if seen:
+		_spotted(seen)
+		return
+	if _top_awareness() < GIVE_UP_AT:
+		_give_up()
+		return
+	var to := _last_noticed - global_position
+	to.y = 0.0
+	model.turn_toward(to, deg_to_rad(data.turn_speed) * 0.7 * delta)
+	if post.is_getting_up():
+		_move(Vector3.ZERO, delta)  # still standing up from a seat
+	elif _state_time >= LOOK_TIME and to.length() > 2.0:
+		_move(to.normalized() * data.walk_speed, delta)
+		model.update_locomotion(Vector3(velocity.x, 0, velocity.z).length(), false, true)
+	else:
+		_move(Vector3.ZERO, delta)
+		model.play(model.idle_anim, 0.25)
+
+
+## It found nothing: back to what it was doing. A guard that wandered off walks home.
+func _give_up() -> void:
+	_set_state(State.IDLE)
+	if patrol_points.size() < 2 and global_position.distance_to(_spawn.origin) > 2.5:
+		_set_state(State.RETURN)
+	else:
+		post.resume()
 
 
 ## A friend saw `p` (EnemyPost.alert_friends): turn toward it and join in after `delay`.
@@ -892,6 +1101,7 @@ func _aggro(p: Player, spread := true) -> void:
 	_alarm_time = -1.0
 	if spread and post and post.enabled:
 		post.alert_friends(p)
+		_wake_suspicious_friends(p)
 	if data.caller and not _called:
 		_called = true
 		model.face_instantly(p.global_position - global_position)
@@ -912,7 +1122,7 @@ func _state_call(delta: float) -> void:
 	# Everyone of its kind nearby joins the fight.
 	for n in get_tree().get_nodes_in_group(&"enemies"):
 		var e := n as Enemy
-		if e and e != self and (e.data.id == data.id or (data.call_family != &"" and e.data.call_family == data.call_family)) and e.state in [State.IDLE, State.RETURN] \
+		if e and e != self and (e.data.id == data.id or (data.call_family != &"" and e.data.call_family == data.call_family)) and e.state in [State.IDLE, State.RETURN, State.SUSPICIOUS] \
 				and e.global_position.distance_to(global_position) <= data.call_range:
 			e._called = true  # one horn is enough
 			e.target = target

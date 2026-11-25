@@ -139,6 +139,7 @@ id = &"weapon_steel_dagger"
 display_name = "Steel Dagger"
 visual_scene = ExtResource("3_yetgh")
 damage = 17.0
+sneak_multiplier = 3.0
 poise_damage = 6.0
 crit_chance = 0.12
 scaling_strength = 0.2

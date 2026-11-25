@@ -139,6 +139,7 @@ id = &"weapon_bronze_dagger"
 display_name = "Bronze Dagger"
 visual_scene = ExtResource("3_fm4f5")
 damage = 12.0
+sneak_multiplier = 3.0
 poise_damage = 6.0
 crit_chance = 0.12
 scaling_strength = 0.2
