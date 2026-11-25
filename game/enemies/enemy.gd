@@ -38,6 +38,8 @@ const HEALTH_PER_EXTRA_PLAYER := 0.6
 const POISE_PER_EXTRA_PLAYER := 0.25
 ## At most this many enemies attack the same player at once; the rest circle.
 const MAX_ATTACKERS := 2
+## Seconds to draw the sword from the hip when it sets off (stage 7).
+const DRAW_TIME := 0.5
 ## A blow that lands while it is winding up a swing does this much more balance damage.
 const COUNTER_HIT_BALANCE := 1.5
 ## Night makes everyone harder to see (set by the day/night cycle).
@@ -1084,13 +1086,18 @@ func set_home_facing(direction: Vector3) -> void:
 
 
 ## Sheathed on its post, weapon in hand otherwise. Every machine works this out
-## from the (shared) state, so nothing extra goes over the network.
+## from the (shared) state, so nothing extra goes over the network. Setting off
+## (charging, or going to look) it draws from the hip on the move (DrawReach);
+## anything else (a horn call, an attack, a stagger) has it in hand at once.
 func _update_sheath() -> void:
 	if post == null or not post.enabled:
 		return
 	if state == State.IDLE:
 		model.sheathe(true)
+	elif state == State.CHASE or state == State.SUSPICIOUS:
+		model.draw_weapon(DRAW_TIME)
 	elif state != State.DEAD:
+		model.finish_draw()
 		model.sheathe(false)
 
 

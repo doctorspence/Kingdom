@@ -104,6 +104,13 @@ func _ready() -> void:
 		_steps = steps
 	else:
 		steps.free()
+	_draw = DrawReach.new()
+	_draw.name = "DrawReach"
+	if _draw.setup(_skeleton, self):
+		_skeleton.add_child(_draw)
+	else:
+		_draw.free()
+		_draw = null
 	var chop := OverheadChop.new()
 	chop.name = "OverheadChop"
 	if chop.setup(_skeleton, _anim, self):
@@ -516,9 +523,35 @@ func is_sheathed() -> bool:
 	return _sheathed
 
 
-## Stow the hand items (true) or take them back in hand (false). Instant: the
-## enemy's alert step covers the moment of the draw.
+var _draw: DrawReach
+
+## Draw the sword from the hip with a reach of the right arm (DrawReach); the
+## items jump to the hands halfway. Instant when there is nothing on the hip.
+func draw_weapon(duration := 0.45) -> void:
+	if not _sheathed or is_drawing():
+		return
+	var grip := _stow_holder("r") if _hand_items.has("r") and stow_places.get("r", "hip") == "hip" else null
+	if _draw == null or grip == null:
+		sheathe(false)
+		return
+	_draw.begin(duration, grip)
+
+
+## Cut a draw short (an attack, a hit): the sword is in the hand at once.
+func finish_draw() -> void:
+	if _draw:
+		_draw.finish()
+
+
+func is_drawing() -> bool:
+	return _draw != null and _draw.active()
+
+
+## Stow the hand items (true) or take them back in hand (false). Instant, unless
+## draw_weapon() is used for the draw.
 func sheathe(on: bool) -> void:
+	if on and is_drawing():
+		_draw.cancel()
 	if on == _sheathed or _skeleton == null:
 		return
 	_sheathed = on

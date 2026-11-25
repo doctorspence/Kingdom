@@ -127,7 +127,7 @@ func _run() -> void:
 	tap.origin = player.global_position
 	calm.receive_hit(tap)
 	await _frames(3)
-	_check("hit while calm, it fights at once", calm.state != Enemy.State.IDLE and not calm.model.is_sheathed())
+	_check("hit while calm, it fights at once (drawing its sword)", calm.state != Enemy.State.IDLE and (calm.model.is_drawing() or not calm.model.is_sheathed()))
 	# Bosses, hounds and ambushers keep their old ways.
 	_clear()
 	var h := await _add("hound", Vector3(5, 0, 5), 0.0)
@@ -244,7 +244,7 @@ func _run() -> void:
 		if watcher2.state != Enemy.State.IDLE:
 			break
 	_check("a half-noticed player makes it suspicious", was_suspicious and watcher2.is_unaware() and not watcher2.is_fighting())
-	_check("...with its weapon drawn", not watcher2.model.is_sheathed())
+	_check("...drawing its weapon", watcher2.model.is_drawing() or not watcher2.model.is_sheathed())
 	await _go_to(Vector3(0, 0.05, 20))  # backs far off
 	await _seconds(7.0)
 	_check("...and it gives up and goes back to its post", watcher2.state in [Enemy.State.IDLE, Enemy.State.RETURN] and watcher2.target == null)

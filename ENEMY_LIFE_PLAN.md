@@ -1,6 +1,6 @@
 # Enemy life plan: what enemies do before the fight
 
-*Written 2026-11-25 at the owner's request. Stages 1-4 and 6 are built (see "Progress" at the end).*
+*Written 2026-11-25 at the owner's request. Stages 1-4, 6 and 7 are built; stage 5 is in STEALTH_PLAN.md (see "Progress" at the end).*
 
 ## Decided (owner, 2026-11-25)
 1. **Weapons while calm: on the hip (shields on the back) and drawn when the fight starts** (option B below).
@@ -104,7 +104,26 @@ Each stage is playable on its own and ends with the checks and pictures.
 | 3 | **Built 2026-11-25, not playtested by hand.** Details below. |
 | 4 | **Built 2026-11-25, not playtested by hand.** Details below. |
 | 6 | **Built 2026-11-25, not playtested by hand.** Details below. |
-| 7 | Not started. |
+| 7 | **Built 2026-11-25, not playtested by hand.** Details below. |
+
+**Stage 7 as built (the draw and night rest):**
+- **The draw:** when a calm enemy sets off (charging, or going to look as a suspicious one) its right hand reaches across to the sword on its left hip. Halfway through the 0.5 s draw, the sword and shield jump to the hands, and the arm sweeps out forward. The animation library has no draw move, so this is an arm bend on top of the run (`game/characters/draw_reach.gd`, `DrawReach`, started by `CharacterModel.draw_weapon()`). An attack, a hit or a horn call puts the sword in hand at once. Every machine does this when it sees the state change, so nothing new goes over the network. Archers (bow on the back) still draw instantly.
+- **Night rest** (`EnemyPost`, "Night rest" section):
+  - **When:** when it gets dark (`DayNight.night` above 0.6), the calm enemies within 10 m of a camp fire lie down. They get up again in the morning (below 0.35).
+  - **Where:** in a free place on a ring 2 m round the fire, clear of seats, crates and each other, nearest their own post. They lie along the ring (`ual2/LayToIdle` held at its first, lying frame).
+  - **Who stays up:** one per fire stays up as the night watch, sitting or standing by the fire as usual. With a watch post nearby, everyone else sleeps. Watch posts and patrols keep going all night.
+  - **Senses and getting up:** sleepers see 0.35 times as far. Woken (the watch spots you, a hit, a noise that makes it suspicious), a sleeper takes about 2 s to get up before it can fight. After a fight at night they go back to sleep.
+  - **Nobody near:** a sleeper is placed straight on the ground, the same as seats.
+- Also fixed: the seat helper (`SpotLock`) could hold an enemy on its seat for one more frame after letting go.
+- Not done: a torch or lantern for the night watch (no torch prop yet), tents, hounds curling up.
+- Checks: `tests/draw_rest_check.gd`:
+  - sword on the hip, then the reach, then the sword in hand;
+  - at night 2 of 3 lie down near the fire and 1 keeps watch;
+  - sleepers lie on the ground and see little;
+  - the watch wakes them, and they take a while to get up, then fight;
+  - back to sleep after the fight;
+  - everyone up in the morning.
+- Pictures: `tests/visual_draw.gd` (the draw for a bandit and a Knight, the camp at night).
 
 **Stage 6 as built (fighting animations):**
 - All the fight-look code is in one small helper, `game/enemies/enemy_fight.gd` (`EnemyFight`). `enemy.gd` only asks it what to do. Looks only: damage, timing and how many attack at once (still 2) are unchanged.
@@ -136,7 +155,7 @@ Each stage is playable on its own and ends with the checks and pictures.
 - `game/enemies/enemy_post.gd` (EnemyPost, one per enemy): about 0.3 s after appearing (then every 2.5-4 s) it looks for idle friends within 5 m; a group turns to face its middle, and that becomes its home facing. Calm animations per `EnemyData.calm_style` ("loose" for bandits, "disciplined" for Zealots, "none" keeps the old stance): one talks at a time while the others listen, nod, fold their arms or drink (bandits), at slightly different speeds and start points. Patrols walk with `Walk` (bandits) or `Walk_Formal` (Knights).
 - Not given a post: bosses, hounds (no human animations), ambushers (`ambush_range`), camp raiders (they march on the camp ready to fight).
 - **Alert:** an enemy that spots you stands for 0.35 s turning toward you, then charges; calm friends within 10 m (with a clear line between them) turn and join 0.5-0.95 s after. Callers still blow the horn at once; friends warned by a caller don't blow their own. A hit on a calm enemy makes it fight at once. After a chase they walk home, sheathe, and face the group again.
-- **Weapons:** `CharacterModel.sheathe()` moves the hand items onto the left hip (weapon, grip forward), the back (shield) or across the back (bow). Every machine sheathes when the enemy's state is IDLE and draws otherwise, so nothing new goes over the network. The draw is instant at the start of the charge: the library has no draw animation (a real one would go on `ART_NEEDS.md`).
+- **Weapons:** `CharacterModel.sheathe()` moves the hand items onto the left hip (weapon, grip forward), the back (shield) or across the back (bow). Every machine sheathes when the enemy's state is IDLE and draws otherwise, so nothing new goes over the network. The draw was instant at first; stage 7 added a reach to the hip (see "Stage 7 as built").
 - Hooks in `enemy.gd`: `_notice`, `raise_alarm`, `_get_ready`, `set_home_facing`, `_update_sheath`, and `_aggro(p, spread)`. The stealth work's awareness meter should call `_notice(p)` where it would call `_aggro(p)`, so posts and stealth stack.
 - `SpawnDirector` now places a non-patrol group 1.3-2 m apart (was the spawn point's radius, usually 3 m), a little untidy.
 - Checks: `enemy_check` (huddle facing, sheathed, notice delay, group joins, drawn, back to post, hit while calm, hounds). Pictures: `tests/visual_posts.gd` (run without `--headless`).

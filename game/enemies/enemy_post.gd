@@ -112,6 +112,10 @@ func tick(delta: float) -> void:
 	if watching:
 		_keep_watch(delta)
 		return
+	if is_getting_up():
+		return  # still getting up off the ground (morning)
+	if _night_tick(delta):
+		return
 	if spot_kind != Spot.NONE:
 		_tick_spot(delta)
 		return
@@ -146,6 +150,175 @@ func resume() -> void:
 		if ahead:
 			leg = ahead.post.leg
 			enemy._patrol_i = ahead._patrol_i
+
+
+# --- Night rest (stage 7) ----------------------------------------------------------
+## Camps sleep at night (DayNight.night above REST_AT; up again below WAKE_AT): the
+## calm ones near a camp fire lie down beside it (`LayToIdle` held at its first,
+## lying frame) and see very little. One per fire stays up by the fire as the night
+## watch; watch posts and patrols keep going. Getting up takes about 2 s.
+const REST_AT := 0.6
+const WAKE_AT := 0.35
+const REST_RANGE := 10.0      # meters from a camp fire
+const RESTED_SIGHT := 0.35
+const REST_GET_UP := 1.8
+const LIE := &"ual2/LayToIdle"
+
+var resting := false
+var _rest_phase := 0  # 0 = going to its spot, 1 = lying down, 2 = asleep
+var _rest_time := 0.0
+var _rest_check := 0.0
+static var _fires: Array[Vector3] = []
+static var _rest_claims := {}  # "fire:slot" -> Enemy lying there
+const REST_SLOTS := 10        # places round a fire (every other one can be used)
+const REST_RADIUS := 2.0      # meters from the fire
+var _rest_at := Vector3.INF
+var _rest_key := ""
+
+
+## Host, from tick(): true while night rest has this enemy (lying, or on its way).
+func _night_tick(delta: float) -> bool:
+	if not resting:
+		if DayNight.night < REST_AT:
+			return false
+		_rest_check -= delta
+		if _rest_check > 0.0:
+			return false
+		_rest_check = _rng.randf_range(0.8, 1.5)  # (not every frame: it looks at the whole camp)
+		if not _can_rest() or _keeps_night_watch():
+			return false
+		resting = true
+		_rest_phase = 0
+		_release_lock()
+		_phase = 0  # off the seat or the job
+		_anim = &""
+		if not _player_within(30.0):
+			_rest_phase = 2  # nobody near: simply asleep already
+			enemy.global_position = _rest_spot()
+			_lie(0.0)
+		return true
+	if DayNight.night < WAKE_AT:
+		_wake()
+		return false
+	if _rest_phase == 0:
+		var to := _rest_spot() - enemy.global_position
+		to.y = 0.0
+		if to.length() > 0.3:
+			enemy.model.turn_toward(to, deg_to_rad(enemy.data.turn_speed) * 0.5 * delta)
+			enemy._move(to.normalized() * minf(enemy.data.walk_speed, to.length() * 2.0 + 0.4), delta)
+			walk(Vector3(enemy.velocity.x, 0, enemy.velocity.z).length())
+			return true
+		_rest_phase = 1
+		_rest_time = 0.0
+		_lie(1.1)
+		return true
+	enemy._move(Vector3.ZERO, delta)
+	if _rest_phase == 1:
+		_rest_time += delta
+		if _rest_time >= 1.1:
+			_rest_phase = 2
+	return true
+
+
+## Down on the ground: the first (lying) frame of LayToIdle, held. `blend` seconds
+## from whatever it was doing (a slow blend reads as lying down).
+func _lie(blend: float) -> void:
+	var to_fire := _nearest_point(_fires, enemy.global_position, REST_RANGE) - enemy.global_position
+	to_fire.y = 0.0
+	if to_fire.length() > 0.1:
+		enemy.model.face_instantly(to_fire.cross(Vector3.UP))  # lying alongside the fire
+	enemy.model.play(LIE, blend, 0.0, true)
+	enemy.sight_scale = RESTED_SIGHT
+
+
+## Morning (or the camp is called to arms): stand up and go back to the post.
+func _wake() -> void:
+	resting = false
+	_free_rest_spot()
+	enemy.model.play_fitted(LIE, REST_GET_UP, 0.1)
+	_up_until = Time.get_ticks_msec() + int(REST_GET_UP * 1000.0)
+	enemy.sight_scale = 1.0
+	resume()
+
+
+## Where it lies: a free place on a ring round the fire, nearest its own post. The
+## places keep clear of seats and camp props and of each other (bodies lie along
+## the ring). No room: where its post is.
+func _rest_spot() -> Vector3:
+	if _rest_at != Vector3.INF:
+		return _rest_at
+	var home := enemy._spawn.origin if spot_kind != Spot.NONE else enemy.global_position
+	_rest_at = home
+	var fire := _nearest_point(_fires, home, REST_RANGE)
+	if fire == Vector3.INF:
+		return _rest_at
+	var base := atan2(home.z - fire.z, home.x - fire.x)
+	var order: Array = range(REST_SLOTS)
+	order.sort_custom(func(a: int, b: int) -> bool:
+		return absf(angle_difference(base, _slot_angle(a))) < absf(angle_difference(base, _slot_angle(b))))
+	for i: int in order:
+		var key := "%s:%d" % [fire, i]
+		var spot := fire + Vector3(cos(_slot_angle(i)), 0.0, sin(_slot_angle(i))) * REST_RADIUS
+		spot.y = home.y
+		if _slot_taken(fire, i) or _blocked(spot):
+			continue
+		_rest_claims[key] = enemy
+		_rest_key = key
+		_rest_at = spot
+		break
+	return _rest_at
+
+
+func _slot_angle(i: int) -> float:
+	return TAU * i / REST_SLOTS
+
+
+## This place or either one beside it already has someone lying there.
+func _slot_taken(fire: Vector3, i: int) -> bool:
+	for d in [-1, 0, 1]:
+		var e: Enemy = _rest_claims.get("%s:%d" % [fire, posmod(i + d, REST_SLOTS)])
+		if e != null and e != enemy and is_instance_valid(e) and e.post.resting:
+			return true
+	return false
+
+
+func _blocked(spot: Vector3) -> bool:
+	for p: Dictionary in _props:
+		if (p["pos"] as Vector3).distance_to(spot) < 1.4:
+			return true
+	return false
+
+
+func _free_rest_spot() -> void:
+	if _rest_key != "" and _rest_claims.get(_rest_key) == enemy:
+		_rest_claims.erase(_rest_key)
+	_rest_key = ""
+	_rest_at = Vector3.INF
+
+
+func _can_rest() -> bool:
+	if watching or is_patrolling() or not _set_up:
+		return false
+	if not enemy.model.has_anim(LIE):
+		return false
+	return _nearest_point(_fires, enemy.global_position, REST_RANGE) != Vector3.INF
+
+
+## The night watch: of the calm ones by the same fire, the first (lowest id) stays
+## up, sitting or standing by the fire as usual.
+func _keeps_night_watch() -> bool:
+	var fire := _nearest_point(_fires, enemy.global_position, REST_RANGE)
+	for n in enemy.get_tree().get_nodes_in_group(&"enemies"):
+		var e := n as Enemy
+		if e == null or e == enemy or e.post == null or not e.post.enabled or e.state != Enemy.State.IDLE:
+			continue
+		if e.post.watching and e.global_position.distance_to(fire) <= CAMP_RANGE:
+			return false  # the camp has a lookout: everyone else may sleep
+		if e.post.watching or e.post.is_patrolling():
+			continue
+		if e.global_position.distance_to(fire) <= REST_RANGE and e.get_instance_id() < enemy.get_instance_id():
+			return false
+	return true
 
 
 # --- Keeping watch (stage 3) -------------------------------------------------------
@@ -265,6 +438,8 @@ static var _props_time := -100000
 
 
 func get_up_time() -> float:
+	if resting:
+		return REST_GET_UP
 	return GET_UP[spot_kind] if _phase > 0 else 0.0
 
 
@@ -279,6 +454,17 @@ var _up_until := 0
 ## Alerted (or hit): stand up from the seat or put the job down.
 func get_up() -> void:
 	_release_lock()
+	if resting:
+		var up_in := REST_GET_UP + READY_TIME
+		_free_rest_spot()
+		resting = false
+		_rest_check = 3.0  # don't lie straight back down if it calms again
+		_up_until = Time.get_ticks_msec() + int(up_in * 1000.0)
+		enemy.model.play_fitted(LIE, up_in, 0.1)
+		enemy.sight_scale = 1.0
+		_anim = &""
+		_phase = 0
+		return
 	if spot_kind == Spot.NONE or _phase == 0:
 		return
 	var takes := get_up_time() + READY_TIME
@@ -366,6 +552,7 @@ func _find_props() -> void:
 		var file := String(n.scene_file_path).get_file()
 		if PROPS.has(file):
 			found.append([n, PROPS[file]])
+	_fires = fires
 	for f: Array in found:
 		var node := f[0] as Node3D
 		var spec: Array = f[1]
@@ -514,6 +701,7 @@ class SpotLock extends Node:
 	func release() -> void:
 		if is_queued_for_deletion():
 			return
+		set_physics_process(false)  # no more snapping back onto the seat this frame
 		var e := get_parent() as Enemy
 		if e and _mask >= 0:
 			e.collision_mask = _mask
