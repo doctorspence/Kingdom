@@ -4,27 +4,27 @@
 
 **Status:** ✅ built for the outpost (hand-painted, baked to `assets/outpost/<folder>/<ID_name>.scn`) · ♻️ something usable already exists in the project and can stand in, but the outpost version is still to make · ⬜ to do.
 
-**Totals (228 assets):** ✅ 43 built · ♻️ 81 with a stand-in · ⬜ 104 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
+**Totals (228 assets):** ✅ 49 built · ♻️ 80 with a stand-in · ⬜ 99 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
 
 **How each asset is made:** built in code for now (`assets/outpost/`, like the bandit-hideout kit). Any asset can later be swapped for a GLB the owner makes with an image-to-3D tool: keep the same file name, origin and size (rules in `OUTPOST_PLAN.md`, section 6).
 
 "hideout" means the bandit-hideout library, `assets/hideout/<folder>/<name>.scn`.
 
 
-## A. Buildings (`buildings/`, 1 of 10 built)
+## A. Buildings (`buildings/`, 6 of 10 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
 | B01 | Roadside inn / alehouse | ⬜ | same as IN01 |
 | B02 | Civilian blacksmith workshop | ⬜ | same as BS01 |
 | B03 | Stable and farrier shelter | ⬜ | same as ST01 |
-| B04 | Large market shelter | ⬜ |  |
-| B05 | Small market stall | ⬜ | same as MK01 |
+| B04 | Large market shelter | ✅ | `B04_large_market_shelter.scn` (open hall, walk-through) |
+| B05 | Small market stall | ✅ | `B05_small_market_stall.scn` (real-world size: market furniture); also MK01 |
 | B06 | Carpenter workshop | ⬜ | same as CR01 |
 | B07 | Small cottage | ✅ | `B07_small_cottage.scn` (enterable, lit hearth; built 1.3x like every building) |
-| B08 | Medium cottage | ♻️ | zone 1 `assets/buildings/cottage_*.scn` |
-| B09 | Storage shed | ⬜ |  |
-| B10 | Guard shelter | ⬜ | same family as CP08 |
+| B08 | Medium cottage | ✅ | `B08_medium_cottage.scn` (enterable, hearth on the east gable) |
+| B09 | Storage shed | ✅ | `B09_storage_shed.scn` (board walls, lean-to roof, enterable) |
+| B10 | Guard shelter | ✅ | = CP08 (an enclosed sentry hut can follow if wanted) |
 
 ## B. Castle approach and military checkpoint (`castle_approach/`, 20 of 20 built)
 
@@ -98,11 +98,11 @@
 | ST24 | Stable lantern | ✅ | = CP17 |
 | ST25 | Grooming equipment | ⬜ |  |
 
-## E. Market props (`market/`, 2 of 24 built)
+## E. Market props (`market/`, 3 of 24 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
-| MK01 | Merchant stall | ⬜ |  |
+| MK01 | Merchant stall | ✅ | = B05 |
 | MK02 | Canvas awning | ⬜ | WK08 in plain linen |
 | MK03 | Red-and-ivory awning | ✅ | = WK08 |
 | MK04 | Merchant table | ♻️ | hideout `table_trestle` |

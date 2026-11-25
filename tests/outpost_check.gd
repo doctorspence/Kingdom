@@ -36,27 +36,31 @@ func _run() -> void:
 		if n:
 			n.free()
 	_ck("all %d outpost assets load with a mesh %s" % [Catalog.entries().size(), missing], missing.is_empty())
-	# 2. Walk into the cottage (built at the buildings' SIZE).
+	# 2. Walk into every building (all built at the buildings' SIZE, k), along paths in drawn meters.
 	var k: float = BLD.SIZE
-	var house := (load("res://assets/outpost/buildings/B07_small_cottage.scn") as PackedScene).instantiate() as Node3D
-	add_child(house)
-	for i in 3:
+	var walks := [
+		["buildings/B07_small_cottage", "B07 cottage: in through the door to the hearth", [Vector2(-1.0, 4.5), Vector2(-1.0, 2.3), Vector2(-1.0, 0.0), Vector2(0.6, 0.0), Vector2(-2.0, 0.0)], [Vector3(1.5, 1.0, 2.25), Vector3(0, 1.0, -2.3)]],
+		["buildings/B08_medium_cottage", "B08 cottage: in through the door, to the hearth and the far end", [Vector2(0.6, 4.9), Vector2(0.6, 2.7), Vector2(0.6, 0.0), Vector2(3.2, 0.0), Vector2(-3.6, 0.0)], [Vector3(-1.0, 1.0, 2.65), Vector3(0, 1.0, -2.7)]],
+		["buildings/B09_storage_shed", "B09 shed: in through the door", [Vector2(0.0, 3.4), Vector2(0.0, 1.4), Vector2(0.0, 0.0)], [Vector3(1.2, 1.0, 1.4), Vector3(0, 1.0, -1.4)]],
+		["buildings/B04_large_market_shelter", "B04 market shelter: walk through between the posts", [Vector2(-2.0, 5.0), Vector2(-2.0, -5.0), Vector2(2.0, -5.0), Vector2(2.0, 5.0)], [Vector3(0, 1.0, 2.6)]],
+		["castle_approach/CP08_guard_inspection_shelter", "CP08 guard shelter: in at the open front", [Vector2(0, 2.6), Vector2(0, 0)], [Vector3(0, 1.0, -1.1)]],
+	]
+	for w in walks:
+		var node := (load("res://assets/outpost/%s.scn" % w[0]) as PackedScene).instantiate() as Node3D
+		add_child(node)
+		for i in 3:
+			await get_tree().physics_frame
+		var path := []
+		for p: Vector2 in w[2]:
+			path.append(p * k)
+		var blocked := _walk(path, k)
+		_ck("%s (blocked at %s)" % [w[1], blocked.slice(0, 3)], blocked.is_empty())
+		var walls_ok := true
+		for q: Vector3 in w[3]:
+			walls_ok = walls_ok and _hits(Vector3(q.x * k, q.y, q.z * k))
+		_ck("%s: its walls or posts block the player" % w[0].get_file(), walls_ok)
+		node.queue_free()
 		await get_tree().physics_frame
-	var door := Vector2(-1.0, 2.3) * k
-	var blocked := _walk([Vector2(door.x, door.y + 2.2), Vector2(door.x, door.y), Vector2(door.x, 0.0), Vector2(0.6 * k, 0.0), Vector2(-2.0 * k, 0.0)], k)
-	_ck("B07 cottage: a player walks in through the door to the hearth (blocked at %s)" % [blocked.slice(0, 3)], blocked.is_empty())
-	_ck("B07 cottage: the walls block the player", _hits(Vector3(1.5 * k, 1.0, 2.3 * k - 0.05)) and _hits(Vector3(0, 1.0, -2.3 * k)))
-	house.queue_free()
-	# 3. Step into the guard shelter (also a building, also at SIZE).
-	var hut := (load("res://assets/outpost/castle_approach/CP08_guard_inspection_shelter.scn") as PackedScene).instantiate() as Node3D
-	add_child(hut)
-	for i in 3:
-		await get_tree().physics_frame
-	blocked = _walk([Vector2(0, 2.6 * k), Vector2(0, 0)], k)
-	_ck("CP08 guard shelter: a player walks in at the open front (blocked at %s)" % [blocked.slice(0, 3)], blocked.is_empty())
-	_ck("CP08 guard shelter: its back wall blocks the player", _hits(Vector3(0, 1.0, -1.1 * k)))
-	hut.queue_free()
-	await get_tree().physics_frame
 	print(("PASS" if _bad == 0 else "FAIL") + ": %d problem(s)" % _bad)
 	get_tree().quit(1 if _bad else 0)
 

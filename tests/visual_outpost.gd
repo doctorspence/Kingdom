@@ -6,6 +6,7 @@ extends SceneTree
 ##        cp_overview cp_left cp_right cp_table cp_dusk (a checkpoint laid out with stage 2's pieces)
 ##        b07_outside b07_door b07_in (the cottage; the door and inside views through the game's
 ##        own camera arm: 1.7 m up, 3 m back, pulled in by walls)
+##        vil_overview vil_market vil_b08_in vil_shed (stage 3's buildings as a village corner)
 
 const WK_DIR := "res://assets/outpost/white_knights/"
 const CP_DIR := "res://assets/outpost/castle_approach/"
@@ -15,6 +16,8 @@ const CP := preload("res://assets/outpost/castle_approach/castle_approach.gd")
 const CPO := Vector3(40, 0, 0)
 ## Where the cottage stands.
 const CB := Vector3(-45, 0, 40)
+## Where the village corner stands.
+const VB := Vector3(-45, 0, -25)
 const BLD := preload("res://assets/outpost/buildings/buildings.gd")
 const ENV := preload("res://levels/common/tithelands_env.tres")
 const STONE := preload("res://levels/common/materials/stone.tres")
@@ -36,7 +39,7 @@ func _run() -> void:
 	var out_dir := args[0] if args.size() > 0 else "user://shots"
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant", "cp_overview", "cp_left", "cp_right", "cp_table", "cp_dusk",
-		"b07_outside", "b07_door", "b07_in"]
+		"b07_outside", "b07_door", "b07_in", "vil_overview", "vil_market", "vil_b08_in", "vil_shed"]
 	if args.size() > 1:
 		shots = args.slice(1)
 	_build()
@@ -131,6 +134,7 @@ func _build() -> void:
 	stage.add_child(man)
 	_build_cp()
 	_build_b07()
+	_build_village()
 
 
 ## A checkpoint across a 12 m road running north (-Z) toward the castle.
@@ -264,3 +268,32 @@ func _shot_b07_door() -> void:
 
 func _shot_b07_in() -> void:
 	_arm_shot(CB + Vector3(0.8 * BLD.SIZE, 0, 0.2), 90.0)
+
+
+func _build_village() -> void:
+	var k: float = BLD.SIZE
+	_wk("B08_medium_cottage", VB + Vector3(-13, 0, 0), 8.0)
+	_wk("B07_small_cottage", VB + Vector3(3, 0, -2), -6.0)
+	_wk("B09_storage_shed", VB + Vector3(13, 0, 1), -18.0)
+	_wk("B04_large_market_shelter", VB + Vector3(0, 0, 16))
+	_wk("B05_small_market_stall", VB + Vector3(-2.6, 0, 16.4))
+	_wk("B05_small_market_stall", VB + Vector3(2.6, 0, 16.4))
+	_wk("WK08_red_ivory_market_awning", VB + Vector3(9.5, 0, 17), -10.0)
+	_man(VB + Vector3(1.0, 0, 19.2), 180.0)
+	_man(VB + Vector3(-13 - 1.0 * k, 0, 0.3), 90.0)
+
+
+func _shot_vil_overview() -> void:
+	_look(VB + Vector3(0, 10.0, 36.0), VB + Vector3(0, 2.0, 5.0))
+
+
+func _shot_vil_market() -> void:
+	_look(VB + Vector3(5.0, 2.4, 25.0), VB + Vector3(0, 1.7, 16.0))
+
+
+func _shot_vil_b08_in() -> void:
+	_arm_shot(VB + Vector3(-13 - 1.0 * BLD.SIZE, 0, 0.3), -90.0)
+
+
+func _shot_vil_shed() -> void:
+	_look(VB + Vector3(9.5, 2.2, 8.5), VB + Vector3(13, 1.6, 1.0))

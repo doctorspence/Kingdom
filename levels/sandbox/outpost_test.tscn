@@ -11,6 +11,10 @@
 [ext_resource type="PackedScene" path="res://assets/outpost/castle_approach/CP09_toll_inspection_table.scn" id="9_table"]
 [ext_resource type="PackedScene" path="res://assets/outpost/castle_approach/CP14_supply_barrels.scn" id="10_barrels"]
 [ext_resource type="PackedScene" path="res://assets/outpost/white_knights/WK04_mounted_standard.scn" id="11_standard"]
+[ext_resource type="PackedScene" path="res://assets/outpost/buildings/B08_medium_cottage.scn" id="12_b08"]
+[ext_resource type="PackedScene" path="res://assets/outpost/buildings/B09_storage_shed.scn" id="13_b09"]
+[ext_resource type="PackedScene" path="res://assets/outpost/buildings/B04_large_market_shelter.scn" id="14_b04"]
+[ext_resource type="PackedScene" path="res://assets/outpost/buildings/B05_small_market_stall.scn" id="15_b05"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_ground"]
 albedo_texture = ExtResource("4_path")
@@ -60,6 +64,24 @@ position = Vector3(-1.5, 0, 4.5)
 
 [node name="Standard" parent="." instance=ExtResource("11_standard")]
 position = Vector3(1.2, 0, 1.5)
+
+[node name="MediumCottage" parent="." instance=ExtResource("12_b08")]
+position = Vector3(-22, 0, -4)
+rotation_degrees = Vector3(0, 12, 0)
+
+[node name="Shed" parent="." instance=ExtResource("13_b09")]
+position = Vector3(-14, 0, -12)
+rotation_degrees = Vector3(0, 6, 0)
+
+[node name="MarketShelter" parent="." instance=ExtResource("14_b04")]
+position = Vector3(20, 0, -8)
+rotation_degrees = Vector3(0, -15, 0)
+
+[node name="StallA" parent="MarketShelter" instance=ExtResource("15_b05")]
+position = Vector3(-2.6, 0, 0.4)
+
+[node name="StallB" parent="MarketShelter" instance=ExtResource("15_b05")]
+position = Vector3(2.6, 0, 0.4)
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector3(0, 0.05, 15)
