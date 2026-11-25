@@ -62,7 +62,8 @@ func _stow_holder(side: String) -> BoneAttachment3D:
 		spot = [&"pelvis", Transform3D(Basis(Vector3(0, 0, 1), Vector3(1, 0, 0), Vector3(0, 1, 0)), Vector3(0.262, 0.90, -0.01))]
 	elif side == "l" and stow_places.get(side, "") == "back":
 		var facing := Basis(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(-1, 0, 0))   # the shield's face looks backward
-		spot = [&"spine_03", Transform3D(facing, Vector3(0.0, 1.19, _shield_back) - facing * Gear.SHIELD_CENTRE)]
+		# spine_02, not spine_03: it keeps the shield closer to the back when sitting
+		spot = [&"spine_02", Transform3D(facing, Vector3(0.0, 1.19, _shield_back) - facing * Gear.SHIELD_CENTRE)]
 	else:
 		return super._stow_holder(side)
 	var bone := _skeleton.find_bone(spot[0])

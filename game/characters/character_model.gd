@@ -506,7 +506,8 @@ const STOW := {
 	# place: [bone, offset from the bone, item +Y (blade / handle up), item +Z,
 	#         true = the item's middle goes there (false = its grip)]
 	"hip": [&"pelvis", Vector3(0.2, 0.04, 0.1), Vector3(0.18, -0.75, -0.62), Vector3(1.0, 0.0, 0.0), false],
-	"back": [&"spine_03", Vector3(0.0, -0.12, -0.24), Vector3(0.0, 1.0, 0.0), Vector3(0.0, 0.0, 1.0), true],
+	# a shield's face is its -X side, so its +Z points to -X to turn the face backward
+	"back": [&"spine_03", Vector3(0.0, -0.12, -0.24), Vector3(0.0, 1.0, 0.0), Vector3(-1.0, 0.0, 0.0), true],
 	"bow": [&"spine_03", Vector3(0.0, -0.1, -0.2), Vector3(0.6, 0.8, 0.0), Vector3(0.0, 0.0, -1.0), true],
 }
 
