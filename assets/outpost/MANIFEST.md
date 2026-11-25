@@ -4,14 +4,14 @@
 
 **Status:** ✅ built for the outpost (hand-painted, baked to `assets/outpost/<folder>/<ID_name>.scn`) · ♻️ something usable already exists in the project and can stand in, but the outpost version is still to make · ⬜ to do.
 
-**Totals (228 assets):** ✅ 41 built · ♻️ 82 with a stand-in · ⬜ 105 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
+**Totals (228 assets):** ✅ 43 built · ♻️ 81 with a stand-in · ⬜ 104 to do. Some IDs are the same asset under two names (marked "=" or "same as"); they are counted under both.
 
 **How each asset is made:** built in code for now (`assets/outpost/`, like the bandit-hideout kit). Any asset can later be swapped for a GLB the owner makes with an image-to-3D tool: keep the same file name, origin and size (rules in `OUTPOST_PLAN.md`, section 6).
 
 "hideout" means the bandit-hideout library, `assets/hideout/<folder>/<name>.scn`.
 
 
-## A. Buildings (`buildings/`, 0 of 10 built)
+## A. Buildings (`buildings/`, 1 of 10 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
@@ -21,7 +21,7 @@
 | B04 | Large market shelter | ⬜ |  |
 | B05 | Small market stall | ⬜ | same as MK01 |
 | B06 | Carpenter workshop | ⬜ | same as CR01 |
-| B07 | Small cottage | ♻️ | zone 1 `assets/buildings/cottage_*.scn` (building_kit.gd) |
+| B07 | Small cottage | ✅ | `B07_small_cottage_realsize.scn` (A) and `B07_small_cottage_mmosize.scn` (B, x1.3): the owner keeps one |
 | B08 | Medium cottage | ♻️ | zone 1 `assets/buildings/cottage_*.scn` |
 | B09 | Storage shed | ⬜ |  |
 | B10 | Guard shelter | ⬜ | same family as CP08 |
@@ -200,15 +200,15 @@
 | CR15 | Wooden pegs | ⬜ |  |
 | CR16 | Timber frame sections | ♻️ | zone 1 `building_kit.gd` frame walls |
 
-## I. Cottages and civilian life (`cottages/`, 0 of 18 built)
+## I. Cottages and civilian life (`cottages/`, 1 of 18 built)
 
 | ID | Asset | Status | File or stand-in |
 |---|---|---|---|
-| CO01 | Small thatched cottage | ♻️ | zone 1 `assets/buildings/cottage_*.scn` |
+| CO01 | Small thatched cottage | ✅ | = B07 |
 | CO02 | Wattle-and-daub cottage | ♻️ | zone 1 `building_kit.gd` |
 | CO03 | Cottage doors | ♻️ | zone 1 `building_kit.gd` |
 | CO04 | Wooden shutters | ♻️ | zone 1 `building_kit.gd` |
-| CO05 | Chimneys | ⬜ |  |
+| CO05 | Chimneys | ♻️ | built into B07; a separate piece to do |
 | CO06 | Vegetable gardens | ⬜ |  |
 | CO07 | Garden fences | ⬜ |  |
 | CO08 | Clotheslines | ⬜ |  |

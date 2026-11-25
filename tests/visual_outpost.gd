@@ -4,6 +4,8 @@ extends SceneTree
 ##   Godot_console --path . --resolution 1600x900 --script res://tests/visual_outpost.gd -- <out dir> [shots...]
 ## Shots: wk_overview wk_wall wk_stand wk_pennant (the White Knights set)
 ##        cp_overview cp_left cp_right cp_table cp_dusk (a checkpoint laid out with stage 2's pieces)
+##        b07_outside b07_door_real b07_door_mmo b07_in_real b07_in_mmo (the cottage at both sizes,
+##        the door and inside views through the game's own camera arm: 1.7 m up, 3 m back)
 
 const WK_DIR := "res://assets/outpost/white_knights/"
 const CP_DIR := "res://assets/outpost/castle_approach/"
@@ -11,6 +13,8 @@ const WK := preload("res://assets/outpost/white_knights/white_knights.gd")
 const CP := preload("res://assets/outpost/castle_approach/castle_approach.gd")
 ## Where the checkpoint layout stands, away from the White Knights set.
 const CPO := Vector3(40, 0, 0)
+## Where the two cottages stand: real-world size at CB + (-8, 0, 0), MMO size at CB + (9, 0, 0).
+const CB := Vector3(-45, 0, 40)
 const ENV := preload("res://levels/common/tithelands_env.tres")
 const STONE := preload("res://levels/common/materials/stone.tres")
 
@@ -18,6 +22,8 @@ var stage: Node3D
 var cam: Camera3D
 var sun: DirectionalLight3D
 var env: Environment
+var arm: SpringArm3D
+var arm_cam: Camera3D
 
 
 func _initialize() -> void:
@@ -28,7 +34,8 @@ func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	var out_dir := args[0] if args.size() > 0 else "user://shots"
 	DirAccess.make_dir_recursive_absolute(out_dir)
-	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant", "cp_overview", "cp_left", "cp_right", "cp_table", "cp_dusk"]
+	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant", "cp_overview", "cp_left", "cp_right", "cp_table", "cp_dusk",
+		"b07_outside", "b07_door_real", "b07_door_mmo", "b07_in_real", "b07_in_mmo"]
 	if args.size() > 1:
 		shots = args.slice(1)
 	_build()
@@ -44,6 +51,8 @@ func _run() -> void:
 
 func _wk(id: String, pos: Vector3, yaw := 0.0) -> Node3D:
 	var dir := CP_DIR if id.begins_with("CP") else WK_DIR
+	if id.begins_with("B"):
+		dir = "res://assets/outpost/buildings/"
 	var n := (load(dir + id + ".scn") as PackedScene).instantiate() as Node3D
 	n.position = pos
 	n.rotation_degrees.y = yaw
@@ -119,6 +128,7 @@ func _build() -> void:
 	man.rotation_degrees.y = 200.0
 	stage.add_child(man)
 	_build_cp()
+	_build_b07()
 
 
 ## A checkpoint across a 12 m road running north (-Z) toward the castle.
@@ -151,6 +161,7 @@ func _build_cp() -> void:
 
 
 func _look(from: Vector3, at: Vector3) -> void:
+	cam.current = true
 	cam.position = from
 	cam.look_at(at)
 
@@ -194,3 +205,60 @@ func _shot_cp_dusk() -> void:
 	env.background_energy_multiplier = 0.25
 	env.fog_light_energy = 0.15
 	_look(CPO + Vector3(0, 3.2, 15.0), CPO + Vector3(0, 1.2, -3.0))
+
+
+func _man(pos: Vector3, yaw: float) -> void:
+	var m := (load("res://assets/characters/mannequin/Mannequin_F.glb") as PackedScene).instantiate() as Node3D
+	m.position = pos
+	m.rotation_degrees.y = yaw
+	stage.add_child(m)
+
+
+func _build_b07() -> void:
+	_wk("B07_small_cottage_realsize", CB + Vector3(-8, 0, 0))
+	_wk("B07_small_cottage_mmosize", CB + Vector3(9, 0, 0))
+	_man(CB + Vector3(-8.0 - 1.0 + 0.9, 0, 2.3 + 1.2), 200.0)
+	_man(CB + Vector3(9.0 - 1.3 + 0.9, 0, 2.99 + 1.2), 200.0)
+	_man(CB + Vector3(-8.0 + 0.8, 0, 0.2), -90.0)
+	_man(CB + Vector3(9.0 + 1.04, 0, 0.2), -90.0)
+	# The game's camera: a 3 m spring arm 1.7 m above the player that pulls in at walls.
+	arm = SpringArm3D.new()
+	var sh := SphereShape3D.new()
+	sh.radius = 0.2
+	arm.shape = sh
+	arm.spring_length = 3.0
+	arm.margin = 0.05
+	arm.collision_mask = 1
+	stage.add_child(arm)
+	arm_cam = Camera3D.new()
+	arm_cam.fov = 58.0
+	arm.add_child(arm_cam)
+
+
+## The view through the game camera of a player standing at feet, facing away along yaw_deg
+## (0 = the player faces -Z, the camera sits behind toward +Z).
+func _arm_shot(feet: Vector3, yaw_deg: float, pitch_deg := -15.0) -> void:
+	var yaw := deg_to_rad(yaw_deg)
+	arm.global_position = feet + Vector3(0, 1.7, 0) + Basis(Vector3.UP, yaw) * Vector3(0.12, 0, 0)
+	arm.rotation = Vector3(deg_to_rad(pitch_deg), yaw, 0)
+	arm_cam.current = true
+
+
+func _shot_b07_outside() -> void:
+	_look(CB + Vector3(0.5, 2.4, 17.0), CB + Vector3(0.5, 3.0, 0.0))
+
+
+func _shot_b07_door_real() -> void:
+	_arm_shot(CB + Vector3(-8.0 - 1.0, 0, 2.3 + 2.2), 0.0, -8.0)
+
+
+func _shot_b07_door_mmo() -> void:
+	_arm_shot(CB + Vector3(9.0 - 1.3, 0, 2.99 + 2.2), 0.0, -8.0)
+
+
+func _shot_b07_in_real() -> void:
+	_arm_shot(CB + Vector3(-8.0 + 0.8, 0, 0.2), 90.0)
+
+
+func _shot_b07_in_mmo() -> void:
+	_arm_shot(CB + Vector3(9.0 + 1.04, 0, 0.2), 90.0)

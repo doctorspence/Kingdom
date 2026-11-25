@@ -124,14 +124,14 @@ The art and sound shopping list, grouped by the phase that needs it. We use **gr
 | Subclass weapons | Daggers, throwing knives, crossbows, tower shields, warhammers, ritual charms and more | Kit pieces + custom | ⭐ | ⬜ |
 
 ## White Knights Outpost (OUTPOST_PLAN.md; full list in assets/outpost/MANIFEST.md)
-228 assets in the owner's brief: 41 built, 82 with a stand-in already in the project, 105 to make. Built in code with hand-painted textures; any can be swapped for your art.
+228 assets in the owner's brief: 43 built, 81 with a stand-in already in the project, 104 to make. Built in code with hand-painted textures; any can be swapped for your art.
 | Need | Details | Likely source | AI | Status |
 |---|---|---|---|---|
 | White Knights set WK01-WK12 | Banners, pennant, standard, shield, signboard, plaque, awning, notice, stone insignia, fittings, banner stand | Code (`assets/outpost/white_knights/`) | | ✅ |
 | Checkpoint CP01-CP20 | Barrier, barricade, guard shelter, toll table, bench, racks, chest, braziers, torch holders, lantern, stencilled barrels and crates, rope and chain, warning sign, boundary marker | Code (`assets/outpost/castle_approach/`) | | ✅ |
 | Hand-painted textures | Emblem, oak, iron, gold, linen, stripes, rope, limestone, parchment (`assets/outpost/materials/textures/*.png`). Paint over them or replace with AI art, same name and size | Code now | ⭐⭐ | 🟨 code-painted |
 | Organic props | Saddles, anvil, hanging meat, pottery, bellows: good image-to-3D candidates (one object per image, three-quarter view, plain background, no text) | Image-to-3D (e.g. Modelado) or code | ⭐⭐ | ⬜ |
-| Buildings | Inn, blacksmith, stable, market shelter, carpenter, cottages, shed, guard shelter (waits on the scale decision) | Code kit | ⭐ textures | ⬜ |
+| Buildings | Inn, blacksmith, stable, market shelter, carpenter, cottages, shed, guard shelter. The small cottage (B07) exists at two sizes for the scale choice; the rest wait on it | Code kit (`assets/outpost/buildings/`) | ⭐ textures | 🟨 1 of 10 |
 
 ## Camp and raids (Phase 13, gray-box now)
 | Need | Details | Likely source | AI | Status |

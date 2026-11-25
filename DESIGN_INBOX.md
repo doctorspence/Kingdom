@@ -36,6 +36,14 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 
 ## Filed
 
+### 2026-11-25: The outpost's White Knights are hostile, but can be won over
+- **Area:** factions / zone 1 / quests
+- **Decision:** The White Knights at the outpost start hostile. A quest or storyline can make them friendly and give the player access to the outpost.
+- **Details:** Needs a quest system (not built yet; PRIORITIES P4) and a saved "truce" flag. Until then the outpost is simply hostile. Open: does the truce belong to one character or to the whole world; what access gives (the inn, smith and market as vendors, resting, passage toward the castle); can it be lost; does it change Knights elsewhere?
+- **Status:** decided (the owner, in chat, 2026-11-25).
+- **Replaces:** nothing. It refines SPEC.md's "both factions are enemies of the players" for this outpost (SPEC.md itself is not edited).
+- **Filed (2026-11-25):** OUTPOST_PLAN.md sections 2 and 7; DESIGN.md section 2; PRIORITIES.md P4 (quest system).
+
 ### 2026-11-25: White Knights Outpost (north end of the Tithelands, in front of Highcrown's moat)
 - **Area:** zone 1 / art direction / factions
 - **Decision:** A small permanent medieval settlement just outside Highcrown's gate (inn, civilian blacksmith, stables and farrier, market, carpenter, cottages, well), with a White Knights checkpoint at the drawbridge. It replaces the Knights' checkpoint (banner poles, tents, stalls) in Knight's Gap. Built as a reusable library of 228 modular assets with a manifest. Hand-painted look; 12th-13th century England. The castle itself is not part of this job.

@@ -218,7 +218,9 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Look at `docs/outpost/wk_overview.jpg`, `wk_wall.jpg`, `wk_stand.jpg`, `wk_pennant.jpg` (or double-click any `.scn` in `assets/outpost/white_knights/` in the editor): is the emblem right, too clean, too bright?
 - [x] Stage 2: checkpoint and castle approach (CP01-CP20, `assets/outpost/castle_approach/`; 29 assets, 19,987 triangles in all)
 - [ ] 🧪 Look at `docs/outpost/cp_overview.jpg`, `cp_left.jpg`, `cp_right.jpg`, `cp_table.jpg`, `cp_dusk.jpg`: does it say "the Knights control this road"? Anything missing at a checkpoint?
-- [ ] Stage 3: buildings (needs the scale decision)
+- [x] Stage 3 started: B07 small cottage at two sizes (A real-world, B MMO x1.3), enterable with a lit hearth; test map `levels/sandbox/cottage_scale_test.tscn`; new check `outpost_check` (all assets load, a player fits through each door, walls block)
+- [ ] 🧪 Open `levels/sandbox/cottage_scale_test.tscn`, press F6, walk into both cottages and look around inside. Pick A or B (pictures: `docs/outpost/b07_outside.jpg`, `b07_doors.jpg`, `b07_inside.jpg`)
+- [ ] Stage 3: the other buildings (needs A or B)
 - [ ] Stages 4-7: trade and village props, ground and plants, light and effects, story props
 - [ ] Stage 8: placement in the Tithelands (needs the owner's OK on the layout and on who lives there)
 - [ ] Stage 9: checks, FPS, pictures

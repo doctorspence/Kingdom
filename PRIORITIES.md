@@ -24,7 +24,7 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 
 ## P1: Reach the milestone (this is the real goal)
 
-- [ ] **You: Answer the scale question now** ("make doors, corridors and props bigger against the player?"). Every new building and cave pass makes changing scale more expensive. Decide before more art. *(2026-11-25: it now also blocks the White Knights Outpost's buildings, OUTPOST_PLAN.md section 7.)*
+- [ ] **You: Answer the scale question now** ("make doors, corridors and props bigger against the player?"). Every new building and cave pass makes changing scale more expensive. Decide before more art. *(2026-11-25: it now also blocks the White Knights Outpost's buildings. Compare A (real-world) and B (MMO x1.3) by walking into both cottages in `levels/sandbox/cottage_scale_test.tscn` (F6).)*
 - [x] **CC: Get the frame rate playable.** *(Done 2026-11-22: worst of the 10 spots 45 -> 72 FPS at 1920x1080 via terrain LODs, size-based prop draw distance and a shadow budget for point lights; tree LODs not needed, trees already batch and cull at 175 m. Measure again with `tests/perf_zone.gd`.)* Original note: The audit measured 22–28 FPS at the spawn and the farms. Hiding the underground Gullet has helped since then, but trees still have no distance versions (LODs). Trees, shrubs and boulders cost 1.5–4 M primitives in busy views, and the zone takes 8.7 s to load. Target 60 FPS at the spawn. Measure at the 10 fixed spots from ZONE1_OVERHAUL stage 7. Friends' PCs may be slower than yours.
 - [x] **CC: Re-export the friends build** *(2026-11-22, 176 MB)* (`build/Kingdom-windows.zip`). The current one is from before the camp, the environment pass, the new Gullet and the equipment system.
 - [ ] **You: The playtest round, solo.** In this order:
@@ -65,8 +65,8 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 - [ ] Tithelands polish: judge the foliage fade in a dense wood, add a mill race for the wheel, make the weir crossing readable, LODs for distant trees.
 - [ ] Gullet look pass 2: only if you're not happy with pass 1.
 - [ ] Harl extras: charge-in, sweep-into-backhand, pick throw.
-- [ ] **A quest system.** It's in the spec, and subclass initiation (Phase 11 P6) needs it.
+- [ ] **A quest system.** It's in the spec, and subclass initiation (Phase 11 P6) needs it. So does the outpost: its White Knights start hostile, and a quest or storyline can win them over and open the outpost (decided 2026-11-25, OUTPOST_PLAN.md).
 - [ ] Subclasses: 6 of 9 are still "coming later" (Paladin, Mage, Rogue, Ranger, Warlock, Warden), plus the factions.
-- [ ] **White Knights Outpost** (`OUTPOST_PLAN.md`, started 2026-11-25 at the owner's request; it replaces the Knight's Gap checkpoint). Stages 1-2 done (the White Knights set and the checkpoint: 29 assets, on `main`). Next: stage 3, buildings, once the scale is decided; otherwise stage 4, the trade and village props. Owner decisions in OUTPOST_PLAN.md section 7 (scale, who lives there, moving the castle closer).
+- [ ] **White Knights Outpost** (`OUTPOST_PLAN.md`, started 2026-11-25 at the owner's request; it replaces the Knight's Gap checkpoint). Stages 1-2 done (the White Knights set and the checkpoint: 29 assets, on `main`). Stage 3 started: the B07 cottage at both sizes for the scale choice. Next: the rest of the buildings once you pick A or B; otherwise stage 4, the trade and village props. Owner decisions in OUTPOST_PLAN.md section 7 (scale, who lives there, moving the castle closer).
 - [ ] Zones 2 and 3 (`ZONES_DESIGN.md`), then a walkable Highcrown.
 - [ ] **The long gap:** the spec says level cap 30 and about 30 hours of play. Content now covers about levels 1–6. Plan zones and loot tiers against that.

@@ -34,6 +34,10 @@ static func all() -> Dictionary:
 		"shingles": [256, 256, shingles],
 		"stencil": [256, 256, stencil],
 		"warning_board": [256, 320, warning_board],
+		"daub": [256, 256, daub],
+		"thatch": [256, 256, thatch],
+		"earth_floor": [256, 256, earth_floor],
+		"rubble": [256, 256, rubble],
 	}
 
 
@@ -375,4 +379,66 @@ static func warning_board(u: float, v: float, x: int, y: int, w: int, h: int) ->
 				on = on or _hash(gx, line, 1306) > 0.3
 			if on and fbm(u, v, 30, 30, 1307, 2) < 0.68:
 				c = _mix(c, _shade(IVORY, 0.85), 0.9)
+	return c
+
+
+## Limewashed wattle and daub, 2 m tile: uneven hand-laid limewash, hairline cracks,
+## flaked patches showing the clay and the woven wattle underneath.
+static func daub(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var c := _shade(Color(0.76, 0.71, 0.6), 0.86 + 0.18 * fbm(u, v, 3, 3, 1401))
+	c = _mix(c, Color(0.7, 0.58, 0.4), smoothstep(0.5, 0.8, fbm(u, v, 2, 2, 1402)) * 0.35)
+	var crack := fbm(u, v, 10, 10, 1403, 3)
+	c = _shade(c, 1.0 - 0.35 * (1.0 - smoothstep(0.0, 0.006, absf(crack - 0.5))) * smoothstep(0.45, 0.65, fbm(u, v, 4, 4, 1404)))
+	var flake := smoothstep(0.7, 0.76, fbm(u, v, 5, 5, 1405, 4))
+	if flake > 0.0:
+		var weave := sin((u + v) * TAU * 24.0) * sin((u - v) * TAU * 24.0)
+		var clay := _shade(Color(0.48, 0.38, 0.27), 0.85 + 0.25 * fbm(u, v, 16, 16, 1406))
+		clay = _shade(clay, 0.85 + 0.2 * clampf(weave, -1.0, 1.0))
+		c = _mix(c, clay, flake)
+	return c
+
+
+## Reed thatch, 1 m tile: strands running down the slope (along v), laid in courses,
+## weathered grey-gold with darker wet streaks and moss.
+static func thatch(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var strand := fbm(u, v, 96, 4, 1501, 3)
+	var c := _shade(Color(0.47, 0.39, 0.26), 0.55 + 0.7 * strand)
+	# Courses with ragged, tufted lower edges rather than straight lines.
+	var course := fposmod(v * 3.0 + 0.22 * (fbm(u, v, 24, 2, 1504, 2) - 0.5), 1.0)
+	c = _shade(c, lerpf(0.8, 1.04, smoothstep(0.0, 0.35, course)))
+	c = _shade(c, 0.9 + 0.2 * fbm(u, v, 6, 6, 1505, 2))
+	c = _mix(c, Color(0.3, 0.29, 0.25), smoothstep(0.5, 0.8, fbm(u, v, 3, 2, 1502)) * 0.45)
+	c = _mix(c, Color(0.25, 0.3, 0.16), smoothstep(0.66, 0.82, fbm(u, v, 4, 4, 1503)) * 0.55)
+	return c
+
+
+## Packed earth floor, 2 m tile, scattered with straw.
+static func earth_floor(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var c := _shade(Color(0.33, 0.26, 0.19), 0.8 + 0.3 * fbm(u, v, 4, 4, 1601))
+	c = _shade(c, 1.0 - 0.2 * smoothstep(0.55, 0.75, fbm(u, v, 3, 3, 1602)))
+	var straw := fbm(u * 0.6 + v * 0.4, v * 0.6 - u * 0.4 + 5.0, 30, 6, 1603, 2)
+	if absf(straw - 0.5) < 0.012 and fbm(u, v, 8, 8, 1604) > 0.5:
+		c = _mix(c, Color(0.62, 0.52, 0.3), 0.8)
+	return c
+
+
+## Limestone rubble walling, 1 m tile: five courses of rough stones, each its own shade,
+## lighter faces, darker edges, deep mortar joints.
+static func rubble(u: float, v: float, x: int, y: int, w: int, h: int) -> Color:
+	var rows := 5
+	var jv := v + 0.1 * (fbm(u, v, 5, 5, 1701, 2) - 0.5)
+	var row := posmod(floori(jv * rows), rows)
+	var fv := fposmod(jv * rows, 1.0)
+	var n := 3 + (row % 2)
+	var su := u * n + _hash(row, 1, 1702) * n + 0.9 * (fbm(u, v, 7, 7, 1703, 2) - 0.5)
+	var idx := posmod(floori(su), n)
+	var fu := fposmod(su, 1.0)
+	var tone := 0.78 + 0.32 * _hash(idx, row, 1704)
+	var c := _shade(Color(0.64, 0.61, 0.54), tone)
+	c = _mix(c, Color(0.58, 0.52, 0.4), _hash(idx, row, 1705) * 0.4)
+	var edge := minf(minf(fu, 1.0 - fu) * 1.6 / n * rows, minf(fv, 1.0 - fv))
+	c = _shade(c, lerpf(0.6, 1.0, smoothstep(0.02, 0.18, edge)) * (1.0 + 0.1 * smoothstep(0.3, 0.0, fv)))
+	if edge < 0.035:
+		c = _shade(Color(0.3, 0.28, 0.24), 0.8 + 0.3 * fbm(u, v, 20, 20, 1706))
+	c = _mix(c, Color(0.32, 0.36, 0.2), smoothstep(0.68, 0.82, fbm(u, v, 3, 3, 1707)) * 0.4)
 	return c

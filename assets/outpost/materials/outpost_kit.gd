@@ -101,6 +101,22 @@ static func parchment() -> StandardMaterial3D:
 	return painted("parchment", "parchment", 0.0, {"rough": 1.0, "spec": 0.1})
 
 
+static func daub() -> StandardMaterial3D:
+	return painted("daub", "daub", 2.0, {"rough": 1.0, "spec": 0.15})
+
+
+static func thatch() -> StandardMaterial3D:
+	return painted("thatch", "thatch", 1.0, {"rough": 1.0, "spec": 0.1})
+
+
+static func earth_floor() -> StandardMaterial3D:
+	return painted("earth_floor", "earth_floor", 2.0, {"rough": 1.0, "spec": 0.1})
+
+
+static func rubble() -> StandardMaterial3D:
+	return painted("rubble", "rubble", 1.0, {"rough": 0.95, "spec": 0.2})
+
+
 static func shingles() -> StandardMaterial3D:
 	return painted("shingles", "shingles", 1.0, {"rough": 0.95, "spec": 0.2})
 
@@ -167,9 +183,18 @@ static func wax() -> StandardMaterial3D:
 ## The standard asset node: Mesh + Collision. cols: simple shapes, each
 ##   ["box", center, size] or ["box", center, size, basis] or ["cyl", center, radius, height].
 ## An empty list means no collision (overhead or flat things).
-static func asset(nm: String, b: HK.MB, cols: Array) -> Node3D:
+## k: build the asset k times bigger (geometry, its textures and collision together), for
+## comparing sizes. Lights and particles the builder adds itself must be placed with k too.
+static func asset(nm: String, b: HK.MB, cols: Array, k := 1.0) -> Node3D:
 	var root := Node3D.new()
 	root.name = nm
+	if k != 1.0:
+		for m in b._d:
+			var bk = b._d[m]
+			var vv: PackedVector3Array = bk.v
+			for i in vv.size():
+				vv[i] *= k
+			bk.v = vv
 	var mi := MeshInstance3D.new()
 	mi.name = "Mesh"
 	mi.mesh = b.build()
@@ -181,18 +206,18 @@ static func asset(nm: String, b: HK.MB, cols: Array) -> Node3D:
 		body.name = "Collision"
 		for c in cols:
 			var cs := CollisionShape3D.new()
-			cs.position = c[1]
+			cs.position = c[1] * k
 			match c[0]:
 				"box":
 					var bs := BoxShape3D.new()
-					bs.size = c[2]
+					bs.size = c[2] * k
 					cs.shape = bs
 					if c.size() > 3:
 						cs.basis = c[3]
 				"cyl":
 					var cy := CylinderShape3D.new()
-					cy.radius = c[2]
-					cy.height = c[3]
+					cy.radius = c[2] * k
+					cy.height = c[3] * k
 					cs.shape = cy
 			body.add_child(cs)
 		root.add_child(body)
