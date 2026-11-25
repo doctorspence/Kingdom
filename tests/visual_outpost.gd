@@ -7,6 +7,7 @@ extends SceneTree
 ##        b07_outside b07_door b07_in (the cottage; the door and inside views through the game's
 ##        own camera arm: 1.7 m up, 3 m back, pulled in by walls)
 ##        vil_overview vil_market vil_b08_in vil_shed (stage 3's buildings as a village corner)
+##        town_overview town_inn town_inn_in town_smith town_stable (the inn, smithy, stable, carpenter)
 
 const WK_DIR := "res://assets/outpost/white_knights/"
 const CP_DIR := "res://assets/outpost/castle_approach/"
@@ -18,6 +19,8 @@ const CPO := Vector3(40, 0, 0)
 const CB := Vector3(-45, 0, 40)
 ## Where the village corner stands.
 const VB := Vector3(-45, 0, -25)
+## Where the inn, smithy, stable and carpenter stand.
+const TB := Vector3(-45, 0, -75)
 const BLD := preload("res://assets/outpost/buildings/buildings.gd")
 const ENV := preload("res://levels/common/tithelands_env.tres")
 const STONE := preload("res://levels/common/materials/stone.tres")
@@ -39,7 +42,8 @@ func _run() -> void:
 	var out_dir := args[0] if args.size() > 0 else "user://shots"
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	var shots: Array = ["wk_overview", "wk_wall", "wk_stand", "wk_pennant", "cp_overview", "cp_left", "cp_right", "cp_table", "cp_dusk",
-		"b07_outside", "b07_door", "b07_in", "vil_overview", "vil_market", "vil_b08_in", "vil_shed"]
+		"b07_outside", "b07_door", "b07_in", "vil_overview", "vil_market", "vil_b08_in", "vil_shed",
+		"town_overview", "town_inn", "town_inn_in", "town_smith", "town_stable"]
 	if args.size() > 1:
 		shots = args.slice(1)
 	_build()
@@ -56,7 +60,9 @@ func _run() -> void:
 
 func _wk(id: String, pos: Vector3, yaw := 0.0) -> Node3D:
 	var dir := CP_DIR if id.begins_with("CP") else WK_DIR
-	if id.begins_with("B"):
+	if id.begins_with("BS"):
+		dir = "res://assets/outpost/blacksmith/"
+	elif id.begins_with("B"):
 		dir = "res://assets/outpost/buildings/"
 	var n := (load(dir + id + ".scn") as PackedScene).instantiate() as Node3D
 	n.position = pos
@@ -135,6 +141,7 @@ func _build() -> void:
 	_build_cp()
 	_build_b07()
 	_build_village()
+	_build_town()
 
 
 ## A checkpoint across a 12 m road running north (-Z) toward the castle.
@@ -297,3 +304,35 @@ func _shot_vil_b08_in() -> void:
 
 func _shot_vil_shed() -> void:
 	_look(VB + Vector3(9.5, 2.2, 8.5), VB + Vector3(13, 1.6, 1.0))
+
+
+func _build_town() -> void:
+	var k: float = BLD.SIZE
+	_wk("B01_roadside_inn", TB + Vector3(-16, 0, 0))
+	_wk("B02_civilian_blacksmith_workshop", TB + Vector3(1, 0, 0))
+	_wk("BS03_anvil_on_stump", TB + Vector3(1, 0, 0) + Vector3(-0.3, 0, 0.5) * k, 20.0)
+	_wk("B03_stable_farrier_shelter", TB + Vector3(18, 0, 0))
+	_wk("B06_carpenter_workshop", TB + Vector3(1, 0, 18), 180.0)
+	_man(TB + Vector3(1, 0, 0) + Vector3(-1.2, 0, 0.9) * k, 150.0)
+	_man(TB + Vector3(-16, 0, 0) + Vector3(1.5, 0, 0.4) * k, -90.0)
+	_man(TB + Vector3(18, 0, 4.2), 200.0)
+
+
+func _shot_town_overview() -> void:
+	_look(TB + Vector3(0, 13.0, 34.0), TB + Vector3(0, 2.0, 6.0))
+
+
+func _shot_town_inn() -> void:
+	_look(TB + Vector3(-12.0, 3.0, 17.0), TB + Vector3(-16.0, 4.5, 0.0))
+
+
+func _shot_town_inn_in() -> void:
+	_arm_shot(TB + Vector3(-16, 0, 0) + Vector3(1.5, 0, 0.4) * BLD.SIZE, 90.0)
+
+
+func _shot_town_smith() -> void:
+	_look(TB + Vector3(2.5, 2.3, 9.5), TB + Vector3(1.5, 1.4, -1.0))
+
+
+func _shot_town_stable() -> void:
+	_look(TB + Vector3(21.0, 2.6, 12.0), TB + Vector3(18.0, 1.4, 0.0))
