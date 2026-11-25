@@ -256,7 +256,9 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Look at `docs/outpost/yd_*.jpg`
 - [x] Stages 5-7: ground pieces (decals, stumps, stone path, creek rocks, footbridge), light and effects (torch, wall lantern, candles, campfire, rain splash, ripples), story props (DT01-DT20). The library is complete (`assets/outpost/MANIFEST.md`: 207 built, 21 the zone's own)
 - [ ] 🧪 Look at `docs/outpost/ls_day.jpg`, `ls_dusk.jpg`, `ls_story.jpg`
-- [ ] Stage 8: place the outpost in the Tithelands (needs the owner's answer on the castle)
+- [x] Stage 8: the outpost placed in the Tithelands (Highcrown moved closer behind a moat and drawbridge, old checkpoint removed, zealots moved; `levels/tithelands/outpost_layout.gd`, `game/world/outpost.gd`); `zone_check` passes
+- [ ] 🧪 Play: walk the road north from Knight's Gap to the drawbridge, into the inn, the market, the forge and the stable; check the cottages south of the gap. Too crowded, too empty, anything floating or buried?
+- [ ] Stage 9: all checks, the 3-player check, FPS at the fixed spots, route and placement audits
 - [ ] Stages 4-7: trade and village props, ground and plants, light and effects, story props
 - [ ] Stage 8: placement in the Tithelands (needs the owner's OK on the layout and on who lives there)
 - [ ] Stage 9: checks, FPS, pictures

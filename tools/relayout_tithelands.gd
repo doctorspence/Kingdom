@@ -318,7 +318,7 @@ func _initialize() -> void:
 			surf.append(NodePath("../" + n))
 		cull.set("surface", surf)
 	# --- the rest ---
-	(root.get_node("Highcrown") as Node3D).position = Vector3(0, 0, -255)
+	(root.get_node("Highcrown") as Node3D).position = Vector3(0, 12.8, -205)  # moved for the White Knights Outpost (2026-11-25)
 	root.get_node("TitheExtras").set("checkpoint_shift", -34.0)
 	var out := PackedScene.new()
 	var err := out.pack(root)

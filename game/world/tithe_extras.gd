@@ -9,6 +9,9 @@ extends Node3D
 @export var sun: DirectionalLight3D
 ## Moves the checkpoint dressing along the road (it was built for the old checkpoint at z = -78).
 @export var checkpoint_shift := 0.0
+## The old gray-box checkpoint (banner poles, stalls, notice board, braziers). Off since the White
+## Knights Outpost replaced it (game/world/outpost.gd).
+@export var checkpoint_dressing := true
 ## The old code-drawn ferns (off when scanned ferns are scattered instead).
 @export var code_ferns := true
 
@@ -27,7 +30,8 @@ func _ready() -> void:
 		terrain = get_node_or_null("../Terrain") as ZoneTerrain
 	if sun == null:
 		sun = get_node_or_null("../Sun") as DirectionalLight3D
-	_checkpoint()
+	if checkpoint_dressing:
+		_checkpoint()
 	if DisplayServer.get_name() == "headless":
 		return  # visuals only: keep automated checks fast
 	if code_ferns:

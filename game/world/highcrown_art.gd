@@ -90,21 +90,19 @@ func _battlements_block(x: float, y: float, z: float) -> void:
 		_add_box(Vector3(x + i * 1.2, y + 0.9, z), Vector3(1.2, 1.8, 0.8), STONE)
 
 
+## The White Knights' banners on the wall and gatehouse: the outpost's ivory banners with the red
+## cross (one emblem everywhere, decided 2026-11-25), replacing the old gold-cross cloths.
 func _banners() -> void:
-	var gold := StandardMaterial3D.new()
-	gold.albedo_color = Color(0.55, 0.43, 0.2)
-	gold.metallic = 0.6
-	gold.roughness = 0.5
-	var xs := [-60.0, -48.0, -36.0, -26.0, 26.0, 36.0, 48.0, 60.0]
-	for x in xs:
-		_add_box(Vector3(x, 12.0, FRONT_Z + 0.05), Vector3(2.4, 8.0, 0.1), CLOTH)
-		_add_box(Vector3(x, 12.5, FRONT_Z + 0.12), Vector3(0.35, 5.0, 0.05), gold)
-		_add_box(Vector3(x, 13.5, FRONT_Z + 0.12), Vector3(1.6, 0.35, 0.05), gold)
-	# Two long banners down the gatehouse flanks.
+	var big := load("res://assets/outpost/white_knights/WK01_large_white_knights_banner.scn") as PackedScene
+	var narrow := load("res://assets/outpost/white_knights/WK02_narrow_hanging_banner.scn") as PackedScene
+	for x in [-60.0, -48.0, -36.0, -26.0, 26.0, 36.0, 48.0, 60.0]:
+		var n := big.instantiate() as Node3D
+		n.position = Vector3(x, 16.5, FRONT_Z + 0.12)
+		add_child(n)
 	for sx in [-1.0, 1.0]:
-		_add_box(Vector3(sx * 11.0, 16.0, FRONT_Z + 7.05), Vector3(3.0, 12.0, 0.1), CLOTH)
-		_add_box(Vector3(sx * 11.0, 17.0, FRONT_Z + 7.12), Vector3(0.45, 8.0, 0.05), gold)
-		_add_box(Vector3(sx * 11.0, 19.0, FRONT_Z + 7.12), Vector3(2.0, 0.45, 0.05), gold)
+		var n := narrow.instantiate() as Node3D
+		n.position = Vector3(sx * 11.0, 22.5, FRONT_Z + 7.12)
+		add_child(n)
 
 
 func _windows() -> void:

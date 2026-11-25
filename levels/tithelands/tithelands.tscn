@@ -1,6 +1,7 @@
 [gd_scene format=4]
 
 [ext_resource type="Script" path="res://game/world/sculpted_terrain.gd" id="3_jbhel"]
+[ext_resource type="Script" path="res://game/world/outpost.gd" id="outpost_gd"]
 [ext_resource type="Script" path="res://levels/tithelands/tithelands_land.gd" id="4_2ne0e"]
 [ext_resource type="Script" path="res://game/world/forest_scatter.gd" id="43_5qe01"]
 [ext_resource type="Script" path="res://game/world/stone_walls.gd" id="63_og1uf"]
@@ -251,18 +252,6 @@ metadata/pad = Vector2(7.5, 6.5)
 [node name="HamletCart" parent="Places" unique_id=1277460452 instance=ExtResource("cart")]
 transform = Transform3D(-0.92050487, 0, -0.3907311, 0, 1, 0, 0.3907311, 0, -0.92050487, -68.3, 0, 54.2)
 
-[node name="CheckpointBarricadeW" parent="Places" unique_id=69686640 instance=ExtResource("barricade")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, -113)
-
-[node name="CheckpointBarricadeE" parent="Places" unique_id=1685846144 instance=ExtResource("barricade")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 0, -118)
-
-[node name="CheckpointTent1" parent="Places" unique_id=1698192558 instance=ExtResource("tent")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 13, 0, -104)
-
-[node name="CheckpointTent2" parent="Places" unique_id=1109783054 instance=ExtResource("tent")]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -13, 0, -102)
-
 [node name="TitheBarn" parent="Places" unique_id=416386618 instance=ExtResource("tithe_barn")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 24, 0, -50)
 metadata/pad = Vector2(11.5, 17)
@@ -392,9 +381,6 @@ transform = Transform3D(-0.76604444, 0, -0.64278764, 0, 1, 0, 0.64278764, 0, -0.
 transform = Transform3D(0.92050487, 0, 0.39073113, 0, 1, 0, -0.39073113, 0, 0.92050487, -76.6, 0, 73.5)
 metadata/pad = Vector2(3.6, 2.4)
 metadata/pad_blend = 2.0
-
-[node name="CheckpointGallows" parent="Places" unique_id=91730412 instance=ExtResource("gallows")]
-transform = Transform3D(-0.1736481, 0, 0.98480725, 0, 1, 0, -0.98480725, 0, -0.1736481, -12, 0, -97)
 
 [node name="FarmFence4" parent="Places" unique_id=976207200 instance=ExtResource("fence")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -26, 0, 79.3)
@@ -565,12 +551,6 @@ transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49
 [node name="WoodsCrateN" parent="Places" unique_id=1320717021 instance=ExtResource("crate_scene")]
 transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, 105, 0, -55)
 
-[node name="CheckpointPaving" parent="Places" unique_id=1308055374 instance=ExtResource("cobble_scene")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -112)
-
-[node name="CheckpointPaving2" parent="Places" unique_id=1283522013 instance=ExtResource("cobble_scene")]
-transform = Transform3D(0.8, 0, 0, 0, 1, 0, 0, 0, 0.8, 0, 0, -104)
-
 [node name="CrossroadsPaving" parent="Places" unique_id=2116453208 instance=ExtResource("cobble_scene")]
 transform = Transform3D(0.45, 0, 0, 0, 1, 0, 0, 0, 0.45, -9, 0, 116)
 
@@ -587,7 +567,7 @@ transform = Transform3D(-0.6018151, 0, 0.7986355, 0, 1, 0, -0.7986355, 0, -0.601
 metadata/pad = Vector2(7.5, 6.5)
 
 [node name="Highcrown" parent="." unique_id=544538317 instance=ExtResource("highcrown")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -255)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.8, -205)
 
 [node name="Woods" type="Node3D" parent="." unique_id=1451982409 node_paths=PackedStringArray("terrain")]
 script = ExtResource("43_5qe01")
@@ -635,6 +615,10 @@ script = ExtResource("director")
 enemies_root = NodePath("../Enemies")
 terrain = NodePath("../Terrain")
 
+[node name="Outpost" type="Node3D" parent="." node_paths=PackedStringArray("terrain")]
+script = ExtResource("outpost_gd")
+terrain = NodePath("../Terrain")
+
 [node name="EnemySpawns" type="Node3D" parent="." unique_id=1033895226]
 
 [node name="RoadPatrol" type="Marker3D" parent="EnemySpawns" unique_id=928961095]
@@ -645,7 +629,7 @@ radius = 2.5
 patrol = PackedVector3Array(0, 0, 0, 2, 0, 30, 1, 0, -22)
 
 [node name="Checkpoint" type="Marker3D" parent="EnemySpawns" unique_id=1608220689]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -110)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -166)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_pair")
 radius = 2.5
@@ -653,7 +637,7 @@ patrol = PackedVector3Array()
 post = "watch"
 
 [node name="CheckpointExtra" type="Marker3D" parent="EnemySpawns" unique_id=1780423741]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -116)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -162)
 script = ExtResource("spawnpt")
 table = ExtResource("spawn_zealot_or_none")
 radius = 2.0
@@ -937,6 +921,7 @@ script = ExtResource("tithe_extras")
 terrain = NodePath("../Terrain")
 sun = NodePath("../Sun")
 checkpoint_shift = -34.0
+checkpoint_dressing = false
 code_ferns = false
 
 [node name="UndergroundCull" type="Node" parent="." unique_id=1034587490]
@@ -946,7 +931,7 @@ surface = Array[NodePath]([NodePath("../Mist"), NodePath("../StoryProps"), NodeP
 
 [node name="DistanceCull" type="Node" parent="."]
 script = ExtResource("dcull")
-roots = Array[NodePath]([NodePath("../Places"), NodePath("../StoryProps"), NodePath("../QuarryWorks"), NodePath("../Dressing"), NodePath("../TitheExtras"), NodePath("../StoneWalls"), NodePath("../Clutter"), NodePath("../Rocks")])
+roots = Array[NodePath]([NodePath("../Places"), NodePath("../StoryProps"), NodePath("../QuarryWorks"), NodePath("../Dressing"), NodePath("../TitheExtras"), NodePath("../StoneWalls"), NodePath("../Clutter"), NodePath("../Rocks"), NodePath("../Outpost")])
 
 [node name="ShadowBudget" type="Node" parent="."]
 script = ExtResource("sbudget")

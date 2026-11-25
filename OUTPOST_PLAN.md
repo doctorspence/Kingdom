@@ -11,7 +11,7 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 **The owner decided (2026-11-25):**
 | Topic | Decision |
 |---|---|
-| Where | It replaces the Knights' checkpoint area in front of the castle (Knight's Gap and the road north of it). |
+| Where | It replaces the Knights' checkpoint area in front of the castle (Knight's Gap and the road north of it). **Highcrown comes closer** (the owner's choice A, 2026-11-25): its backdrop moved from z -255 to z -205, behind a new moat and a lowered drawbridge, with the outpost filling the ground from just south of Knight's Gap up to the moat. |
 | Emblem | White (ivory) field with a red Templar cross (a cross pattee: arms narrow at the centre, flaring to wide straight ends). The same cross on every flag, pennant, shield, sign, crate and seal. It replaces the gold cross on today's banners. The gold lion in the in-game concept picture is not used. |
 | Palette | Ivory `#E5E0CE`, dark red `#A52F35`, tarnished gold `#C3A45B`, charcoal iron `#292B30`, weathered brown timber, natural stone grey. |
 | Look | Hand-painted textures (painted light, shade, dirt and wear), chunky readable shapes, dark restrained colours; not photo-real. |
@@ -34,7 +34,7 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 - **Scale:** the player is 1.85 m. Today's cottages have 1.1 x 2.0 m doors (as in the brief); DESIGN.md 12.1 says doorways at least 1.6 x 2.6 m.
 - **Things to reuse:** the bandit-hideout library (`assets/hideout/`) has barrels, crates, sacks, buckets, baskets, chests, tables, stools, shelves, bedding, braziers, lanterns, torches, candles, a weapon rack, chains, hooks, wheelbarrows and more. The Greenwood work made oak, beech and birch trees, ferns, brambles, wildflowers, boulders and mist. The manifest marks each one (♻️).
 
-## 4. Layout (proposal; the owner approves before anything is placed in the zone)
+## 4. Layout (built 2026-11-25; every position is in `levels/tithelands/outpost_layout.gd`)
 
 - **Footprint:** about 160 x 115 m, from just north of the tithe barn (z about -65) through Knight's Gap to a moat at about z -185, between x -80 and +80.
 - **The castle comes closer:** move the Highcrown backdrop south from z -255 to about z -200 so its gatehouse stands right behind the moat, as in the concept pictures, and add a moat and a raised drawbridge (12 m) to it. The alternative, extending the map 70 m north to meet the castle where it is, means new terrain and a bigger zone.
@@ -52,7 +52,7 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 | 5. Ground and plants | Road, path, puddle and rut looks; fences, stumps, stone paths. Trees and plants mostly exist. | **Done 2026-11-25.** New: mud-splash and hoofprint decals, tree stumps, stepping-stone path, creek rocks, a small footbridge; fences and gates came with the stable and cottages. The terrain paint, grass, ferns, brambles, bushes, rocks, trees, the brook and wildflowers are the Tithelands' own systems, used as they are (🔗 in the manifest). |
 | 6. Light and effects | Torches, braziers, lanterns, forge fire, smoke, ground fog, rain splash. | **Done 2026-11-25.** Standing torch, wall lantern, candles, campfire, rain splashes, water ripples (plus the brazier, lanterns, torch holder and forge from earlier stages). Ground fog is the zone's Mist node. |
 | 7. Story props | DT01-DT20. | **Done 2026-11-25.** Bucket, broken crate, empty sack, spoon, cracked plate, hanging rope, old chain, rusted tools, broken wheel, scattered firewood, fallen signboard, stone piles, tracks decal, tattered cloth, old shields, abandoned spear. Pictures `docs/outpost/ls_*.jpg`. **The asset library is complete: 207 built, 21 are the zone's own.** |
-| 8. Placement in the Tithelands | **Needs the owner's OK on section 4 and on who lives there.** Terrain, the 12 m road, moat and drawbridge on the backdrop, remove the old checkpoint dressing, place everything, enemy spawns, collision. | |
+| 8. Placement in the Tithelands | Terrain, the 12 m road, moat and drawbridge, remove the old checkpoint dressing, place everything, enemy spawns, collision. | **Done 2026-11-25.** `levels/tithelands/outpost_layout.gd` (groups of assets, pads, yards, keep-clear circles, road, moat, Highcrown's spot) and `game/world/outpost.gd` (the Outpost node: stands every piece on the ground, builds the moat water and the drawbridge). Highcrown moved to z -205 (y 12.8) with the red-cross banners; the old checkpoint's banner poles, stalls, tents, gallows and paving removed (`TitheExtras.checkpoint_dressing = false`); the two zealot spawns moved to the new checkpoint (they stay hostile). North of the gap: the checkpoint at the drawbridge, the market and forge west of the road, the inn and stable east. Knight's Gap: boundary stones, torches, a skirmish's leftovers. South of the gap: two cottages with garden, washing and hens, the shed, the carpenter by the tithe barn lane, a woodcutters' fire. `zone_check` passes. |
 | 9. Checks | All automated checks, the 3-player check, route and placement audits, FPS at the fixed spots, before-and-after pictures. | |
 
 ## 6. Asset rules
@@ -70,7 +70,7 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 
 1. **The Tithelands' own buildings** (cottages, tithe barn, mill, chapel, watchtower) are still real-world size, so the outpost will look bigger than the village. Resize them to 1.3x to match? A separate job; nothing changes until you say so.
 2. **Winning the Knights over (later, with the quest system):** does the truce belong to one character or to the whole world? What does access give (vendors, resting, passage toward the castle)? Can it be lost?
-3. **The castle:** bring Highcrown closer (section 4), or extend the map north to it? Needed before stage 8.
+3. ~~**The castle:**~~ Decided 2026-11-25: Highcrown comes closer (choice A).
 4. **Models:** keep building in code, or will you make some GLBs (saddles, anvil, hanging meat and pottery are good image-to-3D candidates)?
 5. **Hand-painted everywhere?** Should the rest of the Tithelands be repainted to match one day?
 6. **The rest of the brief:** the paste stopped partway through section 9 (file organization). Anything after it is missing.

@@ -10,6 +10,9 @@ extends RefCounted
 
 var noise: FastNoiseLite
 
+## The White Knights Outpost: its pads, yards, road and moat are added in _init().
+const OL := preload("res://levels/tithelands/outpost_layout.gd")
+
 # ---- the river: points west to east; each point has a half width, a depth,
 # a water level and how wide its banks slope (small = steep gorge banks).
 var river := {
@@ -34,7 +37,7 @@ var roads := [
 		"points": PackedVector2Array([Vector2(3, 200), Vector2(4, 176), Vector2(2, 152), Vector2(-1, 132), Vector2(0, 114),
 			Vector2(4, 96), Vector2(9, 76), Vector2(7, 54), Vector2(0, 34), Vector2(-3, 16), Vector2(0, 2), Vector2(2, -12),
 			Vector2(7, -30), Vector2(8, -50), Vector2(3, -72), Vector2(-2, -92), Vector2(0, -110), Vector2(1, -128),
-			Vector2(-2, -150), Vector2(0, -172), Vector2(0, -200)]),
+			Vector2(-2, -150), Vector2(0, -172), Vector2(0, -184)]),  # ends at Highcrown's moat (outpost)
 		"width": 5.5, "shoulder": 4.0, "ditch": 0.22, "smooth": 7,
 	},
 	{  # Mill Lane: the green, the two farmsteads, the burned hamlet's street, the mill, across the weir, up to the quarry.
@@ -279,6 +282,11 @@ func natural(x: float, z: float) -> float:
 	h -= 1.3 * sin(PI * clampf(hl.y, 0.0, 1.0)) * (1.0 - smoothstep(2.2, 6.0, hl.x))
 	# Beyond the playable square: hills close the horizon (but not across the north road,
 	# where Highcrown stands, nor where the river leaves).
+	# Highcrown's moat, in front of its wall beyond the north edge (outpost_layout.gd MOAT).
+	var mo: Dictionary = OL.MOAT
+	if z < float(mo.z0) + 1.5 and z > float(mo.z1) - 1.5 and absf(x) < float(mo.hx) + 3.0:
+		var t := smoothstep(float(mo.z0) + 1.5, float(mo.z0) - 1.0, z) * smoothstep(float(mo.z1) - 1.5, float(mo.z1) + 1.0, z)
+		h -= float(mo.depth) * t * (1.0 - smoothstep(float(mo.hx) - 3.0, float(mo.hx) + 3.0, absf(x)))
 	var out := maxf(absf(x), absf(z)) - 182.0
 	if out > 0.0:
 		var open_north := exp(-pow(x / 70.0, 2.0)) * (1.0 if z < 0.0 else 0.0)
@@ -575,6 +583,13 @@ const SPAWN_CLEAR := [
 
 
 func _init() -> void:
+	for f: Vector4 in OL.PADS:
+		flats.append(f)
+	for c: Vector3 in OL.YARDS:
+		clearings.append(c)
+	for c: Vector3 in OL.KEEP:
+		keep_clear.append(c)
+	roads.append(OL.road())
 	for s: Vector2 in SPAWN_CLEAR:
 		keep_clear.append(Vector3(s.x, s.y, 5.0))
 	keep_clear.append(Vector3(-166.5, -98.0, 7.0))  # the Gullet door

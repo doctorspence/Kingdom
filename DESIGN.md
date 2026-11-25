@@ -433,7 +433,7 @@ This screenshot records the current implementation's composition and styling. Tr
 ### 11.1 Zone 1: the Tithelands
 The countryside outside Highcrown: about 5–10 minutes across on foot.
 - **Crossroads** shrine (start), farms and a burned hamlet, the old road north to Highcrown's gates (White Knight checkpoints), woods to the east (Dark Ages raiders, hound packs), a river with a broken bridge, a ruined watchtower, a quarry in the west with the **Gullet**'s cave mouth.
-- Highcrown's walls loom in the northern fog. You can't go in yet.
+- Highcrown's walls loom in the northern fog behind a moat and a lowered drawbridge. You can't go in yet. In front of them stands the **White Knights Outpost** (inn, smith, market, stable, cottages, the Knights' checkpoint at the drawbridge; hostile for now, `OUTPOST_PLAN.md`).
 - **3–4 shrines**: Crossroads, Mill, Quarry, and one halfway through the Gullet.
 - **Hidden shortcut example**: a gate in the watchtower that only opens from the far side and drops you back near the Crossroads.
 
