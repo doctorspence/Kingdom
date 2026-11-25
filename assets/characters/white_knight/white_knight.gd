@@ -930,3 +930,99 @@ static func build() -> Node3D:
 	root.add_child(mi)
 	root.set_meta("triangles", m.triangle_count())
 	return root
+
+
+# ------------------------------------------------------------------ the shield
+
+const SHIELD_NAME := "WK_heater_shield"
+## Held items are built with the grip at the origin; this turns the shield's design frame
+## (x across, y up, z out of the face) into the hand's frame (as every shield in the game).
+const SHIELD_BASIS := Basis(Vector3(0, 1, 0), Vector3(0, 0, -1), Vector3(-1, 0, 0))
+## Half the heater outline, top centre round to the point.
+const SHIELD_HALF := [Vector2(0, 0.3), Vector2(0.13, 0.295), Vector2(0.235, 0.27), Vector2(0.245, 0.18), Vector2(0.238, 0.04),
+		Vector2(0.21, -0.09), Vector2(0.16, -0.21), Vector2(0.09, -0.32), Vector2(0, -0.41)]
+const SHIELD_DOME := [[1.0, 0.0], [0.86, 0.013], [0.66, 0.025], [0.44, 0.034], [0.22, 0.04], [0.06, 0.042]]
+
+
+static func _shield_outline() -> PackedVector2Array:
+	var pts := PackedVector2Array(SHIELD_HALF)
+	for i in range(SHIELD_HALF.size() - 2, 0, -1):
+		pts.append(Vector2(-SHIELD_HALF[i].x, SHIELD_HALF[i].y))
+	return pts
+
+
+## The shield's face is the TABARD close-up from the owner's sheet: ivory linen, the red cross.
+static func _shield_face_uv(q: Vector2) -> Vector2:
+	var v: Dictionary = Atlas.VIEWS["tabard_panel"]
+	var xs := 1081.0 + q.x * 285.0
+	var ys := 642.0 - (q.y + 0.055) * 285.0
+	return Vector2((v.ox + Atlas.K * (xs - v.x0)) / Atlas.SIZE.x, (v.oy + Atlas.K * (ys - v.y0)) / Atlas.SIZE.y)
+
+
+## The White Knight's heater shield, held in the left hand (WK_heater_shield.scn).
+static func shield() -> Node3D:
+	var m := WMesh.new()
+	m.skinned = false
+	var face := mat("wk_cloth")
+	var rim := mat("wk_helm")
+	var back_m := mat("wk_leather")
+	var outline := _shield_outline()
+	var cen := Vector2(0, -0.03)
+	var xf := Transform3D(SHIELD_BASIS, SHIELD_BASIS * Vector3(0, 0, 0.075))
+	# the back and edge (wood under leather), then the painted, domed face
+	var core: Array = []
+	for z in [-0.03, 0.0]:
+		var ring := PackedVector3Array()
+		for pt in outline:
+			ring.append(xf * Vector3(pt.x, pt.y, z))
+		core.append(ring)
+	m.loft(back_m, core, false, true, false)
+	var dome: Array = []
+	for lv in SHIELD_DOME:
+		var ring := PackedVector3Array()
+		for pt in outline:
+			var q: Vector2 = cen + (pt - cen) * lv[0]
+			ring.append(xf * Vector3(q.x, q.y, lv[1]))
+		dome.append(ring)
+	m.loft(face, dome, true, false, true)
+	# a steel rim with brass edging, hugging the edge
+	var rw := 0.022
+	var secs: Array = []
+	for pt in outline:
+		var inner: Vector2 = pt + (cen - pt).normalized() * rw
+		secs.append([xf * Vector3(pt.x, pt.y, -0.038), xf * Vector3(pt.x, pt.y, 0.006), xf * Vector3(inner.x, inner.y, 0.016), xf * Vector3(inner.x, inner.y, -0.038)])
+	for i in secs.size():
+		var a: Array = secs[i]
+		var b: Array = secs[(i + 1) % secs.size()]
+		var ins: Vector3 = (a[0] + a[2] + b[0] + b[2]) * 0.25
+		for k in 4:
+			m.quad(rim, a[k], a[(k + 1) % 4], b[(k + 1) % 4], b[k], ins)
+	# grip and forearm strap behind
+	m.box(back_m, xf * Vector3(0, 0.0, -0.045), Vector3(0.03, 0.18, 0.025), SHIELD_BASIS)
+	m.box(back_m, xf * Vector3(0, 0.15, -0.048), Vector3(0.05, 0.035, 0.03), SHIELD_BASIS)
+	var to_design := xf.affine_inverse()
+	m.uv_fns[face] = func(rest: Array, _p: Array, _nr: Vector3, _np: Vector3) -> Array:
+		var out: Array = []
+		for p: Vector3 in rest:
+			var d := to_design * p
+			out.append(_shield_face_uv(Vector2(d.x, d.y)))
+		return out
+	m.uv_fns[rim] = func(rest: Array, _p: Array, _nr: Vector3, _np: Vector3) -> Array:
+		var out: Array = []
+		for p: Vector3 in rest:
+			var d := to_design * p
+			out.append(_helm_uv("helm_front", Vector3(d.x * 0.35, HELM_TOP - 0.012 + d.z * 0.12, 0)))
+		return out
+	m.uv_fns[back_m] = func(rest: Array, _p: Array, _nr: Vector3, _np: Vector3) -> Array:
+		var out: Array = []
+		for p: Vector3 in rest:
+			var d := to_design * p
+			out.append(view_uv("front", Vector3(d.x * 0.25, 1.195 + d.y * 0.02, 0)))
+		return out
+	var root := Node3D.new()
+	root.name = SHIELD_NAME
+	var mi := MeshInstance3D.new()
+	mi.name = "Mesh"
+	mi.mesh = m.finish()
+	root.add_child(mi)
+	return root

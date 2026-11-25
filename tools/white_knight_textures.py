@@ -42,11 +42,13 @@ VIEWS = {
     "helm_front": {"box": (30, 532, 200, 742), "flip": False},
     "helm_side": {"box": (380, 532, 522, 742), "flip": False},
     "helm_back": {"box": (540, 532, 672, 742), "flip": False},
+    "tabard_panel": {"box": (990, 535, 1172, 752), "flip": False},
 }
 # Where each picture goes in the atlas (top-left, atlas pixels).
 PLACE = {
     "front": (8, 8), "back": (364, 8), "side_r": (736, 8), "side_l": (996, 8),
     "helm_front": (8, 980), "helm_side": (364, 980), "helm_back": (664, 980),
+    "tabard_panel": (944, 980),
 }
 ATLAS = (2048, 1424)
 

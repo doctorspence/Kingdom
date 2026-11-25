@@ -20,6 +20,8 @@ var pose := {}
 var _w := {}              # material -> [PackedInt32Array, PackedFloat32Array]
 var _posed := {}          # material -> PackedVector3Array
 var _prepared := false
+## false for things that are not worn (a held shield): no bone weights in the mesh.
+var skinned := true
 
 
 func _surf(mat: Material) -> Dictionary:
@@ -282,8 +284,9 @@ func finish() -> ArrayMesh:
 		arr.resize(Mesh.ARRAY_MAX)
 		arr[Mesh.ARRAY_VERTEX] = s.v
 		arr[Mesh.ARRAY_NORMAL] = s.n
-		arr[Mesh.ARRAY_BONES] = _w[mat][0]
-		arr[Mesh.ARRAY_WEIGHTS] = _w[mat][1]
+		if skinned:
+			arr[Mesh.ARRAY_BONES] = _w[mat][0]
+			arr[Mesh.ARRAY_WEIGHTS] = _w[mat][1]
 		var posed: PackedVector3Array = _posed[mat]
 		var uvs := PackedVector2Array()
 		uvs.resize(s.v.size())

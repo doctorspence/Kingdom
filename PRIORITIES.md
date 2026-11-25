@@ -61,7 +61,7 @@ Who does it: **You** (no code) · **CC** (Claude Code in this folder)
 
 ## P4: Content and art (after the milestone)
 
-- [x] **White Knight character** *(2026-11-25)*: built from the owner's sheet, `assets/characters/white_knight/` (see HANDOFF). Open: where it is used (Zealot enemy, outpost guards, NPCs) is the owner's call; a sword and scabbard, a helmless/hooded variant and the fur-cloak variant from the sheet are not made.
+- [x] **White Knight character** *(2026-11-25)*: built from the owner's sheet, `assets/characters/white_knight/` (see HANDOFF). The White Knight Zealot wears it, with a red-cross shield. Open: a sword and scabbard, a helmless/hooded variant and the fur-cloak variant from the sheet are not made.
 - [ ] **Art pipeline test.** Take one bandit from AI concept to a rigged model on the standard skeleton (`ART_NEEDS.md`, `GULLET_DESIGN.md` section 10). The world now looks detailed, but every character is still a mannequin. That's the biggest visual gap left.
 - [ ] Tithelands polish: judge the foliage fade in a dense wood, add a mill race for the wheel, make the weir crossing readable, LODs for distant trees.
 - [ ] Gullet look pass 2: only if you're not happy with pass 1.
