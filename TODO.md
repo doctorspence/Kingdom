@@ -329,5 +329,6 @@ Design: [`GULLET_DESIGN.md`](GULLET_DESIGN.md) and `GULLET_MAP.svg`. Replaces th
 - [x] New looks for every other bandit: Marauders (quarry, camps, raids), Bandit Captain, Rook, Hobb (2026-11-25)
 - [ ] 🧪 Walk the quarry and the Hobb camp: do the Marauders, the Captain, Rook and Hobb look right beside the Gullet bandits?
 - [x] Harl the Delver's own look and pick, with the marks spreading and the stone glowing in phase 2 (2026-11-25)
-- [ ] 🧪 Fight Harl: can you read the attacks with the new coat and pick, and is the second-phase glow clear enough in the dark chamber? His loot pick still has the old stand-in model: say if it should match
+- [x] The Harl's Black Pick you can loot uses his new pick model and has a matching inventory icon (2026-11-25)
+- [ ] 🧪 Fight Harl: can you read the attacks with the new coat and pick, and is the second-phase glow clear enough in the dark chamber?
 - [ ] 🧪 Walk the Gullet and look at the four bandits calm and fighting: can you tell them apart in the dark, and does the lookout's dagger feel like it reaches too far?

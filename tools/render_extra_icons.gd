@@ -242,17 +242,19 @@ func _make(build: String) -> Node3D:
 				m.frustum(iron, Vector3(0, 0.57, 0), Vector2(0.14, 0.014), Vector2(0.09, 0.01), 0.17, Basis(Vector3.UP, a) * Basis(Vector3.FORWARD, 0.0))
 			m.sphere(iron, Vector3(0, 0.67, 0), 0.025, 8, 5)
 			return _node("flanged_mace", m)
-		"pickaxe", "harls_pick":
-			var head = steel if build == "pickaxe" else _plain(Color(0.07, 0.065, 0.07), 0.25, 0.22, Color(0.9, 0.3, 0.08), 0.04)
-			m.lathe(wood if build == "pickaxe" else wood_dark, Transform3D.IDENTITY, [[0.022, -0.32], [0.026, -0.3], [0.023, 0.3], [0.025, 0.5]], 8, true, true)
-			W._grip(m, -0.28, -0.05, 0.025, leather if build == "pickaxe" else leather_dark, iron, 4)
+		"pickaxe":
+			m.lathe(wood, Transform3D.IDENTITY, [[0.022, -0.32], [0.026, -0.3], [0.023, 0.3], [0.025, 0.5]], 8, true, true)
+			W._grip(m, -0.28, -0.05, 0.025, leather, iron, 4)
 			var y := 0.47
-			m.box(head, Vector3(0, y, 0), Vector3(0.06, 0.07, 0.06))
+			m.box(steel, Vector3(0, y, 0), Vector3(0.06, 0.07, 0.06))
 			for s in [-1.0, 1.0]:
 				var pts := [Vector3(0, y, 0), Vector3(s * 0.12, y + 0.01, 0), Vector3(s * 0.22, y - 0.02, 0), Vector3(s * 0.3, y - 0.07, 0)]
 				for k in 3:
-					m.rod(head, pts[k], pts[k + 1], 0.03 - k * 0.008, 0.022 - k * 0.008 if k < 2 else 0.002, 6)
+					m.rod(steel, pts[k], pts[k + 1], 0.03 - k * 0.008, 0.022 - k * 0.008 if k < 2 else 0.002, 6)
 			return _node("pick", m)
+		"harls_pick":
+			# a real model: the pick as the player carries it
+			return (load("res://assets/characters/bandit/harls_black_pick.tscn") as PackedScene).instantiate()
 		"lantern_staff":
 			var n4 := W.staff()
 			var lm := Mesh2.new()

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://game/combat/weapon_data.gd" id="1_weapon"]
 [ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
-[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/mace_placeholder.tscn" id="3_visual"]
+[ext_resource type="PackedScene" path="res://assets/characters/bandit/harls_black_pick.tscn" id="3_visual"]
 
 [sub_resource type="Resource" id="Attack_light1"]
 script = ExtResource("2_attack")

@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+; Harl's Black Pick as a player carries it: the same model Harl fights with (BD_harl_pick.scn),
+; sized down from his hands to an ordinary person's, between a mace and a sword in length.
+
+[ext_resource type="PackedScene" path="res://assets/characters/bandit/BD_harl_pick.scn" id="1_pick"]
+
+[node name="HarlsBlackPick" type="Node3D"]
+
+[node name="Pick" parent="." instance=ExtResource("1_pick")]
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0, 0)
