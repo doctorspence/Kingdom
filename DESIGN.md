@@ -358,6 +358,7 @@ Bonus rolls (section 9) can also add: crit chance, poise, stamina regen, bleed/p
 |---|---|---|
 | **Dark Ages Marauder** | Zone 1 | Slow two-handed axe, huge telegraphed swings, bleed. Our Phase 3 test enemy: perfect for learning to dodge and parry. |
 | **White Knight Zealot** | Zone 1 | Sword and shield; blocks, shield-bashes, 3-hit combos. Blows a horn for help. Gets stronger when an ally dies nearby ("martyr's fury"). |
+| **White Knight Crossbowman** | Zone 1 | Crossbow, long range (about 42 m), heavy bolts you can block but not parry; stabs if cornered. Calls the other Knights. Some stand on Highcrown's gatehouse and wall and never come down (the outpost is meant to be very hard to pass, owner 2026-11-26). |
 | **Gaunt Hound** | Zone 1 | Packs of 3–4: fast lunges, circling, howls for the pack. |
 | **Hobb the Unhanged** (named rare) | Zone 1, bandit camp near the mill | Elite bandit chief with a rope still around his neck. Unique drops such as *Hobb's Noose*. |
 | **Candle Acolytes** (retired, unused) | none | Weak fanatics; extra boss adds in bigger groups. |

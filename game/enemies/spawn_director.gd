@@ -118,6 +118,8 @@ func _spawn(sp: SpawnPoint, scene: PackedScene, index: int, count: int) -> void:
 		e.set_meta(&"post_kind", "watch")
 		e.set_meta(&"watch_dir", -sp.global_basis.z)
 		e.set_meta(&"watch_rail", sp.watch_rail)
+	if sp.perch:
+		e.set_meta(&"perched", true)
 	e.remove_from_group(&"respawn_on_rest")
 	enemies_root.add_child(e, true)
 	e.remove_from_group(&"respawn_on_rest")  # the director handles these

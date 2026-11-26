@@ -35,6 +35,14 @@ Keep each entry short and concrete. "Idea" entries are for planning only: Claude
 
 ## Filed
 
+### 2026-11-26: The outpost and Highcrown's gate are held hard
+- **Area:** zone 1 / enemies / factions
+- **Decision:** Many more White Knights defend the outpost, the gate most of all, with White Knight archers in the castle's towers. Passing should be very difficult, like they are defending the front of the castle.
+- **Details:** Owner, in chat: "we need way more white knights defending the outpost and the gate especially. add archer white knights in the towers. it should be very difficult to pass just like theyre defending the front of the castle".
+- **Status:** decided (owner, in chat).
+- **Replaces:** the outpost's light guard of two (plus one with 3+ players) zealots.
+- **Filed (2026-11-26):** built: the White Knight Crossbowman (`game/enemies/wk_crossbowman.tscn`), crossbows rather than bows because the game has a two-handed crossbow hold and no bow-drawing animation; 21 more Knights at the outpost; 6 crossbowmen on the gatehouse and wall that never leave their posts (`SpawnPoint.perch`). DESIGN.md enemy table, OUTPOST_PLAN.md section 4, HANDOFF.md, TODO.md.
+
 ### 2026-11-25: Drifting mist
 - **Area:** art direction / zone 1
 - **Decision:** The Tithelands mist moves: banks creep and thicken and thin, so shapes appear and vanish. This was picked over the other eerie ideas offered (sounds, flickering windows, more darkness).

@@ -69,7 +69,7 @@ func _run() -> void:
 	_check("enemies spawn around the zone (%d)" % enemies.size(), enemies.size() >= 12)
 	var near_start := enemies.filter(func(e: Node3D) -> bool: return Vector2(e.global_position.x, e.global_position.z).distance_to(Vector2(0, 120.4)) < 30.0)
 	_check("the Crossroads start is quiet", near_start.is_empty())
-	var floating := enemies.filter(func(e: Node3D) -> bool: return e.global_position.y > 0.0 and absf(e.global_position.y - terrain.height_at(e.global_position.x, e.global_position.z)) > 1.5)
+	var floating := enemies.filter(func(e: Node3D) -> bool: return not e.get_meta(&"perched", false) and e.global_position.y > 0.0 and absf(e.global_position.y - terrain.height_at(e.global_position.x, e.global_position.z)) > 1.5)
 	_check("enemies stand on the ground (%d off)" % floating.size(), floating.is_empty())
 	var kinds := {}
 	for e in enemies:
@@ -87,6 +87,23 @@ func _run() -> void:
 	await _frames(5)
 	_check("resting brings far enemies back fresh", checkpoint.spawned.size() == 2 and checkpoint.spawned[0] != checkpoint_before[0])
 	_check("...but leaves the ones near you alone", hamlet.spawned == hamlet_before)
+	# The White Knights Outpost is held hard (owner, 2026-11-26): many Knights, crossbowmen on
+	# Highcrown's gate towers and wall that stay up there and can shoot over the zone's north edge.
+	var all := zone.get_node("Enemies").get_children()
+	var knights := all.filter(func(e: Node3D) -> bool: return "white_knight" in String((e as Enemy).data.id) and e.global_position.z < -130.0)
+	_check("the outpost is held by many White Knights (%d)" % knights.size(), knights.size() >= 20)
+	var perched := all.filter(func(e: Node3D) -> bool: return e.get_meta(&"perched", false))
+	var heights := perched.map(func(e: Node3D) -> float: return e.global_position.y)
+	await _go_to(Vector3(0, 0, -172))
+	await _seconds(3.0)
+	var held := perched.size() == 6
+	for i in perched.size():
+		held = held and absf((perched[i] as Node3D).global_position.y - float(heights[i])) < 0.2
+	_check("6 crossbowmen on the castle stay on their towers and wall (%d)" % perched.size(), held)
+	var seen := perched.filter(func(e: Node3D) -> bool: return (e as Enemy)._can_see(player))
+	_check("they can see the gate over the zone's edge (%d of %d)" % [seen.size(), perched.size()], seen.size() >= 4)
+	var reach := perched.filter(func(e: Node3D) -> bool: return e.global_position.distance_to(player.global_position) < (e as Enemy).data.attack_range)
+	_check("the gate is within their crossbows' range (%d of %d)" % [reach.size(), perched.size()], reach.size() >= 4)
 	# Named rare: force the roll.
 	var camp := zone.get_node("EnemySpawns/HobbCamp") as SpawnPoint
 	camp.named_chance = 1.0
