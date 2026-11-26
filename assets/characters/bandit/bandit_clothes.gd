@@ -17,11 +17,12 @@ const FOOT_X := 0.094
 static func build(m, o: Dictionary) -> void:
 	m.group = "Clothing"
 	m.density = 1.0
-	_tunic(m)
-	_skirt(m)
+	_tunic(m, o.get("tunic_style", "tunic"))
+	_skirt(m, o.get("skirt_style", "tunic_skirt"))
 	_trousers(m)
 	for s in [1.0, -1.0]:
-		_sleeve(m, s)
+		if s in o.get("sleeves", [1.0, -1.0]):
+			_sleeve(m, s)
 		_leg(m, s)
 		_boot(m, s)
 	match o.cowl:
@@ -43,15 +44,15 @@ static func build(m, o: Dictionary) -> void:
 		_noose(m)
 
 
-static func _tunic(m) -> void:
+static func _tunic(m, style: String) -> void:
 	var rings := []
 	for y in [0.96, 1.05, 1.15, 1.24, 1.33, 1.41, 1.47, 1.52, 1.552]:
 		rings.append(Shape.torso_ring(y, 0.0, 14))
-	m.loft("tunic", rings, Shape.torso_weights)
+	m.loft(style, rings, Shape.torso_weights)
 
 
 ## The tunic's hem: mid-thigh, jagged, split at the front so the legs can move.
-static func _skirt(m) -> void:
+static func _skirt(m, style: String) -> void:
 	# [height, half width, front z, back z, front split (radians)]
 	var rows := [
 		[1.040, 0.160, 0.122, -0.128, 0.015], [0.955, 0.188, 0.134, -0.148, 0.035],
@@ -75,7 +76,7 @@ static func _skirt(m) -> void:
 				p.y += jag[i]
 			ring.append(p)
 		rings.append(ring)
-	m.loft("tunic_skirt", rings, skirt_weights, {"closed": false, "inside": Vector3(0, 0.9, -0.01)})
+	m.loft(style, rings, skirt_weights, {"closed": false, "inside": Vector3(0, 0.9, -0.01)})
 
 
 ## The hem follows the pelvis at the top and each thigh more and more toward the bottom.

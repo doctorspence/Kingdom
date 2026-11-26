@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://game/combat/attack_data.gd" id="2_attack"]
-[ext_resource type="PackedScene" path="res://assets/placeholder/weapons/axe_placeholder.tscn" id="3_pick"]
+[ext_resource type="PackedScene" path="res://assets/characters/bandit/BD_harl_pick.scn" id="3_pick"]
 [ext_resource type="Resource" path="res://data/loot/loot_harl.tres" id="4_loot"]
 
 [sub_resource type="Resource" id="P1_sweep"]

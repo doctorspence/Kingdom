@@ -18,7 +18,7 @@ static func build(m, o: Dictionary) -> void:
 	m.group = "Armor"
 	m.density = 1.0
 	# what the straps and belt lie on
-	var skin := VEST if o.vest else 0.002
+	var skin: float = o.get("belt_margin", VEST if o.vest else 0.002)
 	if o.vest:
 		_vest(m, o.laces)
 	if o.laces:
@@ -33,7 +33,8 @@ static func build(m, o: Dictionary) -> void:
 		"braces":
 			_braces(m, skin)
 	_belt(m, skin)
-	_pouch(m)
+	if o.get("pouch", true):
+		_pouch(m)
 	for s: float in o.pauldrons:
 		_shoulder(m, s, o.get("pauldron_style", "pauldron"))
 	for s: float in o.forearms:
@@ -206,7 +207,7 @@ static func _pouch(m) -> void:
 
 
 ## Two overlapping leather plates over a shoulder (s = +1 left), laced on and riveted.
-static func _shoulder(m, s: float, style := "pauldron") -> void:
+static func _shoulder(m, s: float, style := "pauldron", grow := 0.0) -> void:
 	var upper: String = Shape.sided("upperarm", s)
 	var clavicle: String = Shape.sided("clavicle", s)
 	var plates := [
@@ -221,7 +222,7 @@ static func _shoulder(m, s: float, style := "pauldron") -> void:
 			var ring := []
 			for i in 8:
 				var a: float = lerpf(-plate[1], plate[1], i / 7.0)
-				ring.append(Vector3(r[0] * s, r[2] + cos(a) * r[1], -0.062 + sin(a) * r[1] * 1.02))
+				ring.append(Vector3(r[0] * s, r[2] + cos(a) * (r[1] + grow), -0.062 + sin(a) * (r[1] + grow) * 1.02))
 			rings.append(ring)
 			if r[0] < 0.19:
 				ws.append({clavicle: 0.5, upper: 0.5})
@@ -235,7 +236,7 @@ static func _shoulder(m, s: float, style := "pauldron") -> void:
 		for i in last.size() - 1:
 			m.bar("trim", last[i], last[i + 1], 0.016, 0.012, last[i] - Vector3(last[i].x, 1.44, -0.062), ws[ws.size() - 1])
 	for a in [-0.75, 0.05, 0.85]:
-		var p := Vector3(0.262 * s, 1.442 + cos(a) * 0.114, -0.062 + sin(a) * 0.116)
+		var p := Vector3(0.262 * s, 1.442 + cos(a) * (0.114 + grow), -0.062 + sin(a) * (0.116 + grow))
 		m.box("iron", p, Vector3(0.012, 0.010, 0.012), {upper: 1.0}, Basis(Vector3.RIGHT, a))
 
 

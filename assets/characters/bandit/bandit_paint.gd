@@ -66,7 +66,21 @@ const STYLES := {
 	"plate": ["metal", Color(0.262, 0.255, 0.250)],
 	"haft": ["haft", Color(0.300, 0.188, 0.100)],
 	"axe_edge": ["metal", Color(0.600, 0.585, 0.545)],
+	"pick_iron": ["metal", Color(0.140, 0.132, 0.130)],
+	"pick_edge": ["metal", Color(0.360, 0.345, 0.325)],
+	"coat": ["leather", Color(0.165, 0.120, 0.088)],
+	"coat_trim": ["leather", Color(0.245, 0.175, 0.115)],
+	"mail": ["mail", Color(0.300, 0.295, 0.290)],
+	"mail_skirt": ["mail", Color(0.270, 0.262, 0.255)],
+	"blackstone": ["blackstone", Color(0.042, 0.036, 0.052)],
+	"wax": ["flat", Color(0.720, 0.650, 0.470)],
+	"flame": ["flame", Color(1.000, 0.720, 0.260)],
 }
+
+## What the black stone gives off.
+const STONE_LIGHT := Color(0.52, 0.20, 0.86)
+## Skin that Harl's marks can run through.
+const SKIN_STYLES := ["skin", "hand", "finger", "face", "nose", "ear"]
 
 const DIRT := Color(0.165, 0.122, 0.072)
 const RUST := Color(0.400, 0.190, 0.080)
@@ -75,7 +89,10 @@ const RUST := Color(0.400, 0.190, 0.080)
 ## Paints the atlas for a packed builder (bandit_mesh.gd). `separate` = each mesh group is its own
 ## object (the held gear), so they don't shade each other. `colors` replaces the base colours of
 ## some styles (an outfit's palette); `patches` = sewn-on patches on the skirt and knee.
-static func bake(m, size: int, separate := false, colors := {}, patches := true) -> Image:
+## `opts` (Harl): "dust" = hands black with mineral dust, "scars" = a scarred face, "marks" =
+## how far the black marks have run up his left arm (1 = forearm, 2 = to the face), and
+## "glow" = true to also paint what gives off light, returned in opts["glow_image"].
+static func bake(m, size: int, separate := false, colors := {}, patches := true, opts := {}) -> Image:
 	var occluders := {}
 	var points := {}
 	for c in m.charts:
@@ -96,6 +113,10 @@ static func bake(m, size: int, separate := false, colors := {}, patches := true)
 	mask.resize(size * size * 4)
 	var covered := PackedByteArray()
 	covered.resize(size * size)
+	var glows: bool = opts.get("glow", false)
+	var light := PackedByteArray()
+	if glows:
+		light.resize(size * size * 4)
 	var nz := _Noise.new()
 	for c in m.charts:
 		var ao = occluders[c.group if separate else "all"]
@@ -140,14 +161,24 @@ static func bake(m, size: int, separate := false, colors := {}, patches := true)
 						w2 /= s
 					var p: Vector3 = t[0].p * w0 + t[1].p * w1 + t[2].p * w2
 					var uv: Vector2 = t[0].uv * w0 + t[1].uv * w1 + t[2].uv * w2
-					var col := _paint(c.style, style, p, nrm, uv, c.size, ao.occlusion(p, nrm), nz, patches)
+					var col := _paint(c.style, style, p, nrm, uv, c.size, ao.occlusion(p, nrm), nz, patches, opts)
 					var o := idx * 4
+					if glows:
+						var g := _glow(c.style, p, nz, opts)
+						light[o] = int(clampf(g.r, 0.0, 1.0) * 255.0)
+						light[o + 1] = int(clampf(g.g, 0.0, 1.0) * 255.0)
+						light[o + 2] = int(clampf(g.b, 0.0, 1.0) * 255.0)
+						light[o + 3] = 255
 					paint[o] = int(clampf(col.r, 0.0, 1.0) * 255.0)
 					paint[o + 1] = int(clampf(col.g, 0.0, 1.0) * 255.0)
 					paint[o + 2] = int(clampf(col.b, 0.0, 1.0) * 255.0)
 					paint[o + 3] = 255
 					covered[idx] = 2 if inside else 1
+	var filled := covered.duplicate()   # the padding marks what it fills, so keep a clean copy
 	EQ._dilate(paint, mask, covered, size)
+	if glows:
+		EQ._dilate(light, mask.duplicate(), filled, size)
+		opts["glow_image"] = Image.create_from_data(size, size, false, Image.FORMAT_RGBA8, light)
 	return Image.create_from_data(size, size, false, Image.FORMAT_RGBA8, paint)
 
 
@@ -191,7 +222,40 @@ static func _line(p: Vector3, a: Vector2, b: Vector2, width: float) -> float:
 	return smoothstep(width, width * 0.35, q.distance_to(a + ab * t))
 
 
-static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vector2, size: Vector2, ao: float, nz: _Noise, patches: bool) -> Color:
+## 0..1: how strongly one of the black veins under Harl's skin runs through the point p.
+static func _vein(name_: String, p: Vector3, nz: _Noise, opts: Dictionary) -> float:
+	var spread: int = opts.get("marks", 0)
+	if spread == 0 or p.x <= 0.0 or not name_ in SKIN_STYLES:
+		return 0.0
+	# first the forearm and hand; later up the arm, the neck and the side of the face
+	var reach := smoothstep(0.43, 0.52, p.x)
+	if spread > 1:
+		reach = maxf(smoothstep(0.10, 0.17, p.x), smoothstep(0.0, 0.045, p.x) * smoothstep(1.73, 1.66, p.y))
+	var q := Vector3(p.x * 0.40, p.y, p.z)   # drawn out along the arm, like vessels
+	var wide := 1.0 - smoothstep(0.015, 0.135 if spread > 1 else 0.125, absf(nz.blob(q, 0.030, 131.0)))
+	var fine := 1.0 - smoothstep(0.0, 0.060, absf(nz.blob(q, 0.015, 137.0)))
+	return clampf(maxf(wide, fine * 0.55) * reach, 0.0, 1.0)
+
+
+## 0..1: the thin bright cracks in a shard of black stone.
+static func _crack(p: Vector3, nz: _Noise) -> float:
+	return 1.0 - smoothstep(0.01, 0.12, absf(nz.blob(p, 0.022, 151.0)))
+
+
+## What the point gives off by itself (black = nothing).
+static func _glow(name_: String, p: Vector3, nz: _Noise, opts: Dictionary) -> Color:
+	var strong: float = 1.0 if int(opts.get("marks", 1)) > 1 else 0.5
+	if name_ == "blackstone":
+		return STONE_LIGHT * (_crack(p, nz) * 0.16 if strong < 0.9 else 0.07 + _crack(p, nz) * 0.68)
+	if name_ == "flame":
+		return Color(1.0, 0.62, 0.20)
+	var v := _vein(name_, p, nz, opts)
+	if v > 0.0:
+		return STONE_LIGHT * (smoothstep(0.60, 1.0, v) * 0.55 if strong > 0.9 else 0.0)
+	return Color.BLACK
+
+
+static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vector2, size: Vector2, ao: float, nz: _Noise, patches: bool, opts := {}) -> Color:
 	var family: String = style[0]
 	var col: Color = style[1]
 	var soft := nz.blob(p, 0.075)
@@ -236,6 +300,20 @@ static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vect
 				col = _mix(col, col * 0.55, smoothstep(1.742, 1.775, p.y))
 				if name_ == "nose":
 					col = _mix(col, Color(0.72, 0.38, 0.27), smoothstep(1.668, 1.648, p.y) * 0.4)
+				if opts.get("scars", false) and p.z > 0.02:
+					var cut := maxf(_line(p, Vector2(-0.070, 1.702), Vector2(-0.012, 1.658), 0.0042),
+							_line(p, Vector2(-0.012, 1.658), Vector2(0.024, 1.650), 0.0034))
+					cut = maxf(cut, _line(p, Vector2(-0.080, 1.668), Vector2(-0.048, 1.630), 0.0036))
+					cut = maxf(cut, _line(p, Vector2(-0.030, 1.752), Vector2(-0.058, 1.722), 0.0034))
+					col = _mix(col, Color(0.82, 0.50, 0.44), cut * 0.8)
+			if opts.get("dust", false):
+				# hands black with mineral dust, thinning up the wrists
+				var dusty := smoothstep(0.62, 0.77, absf(p.x)) * (0.78 + 0.22 * nz.blob(p, 0.02, 121.0))
+				col = _mix(col, Color(0.058, 0.050, 0.052) * (1.0 + 0.30 * stroke), dusty * 0.97)
+			var vein := _vein(name_, p, nz, opts)
+			if vein > 0.0:
+				col = _mix(col, col * Color(0.70, 0.60, 0.86), smoothstep(0.0, 0.5, vein) * 0.8)
+				col = _mix(col, Color(0.085, 0.030, 0.140), smoothstep(0.30, 0.85, vein))
 		"eye":
 			var d := absf(absf(p.x) - 0.031)
 			if d < 0.0085:
@@ -296,6 +374,23 @@ static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vect
 			col = col * (1.0 + 0.22 * grain + 0.06 * stroke)
 			col = _mix(col, col * 1.45, smoothstep(0.4, 0.85, nz.blob(p, 0.030, 93.0)) * 0.45)
 			col = _mix(col, DIRT, smoothstep(0.2, 0.75, nz.blob(p, 0.045, 95.0)) * 0.5)
+		"mail":
+			# rows of small rings, each row set between the one above
+			var cell := Vector2(uv.x / 0.0155, uv.y / 0.0125)
+			if int(floorf(cell.y)) % 2 != 0:
+				cell.x += 0.5
+			var q := Vector2(fposmod(cell.x, 1.0) - 0.5, fposmod(cell.y, 1.0) - 0.5)
+			var d := q.length()
+			var ring := smoothstep(0.16, 0.30, d) * smoothstep(0.62, 0.46, d)
+			col = col * (1.0 + 0.08 * soft + 0.06 * stroke) * (0.42 + 0.80 * ring)
+			col = _mix(col, Color(0.66, 0.65, 0.62), ring * smoothstep(0.0, -0.35, q.y) * 0.55)
+			col = _mix(col, RUST * 0.9, smoothstep(0.3, 0.75, nz.blob(p, 0.05, 111.0)) * 0.55)
+		"blackstone":
+			col = col * (1.0 + 0.18 * soft + 0.10 * stroke)
+			col = _mix(col, Color(0.20, 0.19, 0.25), smoothstep(0.35, 0.95, n.y * 0.6 + n.z * 0.5 + n.x * 0.2) * 0.75)
+			col = _mix(col, STONE_LIGHT * 0.65, _crack(p, nz) * 0.55)
+		"flame":
+			col = col * (1.0 + 0.1 * stroke)
 		"haft":
 			# a long ash handle, grain running along it, darkened by hands
 			var grain := nz.blob(Vector3(p.x, p.y * 0.12, p.z), 0.010, 97.0)
@@ -324,7 +419,7 @@ static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vect
 			if scratch > 0.88:
 				col = col * Color(1.32, 1.26, 1.12)
 			var thread := Color(0.58, 0.45, 0.25)
-			if name_ in ["vest", "pauldron", "bracer", "pouch_flap", "boot_cuff"]:
+			if name_ in ["vest", "pauldron", "bracer", "pouch_flap", "boot_cuff", "coat_trim"]:
 				col = _mix(col, thread, maxf(_stitch(uv, 0.010), _stitch(uv, size.y - 0.010)) * 0.75)
 				col = _mix(col, col * 0.62, maxf(smoothstep(0.006, 0.0, uv.y), smoothstep(size.y - 0.006, size.y, uv.y)))
 			if name_ == "belt" and size.x > 0.3:
@@ -394,6 +489,8 @@ static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vect
 				col = col * 0.45
 			col = _mix(col, DIRT, smoothstep(0.1, 0.7, nz.blob(p, 0.045, 81.0)) * 0.55)
 
+	if family == "flame":
+		return col
 	# painted light: warm from above and in front, cool underneath; shadow where layers meet
 	var lit := clampf(n.y * 0.55 + n.z * 0.20 + n.x * 0.08 + 0.52, 0.0, 1.0)
 	col = col * _mix(Color(0.70, 0.71, 0.76), Color(1.09, 1.07, 1.02), lit)

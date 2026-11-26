@@ -17,6 +17,8 @@ static func build(m, o: Dictionary) -> void:
 			_locks(m)
 		"crop":
 			_crop(m)
+		"nape":   # only what shows under a helmet
+			_nape(m)
 	if o.beard:
 		_beard(m)
 
@@ -35,7 +37,13 @@ static func _crop(m) -> void:
 		top.append(Vector3(p.x * 0.6, 1.842, (p.z - Body.HEAD_Z) * 0.66 + Body.HEAD_Z - 0.004))
 	rings.append(top)
 	m.loft("hair", rings, W, {"cap_end": true})
-	# the sides and back
+	_nape(m)
+	_lock(m, Vector3(0.030, 1.836, 0.050), Vector3(-0.026, 1.838, 0.048), Vector3(-0.010, 1.806, 0.116), Vector3(0, 0.012, 0.008))
+	_lock(m, Vector3(0.050, 1.836, -0.010), Vector3(-0.020, 1.846, -0.030), Vector3(0.012, 1.852, -0.096), Vector3(0, 0.014, 0))
+
+
+## Short hair round the sides and back of the head.
+static func _nape(m) -> void:
 	var nape := []
 	for y: float in [1.652, 1.705, 1.756]:
 		var ring: Array = Body.head_ring(y, 0.007)
@@ -48,8 +56,6 @@ static func _crop(m) -> void:
 			arc.append(p)
 		nape.append(arc)
 	m.loft("hair", nape, W, {"closed": false, "inside": Vector3(0, 1.70, 0.0)})
-	_lock(m, Vector3(0.030, 1.836, 0.050), Vector3(-0.026, 1.838, 0.048), Vector3(-0.010, 1.806, 0.116), Vector3(0, 0.012, 0.008))
-	_lock(m, Vector3(0.050, 1.836, -0.010), Vector3(-0.020, 1.846, -0.030), Vector3(0.012, 1.852, -0.096), Vector3(0, 0.014, 0))
 
 
 ## The top of the head, down to the hairline.

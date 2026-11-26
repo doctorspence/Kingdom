@@ -71,7 +71,7 @@ func _stow_holder(side: String) -> BoneAttachment3D:
 		var facing := Basis(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(-1, 0, 0))   # the shield's face looks backward
 		# spine_02, not spine_03: it keeps the shield closer to the back when sitting
 		spot = [&"spine_02", Transform3D(facing, Vector3(0.0, 1.19, _shield_back) - facing * Gear.SHIELD_CENTRE)]
-	elif side == "r" and _hand_items.has("r") and String((_hand_items["r"] as Node).name).begins_with("BD_axe"):
+	elif side == "r" and _hand_items.has("r") and (_hand_items["r"] as Node).has_meta(&"blade_up_on_hip"):
 		# on the hip like a sword, but with the blade turned up so the head clears the ground
 		var axe_holder := super._stow_holder(side)
 		if axe_holder:

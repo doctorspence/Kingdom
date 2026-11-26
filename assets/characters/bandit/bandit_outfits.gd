@@ -108,4 +108,18 @@ const OUTFITS := {
 			"beard": Color(0.420, 0.400, 0.370), "brow": Color(0.300, 0.280, 0.255),
 		},
 	},
+	# Harl the Delver, the boss: a mail shirt under a torn miner's coat (harl_parts.gd adds the
+	# coat, helmet, shoulder plate and black stone). A boss, so more detail than the others.
+	"harl": {
+		"hair": "nape", "beard": true, "hood": false, "mask": false, "cloak": false,
+		"cowl": "none", "vest": false, "laces": false, "straps": "single",
+		"pauldrons": [], "forearms": {}, "quiver": false, "patches": false,
+		"harl": true, "atlas": 1024,
+		"tunic_style": "mail", "skirt_style": "mail_skirt", "sleeves": [], "belt_margin": 0.034, "pouch": false,
+		"colors": {
+			"trousers": Color(0.125, 0.112, 0.100), "boot": Color(0.190, 0.135, 0.085), "boot_cuff": Color(0.215, 0.155, 0.098),
+			"boot_foot": Color(0.180, 0.128, 0.080), "strap": Color(0.175, 0.112, 0.066), "belt": Color(0.200, 0.122, 0.070),
+			"hair": Color(0.115, 0.095, 0.084), "beard": Color(0.135, 0.112, 0.098), "brow": Color(0.080, 0.064, 0.055), "plate": Color(0.160, 0.146, 0.136),
+		},
+	},
 }

@@ -61,21 +61,27 @@ static func crossbow(m) -> void:
 		m.poly("fletch", [Vector3(0, 0.094, -0.100), Vector3(0.020 * s, 0.100, -0.092), Vector3(0.018 * s, 0.098, -0.140), Vector3(0, 0.094, -0.150)], none, Vector3(0, 0.05, -0.12))
 
 
-## A heavy bearded axe. The haft runs along +Y from the grip, the blade faces +X.
-static func axe(m) -> void:
-	m.group = "Axe"
-	m.density = 1.0
+## The long handle of the axe (and Harl's pick): along +Y, thicker toward the butt, with a
+## wrapped grip and iron bands.
+static func haft(m) -> void:
 	var none := {}
-	# the haft, thicker toward the butt, with a wrapped grip
-	var haft := []
+	var rings := []
 	for r in [[-0.270, 0.032], [-0.220, 0.027], [0.300, 0.025], [0.820, 0.024], [1.055, 0.027]]:
-		haft.append(Mesh_.ring(Vector3(0, r[0], 0), Vector3.RIGHT, Vector3.BACK, r[1], r[1] * 0.86, 7))
-	m.loft("haft", haft, none, {"cap_start": true, "cap_end": true})
+		rings.append(Mesh_.ring(Vector3(0, r[0], 0), Vector3.RIGHT, Vector3.BACK, r[1], r[1] * 0.86, 7))
+	m.loft("haft", rings, none, {"cap_start": true, "cap_end": true})
 	for part in [["grip", -0.095, 0.150, 0.031], ["iron", -0.285, -0.245, 0.037], ["iron", 0.760, 0.785, 0.031]]:
 		var band := []
 		for y: float in [part[1], part[2]]:
 			band.append(Mesh_.ring(Vector3(0, y, 0), Vector3.RIGHT, Vector3.BACK, part[3], part[3] * 0.88, 7))
 		m.loft(part[0], band, none, {"cap_start": true, "cap_end": true})
+
+
+## A heavy bearded axe. The haft runs along +Y from the grip, the blade faces +X.
+static func axe(m) -> void:
+	m.group = "Axe"
+	m.density = 1.0
+	var none := {}
+	haft(m)
 	# the head: iron cheeks widening into the blade. [x, top, bottom, half thickness]
 	var cols := [[-0.040, 0.995, 0.855, 0.034], [0.044, 0.990, 0.858, 0.032], [0.140, 1.004, 0.862, 0.016], [0.248, 1.048, 0.758, 0.010]]
 	var rings := []

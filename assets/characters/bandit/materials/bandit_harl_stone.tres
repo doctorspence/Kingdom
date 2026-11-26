@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/characters/bandit/textures/bandit_harl_stone.png" id="1_6lkt7"]
+[ext_resource type="Texture2D" path="res://assets/characters/bandit/textures/bandit_harl_stone_glow.png" id="2_0y2gm"]
+
+[resource]
+resource_name = "bandit_harl_stone"
+cull_mode = 2
+albedo_texture = ExtResource("1_6lkt7")
+metallic_specular = 0.08
+roughness = 0.96
+emission_enabled = true
+emission_energy_multiplier = 2.8
+emission_texture = ExtResource("2_0y2gm")
+texture_filter = 5

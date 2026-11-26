@@ -4,8 +4,10 @@ extends Node
 ##   ... --headless --script res://tests/run.gd -- bandit_check
 
 const BANDITS := ["bandit_sword", "bandit_pick", "bandit_lookout", "bandit_archer", "bandit_archer_ambush",
-		"marauder", "bandit_captain", "bandit_rook", "hobb"]
+		"marauder", "bandit_captain", "bandit_rook", "hobb", "harl"]
 const MAX_TRIANGLES := 6000
+## the boss may be more detailed, and is built bigger
+const BOSS_TRIANGLES := 9000
 
 var failures := 0
 var _rig_bones: Array[String] = []
@@ -31,6 +33,7 @@ func _run() -> void:
 	for id: String in BANDITS:
 		await _one(id, scene, player, home)
 	await _looks(scene)
+	await _stone(scene, player)
 	print("PASS: 0 problem(s)" if failures == 0 else "FAIL: %d problem(s)" % failures)
 	get_tree().quit(1 if failures > 0 else 0)
 
@@ -63,7 +66,7 @@ func _one(id: String, scene: Node, player: Player, home: Vector3) -> void:
 			mannequin = mannequin or mi.name.begins_with("Mannequin")
 			tris += mi.mesh.surface_get_array_len(0) / 3
 	_check("wears the bandit (%d parts, %d triangles), no mannequin" % [shown.size(), tris],
-			shown.size() >= 4 and tris > 2000 and tris < MAX_TRIANGLES and not mannequin)
+			shown.size() >= 4 and tris > 2000 and tris < (BOSS_TRIANGLES if e.data.boss else MAX_TRIANGLES) and not mannequin)
 	var anims: Array[StringName] = [&"Idle", &"Walk", &"Jog_Fwd", &"Sword_Idle", &"Hit_Chest", &"ual2/Hit_Knockback", &"Death01"]
 	for a in e.data.attacks:
 		anims.append(a.anim)
@@ -82,7 +85,8 @@ func _one(id: String, scene: Node, player: Player, home: Vector3) -> void:
 	_check("carries its weapon%s (in hand or stowed)" % (" and shield" if e.data.offhand_scene else ""),
 			right == wanted)
 	var shape := (e.get_node("CollisionShape3D") as CollisionShape3D).shape as CapsuleShape3D
-	_check("same collision capsule as before", is_equal_approx(shape.radius, 0.42) and is_equal_approx(shape.height, 2.0))
+	var capsule := Vector2(0.55, 2.7) if e.data.boss else Vector2(0.42, 2.0)
+	_check("same collision capsule as before", is_equal_approx(shape.radius, capsule.x) and is_equal_approx(shape.height, capsule.y))
 	_check("stands on the floor (feet %.3f m)" % (_lowest(e, sk, shown)), absf(_lowest(e, sk, shown)) < 0.05)
 	var top := _highest(e, sk, shown)
 	_check("a man's height (%.2f m)" % top, top > 1.75 and top < 1.98 * e.data.scale)
@@ -132,7 +136,7 @@ func _one(id: String, scene: Node, player: Player, home: Vector3) -> void:
 	_check("dies, stops blocking the way", e.state == Enemy.State.DEAD and e.collision_layer == 0 and model.current_anim() == CharacterModel.ANIM_DEATH)
 	await _frames(150)
 	_check("lies on the ground (lowest %.3f m, top %.2f m)" % [_lowest(e, sk, shown), _highest(e, sk, shown)],
-			_lowest(e, sk, shown) > -0.2 and _highest(e, sk, shown) < 0.9)
+			_lowest(e, sk, shown) > -0.2 and _highest(e, sk, shown) < 0.9 * maxf(1.0, e.data.scale / 1.1))
 	_check("loot as before (%d coins, %d drops)" % [player.inventory.coins - coins, Loot.drop_count() - drops],
 			player.inventory.coins > coins or Loot.drop_count() > drops)
 	e.global_position = Vector3(90, 0, 90 + failures)
@@ -165,6 +169,38 @@ func _looks(scene: Node) -> void:
 		seen[mesh] = true
 	_check("marauders wear both looks (%d seen)" % seen.size(), seen.size() == 2)
 	_check("the same name always gets the same look", steady)
+
+
+## Harl's second phase shows on his own skin: the marks and the stone's light, once he has
+## finished kneeling to it, and gone again if the fight resets.
+func _stone(scene: Node, player: Player) -> void:
+	print("--- Harl and the stone")
+	var e := (load("res://game/enemies/harl.tscn") as PackedScene).instantiate() as Enemy
+	e.position = Vector3(70, 0, 70)
+	scene.get_node("Enemies").add_child(e)
+	await _frames(10)
+	var model: CharacterModel = e.model
+	var body := model.find_child("BodyMesh", true, false) as MeshInstance3D
+	var pick := model.find_child("PickMesh", true, false) as MeshInstance3D
+	_check("carries his own pick", pick != null)
+	_check("starts with the marks only on his arm", body.material_override == null)
+	# someone to fight, or he gives up and starts the fight over
+	player.global_position = e.global_position + Vector3(0, 0, 6)
+	player.health = player.max_health()
+	e.target = player
+	e._start_phase2()
+	await _frames(15)
+	_check("no change while he is still kneeling to the stone", body.material_override == null)
+	await _frames(ceili((e.data.call_time + 0.5) * Engine.physics_ticks_per_second))
+	var skin := body.material_override as StandardMaterial3D
+	_check("then the stone shows on him, his own painted skin", skin != null and skin.emission_enabled
+			and skin.albedo_texture != null)
+	_check("...and on the pick", pick != null and pick.material_override != null)
+	e._reset()
+	await _frames(10)
+	_check("gone again when the fight starts over", body.material_override == null and (pick == null or pick.material_override == null))
+	e.free()
+	await _frames(5)
 
 
 ## Heights of the posed model above the enemy's origin, skinned on the CPU.

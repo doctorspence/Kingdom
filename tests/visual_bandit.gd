@@ -2,10 +2,11 @@ extends Node
 ## Pictures of the bandits in their inspection room (not a pass/fail check). Windowed:
 ##   Godot_console --path . --resolution 1600x900 --script res://tests/run.gd -- visual_bandit [out dir] [shots...]
 ## Shots: "lineup", "lineup_back", or <bandit>:<shot> with bandit = rough brute rogue marksman
-## marauder marauder_b captain rook hobb and shot = front three_quarter side back face third_person
+## marauder marauder_b captain rook hobb harl and shot = front three_quarter side back face third_person
 ##        idle walk run combat_idle attack attack2 hit death
+## Add "+stone" to a shot for Harl after the stone answers him (harl:face+stone).
 
-const KEYS := ["rough", "brute", "rogue", "marksman", "marauder", "marauder_b", "captain", "rook", "hobb"]
+const KEYS := ["rough", "brute", "rogue", "marksman", "marauder", "marauder_b", "captain", "rook", "hobb", "harl"]
 const PRESETS := {"front": 2, "three_quarter": 3, "side": 4, "back": 5, "face": 6, "third_person": 7}
 ## shot: [animation, time (s), camera orbit (degrees)]; "attack" / "attack2" use the enemy's own attacks
 const POSED := {
@@ -65,12 +66,14 @@ func _take(shot: String) -> void:
 		await _frames(24)
 		return
 	var key := shot.get_slice(":", 0)
-	var what := shot.get_slice(":", 1)
+	var what := shot.get_slice(":", 1).get_slice("+", 0)
 	var index := KEYS.find(key)
 	room.call(&"view", 2)
 	room.call(&"choose", index)
 	room.set(&"_hold", 1e9)
 	var actor: Node3D = room.get(&"actor")
+	if actor.has_method(&"show_stone"):
+		actor.call(&"show_stone", shot.ends_with("+stone"))
 	var anim := &"Idle"
 	var at := 0.5
 	if PRESETS.has(what):

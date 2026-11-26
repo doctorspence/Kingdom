@@ -4,6 +4,7 @@ extends Node3D
 ## Keys: 1 all the bandits   2 front   3 three-quarter   4 side   5 back   6 face
 ##       7 behind-the-player view   V next bandit
 ##       Space / Right: next animation   Left: previous   A / D: turn the camera   H: hide text
+##       P: Harl before / after the stone answers him
 
 ## Every bandit, each as the game wears him: [key, name, character scene, enemy data (gear, attacks)]
 const VARIANTS := [
@@ -16,6 +17,7 @@ const VARIANTS := [
 	["captain", "Captain", "res://assets/characters/bandit/bandit_captain.tscn", "res://data/enemies/enemy_bandit_captain.tres"],
 	["rook", "Rook", "res://assets/characters/bandit/bandit_rook.tscn", "res://data/enemies/enemy_bandit_rook.tres"],
 	["hobb", "Hobb", "res://assets/characters/bandit/bandit_hobb.tscn", "res://data/enemies/enemy_hobb.tres"],
+	["harl", "Harl", "res://assets/characters/bandit/bandit_harl.tscn", "res://data/enemies/enemy_harl.tres"],
 ]
 ## Space between bandits in the line-up (meters).
 const SPACING := 1.22
@@ -114,7 +116,7 @@ func view(n: int) -> void:
 	match n:
 		1:
 			_focus = Vector3(0, 1.02, 0)
-			_distance = 10.4
+			_distance = 11.4
 			_height = 0.9
 		6:
 			_focus = Vector3(0, 1.58, 0)
@@ -144,7 +146,7 @@ func _show_anim() -> void:
 
 func _update_text() -> void:
 	if _info and not _anims.is_empty():
-		_info.text = "%s: %s\n1-7 views   V next bandit   Space / arrows animation   A D turn   H text" % [VARIANTS[variant][1].to_upper(), _anims[_anim_index][0]]
+		_info.text = "%s: %s\n1-7 views   V next bandit   Space / arrows animation   A D turn   H text   P Harl phase 2" % [VARIANTS[variant][1].to_upper(), _anims[_anim_index][0]]
 
 
 func _lights() -> void:
@@ -173,8 +175,8 @@ func _lights() -> void:
 
 func _floor() -> void:
 	var mesh := CylinderMesh.new()
-	mesh.top_radius = 9.0
-	mesh.bottom_radius = 9.0
+	mesh.top_radius = 10.0
+	mesh.bottom_radius = 10.0
 	mesh.height = 0.2
 	mesh.radial_segments = 48
 	var mat := StandardMaterial3D.new()
@@ -216,6 +218,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		step = 1
 	elif k.physical_keycode == KEY_LEFT:
 		step = -1
+	elif k.physical_keycode == KEY_P:
+		for b: Node3D in lineup + [actor]:
+			if b.has_method(&"show_stone"):
+				b.call(&"show_stone", not b.call(&"is_stone_shown"))
 	elif k.physical_keycode == KEY_H:
 		_info.visible = not _info.visible
 	if step != 0:

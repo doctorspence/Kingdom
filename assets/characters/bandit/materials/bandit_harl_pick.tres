@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/characters/bandit/textures/bandit_harl_pick.png" id="1_jylim"]
+[ext_resource type="Texture2D" path="res://assets/characters/bandit/textures/bandit_harl_pick_glow.png" id="2_dupgn"]
+
+[resource]
+resource_name = "bandit_harl_pick"
+cull_mode = 2
+albedo_texture = ExtResource("1_jylim")
+metallic = 0.14
+metallic_specular = 0.2
+roughness = 0.74
+emission_enabled = true
+emission_texture = ExtResource("2_dupgn")
+texture_filter = 5
