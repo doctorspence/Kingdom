@@ -91,6 +91,7 @@ walk_speed = 1.5
 run_speed = 3.8
 sight_range = 24.0
 caller = true
+call_family = &"white_knights"
 block_chance = 0.5
 martyr_fury = true
 leash_range = 40.0

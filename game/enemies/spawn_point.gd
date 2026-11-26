@@ -26,6 +26,9 @@ extends Marker3D
 @export_enum("auto", "watch") var post := "auto"
 ## Watchers lean on a rail or palisade in front of them.
 @export var watch_rail := false
+## Its enemies stand on a tower, wall top or ledge and never move from it (they turn, shoot
+## and fight from there). Turn off snap_to_terrain too, so they keep the point's height.
+@export var perch := false
 
 ## Host only: the enemies this point made, still in the world.
 var spawned: Array[Node] = []

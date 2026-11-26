@@ -36,8 +36,10 @@ func _physics_process(delta: float) -> void:
 	var step := direction * speed * delta
 	var from := global_position
 	var q := PhysicsRayQueryParameters3D.create(from, from + step, 1 | 2)
+	var skip := Enemy.see_through(get_tree())
 	if is_instance_valid(shooter):
-		q.exclude = [shooter.get_rid()]
+		skip.append(shooter.get_rid())
+	q.exclude = skip
 	var hit := get_world_3d().direct_space_state.intersect_ray(q)
 	if hit:
 		global_position = hit.position

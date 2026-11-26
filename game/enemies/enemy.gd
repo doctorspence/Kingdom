@@ -140,6 +140,9 @@ var _awareness := {}
 var _quiet := {}
 var _last_noticed := Vector3.ZERO  # where it last saw or heard someone
 
+## On a tower or wall top (SpawnPoint.perch): never moves, only turns, shoots and fights.
+var _perched := false
+
 @onready var model: CharacterModel = $Visual
 
 
@@ -151,6 +154,7 @@ func _ready() -> void:
 	if data.boss:
 		add_to_group(&"bosses")
 	_spawn = global_transform
+	_perched = get_meta(&"perched", false)
 	global_basis = Basis.IDENTITY
 	model.face_instantly(-_spawn.basis.z)
 	model.scale = Vector3.ONE * data.scale
@@ -1576,6 +1580,9 @@ func _die() -> void:
 # --- Helpers ------------------------------------------------------------------
 
 func _move(horizontal_velocity: Vector3, delta: float, instant := false) -> void:
+	if _perched:
+		velocity = Vector3.ZERO
+		return
 	var h := Vector3(velocity.x, 0, velocity.z)
 	horizontal_velocity *= effects.move_mult()
 	if not instant:
@@ -1628,7 +1635,18 @@ func _can_see(p: Node3D) -> bool:
 	var from := global_position + Vector3.UP * 1.6
 	var to := p.global_position + Vector3.UP * 1.3
 	var q := PhysicsRayQueryParameters3D.create(from, to, 1)
+	q.exclude = see_through(get_tree())
 	return get_world_3d().direct_space_state.intersect_ray(q).is_empty()
+
+
+## Invisible zone edges in the "see_through" group: they stop walking, not sight or arrows
+## (so the archers on Highcrown's walls, beyond the Tithelands' north edge, can shoot over it).
+static func see_through(tree: SceneTree) -> Array[RID]:
+	var rids: Array[RID] = []
+	for n in tree.get_nodes_in_group(&"see_through"):
+		if n is CollisionObject3D:
+			rids.append((n as CollisionObject3D).get_rid())
+	return rids
 
 
 func _weapon_tip() -> Node3D:
