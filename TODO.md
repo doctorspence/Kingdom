@@ -275,6 +275,7 @@ Legend: `[x]` done · `[ ]` to do · 🧪 = something for **you** to test
 - [ ] 🧪 Walk straight at a bandit's face crouched: he should turn ("?") and then charge ("!") before you reach him; standing, he should notice you almost as fast as before
 - [ ] 🧪 Back off after a "?" and wait: he should shrug and go back to his post or patrol
 - [ ] 🧪 The eye above the health bar: closed while unseen, half open when someone is suspicious, red when fought; also on a friend's machine (a guess from enemy states)
+- [x] Co-op stealth (`tests/net_stealth_check.gd`, part of `run_net_check.ps1`): a friend sprinting 1-2x hearing range is heard by the host's enemy, a crouched one at 4 m is not, the friend sees SUSPICIOUS and the eye "suspicious" / "fighting", a friend's sneak attack does the sneak multiplier on the host (2026-11-25)
 - [ ] 🧪 Hits from behind (not crouched, mid-fight) feel a bit stronger (x1.5); say if it is too much or too little
 - [ ] 🧪 Hit a suspicious enemy with an arrow from the bushes; check the "?" / "!" words are visible and a lookout or hound notices quicker
 - [ ] Stage 5: tune the numbers after the owner's playtest (Gullet entrance yard, a road patrol)

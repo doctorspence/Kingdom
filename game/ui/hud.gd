@@ -231,6 +231,11 @@ func _update_eye() -> void:
 	_eye.set(&"alert", fighting)
 
 
+## What the stealth eye shows ("hidden" while standing), for checks.
+func eye_look() -> String:
+	return String(_eye.call(&"look")) if _eye.visible else "hidden"
+
+
 func _update_prompt() -> void:
 	var text := ""
 	var reviving := player.revive_target()

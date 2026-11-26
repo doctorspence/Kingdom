@@ -7,6 +7,7 @@ extends Control
 const SIZE := Vector2(64, 34)
 const CLOSED := Color(0.62, 0.6, 0.55)
 const GREY := Color(0.78, 0.78, 0.74)
+const GREY_IRIS := Color(0.36, 0.36, 0.34)  # darker than the lids: the iris must read against the pale eye white
 const RED := Color(0.9, 0.14, 0.1)
 const OUTLINE := Color(0.03, 0.03, 0.03, 0.9)
 
@@ -22,6 +23,13 @@ func _init() -> void:
 	custom_minimum_size = SIZE
 	size = SIZE
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+## What the eye shows right now, for checks: "closed", "suspicious" or "fighting".
+func look() -> String:
+	if alert:
+		return "fighting"
+	return "suspicious" if openness > 0.15 else "closed"
 
 
 func _process(delta: float) -> void:
@@ -63,7 +71,7 @@ func _draw() -> void:
 			var p := Vector2(cos(a) * r, sin(a) * r)
 			p.y = clampf(p.y, -shown_h * 0.92, shown_h * 0.92)
 			iris.append(c + p)
-		draw_colored_polygon(iris, color)
+		draw_colored_polygon(iris, RED if alert else GREY_IRIS)
 		draw_circle(c, r * 0.4, Color(0.02, 0.02, 0.02))
 		draw_circle(c + Vector2(-r * 0.3, -r * 0.3), r * 0.15, Color(1, 1, 1, 0.85))
 	else:
