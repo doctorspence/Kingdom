@@ -88,7 +88,16 @@ func _run() -> void:
 
 	# --- Running heavy, rolling heavy, backstep attack -------------------------------------------------
 	await _go_to(Vector3(0, 0.05, 0))
+	# Sprint flag but standing still: no sprinting attack (it needs real momentum).
 	player.is_sprinting = true
+	player.velocity = Vector3.ZERO
+	player._start_heavy_attack(Vector3(0, 0, -1))
+	_check("sprint held but not moving: no sprinting heavy", player._attack.attack != w.move(&"running_heavy"))
+	await _seconds(1.6)
+	await _go_to(Vector3(0, 0.05, 0))
+	player.stamina = player.max_stamina()
+	player.is_sprinting = true
+	player.velocity = Vector3(0, 0, -player.tuning.sprint_speed)
 	player._start_heavy_attack(Vector3(0, 0, -1))
 	_check("heavy while sprinting is a running heavy", player._attack.attack == w.move(&"running_heavy"))
 	await _seconds(1.3)

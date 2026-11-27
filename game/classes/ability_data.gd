@@ -23,7 +23,7 @@ enum Kind {
 ## Character level needed to use it.
 @export var unlock_level := 1
 @export var cooldown := 10.0
-## Class resource cost (Resolve, Oil). Tally finishers spend notches instead.
+## Class resource cost (Resolve, Oil: shown as "Mana"). Tally finishers spend notches instead.
 @export var cost := 0.0
 ## Placeholder icon color until real icons exist.
 @export var icon_color := Color(0.6, 0.6, 0.6)

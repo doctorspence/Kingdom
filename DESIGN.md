@@ -107,16 +107,20 @@ Dark Souls pace: every swing commits you, every hit hurts, and stamina is the cl
 
 ### 5.1 Stamina
 - Powers attacks, rolls, blocks, jumps and sprinting. Max 100 at level 1, +1 per level *(start)*.
-- Regenerates 35/s after a 0.6 s pause (half speed while blocking) *(start)*.
-- Costs *(start)*: light attack 10–22 (by weapon weight), heavy attack 20–40, roll 18, jump 12, sprint 10/s, block = depends on the hit and your shield.
-- If stamina hits 0 while you block, your **guard breaks** (1.2 s stagger).
+- Regenerates 35/s after a pause *(start)*: 0.6 s after most actions, 0.9 s after a roll, 0.8 s after a sprinting attack, 1.0 s after a blow on your guard, 0.7 s after lowering your guard. **Nothing comes back while your guard is up.**
+- Costs *(start)*: light attack 10–22 (by weapon weight), heavy attack 20–40, **roll 20** (5 rolls empty a full bar), jump 12, sprint 9/s, sprinting light attack 1.3× the weapon's first light attack, sprinting heavy 1.25× its heavy.
+- **Guard is never free** *(combat pass 2026-11-27)*: holding it drains **5% of max stamina per second**, and each blow that lands on it costs **12.5% of max** on top (8 blows empty the bar). Heavy blows (hit-stop 0.09 s or more) cost 1.5×, guarding with only a weapon 1.25×, and a shield's stability scales it (the round wooden shield is the 1.0× reference; kite and steel shields cost about 30% less, the iron buckler 33% more). Class and talent bonuses ("blocking costs 20% less") still apply. A deflect costs nothing and still gives stamina back. One attack is never charged twice.
+- A roll needs its **full cost**; a refused roll costs nothing. A sprinting attack also needs its full cost up front.
+- If a blow empties your stamina while you block, your **guard breaks** (1.2 s stagger). If the hold drain empties it, the guard just drops.
+- **Exhausted** at 0: no rolls, no guard, no sprinting attacks, and the stamina bar **blinks with a pulsing green glow** until stamina is back to **15%**. A refused roll, guard or sprinting attack flashes a green outline round the bar.
+- Every number is in `game/player/player_tuning.gd` (groups "Stamina", "Stamina: regen pauses", "Stamina: blocking", "Stamina: exhaustion", "Sprinting attacks").
 
 ### 5.2 Movement
 - **Weighty** *(movement redesign 2026-11-23)*: getting up to speed takes ~0.35 s, stopping ~0.3 s, and turning takes time; no instant 180s.
 - **Two kinds of movement (hybrid):**
   - **Exploring**: camera-relative. Push a direction and you turn and go that way.
   - **Combat stance** (locked on, or guard raised): your body faces the foe (or where the camera looks, if guarding with no target) and you move relative to it. You sidestep and backpedal, and backing off is slower (0.7× of forward speed). **Moving sideways is a slow, careful side-step** *(owner, 2026-11-23, "like Gloria Victis")*: you keep your fighting stance and the feet step out and close in (lead foot out, trail foot in, never crossing), at 1.3 m/s (owner: "a tiny bit faster" than 1.1). Moving with guard up steps the feet the same way.
-- Speeds *(start)*: walk 1.5 m/s (a real person walks ~1.4; owner chose realistic 2026-11-23), run 5.8 m/s, sprint 8.0 m/s, locked on 5.0 m/s forward (3.5 back, 1.3 side-step), guarding 2.6 m/s forward. All in `data/balance/player_tuning.tres`.
+- Speeds *(start)*: walk 1.5 m/s (a real person walks ~1.4; owner chose realistic 2026-11-23), run 5.8 m/s, sprint 8.0 m/s, locked on 5.0 m/s forward (3.5 back, 1.3 side-step). **Guard up** *(combat pass 2026-11-27, shares of the 1.5 m/s walk)*: 0.98 m/s forward (65%), 0.68 back (45%), 0.53 strafing (35%, the slowest), in the guard pose with the feet stepping. All in `game/player/player_tuning.gd` (the data file `data/balance/player_tuning.tres` uses its defaults).
 - **Jump**: ~1.1 m high, short i-frames at take-off (~0.12 s).
 - **Dodge roll** with i-frames. Speed depends on **equip load** (gear weight ÷ capacity; capacity = 60 + 0.5 × Strength *(start)*):
 
@@ -151,7 +155,7 @@ Every weapon also has these, made from its light and heavy attacks unless its da
 |---|---|
 | Jump light / jump heavy | Attack while in the air. Both swing **downward**: light is a straight overhead chop (sword up overhead, cocked back, then down past your right side; built by `overhead_chop.gd`, which bends the sword arm over a plain airborne pose, because no library animation chops straight down), heavy a two-handed overhead slam that lands in a crouch (`cut/Jump_Slam`, cut from the heavy combo in `character_model.gd`) |
 | Plunging attack | Attack while falling from 2.5 m or more above the ground: you dive with the blade held overhead and slam it down as you land, a wide heavy blow (no fall damage) |
-| Running light / running heavy | Attack while sprinting |
+| Sprinting light / sprinting heavy | Attack while really sprinting (at least 6.5 m/s; see 5.1 for costs). Light is a quick dash strike (`Sword_Dash`) you run through; heavy a committed leaping overhead slam (`cut/Jump_Slam`), slower to land, longer recovery, more damage and balance damage. Neither chains or cancels early, and another can't start for 0.5 s. Placeholder animations: see `ART_NEEDS.md` |
 | Rolling light / rolling heavy | Attack right after a roll |
 | Backstep attack | Light attack right after a backstep (a roll with no direction held) |
 | Guard counter | Attack while your guard is raised |
@@ -159,7 +163,7 @@ Every weapon also has these, made from its light and heavy attacks unless its da
 The weapon data holds these as optional `jump_light`, `jump_heavy`, `plunge`, `guard_counter`, `running_heavy`, `rolling_heavy` and `backstep_attack`.
 
 ### 5.4 Guard, deflect, riposte *(rhythm pass 2026-11-22, Sekiro / Nioh 2-style timing)*
-- **Guard** (hold): covers a 120° arc in front of you. Shields stop nearly all physical damage; weapons stop ~60%. Each blocked hit drains stamina based on the shield's stability and **shoves you back** a little.
+- **Guard** (hold): covers a 120° arc in front of you. Shields stop nearly all physical damage; weapons stop ~60%. Holding it drains stamina, and each blocked hit costs more (5.1), scaled by the shield's stability; a blocked hit **shoves you back** a little.
 - **Deflect** (the old parry): the first ~0.18 s after you raise your guard (~0.25 s with light shields, 0.15 s with only a weapon) *(start)*. A deflect stops the whole blow, **gives you 8 stamina back**, and knocks the attacker's **balance** (5.5).
   - **Every blow needs its own press.** A calm press for each blow of a combo deflects them all, in rhythm. Mashing doesn't work: every press within 0.45 s of the last halves the window (0.18 → 0.09 → 0.045 s). A clean deflect resets that, so the next calm press gets the full window again.
   - Deflect the **last blow** of an enemy's attack and it **recoils** for ~0.55 s: your opening to strike.
@@ -244,7 +248,7 @@ Meters drain on their own if you stop taking that kind of hit. Enemies suffer th
 ## 6. Classes
 Three fixed classes at launch. **Names and kits are my suggestions; rename freely.** Each class has a hotbar of 6 abilities on cooldowns, unlocked at levels 1, 3, 6, 10, 15 and 20, plus one class resource. Costs and cooldowns are *(start)*.
 
-> **Built (2026-11-21): the three primary classes.** The classes are now **Martial** (was Headsman), **Vanguard** (was Bulwark) and **Mystic** (was Lamplighter). The names are for now and may change. The internal IDs (`class_headsman`, `class_bulwark`, `class_lamplighter`) stay so saves keep working. Each class has **three abilities, unlocked automatically at levels 2, 4 and 6**, with cooldowns only (Mystic spells also cost Oil). You keep them for good. Subclasses (chosen at level 10, re-pickable in future) are **not built yet** (see `CLASS_PLAN.md`); they will add more abilities on top.
+> **Built (2026-11-21): the three primary classes.** The classes are now **Martial** (was Headsman), **Vanguard** (was Bulwark) and **Mystic** (was Lamplighter). The names are for now and may change. The internal IDs (`class_headsman`, `class_bulwark`, `class_lamplighter`) stay so saves keep working. Each class has **three abilities, unlocked automatically at levels 2, 4 and 6**, with cooldowns only (Mystic spells also cost Oil, shown in game as **Mana** since 2026-11-27). You keep them for good. Subclasses (chosen at level 10, re-pickable in future) are **not built yet** (see `CLASS_PLAN.md`); they will add more abilities on top.
 >
 > | Class | Level 2 | Level 4 | Level 6 |
 > |---|---|---|---|
@@ -272,7 +276,7 @@ Three fixed classes at launch. **Names and kits are my suggestions; rename freel
 
 ### 6.2 Lamplighter: the healer
 *Keeper of the old shrine-flames. Carries a lantern-staff full of oil that burns with something that isn't quite fire.* Starts with a staff and a padded robe. Wants Intellect and Vitality.
-**Resource: Oil (0–100).** Trickles back on its own and faster when you land melee hits, so healers stay in the fight. Refills at shrines.
+**Resource: Oil (0–100), shown to players as "Mana" with a blue bar (2026-11-27; the code still calls it OIL).** Trickles back on its own and faster when you land melee hits, so healers stay in the fight. Refills at shrines.
 
 | Lvl | Ability | What it does | Cooldown | Cost |
 |---|---|---|---|---|
@@ -315,7 +319,7 @@ Three fixed classes at launch. **Names and kits are my suggestions; rename freel
 |---|---|---|
 | Strength | +damage with swords, axes, maces and greatswords; +shield stability; +carry capacity | Bulwark, Headsman |
 | Agility | +damage with swords, spears and bows; +crit chance; +stamina regen | Headsman |
-| Intellect | +healing and ability power; +Oil regen | Lamplighter |
+| Intellect | +healing and ability power; +Mana (Oil) regen | Lamplighter |
 | Vitality | +max health (renamed from "Stamina") | Everyone |
 | Armor | −physical damage taken | Bulwark most |
 

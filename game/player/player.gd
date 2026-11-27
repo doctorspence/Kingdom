@@ -25,6 +25,10 @@ extends CharacterBody3D
 
 signal health_changed(current: float, maximum: float)
 signal stamina_changed(current: float, maximum: float)
+## Stamina ran out (true) or came back past PlayerTuning.exhaustion_recover (false). The HUD blinks the bar.
+signal exhausted_changed(exhausted: bool)
+## A roll, guard or sprinting attack was refused for lack of stamina (the HUD nudges the bar).
+signal stamina_refused
 ## Timing cues for the HUD: &"window" (tap guard now for Steady), &"steady" (it worked), &"evaded" (perfect dodge).
 signal tempo_cue(kind: StringName)
 signal flasks_changed(current: int, maximum: int)
@@ -94,6 +98,18 @@ var last_fall_height := 0.0
 var _state_time := 0.0
 var _iframe_timer := 0.0
 var _regen_cooldown := 0.0
+## Stamina hit 0 and hasn't come back to exhaustion_recover yet: no rolls, guard or sprinting attacks.
+var exhausted := false
+## The current attack is a sprinting light / heavy attack; its run speed fading into the strike.
+var _sprint_attack := false
+var _sprint_carry := 0.0
+var _sprint_carry_left := 0.0
+var _sprint_carry_time := 0.0
+var _sprint_attack_cd := 0.0
+## The last blow charged to the guard (one attack is only ever charged once).
+var _last_block_attacker: Object
+var _last_block_attack: Object
+var _last_block_at := -99.0
 var _sprint_locked := false
 var _off_floor_time := 0.0
 var _fall_peak_y := 0.0
@@ -553,8 +569,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 			return HitInfo.Result.PARRIED
 		var held := _shield_in_hand()
 		var reduction := shield.block_reduction if held else weapon.block_reduction
-		var stamina_cost := damage * (shield.stamina_per_damage if held else 1.0) * stats.mod_mult("block_stamina_mult")
-		_spend_stamina(stamina_cost)
+		_spend_stamina(_block_hit_cost(hit, held), tuning.block_hit_regen_delay)
 		CombatFx.sparks(chest + model.forward() * 0.4, to_attacker)
 		_share_fx(1, chest + model.forward() * 0.4, to_attacker)
 		freeze(hit.hit_stop)
@@ -598,6 +613,26 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 		_stagger(tuning.flinch_time)
 		CombatFx.word(chest + Vector3.UP * 0.5, "Interrupted")
 	return HitInfo.Result.HIT
+
+
+## Stamina a blow costs when it lands on your guard: a flat share of max stamina
+## (PlayerTuning "Stamina: blocking"), more for heavy blows and a bare-weapon guard,
+## less for a sturdy shield. The same attack is never charged twice.
+func _block_hit_cost(hit: HitInfo, shield_held: bool) -> float:
+	if hit.attacker != null and hit.attacker == _last_block_attacker and hit.attack == _last_block_attack \
+			and _clock - _last_block_at < 0.1:
+		return 0.0
+	_last_block_attacker = hit.attacker
+	_last_block_attack = hit.attack
+	_last_block_at = _clock
+	var cost := max_stamina() * tuning.block_hit_stamina
+	if hit.hit_stop >= tuning.block_heavy_hit_stop:
+		cost *= tuning.block_heavy_hit_mult
+	if shield_held:
+		cost *= shield.stamina_per_damage / maxf(tuning.block_shield_reference, 0.01)
+	else:
+		cost *= tuning.block_weapon_hit_mult
+	return cost * stats.mod_mult("block_stamina_mult")
 
 
 ## A light (combo or rolling) attack that hasn't reached its blow yet.
@@ -760,7 +795,7 @@ func _net_cleanse() -> void:
 
 
 func restore_stamina(amount: float) -> void:
-	stamina = minf(max_stamina(), stamina + amount)
+	stamina = clampf(stamina + amount, 0.0, max_stamina())
 	stamina_changed.emit(stamina, max_stamina())
 
 
@@ -1460,6 +1495,10 @@ func _set_state(new_state: State) -> void:
 	elif _recrouch:
 		is_crouching = not _attack_landed and _can_crouch()
 		_recrouch = false
+	# A sprinting attack ending any way at all (finished, rolled out of, knocked out of)
+	# starts its cooldown and stamina pause.
+	if _sprint_attack and state == State.ATTACK:
+		_end_sprint_attack()
 	state = new_state
 	_state_time = 0.0
 
@@ -1549,7 +1588,11 @@ func _state_move(delta: float) -> void:
 	# Blocking
 	var wants_block := Input.is_action_pressed("block") and not Net.in_menu  # LB / right-click work the menus
 	if wants_block and not is_blocking:
-		_begin_guard()
+		# No guard on an empty (exhausted) stamina bar; it comes back as stamina refills.
+		if not exhausted and stamina > 0.0:
+			_begin_guard()
+		elif Input.is_action_just_pressed("block"):
+			stamina_refused.emit()
 	elif not wants_block and is_blocking:
 		_stop_blocking()
 
@@ -1568,7 +1611,7 @@ func _state_move(delta: float) -> void:
 	if is_sprinting:
 		speed = tuning.sprint_speed
 	elif is_blocking:
-		speed = tuning.block_move_speed
+		speed = tuning.block_speed_reference  # shared out by direction in _block_speed()
 	elif is_crouching:
 		speed = tuning.crouch_speed * (tuning.crouch_gentle_mult if amount < tuning.walk_stick_threshold else 1.0)
 	elif is_walking:
@@ -1592,7 +1635,7 @@ func _state_move(delta: float) -> void:
 		else:
 			model.turn_smooth(camera_rig.flat_basis() * Vector3.FORWARD, tuning.turn_sharpness, 180.0, delta)
 		if amount > 0.0:
-			target_velocity = dir.normalized() * _stance_speed(dir, speed)
+			target_velocity = dir.normalized() * (_block_speed(dir, speed) if is_blocking else _stance_speed(dir, speed))
 	else:
 		if amount > 0.0:
 			target_velocity = dir.normalized() * speed
@@ -1641,6 +1684,16 @@ func _stance_speed(dir: Vector3, speed: float) -> float:
 	return lerpf(side, straight, pow(absf(ahead), 4.0))
 
 
+## Guard up: slow and deliberate. Forward is block_forward_mult of `reference`, backing
+## off block_back_mult, and strafing block_side_mult, the slowest. Diagonals lean
+## toward the strafe, like the combat-stance side-step.
+func _block_speed(dir: Vector3, reference: float) -> float:
+	var ahead := dir.normalized().dot(model.forward())
+	var straight := reference * (tuning.block_forward_mult if ahead >= 0.0 else tuning.block_back_mult)
+	var side := reference * tuning.block_side_mult
+	return lerpf(side, straight, pow(absf(ahead), 4.0))
+
+
 ## Move the current velocity toward the wanted one. While walking or running,
 ## keep your speed through turns instead of slowing to a stop.
 func _steer(horizontal: Vector3, target_velocity: Vector3, speed: float, keep_speed: bool, delta: float) -> Vector3:
@@ -1660,6 +1713,8 @@ func _steer(horizontal: Vector3, target_velocity: Vector3, speed: float, keep_sp
 
 
 func _stop_blocking() -> void:
+	if is_blocking:
+		_regen_cooldown = maxf(_regen_cooldown, tuning.block_release_regen_delay)
 	is_blocking = false
 
 
@@ -1680,8 +1735,8 @@ func _start_light_attack(dir: Vector3) -> void:
 		_start_attack(weapon.move(&"guard_counter"), dir)
 	elif _since_roll <= tuning.rolling_attack_window and _roll_backward and weapon.move(&"backstep_attack"):
 		_start_attack(weapon.move(&"backstep_attack"), dir)
-	elif is_sprinting and weapon.running_attack:
-		_start_attack(weapon.running_attack, dir)
+	elif _has_sprint_momentum() and weapon.running_attack:
+		_try_sprint_attack(weapon.running_attack, dir, false)
 	elif _since_roll <= tuning.rolling_attack_window and weapon.rolling_attack:
 		_start_attack(weapon.rolling_attack, dir)
 	else:
@@ -1692,8 +1747,9 @@ func _start_light_attack(dir: Vector3) -> void:
 ## Heavy attack on the ground: running, rolling and guard variants, or the charged heavy.
 func _start_heavy_attack(dir: Vector3) -> void:
 	var variant: AttackData
-	if is_sprinting:
-		variant = weapon.move(&"running_heavy")
+	if _has_sprint_momentum() and weapon.move(&"running_heavy"):
+		_try_sprint_attack(weapon.move(&"running_heavy"), dir, true)
+		return
 	elif _since_roll <= tuning.rolling_attack_window:
 		variant = weapon.move(&"rolling_heavy")
 	elif is_blocking:
@@ -1705,6 +1761,38 @@ func _start_heavy_attack(dir: Vector3) -> void:
 	_start_attack(weapon.heavy, dir)
 	_charging = true
 	_charge = 0.0
+
+
+## Really sprinting: sprint held and already moving at sprint_attack_min_speed, and the
+## last sprinting attack's cooldown is over.
+func _has_sprint_momentum() -> bool:
+	var ground := Vector3(velocity.x, 0.0, velocity.z).length()
+	return is_sprinting and is_on_floor() and ground >= tuning.sprint_attack_min_speed and _sprint_attack_cd <= 0.0
+
+
+## Sprinting light (`heavy` false) or heavy attack: costs a share of the weapon's basic
+## light / heavy stamina (PlayerTuning "Sprinting attacks") and needs all of it up front.
+## Refused for lack of stamina, nothing happens (you keep running).
+func _try_sprint_attack(a: AttackData, dir: Vector3, heavy: bool) -> void:
+	var base: AttackData = weapon.heavy if heavy else (weapon.light_combo[0] if not weapon.light_combo.is_empty() else a)
+	var cost := (base.stamina_cost if base else a.stamina_cost) \
+			* (tuning.sprint_heavy_stamina_mult if heavy else tuning.sprint_light_stamina_mult)
+	if not _can_afford(cost * effects.product("stamina_cost")):
+		return
+	var entry_speed := Vector3(velocity.x, 0.0, velocity.z).length()
+	# Strike the way you're running (a locked target or soft target still turns you, as usual).
+	_start_attack(a, dir if dir.length() > 0.1 else model.forward(), true, cost)
+	_sprint_attack = true
+	_sprint_carry = entry_speed
+	_sprint_carry_time = tuning.sprint_heavy_carry_time if heavy else tuning.sprint_light_carry_time
+	_sprint_carry_left = _sprint_carry_time
+
+
+func _end_sprint_attack() -> void:
+	_sprint_attack = false
+	_sprint_carry = 0.0
+	_sprint_attack_cd = tuning.sprint_attack_cooldown
+	_regen_cooldown = maxf(_regen_cooldown, tuning.sprint_attack_regen_delay)
 
 
 ## Attack while airborne: a jump attack, or a plunge when you're high above the ground.
@@ -1735,12 +1823,16 @@ func _height_above_ground() -> float:
 	return global_position.y - hit.position.y if hit else 60.0
 
 
-func _start_attack(a: AttackData, dir: Vector3, aim := true) -> void:
+## `cost` overrides the attack's own stamina cost (sprinting attacks set it).
+func _start_attack(a: AttackData, dir: Vector3, aim := true, cost := -1.0) -> void:
+	# Chaining straight from a sprinting attack into another swing ends it properly first.
+	if _sprint_attack:
+		_end_sprint_attack()
 	_attack_target = null
 	_reach_used = 0.0
 	if aim:
 		_aim_attack(dir)
-	_tempo_spent = a.stamina_cost * effects.product("stamina_cost")
+	_tempo_spent = (a.stamina_cost if cost < 0.0 else cost) * effects.product("stamina_cost")
 	_tempo_used = false
 	_tempo_open_at = -99.0
 	_spend_stamina(_tempo_spent)
@@ -1826,6 +1918,11 @@ func _state_attack(delta: float) -> void:
 		if assist > lunge:
 			_reach_used += (assist - lunge) * delta
 			lunge = assist
+	# Sprinting attacks: the run carries into the strike and fades out (eased), not a dead stop.
+	if _sprint_attack and not _air_attack and _sprint_carry_left > 0.0:
+		var k := clampf(_sprint_carry_left / maxf(_sprint_carry_time, 0.01), 0.0, 1.0)
+		lunge = maxf(lunge, _sprint_carry * k * k)
+		_sprint_carry_left -= delta
 	if lunge > 0.0 and _something_close_in_front(1.1):
 		lunge = 0.0
 	if _air_attack:
@@ -1861,7 +1958,9 @@ func _state_attack(delta: float) -> void:
 		_combo_index = (weapon.light_combo.find(a) + 1) % weapon.light_combo.size()
 		_start_attack(weapon.light_combo[_combo_index], _input_direction())
 		return
-	if _attack.past(a.chain_time) and _has_buffered(&"heavy") and not _is_riposte and not _air_attack and stamina > 0.0:
+	# (Sprinting attacks don't chain: they always play out their recovery.)
+	if _attack.past(a.chain_time) and _has_buffered(&"heavy") and not _is_riposte and not _air_attack \
+			and not _sprint_attack and stamina > 0.0:
 		_consume(&"heavy")
 		_start_attack(weapon.heavy, _input_direction())
 		_charging = true
@@ -2176,8 +2275,9 @@ func _state_stunned(delta: float, duration: float) -> void:
 
 # --- Roll ---------------------------------------------------------------------
 
+## A roll needs its full stamina cost (and no exhaustion); a refused roll costs nothing.
 func _can_roll() -> bool:
-	return stamina > 0.0 and load_tier() != PlayerTuning.LoadTier.OVERLOADED
+	return load_tier() != PlayerTuning.LoadTier.OVERLOADED and _can_afford(tuning.roll_stamina)
 
 
 func _start_roll(dir: Vector3) -> void:
@@ -2193,7 +2293,7 @@ func _start_roll(dir: Vector3) -> void:
 	else:
 		_roll_dir = dir.normalized()
 		model.face_instantly(_roll_dir)
-	_spend_stamina(tuning.roll_stamina)
+	_spend_stamina(tuning.roll_stamina, tuning.roll_regen_delay)
 	is_sprinting = false
 	_set_state(State.ROLL)
 	if _roll_backward:
@@ -2534,22 +2634,58 @@ func _state_dead(delta: float) -> void:
 
 # --- Stamina ------------------------------------------------------------------
 
-func _spend_stamina(amount: float) -> void:
-	stamina = maxf(0.0, stamina - amount)
-	_regen_cooldown = tuning.stamina_regen_delay
+## Every stamina cost goes through here. `regen_delay` is how long before it starts
+## coming back (default: the general stamina_regen_delay); a longer pause already
+## running is kept.
+func _spend_stamina(amount: float, regen_delay := -1.0) -> void:
+	stamina = clampf(stamina - amount, 0.0, max_stamina())
+	_regen_cooldown = maxf(_regen_cooldown, tuning.stamina_regen_delay if regen_delay < 0.0 else regen_delay)
 	stamina_changed.emit(stamina, max_stamina())
+	_check_exhaustion()
+
+
+## Stamina ran dry: exhausted until it climbs back to exhaustion_recover.
+func _check_exhaustion() -> void:
+	var now := exhausted
+	if stamina <= 0.0:
+		now = true
+	elif stamina >= max_stamina() * tuning.exhaustion_recover:
+		now = false
+	if now != exhausted:
+		exhausted = now
+		exhausted_changed.emit(exhausted)
+
+
+## Enough stamina for something that costs `cost` (and not exhausted)? If not, tell the HUD.
+func _can_afford(cost: float) -> bool:
+	if not exhausted and stamina >= cost - 0.001:
+		return true
+	stamina_refused.emit()
+	return false
 
 
 func _update_stamina(delta: float) -> void:
-	if state == State.DEAD or state == State.ATTACK:
+	# Rests, respawns, level-ups and refunds refill stamina directly; this catches them all.
+	_check_exhaustion()
+	if state == State.DEAD:
+		return
+	_sprint_attack_cd = maxf(0.0, _sprint_attack_cd - delta)
+	# Holding guard is never free: it drains steadily, and nothing comes back while it's up.
+	if is_blocking and not effects.any("block_all"):
+		_spend_stamina(max_stamina() * tuning.block_drain_per_second * delta, tuning.block_release_regen_delay)
+		if stamina <= 0.0:
+			_stop_blocking()
+			CombatFx.word(global_position + Vector3.UP * 2.0, "Exhausted")
+	if state == State.ATTACK:
 		return
 	if _regen_cooldown > 0.0:
 		_regen_cooldown -= delta
-	elif stamina < max_stamina():
+	elif stamina < max_stamina() and not (is_blocking and tuning.block_regen_mult <= 0.0):
 		var rate := tuning.stamina_regen * (tuning.block_regen_mult if is_blocking else 1.0) \
 				* effects.stamina_regen_mult() * stats.mod_mult("stamina_regen_mult") * (1.0 + inventory.stat_total("stamina_regen"))
 		stamina = minf(max_stamina(), stamina + rate * delta)
 		stamina_changed.emit(stamina, max_stamina())
+		_check_exhaustion()
 	if _sprint_locked and stamina >= tuning.sprint_restart_stamina:
 		_sprint_locked = false
 

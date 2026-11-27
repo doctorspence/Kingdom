@@ -1,7 +1,7 @@
 class_name AbilityCaster
 extends Node
 ## Runs a player's class abilities: cooldowns, the class resource (Resolve,
-## Oil, Tally) and what each ability actually does. All numbers come from the
+## Oil (shown to players as "Mana"), Tally) and what each ability actually does. All numbers come from the
 ## AbilityData files; talents adjust them through modifiers.
 ##
 ## Abilities run on the caster's own machine. Heals, buffs, taunts and damage

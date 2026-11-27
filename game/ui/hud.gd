@@ -92,6 +92,10 @@ func _ready() -> void:
 		player = get_tree().get_first_node_in_group(&"local_player") as Player
 	player.health_changed.connect(_health_bar.set_values)
 	player.stamina_changed.connect(_stamina_bar.set_values)
+	# Out of stamina: the bar blinks with a pulsing green glow until it recovers (Player.exhausted).
+	player.exhausted_changed.connect(_stamina_bar.set_exhausted)
+	player.stamina_refused.connect(func() -> void: _stamina_bar.flash(Color(0.55, 1.0, 0.45, 0.9), 0.35))
+	_stamina_bar.set_exhausted(player.exhausted)
 	player.tempo_cue.connect(_on_tempo_cue)
 	player.flasks_changed.connect(_on_flasks_changed)
 	player.died.connect(_on_died)

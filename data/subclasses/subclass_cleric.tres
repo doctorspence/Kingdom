@@ -64,7 +64,7 @@ weapon_specialties = "Staves, maces, ritual lanterns"
 progression_direction = "From remedies to miracles: wider cleanses, heals that must be aimed and predicted, and sanctuaries where friends can catch their breath."
 abilities = Array[ExtResource("2_ability")]([SubResource("A_snuff"), SubResource("A_beacon"), SubResource("A_pyre")])
 passive_name = "Patient Hands"
-passive_description = "Mend heals 15% more, and Oil comes back 25% faster."
+passive_description = "Mend heals 15% more, and Mana comes back 25% faster."
 passive_mods = {
 "mend_heal_mult": 1.15,
 "oil_regen_mult": 1.25

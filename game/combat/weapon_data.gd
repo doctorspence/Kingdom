@@ -84,8 +84,18 @@ func move(kind: StringName) -> AttackData:
 		&"guard_counter":
 			made = _make(heavy, 1.4, 1.8, 0.8, 0.3)
 		&"running_heavy":
-			made = _make(heavy, 1.35, 1.4, 1.1, 0.3)
-			if made:
+			# Sprinting heavy: a committed leaping overhead slam that lands in a crouch
+			# (no dedicated sprint-attack animation exists yet; see ART_NEEDS.md). The
+			# player's sprint carries into the leap (Player._try_sprint_attack); its
+			# stamina cost is set there too. Bows and staffs keep their shot.
+			made = _make(heavy, 1.35, 1.6, 1.0, 0.3)
+			if made and made.projectile_speed <= 0.0:
+				_downward(made, &"cut/Jump_Slam", 0.34, 0.5, 0.95, 1.15, 1.0)
+				made.display_name = "Sprinting heavy"
+				made.chain_time = 1.15  # no chaining out of it: the recovery always plays
+				made.lunge_distance = 1.6
+				made.hit_stop = maxf(made.hit_stop, 0.12)
+			elif made:
 				made.lunge_distance += 1.2
 		&"rolling_heavy":
 			made = _make(heavy, 1.25, 1.3, 1.1, 0.2)

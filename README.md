@@ -33,7 +33,7 @@ I run these before handing you a build. You can too (PowerShell, in this folder)
 ```
 & "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/run.gd -- combat_check
 ```
-(Swap `combat_check` for `movement_check`, `class_check`, `loot_check`, `death_check`, `enemy_check`, `zone_check`, `boss_check` (the Gullet and the boss) `moves_check` (extra attacks, lock-on flick, enemy spacing), `audio_check` (volume groups and sliders), `sound_check` (combat sounds), `subclass_check` (subclasses), `prefs_check` (settings and key rebinding), `camp_check` (the camp and raids) or `outpost_check` (the outpost assets load; a player can walk into its buildings) to run the others.) Each ends with PASS or FAIL.
+(Swap `combat_check` for `movement_check`, `class_check`, `loot_check`, `death_check`, `enemy_check`, `zone_check`, `boss_check` (the Gullet and the boss) `moves_check` (extra attacks, lock-on flick, enemy spacing), `audio_check` (volume groups and sliders), `sound_check` (combat sounds), `subclass_check` (subclasses), `prefs_check` (settings and key rebinding), `camp_check` (the camp and raids), `outpost_check` (the outpost assets load; a player can walk into its buildings) or `stamina_check` (stamina costs, guard drain and blocked-hit costs, rolls, exhaustion, guarded movement, sprinting attacks) to run the others.) Each ends with PASS or FAIL.
 
 The 3-player network check starts three copies of the game and prints what each one saw:
 ```

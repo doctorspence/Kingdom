@@ -74,7 +74,9 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var coyote_time := 0.12
 
 @export_group("Dodge roll")
-@export var roll_stamina := 18.0
+## Stamina per roll. You need at least this much to roll (5 rolls empty a full 100 bar).
+## A roll you can't afford doesn't start and costs nothing.
+@export var roll_stamina := 20.0
 ## Light, medium, heavy load: how long a roll lasts (seconds).
 @export var roll_duration := PackedFloat32Array([0.45, 0.52, 0.68])
 ## Light, medium, heavy load: how far a roll goes (meters).
@@ -95,6 +97,51 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 ## After running dry while sprinting, you must recover this much before sprinting again.
 @export var sprint_restart_stamina := 20.0
 
+@export_group("Stamina: regen pauses (seconds)")
+## After a dodge roll ...
+@export var roll_regen_delay := 0.9
+## ... after a sprinting attack (counted from when it ends: no stamina comes back mid-swing) ...
+@export var sprint_attack_regen_delay := 0.8
+## ... after a blow lands on your guard ...
+@export var block_hit_regen_delay := 1.0
+## ... and after you lower your guard. Nothing comes back while the guard is up.
+@export var block_release_regen_delay := 0.7
+
+@export_group("Stamina: blocking")
+## Holding guard drains this share of max stamina per second, even with nothing hitting it.
+@export_range(0.0, 0.5) var block_drain_per_second := 0.05
+## Each blow that lands on your guard costs this share of max stamina (0.125 = 8 blows empty
+## the bar). A deflect costs nothing (it gives stamina back instead).
+@export_range(0.0, 1.0) var block_hit_stamina := 0.125
+## Heavy blows on your guard cost this many times more. "Heavy" = the blow freezes the action
+## for at least `block_heavy_hit_stop` seconds, as heavy and crushing attacks do.
+@export var block_heavy_hit_mult := 1.5
+@export var block_heavy_hit_stop := 0.09
+## Guarding with only a weapon (no shield) costs this many times more per blow.
+@export var block_weapon_hit_mult := 1.25
+## Shield stability: a shield whose "stamina per damage" is this costs exactly block_hit_stamina
+## (the round wooden shield, 0.6); sturdier shields (lower number) cost proportionally less.
+@export var block_shield_reference := 0.6
+
+@export_group("Stamina: exhaustion")
+## Stamina hit 0: you can't roll, raise your guard or use sprinting attacks, and the stamina
+## bar blinks with a green glow, until it has come back to this share of max stamina.
+@export_range(0.0, 1.0) var exhaustion_recover := 0.15
+
+@export_group("Sprinting attacks")
+## You must be sprinting at least this fast (m/s) for light / heavy to become a sprinting attack.
+@export var sprint_attack_min_speed := 6.5
+## Stamina: the weapon's first light attack × this, and its heavy attack × this.
+## You need the full cost to start one; otherwise nothing happens.
+@export var sprint_light_stamina_mult := 1.3
+@export var sprint_heavy_stamina_mult := 1.25
+## Your sprint carries into the strike, fading to nothing over this long (seconds).
+## The light strike runs on through; the heavy one plants its feet for the blow.
+@export var sprint_light_carry_time := 0.4
+@export var sprint_heavy_carry_time := 0.28
+## After a sprinting attack ends, another can't start for this long (seconds).
+@export var sprint_attack_cooldown := 0.5
+
 @export_group("Fall damage")
 ## Falls shorter than this do no damage (meters).
 @export var safe_fall_height := 5.0
@@ -113,9 +160,16 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export var stagger_time := 0.45
 ## Stunned after your stamina runs out while blocking (seconds).
 @export var guard_break_time := 1.2
-@export var block_move_speed := 2.6
-## Stamina refills at this fraction of normal speed while blocking.
-@export_range(0.0, 1.0) var block_regen_mult := 0.5
+## Guard up: movement speeds as a share of block_speed_reference (m/s): the normal
+## exploring walking speed (walk_speed, 1.5). Strafing is the slowest. The feet step
+## procedurally (StanceSteps) in the guard pose; above about 2 m/s they can't keep
+## up without sliding, so raise this with care.
+@export var block_speed_reference := 1.5
+@export_range(0.1, 1.0) var block_forward_mult := 0.65
+@export_range(0.1, 1.0) var block_back_mult := 0.45
+@export_range(0.1, 1.0) var block_side_mult := 0.35
+## Stamina refills at this fraction of normal speed while blocking (0 = not at all).
+@export_range(0.0, 1.0) var block_regen_mult := 0.0
 ## Blocks work against blows from this wide in front of you (degrees).
 @export var block_arc := 120.0
 ## A light attack this soon after a roll becomes a rolling attack (seconds).

@@ -61,7 +61,7 @@ value = 0.2
 script = ExtResource("3_talent")
 id = &"talent_deep_reservoir"
 display_name = "Deep Reservoir"
-description = "+25 maximum Oil."
+description = "+25 maximum Mana."
 mods = {
 "oil_max_add": 25.0
 }
@@ -167,7 +167,7 @@ mods = {
 script = ExtResource("3_talent")
 id = &"talent_sustaining_flame"
 display_name = "Sustaining Flame"
-description = "Oil comes back 50% faster."
+description = "Mana comes back 50% faster."
 row = 3
 mods = {
 "oil_regen_mult": 1.5
@@ -182,8 +182,8 @@ description = "A quiet practitioner of the old arts, rare and mistrusted. Looses
 weapon = ExtResource("5_weapon")
 starting_items = Array[ExtResource("9_item")]([ExtResource("50_start"), ExtResource("51_start"), ExtResource("52_start")])
 resource_kind = 1
-resource_label = "Oil"
-resource_color = Color(0.95, 0.65, 0.25, 1)
+resource_label = "Mana"
+resource_color = Color(0.22, 0.46, 0.95, 1)
 strength = 7.0
 strength_per_level = 0.4
 agility = 8.0
@@ -193,7 +193,7 @@ intellect_per_level = 1.4
 vitality_per_level = 0.9
 armor_per_level = 0.8
 passive_name = "Keeper of the Flame"
-passive_description = "Revives take half as long. Spell power and healing grow with Intellect. Oil trickles back, faster when you land melee hits."
+passive_description = "Revives take half as long. Spell power and healing grow with Intellect. Mana trickles back, faster when you land melee hits."
 passive_mods = {
 "revive_time_mult": 0.5
 }

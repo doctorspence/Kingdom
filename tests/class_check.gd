@@ -112,12 +112,12 @@ func _run() -> void:
 
 	# --- Mystic ----------------------------------------------------------------------
 	await _setup("class_lamplighter", 20)
-	_check("Mystic starts full of Oil (%d)" % player.caster.resource, player.caster.resource >= 99.0)
+	_check("Mystic starts full of Mana (%d)" % player.caster.resource, player.caster.resource >= 99.0)
 	enemy.global_position = Vector3(0, 0, -8.0)
 	ehp = enemy.health
 	player.caster.try_use(0)  # Arcane Bolt
 	await _seconds(1.2)
-	_check("Arcane Bolt damages the enemy (%d -> %d) and costs Oil (%d)" % [ehp, enemy.health, player.caster.resource],
+	_check("Arcane Bolt damages the enemy (%d -> %d) and costs Mana (%d)" % [ehp, enemy.health, player.caster.resource],
 			enemy.health < ehp and player.caster.resource < 95.0)
 	await _setup("class_lamplighter", 20)
 	player.health = 30.0
@@ -131,7 +131,7 @@ func _run() -> void:
 			enemy.effects.has_mod(&"hex") and enemy.effects.product("damage_dealt") < 0.8 and enemy.effects.damage_taken_mult() > 1.15)
 	await _setup("class_lamplighter", 20)
 	player.caster.resource = 0.0
-	_check("Mystic abilities need Oil", not player.caster.try_use(1))
+	_check("Mystic abilities need Mana", not player.caster.try_use(1))
 
 	# --- Talents and threat ----------------------------------------------------------
 	await _setup("class_lamplighter", 9)

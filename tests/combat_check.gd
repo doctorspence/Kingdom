@@ -158,15 +158,18 @@ func _run() -> void:
 	await _setup_duel()
 	await _force_attack(SWEEP)
 	await _wait_until_hit_in(0.08)
+	player.stamina = 60.0  # room for the deflect's stamina to show (it can't go over max)
 	st = player.stamina
 	Input.action_press("block")
 	await _seconds(0.3)
 	Input.action_release("block")
+	# Holding guard drains a little (5% a second) even while deflecting; the deflect itself pays back.
+	st += player.tuning.deflect_stamina_gain - player.max_stamina() * player.tuning.block_drain_per_second * 0.35
 	_check_true("timed block deflects: no damage, it recoils (enemy state: %s)" % Enemy.State.keys()[enemy.state],
 			enemy.state == Enemy.State.STAGGER and player.health == player.max_health())
 	_check_true("...and its balance takes the blow (%.0f / %.0f)" % [enemy._poise, enemy.max_poise],
 			enemy._poise <= enemy.max_poise - enemy.data.parry_poise_damage + 0.5)
-	_check_true("...and a deflect gives stamina back instead of costing it (%.0f -> %.0f)" % [st, player.stamina], player.stamina >= st)
+	_check_true("...and a deflect gives stamina back instead of costing it (want at least %.1f, have %.1f)" % [st, player.stamina], player.stamina >= st)
 	# Balance refills gradually after a pause, not all at once.
 	var low_bal := enemy._poise
 	await _seconds(enemy.data.poise_regen_delay + 0.5)
