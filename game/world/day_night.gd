@@ -27,11 +27,24 @@ const NIGHT_MOON_ENERGY := 0.42  # under half the day sun (zone_check: night is 
 const NIGHT_AMBIENT := 1.55
 ## Eyes adjusted to the dark: lifts shapes near you and the pools of lantern and firelight.
 const NIGHT_EXPOSURE := 1.6
-const NIGHT_FOG_COLOR := Color(0.032, 0.046, 0.075)
-const NIGHT_FOG_DENSITY := 0.018
-const NIGHT_VOL_DENSITY := 0.012
-const NIGHT_SKY_TOP := Color(0.012, 0.019, 0.038)
-const NIGHT_SKY_HORIZON := Color(0.042, 0.058, 0.095)
+## The night look (owner approved the swamp test scene, 2026-11-28): a low moon behind
+## the trees, blue-teal fog that the moonlight shines through, rays fanning out from
+## the moon (moon_rays.gd), and the near distance fading into dark teal, not black.
+const NIGHT_FOG_COLOR := Color(0.03, 0.05, 0.068)
+const NIGHT_FOG_DENSITY := 0.016
+const NIGHT_VOL_DENSITY := 0.018
+const NIGHT_VOL_ALBEDO := Color(0.16, 0.22, 0.27)
+## Fog glows toward the moon (forward scatter), so it lights up behind silhouettes.
+const NIGHT_ANISOTROPY := 0.45
+## How strongly the moon lights the fog (shafts between the trees).
+const NIGHT_MOON_FOG := 0.9
+const NIGHT_MOON_COLOR := Color(0.55, 0.68, 0.92)
+const NIGHT_AMBIENT_COLOR := Color(0.38, 0.5, 0.6)
+## The moon stays low (degrees above the horizon) so it backlights trees instead of lighting from above.
+const MOON_LOW := 16.0
+const MOON_HIGH := 32.0
+const NIGHT_SKY_TOP := Color(0.012, 0.022, 0.04)
+const NIGHT_SKY_HORIZON := Color(0.05, 0.08, 0.105)
 ## Underground: next to no light of its own. Lanterns, torches, fires and the holes in
 ## the roof (gullet.gd) are what you see by.
 const CAVE_AMBIENT := 0.2
@@ -67,6 +80,7 @@ var _stars: MeshInstance3D
 var _star_mat: ShaderMaterial
 var _glow: Material
 var _rain_mat: StandardMaterial3D
+var _rays: MeshInstance3D
 ## How soaked the ground is: rises quickly in rain, dries slowly after.
 var wet_ground := 0.0
 ## 0 in the open .. 1 deep in the woods (eased as the camera moves).
@@ -101,11 +115,18 @@ func _ready() -> void:
 			"fog_height_density": _env.fog_height_density,
 			"vol_albedo": _env.volumetric_fog_albedo,
 			"vol_density": _env.volumetric_fog_density,
+			"vol_anisotropy": _env.volumetric_fog_anisotropy,
 			"sky_top": _sky.sky_top_color if _sky else Color.BLACK,
 			"sky_horizon": _sky.sky_horizon_color if _sky else Color.BLACK,
 			"sun_energy": sun.light_energy if sun else 1.0,
 			"sun_color": sun.light_color if sun else Color.WHITE,
+			"sun_fog": sun.light_volumetric_fog_energy if sun else 1.0,
 		}
+	if sun:
+		_rays = preload("res://game/world/moon_rays.gd").new()
+		_rays.name = "MoonRays"
+		_rays.set(&"moon", sun)
+		add_child(_rays)
 	_build_rain()
 	_build_stars()
 	_weather_timer = _rng.randf_range(weather_minutes.x, weather_minutes.y) * 60.0
@@ -234,20 +255,26 @@ func _apply() -> void:
 	if sun:
 		# The sun crosses the sky during the day; at night a dim blue moon stands in.
 		var arc := clampf(time / ds, 0.0, 1.0) if time < ds else (time - ds) / (1.0 - ds)
-		sun.rotation_degrees = Vector3(-lerpf(15.0, 165.0, arc), 35.0, 0.0)
+		if time < ds:
+			sun.rotation_degrees = Vector3(-lerpf(15.0, 165.0, arc), 35.0, 0.0)
+		else:
+			# The moon swings low across the southern sky, never far above the trees.
+			sun.rotation_degrees = Vector3(-lerpf(MOON_LOW, MOON_HIGH, sin(arc * PI)), lerpf(120.0, 230.0, arc), 0.0)
 		sun.light_energy = lerpf(_day.get("sun_energy", 0.9), NIGHT_MOON_ENERGY, night) * lerpf(1.0, 0.6, wet)
-		sun.light_color = (_day.get("sun_color", Color.WHITE) as Color).lerp(Color(1.0, 0.6, 0.32), gold * 0.45).lerp(Color(0.5, 0.6, 0.9), night)
+		sun.light_color = (_day.get("sun_color", Color.WHITE) as Color).lerp(Color(1.0, 0.6, 0.32), gold * 0.45).lerp(NIGHT_MOON_COLOR, night)
+		sun.light_volumetric_fog_energy = lerpf(_day.get("sun_fog", 1.0), NIGHT_MOON_FOG, night) * (1.0 - 0.7 * wet)
 		sun.shadow_enabled = night < 0.95
 	if _env:
 		_env.ambient_light_energy = lerpf(_day.ambient, NIGHT_AMBIENT, night) * lerpf(1.0, 0.85, wet)
 		_env.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED if cave > 0.5 else Environment.REFLECTION_SOURCE_SKY
 		# At night the light comes from a cold moonlit color, not the black sky.
-		_env.ambient_light_color = Color(0.4, 0.48, 0.66)
+		_env.ambient_light_color = Color(0.4, 0.48, 0.66).lerp(NIGHT_AMBIENT_COLOR, night)
 		_env.ambient_light_sky_contribution = lerpf(1.0, 0.0, night)
 		_env.fog_light_color = (_day.fog_color as Color).lerp(Color(0.55, 0.42, 0.38), gold * 0.18).lerp(NIGHT_FOG_COLOR, night).darkened(0.12 * wet)
 		_env.fog_light_energy = lerpf(_day.fog_energy, 0.8, night)
 		_env.fog_density = lerpf(_day.fog_density, NIGHT_FOG_DENSITY, night) * lerpf(1.0, 1.35, wet)
-		_env.volumetric_fog_albedo = (_day.vol_albedo as Color).lerp(Color(0.2, 0.23, 0.3), night)
+		_env.volumetric_fog_albedo = (_day.vol_albedo as Color).lerp(NIGHT_VOL_ALBEDO, night)
+		_env.volumetric_fog_anisotropy = lerpf(_day.vol_anisotropy, NIGHT_ANISOTROPY, night)
 		_env.volumetric_fog_density = lerpf(_day.vol_density, NIGHT_VOL_DENSITY, night) * lerpf(1.0, 1.4, wet)
 		# Low ground fog thickens downward, so it fades out underground or it would bury the Gullet.
 		_env.fog_height_density = float(_day.fog_height_density) * (1.0 - cave)
@@ -310,6 +337,8 @@ func _apply() -> void:
 		_star_mat.set_shader_parameter("amount", vis)
 		if sun:
 			_star_mat.set_shader_parameter("moon_dir", sun.global_transform.basis.z)
+	if _rays:
+		_rays.set(&"strength", smoothstep(0.5, 1.0, night) * (1.0 - cave) * (1.0 - wet))
 	if _rain:
 		_rain_mat.albedo_color = RAIN_DAY.lerp(RAIN_NIGHT, night)
 		_rain.amount_ratio = wet * (1.0 - cave)
@@ -340,8 +369,8 @@ void fragment() {
 	star *= 0.6 + 1.6 * hash(g + 7.0);
 	float horizon = smoothstep(0.04, 0.4, d.y);
 	float md = dot(d, normalize(moon_dir));
-	float moon = smoothstep(0.9990, 0.9995, md) + 0.25 * smoothstep(0.985, 0.9995, md);
-	vec3 col = vec3(0.75, 0.82, 1.0) * star * horizon + vec3(0.85, 0.9, 1.0) * moon * 1.4;
+	float moon = smoothstep(0.99955, 0.9997, md) + pow(max(md, 0.0), 90.0) * 0.12 + pow(max(md, 0.0), 10.0) * 0.025;
+	vec3 col = vec3(0.75, 0.82, 1.0) * star * horizon + vec3(0.85, 0.9, 1.0) * moon * 0.9;
 	ALBEDO = col * amount;
 	ALPHA = 1.0;
 }

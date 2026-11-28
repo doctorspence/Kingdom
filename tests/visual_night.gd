@@ -33,6 +33,10 @@ func _run() -> void:
 		["time_dawn_dell", ds * 0.05, false, 140, 40, -120, 6],
 		["time_night_woods", ds + 0.1, false, 94, 92, 180, 6],
 		["time_rain_woods", 0.3, true, 94, 92, 180, 6],
+		# Facing the moon (yaw "moon"): its rays through the trees.
+		["time_night_moon", ds + 0.1, false, -70, 110, "moon", 6],
+		["time_night_woods_moon", ds + 0.1, false, 94, 92, "moon", 6],
+		["time_night_hamlet_moon", ds + 0.1, false, -49, 77, "moon", 4],
 	]
 	for a in OS.get_cmdline_user_args().slice(1):
 		shots = shots.filter(func(s): return s[0] in OS.get_cmdline_user_args())
@@ -43,9 +47,13 @@ func _run() -> void:
 		player.global_position = Vector3(x, terrain.height_at(x, z) + 0.2, z)
 		player.velocity = Vector3.ZERO
 		player.reset_physics_interpolation()
-		player.camera_rig.yaw = deg_to_rad(shot[5])
-		player.camera_rig.pitch = deg_to_rad(shot[6])
 		dn.set_time(shot[1])
+		if shot[5] is String:
+			var d: Vector3 = dn.sun.global_transform.basis.z
+			player.camera_rig.yaw = atan2(-d.x, -d.z)
+		else:
+			player.camera_rig.yaw = deg_to_rad(shot[5])
+		player.camera_rig.pitch = deg_to_rad(shot[6])
 		dn.set_rain(shot[2])
 		dn.rain_amount = 1.0 if shot[2] else 0.0
 		dn.wet_ground = 1.0 if shot[2] else 0.0

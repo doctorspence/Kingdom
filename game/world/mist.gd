@@ -21,6 +21,8 @@ const DRIFT_SECONDS := 80.0
 const SWELL_SECONDS := 45.0
 ## How much thicker and thinner a bank gets (share of its density).
 const SWELL := 0.35
+## At night the banks turn a dark blue-teal, so the moonlit fog reads as mist in the dark, not milk.
+const NIGHT_ALBEDO := Color(0.3, 0.4, 0.48)
 
 @export var terrain: SculptedTerrain
 
@@ -59,6 +61,7 @@ func _build() -> void:
 			"lift": h * 0.15,
 			"reach": minf(r * DRIFT, DRIFT_MAX),
 			"density": float(s[4]),
+			"albedo": fm.albedo,
 			# Banks start at different points and move at slightly different speeds.
 			"drift_phase": fposmod(i * 2.399, TAU),
 			"swell_phase": fposmod(i * 4.113, TAU),
@@ -91,3 +94,4 @@ func _move_banks() -> void:
 		var volume: FogVolume = bank.volume
 		volume.position = Vector3(at.x, terrain.height_at(at.x, at.y) + bank.lift, at.y) - global_position
 		(bank.material as FogMaterial).density = bank.density * thickness * (1.0 + SWELL * sin(swell))
+		(bank.material as FogMaterial).albedo = (bank.albedo as Color).lerp(NIGHT_ALBEDO, night)
