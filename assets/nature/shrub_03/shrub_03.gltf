@@ -144,12 +144,12 @@
     {
       "mimeType": "image/jpeg",
       "name": "shrub_03_nor_gl",
-      "uri": "textures/shrub_03_nor_gl_1k.jpg"
+      "uri": "textures/shrub_03_nor_gl_1k_painted.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "shrub_03_diff",
-      "uri": "textures/shrub_03_diff_1k.jpg"
+      "uri": "textures/shrub_03_diff_1k_painted.jpg"
     },
     {
       "mimeType": "image/jpeg",

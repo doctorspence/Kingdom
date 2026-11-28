@@ -690,7 +690,7 @@ static func _leaf_mat(kind: String) -> StandardMaterial3D:
 ## Colors from the brief: forest green #465A40, oak green #64734D, moss #89916A,
 ## deep woodland #354536, with selective saturation (beech and birch a touch fresher).
 static func _leaf_tex(kind: String) -> ImageTexture:
-	return ImageTexture.create_from_image(BakeCache.image("leaf_" + kind, [SELF], func() -> Image: return _leaf_img(kind)))
+	return ImageTexture.create_from_image(BakeCache.image("leaf_" + kind, [SELF, "res://game/world/painterly.gd"], func() -> Image: return _leaf_img(kind)))
 
 
 static func _leaf_img(kind: String) -> Image:
@@ -739,6 +739,7 @@ static func _leaf_img(kind: String) -> Image:
 				_pinnate(img, Vector2(cx, cy), rot, rng.randf_range(45, 70), col, rng, 5.0, 1.1, true)
 			_:
 				_leaf(img, Vector2(cx, cy), rot, rng.randf_range(length.x, length.y), col, kind)
+	preload("res://game/world/painterly.gd").card(img)  # hand-painted finish (DESIGN.md 12.1)
 	img.generate_mipmaps()
 	return img
 

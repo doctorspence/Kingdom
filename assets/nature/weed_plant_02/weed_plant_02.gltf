@@ -169,12 +169,12 @@
     {
       "mimeType": "image/jpeg",
       "name": "weed_plant_02_nor_gl",
-      "uri": "textures/weed_plant_02_nor_gl_1k.jpg"
+      "uri": "textures/weed_plant_02_nor_gl_1k_painted.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "weed_plant_02_diff-weed_plant_02_alpha",
-      "uri": "textures/weed_plant_02_diff_1k.jpg"
+      "uri": "textures/weed_plant_02_diff_1k_painted.jpg"
     },
     {
       "mimeType": "image/jpeg",

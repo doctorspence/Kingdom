@@ -70,12 +70,12 @@
     {
       "mimeType": "image/jpeg",
       "name": "dead_tree_trunk_nor_gl",
-      "uri": "textures/dead_tree_trunk_nor_gl_1k.jpg"
+      "uri": "textures/dead_tree_trunk_nor_gl_1k_painted.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "dead_tree_trunk_diff",
-      "uri": "textures/dead_tree_trunk_diff_1k.jpg"
+      "uri": "textures/dead_tree_trunk_diff_1k_painted.jpg"
     },
     {
       "mimeType": "image/jpeg",

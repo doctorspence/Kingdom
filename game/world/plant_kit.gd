@@ -200,7 +200,7 @@ static func _material(name: String) -> StandardMaterial3D:
 
 
 static func _texture(name: String) -> ImageTexture:
-	return ImageTexture.create_from_image(BakeCache.image("plant_" + name, ["res://game/world/plant_kit.gd"], func() -> Image: return _image(name)))
+	return ImageTexture.create_from_image(BakeCache.image("plant_" + name, ["res://game/world/plant_kit.gd", "res://game/world/painterly.gd"], func() -> Image: return _image(name)))
 
 
 static func _image(name: String) -> Image:
@@ -273,6 +273,7 @@ static func _image(name: String) -> Image:
 			for i in 60:
 				var c := Vector2(128, 128) + Vector2.from_angle(rng.randf() * TAU) * pow(rng.randf(), 0.7) * 108.0
 				_ivy_leaf(img, c, rng.randf() * TAU, rng.randf_range(10, 15), Color(0.08, 0.15, 0.08).lerp(Color(0.18, 0.27, 0.12), rng.randf()))
+	preload("res://game/world/painterly.gd").card(img)  # hand-painted finish (DESIGN.md 12.1)
 	img.generate_mipmaps()
 	return img
 

@@ -25,6 +25,10 @@ const GRAIN_KEEP := 0.3
 const NORMAL_KEEP := 0.4
 ## Painted light comes from the upper left, as in classic hand-painted textures.
 const LIGHT := Vector3(-0.45, 0.55, 0.7)
+const NATURE := "res://assets/nature/"
+const SCAN_SIZE := 512
+## Scanned models whose colour maps are fine grain (moss, lichen) get the blotch treatment.
+const SCAN_BRUSH := {"rock_moss_set_01": 3, "rock_moss_set_02": 3, "rock_face_01": 2, "rock_face_02": 2}
 ## Painted materials are matte.
 const ROUGHNESS := 0.88
 
@@ -40,15 +44,71 @@ func _initialize() -> void:
 		var t0 := Time.get_ticks_msec()
 		_paint(name, seed)
 		print("painted %s (%d ms)" % [name, Time.get_ticks_msec() - t0])
+	# The scanned plants, rocks, stumps and dead wood (assets/nature/<id>/): painted copies
+	# of their colour and normal maps next to the scans, and the model file pointed at them.
+	for id in DirAccess.open(NATURE).get_directories():
+		seed += 1
+		if not only.is_empty() and not id in only:
+			continue
+		var t0 := Time.get_ticks_msec()
+		_paint_scan(id, seed)
+		print("painted %s (%d ms)" % [id, Time.get_ticks_msec() - t0])
 	quit()
 
 
 func _paint(name: String, seed: int) -> void:
 	var col := Image.load_from_file(ProjectSettings.globalize_path(SRC + name + "/color.jpg"))
 	var nrm := Image.load_from_file(ProjectSettings.globalize_path(SRC + name + "/normal.jpg"))
+	var out := _paint_pair(col, nrm, SIZE, BIG_BRUSH.get(name, 0), seed)
+	var rough := Image.create_empty(8, 8, false, Image.FORMAT_RGB8)
+	rough.fill(Color(ROUGHNESS, ROUGHNESS, ROUGHNESS))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DST + name))
+	out[0].save_png(DST + name + "/color.png")
+	out[1].save_png(DST + name + "/normal.png")
+	rough.save_png(DST + name + "/rough.png")
+
+
+func _paint_scan(id: String, seed: int) -> void:
+	var gltf_path := NATURE + id + "/" + id + ".gltf"
+	var text := FileAccess.get_file_as_string(gltf_path)
+	var g: Dictionary = JSON.parse_string(text)
+	var src_c := ""
+	var src_n := ""
+	for im: Dictionary in g.get("images", []):
+		var uri := _scan_source(String(im.get("uri", "")))
+		if "_diff" in uri:
+			src_c = uri
+		elif "_nor" in uri:
+			src_n = uri
+	if src_c == "" or src_n == "":
+		print("  %s: no colour/normal pair, skipped" % id)
+		return
+	var col := Image.load_from_file(ProjectSettings.globalize_path(NATURE + id + "/" + src_c))
+	var nrm := Image.load_from_file(ProjectSettings.globalize_path(NATURE + id + "/" + src_n))
+	# Model atlases pack many small parts, so they keep more pixels than tiling textures.
+	var out := _paint_pair(col, nrm, SCAN_SIZE, SCAN_BRUSH.get(id, 0), seed)
+	# Saved as JPEG like the scans, so only the file names in the model change.
+	var c_uri := src_c.get_basename() + "_painted.jpg"
+	var n_uri := src_n.get_basename() + "_painted.jpg"
+	out[0].save_jpg(NATURE + id + "/" + c_uri, 0.95)
+	out[1].save_jpg(NATURE + id + "/" + n_uri, 0.95)
+	text = text.replace('"%s"' % src_c, '"%s"' % c_uri).replace('"%s"' % src_n, '"%s"' % n_uri)
+	var f := FileAccess.open(gltf_path, FileAccess.WRITE)
+	f.store_string(text)
+	f.close()
+
+
+## The original scan file for a (possibly already painted) image uri.
+func _scan_source(uri: String) -> String:
+	return uri.replace("_painted.jpg", ".jpg")
+
+
+## Paints one colour map with its normal map; returns [colour, normal] at most `size` pixels
+## on the long side. big_brush > 0: fine grain is blurred to blotches before painting.
+func _paint_pair(col: Image, nrm: Image, size: int, big_brush: int, seed: int) -> Array[Image]:
 	col.convert(Image.FORMAT_RGB8)
 	nrm.convert(Image.FORMAT_RGB8)
-	var k := float(SIZE) / maxf(col.get_width(), col.get_height())
+	var k := float(size) / maxf(col.get_width(), col.get_height())
 	var w := maxi(int(col.get_width() * k), 16)
 	var h := maxi(int(col.get_height() * k), 16)
 	col.resize(w, h, Image.INTERPOLATE_LANCZOS)
@@ -56,13 +116,13 @@ func _paint(name: String, seed: int) -> void:
 	var painted: Array[Color]
 	var detail := PackedFloat32Array()
 	detail.resize(w * h)
-	if BIG_BRUSH.has(name):
+	if big_brush > 0:
 		# Fine grain (blades, leaves, grit): blur it away to big soft blotches first, paint
 		# those, then lay a faint trace of the old grain back on top as brush texture.
 		var soft := col.duplicate() as Image
 		soft.resize(maxi(w / 4, 8), maxi(h / 4, 8), Image.INTERPOLATE_LANCZOS)
 		soft.resize(w, h, Image.INTERPOLATE_CUBIC)
-		painted = _kuwahara(soft, BIG_BRUSH[name])
+		painted = _kuwahara(soft, big_brush)
 		nrm.resize(maxi(w / 4, 8), maxi(h / 4, 8), Image.INTERPOLATE_LANCZOS)
 		nrm.resize(w, h, Image.INTERPOLATE_CUBIC)
 		for y in h:
@@ -101,12 +161,7 @@ func _paint(name: String, seed: int) -> void:
 			out_c.set_pixel(x, y, c)
 			var fn := Vector3(0, 0, 1).lerp(n, NORMAL_KEEP).normalized()
 			out_n.set_pixel(x, y, Color(fn.x * 0.5 + 0.5, fn.y * 0.5 + 0.5, fn.z * 0.5 + 0.5))
-	var rough := Image.create_empty(8, 8, false, Image.FORMAT_RGB8)
-	rough.fill(Color(ROUGHNESS, ROUGHNESS, ROUGHNESS))
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DST + name))
-	out_c.save_png(DST + name + "/color.png")
-	out_n.save_png(DST + name + "/normal.png")
-	rough.save_png(DST + name + "/rough.png")
+	return [out_c, out_n]
 
 
 ## Kuwahara filter: every pixel takes the average colour of whichever of its four
