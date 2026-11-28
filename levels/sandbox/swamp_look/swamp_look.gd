@@ -52,6 +52,8 @@ func _ready() -> void:
 	_build_trees()
 	_build_lights()
 	_build_reeds()
+	_build_mist()
+	_build_beams()
 	_commit_shared_meshes()
 	_build_camera()
 
@@ -110,12 +112,12 @@ func _build_environment() -> void:
 	env.fog_light_color = Color(0.13, 0.19, 0.24)
 	env.fog_light_energy = 0.7
 	env.fog_sun_scatter = 0.25
-	env.fog_density = 0.009
-	env.fog_height = 0.8
-	env.fog_height_density = 0.25
+	env.fog_density = 0.013
+	env.fog_height = 1.6
+	env.fog_height_density = 0.45
 	env.fog_sky_affect = 0.2
 	env.volumetric_fog_enabled = true
-	env.volumetric_fog_density = 0.022
+	env.volumetric_fog_density = 0.034
 	env.volumetric_fog_albedo = Color(0.45, 0.56, 0.64)
 	env.volumetric_fog_emission = Color(0.004, 0.007, 0.01)
 	env.volumetric_fog_anisotropy = 0.8
@@ -134,9 +136,9 @@ func _build_environment() -> void:
 	moon = DirectionalLight3D.new()
 	moon.light_color = Color(0.78, 0.86, 1.0)
 	moon.light_energy = 0.75
-	moon.light_volumetric_fog_energy = 1.6
+	moon.light_volumetric_fog_energy = 2.5
 	moon.shadow_enabled = true
-	moon.directional_shadow_max_distance = 70.0
+	moon.directional_shadow_max_distance = 90.0
 	moon.rotation_degrees = Vector3(-17.0, 172.0, 0.0)
 	add_child(moon)
 
@@ -598,8 +600,105 @@ func _unhandled_input(event: InputEvent) -> void:
 			print("Saved ", ProjectSettings.globalize_path(path))
 
 
+# ------------------------------------------------------------------ mist banks and light beams
+
+var _mist: Array[FogVolume] = []
+
+
+## Low banks of thicker, wispy mist lying over the water and the reed beds; they drift slowly.
+func _build_mist() -> void:
+	# Finer fog grid, so the moon's shadow shafts through the trees come out crisp.
+	RenderingServer.environment_set_volumetric_fog_volume_size(160, 128)
+	var noise := FastNoiseLite.new()
+	noise.frequency = 0.06
+	noise.fractal_octaves = 3
+	var tex := NoiseTexture3D.new()
+	tex.width = 64
+	tex.height = 32
+	tex.depth = 64
+	tex.seamless = true
+	tex.noise = noise
+	var mat := FogMaterial.new()
+	mat.density = 0.22
+	mat.albedo = Color(0.62, 0.72, 0.8)
+	mat.height_falloff = 0.5
+	mat.edge_fade = 0.6
+	mat.density_texture = tex
+	var spots := [Vector3(0, 0.4, -4), Vector3(-6, 0.6, -14), Vector3(6, 0.5, -16), Vector3(1, 0.6, -26),
+		Vector3(-12, 0.8, -24), Vector3(12, 0.7, -30), Vector3(4, 0.8, -40), Vector3(-8, 0.9, -42),
+		Vector3(16, 0.8, -8), Vector3(-16, 1.2, -10), Vector3(0, 0.9, -55), Vector3(-20, 1.2, -50)]
+	for p in spots:
+		var fv := FogVolume.new()
+		fv.shape = RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID
+		fv.size = Vector3(_rng.randf_range(14, 22), _rng.randf_range(2.5, 4.0), _rng.randf_range(10, 16))
+		fv.material = mat
+		fv.position = p
+		fv.set_meta("home", p)
+		fv.set_meta("phase", _rng.randf() * TAU)
+		add_child(fv)
+		_mist.append(fv)
+
+
+## Soft shafts of moonlight slanting down through gaps in the canopy (glowing cards, added
+## on top of the real shadow shafts the volumetric fog makes behind trees and moss).
+func _build_beams() -> void:
+	var travel := -moon.global_transform.basis.z
+	var flat := Vector3(travel.x, 0, travel.z).normalized()
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# [start, length, width, strength]
+	var beams := [
+		[Vector3(3.5, 8.5, -5.5), 13.0, 1.4, 1.0], [Vector3(6.5, 8.0, -4.0), 12.0, 1.0, 0.8],
+		[Vector3(9.0, 8.5, -6.5), 13.0, 1.8, 0.9], [Vector3(1.0, 9.0, -8.0), 14.0, 0.8, 0.7],
+		[Vector3(-9.5, 11.0, -3.5), 14.0, 1.6, 0.9], [Vector3(-7.0, 10.0, -6.0), 12.0, 1.0, 0.7],
+		[Vector3(-3.5, 12.0, -20.0), 16.0, 2.2, 0.8], [Vector3(-1.5, 11.5, -18.0), 15.0, 1.2, 0.6],
+		[Vector3(8.0, 11.0, -24.0), 16.0, 2.5, 0.7], [Vector3(12.0, 10.0, -20.0), 14.0, 1.5, 0.6],
+		[Vector3(-14.0, 12.0, -30.0), 18.0, 2.8, 0.6], [Vector3(2.0, 12.0, -36.0), 18.0, 3.0, 0.6],
+	]
+	for b in beams:
+		var tilt := deg_to_rad(_rng.randf_range(38.0, 50.0))
+		var turn := Basis(Vector3.UP, _rng.randf_range(-0.25, 0.25))
+		var dir := (turn * flat * cos(tilt) + Vector3.DOWN * sin(tilt)).normalized()
+		_beam(st, b[0], dir, b[1], b[2], b[3])
+	var shader := Shader.new()
+	shader.code = BEAM_SHADER
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = mat
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.name = "LightBeams"
+	add_child(mi)
+
+
+## One beam: three crossed quads around its axis, widening toward the ground.
+## UV x across the beam, y from start (0) to end (1); vertex colour alpha = strength.
+func _beam(st: SurfaceTool, start: Vector3, dir: Vector3, length: float, width: float, strength: float) -> void:
+	var p1 := dir.cross(Vector3.UP).normalized()
+	var p2 := dir.cross(p1).normalized()
+	var end := start + dir * length
+	for k in 3:
+		var a := PI * k / 3.0
+		var w := (p1 * cos(a) + p2 * sin(a)) * width * 0.5
+		var we := w * 1.7
+		var n := dir.cross(w).normalized()
+		var verts := [[start - w, Vector2(0, 0)], [start + w, Vector2(1, 0)], [end + we, Vector2(1, 1)],
+			[start - w, Vector2(0, 0)], [end + we, Vector2(1, 1)], [end - we, Vector2(0, 1)]]
+		for v in verts:
+			st.set_normal(n)
+			st.set_color(Color(1, 1, 1, strength))
+			st.set_uv(v[1])
+			st.add_vertex(v[0])
+
+
 func _process(delta: float) -> void:
 	_t += delta
+	for i in _mist.size():
+		var fv := _mist[i]
+		var home: Vector3 = fv.get_meta("home")
+		var ph: float = fv.get_meta("phase")
+		fv.position = home + Vector3(sin(_t * 0.05 + ph) * 4.0, 0, cos(_t * 0.04 + ph) * 3.0)
 	for i in lanterns.size():
 		var l := lanterns[i]
 		var base: float = l.get_meta("base")
@@ -619,6 +718,39 @@ func _process(delta: float) -> void:
 
 
 # ------------------------------------------------------------------ shaders
+
+const BEAM_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled, fog_disabled;
+uniform vec3 beam_col : source_color = vec3(0.62, 0.76, 0.92);
+uniform float strength = 0.42;
+uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
+varying float k;
+
+void vertex() {
+	k = COLOR.a;
+}
+
+void fragment() {
+	float u = clamp(UV.x, 0.0, 1.0);
+	float v = clamp(UV.y, 0.0, 1.0);
+	// Soft sides, a gentle fade-in at the top and a long fade-out toward the ground.
+	float s = sin(3.14159 * u);
+	float a = s * s * smoothstep(0.0, 0.2, v) * pow(max(1.0 - v, 0.0), 1.3);
+	// Faint drifting streaks along the beam.
+	a *= 0.7 + 0.3 * sin(u * 23.0 + TIME * 0.15) * sin(u * 9.0 - TIME * 0.1);
+	// Quads seen edge-on fade out, so the crossed cards never show a hard line.
+	a *= smoothstep(0.1, 0.6, abs(dot(normalize(NORMAL), normalize(VIEW))));
+	// Fade where the beam meets the ground or water, and close to the camera.
+	float d = texture(depth_tex, SCREEN_UV).r;
+	vec4 sv = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, d, 1.0);
+	sv.xyz /= sv.w;
+	a *= smoothstep(0.0, 1.5, VERTEX.z - sv.z);
+	a *= smoothstep(1.0, 5.0, -VERTEX.z);
+	ALBEDO = beam_col;
+	ALPHA = a * strength * k;
+}
+"""
 
 const SKY_SHADER := """
 shader_type sky;
