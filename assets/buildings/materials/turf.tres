@@ -1,8 +1,8 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/grass/color.jpg" id="1_2ucr5"]
-[ext_resource type="Texture2D" path="res://assets/textures/grass/normal.jpg" id="2_gsqmh"]
-[ext_resource type="Texture2D" path="res://assets/textures/grass/rough.jpg" id="3_1pekf"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/grass/color.png" id="1_2ucr5"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/grass/normal.png" id="2_gsqmh"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/grass/rough.png" id="3_1pekf"]
 
 [resource]
 albedo_color = Color(0.6, 0.66, 0.4, 1)

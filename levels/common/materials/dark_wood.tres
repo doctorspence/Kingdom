@@ -1,8 +1,8 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/planks/color.jpg" id="c"]
-[ext_resource type="Texture2D" path="res://assets/textures/planks/normal.jpg" id="n"]
-[ext_resource type="Texture2D" path="res://assets/textures/planks/rough.jpg" id="r"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/planks/color.png" id="c"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/planks/normal.png" id="n"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/planks/rough.png" id="r"]
 
 [resource]
 albedo_color = Color(0.7, 0.66, 0.62, 1)

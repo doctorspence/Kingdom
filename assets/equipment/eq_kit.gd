@@ -5,7 +5,7 @@ extends RefCounted
 ## tools/build_equipment.gd and reused by every item (few draw calls, no duplicate textures).
 
 const DIR := "res://assets/equipment/Materials/"
-const WOOD_DIR := "res://assets/textures/wood/"
+const WOOD_DIR := "res://assets/textures_painted/wood/"
 
 static var _cache := {}
 
@@ -65,10 +65,10 @@ static func build(name: String) -> StandardMaterial3D:
 		return m
 	var tex: String = d[1]
 	if tex == "wood":
-		m.albedo_texture = load(WOOD_DIR + "color.jpg")
+		m.albedo_texture = load(WOOD_DIR + "color.png")
 		m.normal_enabled = true
-		m.normal_texture = load(WOOD_DIR + "normal.jpg")
-		m.roughness_texture = load(WOOD_DIR + "rough.jpg")
+		m.normal_texture = load(WOOD_DIR + "normal.png")
+		m.roughness_texture = load(WOOD_DIR + "rough.png")
 		m.roughness = 1.0
 	else:
 		m.albedo_texture = load("%stex/%s_color.png" % [DIR, tex])

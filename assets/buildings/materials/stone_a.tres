@@ -1,8 +1,8 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/cliff/color.jpg" id="1_k2pxh"]
-[ext_resource type="Texture2D" path="res://assets/textures/cliff/normal.jpg" id="2_usid6"]
-[ext_resource type="Texture2D" path="res://assets/textures/cliff/rough.jpg" id="3_4ajnl"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/cliff/color.png" id="1_k2pxh"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/cliff/normal.png" id="2_usid6"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/cliff/rough.png" id="3_4ajnl"]
 
 [resource]
 albedo_color = Color(0.66, 0.63, 0.58, 1)

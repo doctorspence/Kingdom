@@ -5,10 +5,10 @@ extends SubViewportContainer
 ## mouse (or the right stick) to turn it.
 
 const MANNEQUIN := preload("res://assets/characters/mannequin/UAL1_Standard.glb")
-const STONE := preload("res://assets/textures/stonewall/color.jpg")
-const STONE_N := preload("res://assets/textures/stonewall/normal.jpg")
-const COBBLE := preload("res://assets/textures/cobble/color.jpg")
-const COBBLE_N := preload("res://assets/textures/cobble/normal.jpg")
+const STONE := preload("res://assets/textures_painted/stonewall/color.png")
+const STONE_N := preload("res://assets/textures_painted/stonewall/normal.png")
+const COBBLE := preload("res://assets/textures_painted/cobble/color.png")
+const COBBLE_N := preload("res://assets/textures_painted/cobble/normal.png")
 ## The alcove behind the character: half its width, and the height where the arch starts.
 const ARCH_R := 0.68
 const ARCH_SPRING := 1.95

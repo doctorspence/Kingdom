@@ -82,10 +82,10 @@ static func dirt() -> StandardMaterial3D:
 	if _cache.has("dirt"):
 		return _cache["dirt"]
 	var m := StandardMaterial3D.new()
-	m.albedo_texture = load("res://assets/textures/scree/color.jpg")
+	m.albedo_texture = load("res://assets/textures_painted/scree/color.png")
 	m.normal_enabled = true
-	m.normal_texture = load("res://assets/textures/scree/normal.jpg")
-	m.roughness_texture = load("res://assets/textures/scree/rough.jpg")
+	m.normal_texture = load("res://assets/textures_painted/scree/normal.png")
+	m.roughness_texture = load("res://assets/textures_painted/scree/rough.png")
 	m.albedo_color = Color(0.62, 0.55, 0.5)
 	m.uv1_scale = Vector3(0.45, 0.45, 0.45)
 	m.uv1_triplanar = true

@@ -1093,13 +1093,13 @@ var _floor_n := PackedVector3Array()
 func _floor_material() -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	m.shader = load("res://game/world/shaders/cave_floor.gdshader")
-	m.set_shader_parameter("scree_c", load("res://assets/textures/scree/color.jpg"))
-	m.set_shader_parameter("scree_n", load("res://assets/textures/scree/normal.jpg"))
-	m.set_shader_parameter("scree_r", load("res://assets/textures/scree/rough.jpg"))
-	m.set_shader_parameter("dirt_c", load("res://assets/textures/dirt_dark/color.jpg"))
-	m.set_shader_parameter("dirt_n", load("res://assets/textures/dirt_dark/normal.jpg"))
-	m.set_shader_parameter("dirt_r", load("res://assets/textures/dirt_dark/rough.jpg"))
-	m.set_shader_parameter("mud_c", load("res://assets/textures/mud/color.jpg"))
+	m.set_shader_parameter("scree_c", load("res://assets/textures_painted/scree/color.png"))
+	m.set_shader_parameter("scree_n", load("res://assets/textures_painted/scree/normal.png"))
+	m.set_shader_parameter("scree_r", load("res://assets/textures_painted/scree/rough.png"))
+	m.set_shader_parameter("dirt_c", load("res://assets/textures_painted/dirt_dark/color.png"))
+	m.set_shader_parameter("dirt_n", load("res://assets/textures_painted/dirt_dark/normal.png"))
+	m.set_shader_parameter("dirt_r", load("res://assets/textures_painted/dirt_dark/rough.png"))
+	m.set_shader_parameter("mud_c", load("res://assets/textures_painted/mud/color.png"))
 	var pn := FastNoiseLite.new()
 	pn.frequency = 0.04
 	pn.fractal_octaves = 4
@@ -1134,10 +1134,10 @@ func _scatter_pebbles() -> void:
 	sm.radius = 0.5
 	sm.height = 1.0
 	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = load("res://assets/textures/scree/color.jpg")
+	mat.albedo_texture = load("res://assets/textures_painted/scree/color.png")
 	mat.albedo_color = Color(0.75, 0.68, 0.62)
 	mat.normal_enabled = true
-	mat.normal_texture = load("res://assets/textures/scree/normal.jpg")
+	mat.normal_texture = load("res://assets/textures_painted/scree/normal.png")
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3.ONE * 2.0
 	mat.vertex_color_use_as_albedo = true

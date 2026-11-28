@@ -1,8 +1,8 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/bark/color.jpg" id="c"]
-[ext_resource type="Texture2D" path="res://assets/textures/bark/normal.jpg" id="n"]
-[ext_resource type="Texture2D" path="res://assets/textures/bark/rough.jpg" id="r"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/bark/color.png" id="c"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/bark/normal.png" id="n"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/bark/rough.png" id="r"]
 
 [resource]
 albedo_color = Color(0.55, 0.5, 0.45, 1)

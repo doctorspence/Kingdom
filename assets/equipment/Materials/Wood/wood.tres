@@ -1,8 +1,8 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/wood/color.jpg" id="1_f6a6b"]
-[ext_resource type="Texture2D" path="res://assets/textures/wood/normal.jpg" id="2_bl4yf"]
-[ext_resource type="Texture2D" path="res://assets/textures/wood/rough.jpg" id="3_0d6ue"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/wood/color.png" id="1_f6a6b"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/wood/normal.png" id="2_bl4yf"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/wood/rough.png" id="3_0d6ue"]
 
 [resource]
 resource_name = "wood"

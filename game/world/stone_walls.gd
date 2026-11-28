@@ -11,7 +11,7 @@ extends Node3D
 ## Walls farther than this are not drawn.
 @export var seen_from := 160.0
 
-const STONE_TEX := "res://assets/textures/cliff/"
+const STONE_TEX := "res://assets/textures_painted/cliff/"
 
 var _mat: StandardMaterial3D
 var _rng := RandomNumberGenerator.new()
@@ -49,10 +49,10 @@ func _build() -> void:
 
 func _material() -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
-	m.albedo_texture = load(STONE_TEX + "color.jpg")
+	m.albedo_texture = load(STONE_TEX + "color.png")
 	m.normal_enabled = true
-	m.normal_texture = load(STONE_TEX + "normal.jpg")
-	m.roughness_texture = load(STONE_TEX + "rough.jpg")
+	m.normal_texture = load(STONE_TEX + "normal.png")
+	m.roughness_texture = load(STONE_TEX + "rough.png")
 	m.uv1_triplanar = true
 	m.uv1_scale = Vector3(0.9, 0.9, 0.9)
 	m.vertex_color_use_as_albedo = true

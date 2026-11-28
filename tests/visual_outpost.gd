@@ -119,9 +119,9 @@ func _build() -> void:
 	stage.add_child(cam)
 	# Ground: the zone's path texture.
 	var gm := StandardMaterial3D.new()
-	gm.albedo_texture = load("res://assets/textures/path/color.jpg")
+	gm.albedo_texture = load("res://assets/textures_painted/path/color.png")
 	gm.normal_enabled = true
-	gm.normal_texture = load("res://assets/textures/path/normal.jpg")
+	gm.normal_texture = load("res://assets/textures_painted/path/normal.png")
 	gm.uv1_scale = Vector3(108, 108, 1)
 	var ground := MeshInstance3D.new()
 	var pm := PlaneMesh.new()

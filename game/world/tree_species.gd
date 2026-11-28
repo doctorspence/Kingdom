@@ -17,9 +17,9 @@ const KINDS := {
 	"oak": 8, "oak_ancient": 3, "oak_dead": 4, "beech": 5, "ash": 5, "birch": 6, "yew": 4,
 }
 
-const BARK_TEX := "res://assets/textures/bark/color.jpg"
-const BARK_NRM := "res://assets/textures/bark/normal.jpg"
-const BARK_RGH := "res://assets/textures/bark/rough.jpg"
+const BARK_TEX := "res://assets/textures_painted/bark/color.png"
+const BARK_NRM := "res://assets/textures_painted/bark/normal.png"
+const BARK_RGH := "res://assets/textures_painted/bark/rough.png"
 const SELF := "res://game/world/tree_species.gd"
 
 static var _cache := {}

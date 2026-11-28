@@ -33,6 +33,7 @@ func _run() -> void:
 		["time_dawn_dell", ds * 0.05, false, 140, 40, -120, 6],
 		["time_night_woods", ds + 0.1, false, 94, 92, 180, 6],
 		["time_rain_woods", 0.3, true, 94, 92, 180, 6],
+		["time_day_farm_near", 0.3, false, -40, 93, 170, 4],
 		# Facing the moon (yaw "moon"): its rays through the trees.
 		["time_night_moon", ds + 0.1, false, -70, 110, "moon", 6],
 		["time_night_woods_moon", ds + 0.1, false, 94, 92, "moon", 6],

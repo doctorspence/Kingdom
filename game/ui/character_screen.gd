@@ -94,7 +94,7 @@ var _hits := []  # [Rect2, Callable] clickable areas drawn on the stage
 var _time := 0.0
 var _glow: GradientTexture2D
 var _vignette: GradientTexture2D
-var _stone: Texture2D = preload("res://assets/textures/stonewall/color.jpg")
+var _stone: Texture2D = preload("res://assets/textures_painted/stonewall/color.png")
 
 
 func _ready() -> void:

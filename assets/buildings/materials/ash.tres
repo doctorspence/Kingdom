@@ -1,8 +1,8 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/dirt_dark/color.jpg" id="1_eex3m"]
-[ext_resource type="Texture2D" path="res://assets/textures/dirt_dark/normal.jpg" id="2_vn2t4"]
-[ext_resource type="Texture2D" path="res://assets/textures/dirt_dark/rough.jpg" id="3_shtlr"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/dirt_dark/color.png" id="1_eex3m"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/dirt_dark/normal.png" id="2_vn2t4"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/dirt_dark/rough.png" id="3_shtlr"]
 
 [resource]
 albedo_color = Color(0.3, 0.29, 0.28, 1)

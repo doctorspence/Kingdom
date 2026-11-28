@@ -39,12 +39,12 @@ class Ctx:
 
 static func _tex(tex: String, tint: Color, uv: float, normal := 1.0, cull_off := false) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
-	m.albedo_texture = load("res://assets/textures/%s/color.jpg" % tex)
+	m.albedo_texture = load("res://assets/textures_painted/%s/color.png" % tex)
 	m.albedo_color = tint
 	m.normal_enabled = true
-	m.normal_texture = load("res://assets/textures/%s/normal.jpg" % tex)
+	m.normal_texture = load("res://assets/textures_painted/%s/normal.png" % tex)
 	m.normal_scale = normal
-	m.roughness_texture = load("res://assets/textures/%s/rough.jpg" % tex)
+	m.roughness_texture = load("res://assets/textures_painted/%s/rough.png" % tex)
 	m.uv1_scale = Vector3(uv, uv, uv)
 	m.metallic_specular = 0.25
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC

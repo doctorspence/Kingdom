@@ -1,8 +1,8 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/plaster/color.jpg" id="1_62j5l"]
-[ext_resource type="Texture2D" path="res://assets/textures/plaster/normal.jpg" id="2_jupq2"]
-[ext_resource type="Texture2D" path="res://assets/textures/plaster/rough.jpg" id="3_qxxyo"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/plaster/color.png" id="1_62j5l"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/plaster/normal.png" id="2_jupq2"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/plaster/rough.png" id="3_qxxyo"]
 
 [resource]
 cull_mode = 2

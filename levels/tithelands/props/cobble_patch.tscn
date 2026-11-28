@@ -1,8 +1,8 @@
 [gd_scene format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/cobble/color.jpg" id="c"]
-[ext_resource type="Texture2D" path="res://assets/textures/cobble/normal.jpg" id="n"]
-[ext_resource type="Texture2D" path="res://assets/textures/cobble/rough.jpg" id="r"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/cobble/color.png" id="c"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/cobble/normal.png" id="n"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/cobble/rough.png" id="r"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_cobble"]
 albedo_color = Color(0.7, 0.7, 0.72, 1)

@@ -1,8 +1,8 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/plaster/color.jpg" id="1_bbx6d"]
-[ext_resource type="Texture2D" path="res://assets/textures/plaster/normal.jpg" id="2_2o4ek"]
-[ext_resource type="Texture2D" path="res://assets/textures/plaster/rough.jpg" id="3_s72sh"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/plaster/color.png" id="1_bbx6d"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/plaster/normal.png" id="2_2o4ek"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/plaster/rough.png" id="3_s72sh"]
 
 [resource]
 albedo_color = Color(0.72, 0.7, 0.66, 1)

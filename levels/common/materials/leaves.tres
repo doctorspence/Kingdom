@@ -1,6 +1,6 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://cntfpgfi0hnm0"]
 
-[ext_resource type="Texture2D" uid="uid://dyxj1xus6uaan" path="res://assets/textures/moss/color.jpg" id="c"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/moss/color.png" id="c"]
 
 [resource]
 cull_mode = 2

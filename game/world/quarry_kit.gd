@@ -8,8 +8,8 @@ extends RefCounted
 ## mesh(name, variant) -> ArrayMesh for "block", "block_broken", "slab", "rubble".
 ## Base sits at y = 0, centered on x/z.
 
-const STONE_TEX := "res://assets/textures/cliff/color.jpg"
-const STONE_NRM := "res://assets/textures/cliff/normal.jpg"
+const STONE_TEX := "res://assets/textures_painted/cliff/color.png"
+const STONE_NRM := "res://assets/textures_painted/cliff/normal.png"
 
 static var _cache := {}
 static var _mats := {}

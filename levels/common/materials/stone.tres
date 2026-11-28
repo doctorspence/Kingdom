@@ -1,8 +1,8 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/stonewall/color.jpg" id="c"]
-[ext_resource type="Texture2D" path="res://assets/textures/stonewall/normal.jpg" id="n"]
-[ext_resource type="Texture2D" path="res://assets/textures/stonewall/rough.jpg" id="r"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/stonewall/color.png" id="c"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/stonewall/normal.png" id="n"]
+[ext_resource type="Texture2D" path="res://assets/textures_painted/stonewall/rough.png" id="r"]
 
 [resource]
 albedo_color = Color(0.72, 0.72, 0.7, 1)

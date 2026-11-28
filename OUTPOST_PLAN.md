@@ -23,7 +23,7 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 | Topic | Default for now | Why |
 |---|---|---|
 | How models are made | Built in code (like the bandit-hideout kit, the quarry and the trees). Any asset can later be swapped for a GLB the owner makes with an image-to-3D tool, keeping the same name, origin and size. | Works today, matches every other environment asset, and nothing waits on outside tools. |
-| Hand-painted for the whole game? | Only the outpost for now. The rest of the Tithelands keeps its textures until the owner decides. | DESIGN.md 12.1 still says photo-scanned textures for the rest of the game. |
+| Hand-painted for the whole game? | **Yes** (owner, 2026-11-28): the whole world is hand-painted now (`tools/paint_textures.gd`, DESIGN.md 12.1). | Settled. |
 
 ## 3. What is there today (facts from the project, 2026-11-25)
 
@@ -72,5 +72,5 @@ A small permanent medieval settlement at the north end of the Tithelands, the la
 2. **Winning the Knights over (later, with the quest system):** does the truce belong to one character or to the whole world? What does access give (vendors, resting, passage toward the castle)? Can it be lost?
 3. ~~**The castle:**~~ Decided 2026-11-25: Highcrown comes closer (choice A).
 4. **Models:** keep building in code, or will you make some GLBs (saddles, anvil, hanging meat and pottery are good image-to-3D candidates)?
-5. **Hand-painted everywhere?** Should the rest of the Tithelands be repainted to match one day?
+5. ~~**Hand-painted everywhere?**~~ Yes, decided 2026-11-28 (DESIGN.md 12.1).
 6. **The rest of the brief:** the paste stopped partway through section 9 (file organization). Anything after it is missing.
