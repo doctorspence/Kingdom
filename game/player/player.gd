@@ -1735,8 +1735,8 @@ func _start_light_attack(dir: Vector3) -> void:
 		_start_attack(weapon.move(&"guard_counter"), dir)
 	elif _since_roll <= tuning.rolling_attack_window and _roll_backward and weapon.move(&"backstep_attack"):
 		_start_attack(weapon.move(&"backstep_attack"), dir)
-	elif _has_sprint_momentum() and weapon.running_attack:
-		_try_sprint_attack(weapon.running_attack, dir, false)
+	elif _has_sprint_momentum() and weapon.move(&"running_light"):
+		_try_sprint_attack(weapon.move(&"running_light"), dir, false)
 	elif _since_roll <= tuning.rolling_attack_window and weapon.rolling_attack:
 		_start_attack(weapon.rolling_attack, dir)
 	else:
@@ -1763,11 +1763,17 @@ func _start_heavy_attack(dir: Vector3) -> void:
 	_charge = 0.0
 
 
-## Really sprinting: sprint held and already moving at sprint_attack_min_speed, and the
-## last sprinting attack's cooldown is over.
+## Really sprinting: sprint held and already moving at sprint_attack_min_speed_ratio of
+## your own top sprint speed, and the last sprinting attack's cooldown is over.
 func _has_sprint_momentum() -> bool:
 	var ground := Vector3(velocity.x, 0.0, velocity.z).length()
-	return is_sprinting and is_on_floor() and ground >= tuning.sprint_attack_min_speed and _sprint_attack_cd <= 0.0
+	return is_sprinting and is_on_floor() and _sprint_attack_cd <= 0.0 \
+			and ground >= tuning.sprint_attack_min_speed_ratio * sprint_top_speed()
+
+
+## How fast you sprint right now, flat out (gear, slows and water included).
+func sprint_top_speed() -> float:
+	return tuning.sprint_speed * effects.move_mult() * (1.0 + inventory.stat_total("move_speed")) * _water_mult()
 
 
 ## Sprinting light (`heavy` false) or heavy attack: costs a share of the weapon's basic
@@ -1783,8 +1789,9 @@ func _try_sprint_attack(a: AttackData, dir: Vector3, heavy: bool) -> void:
 	# Strike the way you're running (a locked target or soft target still turns you, as usual).
 	_start_attack(a, dir if dir.length() > 0.1 else model.forward(), true, cost)
 	_sprint_attack = true
+	# Slowing evenly from entry_speed to 0 over T covers entry_speed * T / 2 = the lunge distance.
 	_sprint_carry = entry_speed
-	_sprint_carry_time = tuning.sprint_heavy_carry_time if heavy else tuning.sprint_light_carry_time
+	_sprint_carry_time = 2.0 * (tuning.sprint_heavy_lunge if heavy else tuning.sprint_light_lunge) / maxf(entry_speed, 1.0)
 	_sprint_carry_left = _sprint_carry_time
 
 
@@ -1918,10 +1925,11 @@ func _state_attack(delta: float) -> void:
 		if assist > lunge:
 			_reach_used += (assist - lunge) * delta
 			lunge = assist
-	# Sprinting attacks: the run carries into the strike and fades out (eased), not a dead stop.
+	# Sprinting attacks lunge: the run carries into the strike, slowing evenly to a stop, so
+	# it covers PlayerTuning sprint_light_lunge / sprint_heavy_lunge (not a dead stop).
 	if _sprint_attack and not _air_attack and _sprint_carry_left > 0.0:
 		var k := clampf(_sprint_carry_left / maxf(_sprint_carry_time, 0.01), 0.0, 1.0)
-		lunge = maxf(lunge, _sprint_carry * k * k)
+		lunge = maxf(lunge, _sprint_carry * k)
 		_sprint_carry_left -= delta
 	if lunge > 0.0 and _something_close_in_front(1.1):
 		lunge = 0.0

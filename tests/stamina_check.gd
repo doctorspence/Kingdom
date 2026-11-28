@@ -320,7 +320,7 @@ func _feet_planted(dirn: String) -> void:
 
 func _sprint_attack_tests(t: PlayerTuning, full: float) -> void:
 	var w := player.weapon
-	var light := w.running_attack
+	var light := w.move(&"running_light")
 	var heavy := w.move(&"running_heavy")
 	var crit := w.crit_chance
 	w.crit_chance = -10.0
@@ -333,6 +333,9 @@ func _sprint_attack_tests(t: PlayerTuning, full: float) -> void:
 			heavy.poise_mult > light.poise_mult and heavy.hit_stop > light.hit_stop)
 	_check_true("they are separate animations from each other and from the standing attacks (%s / %s)" % [light.anim, heavy.anim],
 			light.anim != heavy.anim and light.anim != w.light_combo[0].anim and heavy.anim != w.heavy.anim)
+	_check_true("...and from the jumping attacks (%s / %s)" % [w.move(&"jump_light").anim, w.move(&"jump_heavy").anim],
+			not light.anim in [w.move(&"jump_light").anim, w.move(&"jump_heavy").anim]
+			and not heavy.anim in [w.move(&"jump_light").anim, w.move(&"jump_heavy").anim])
 	var light_blow := light.hit_start / (light.anim_speed * t.attack_speed)
 	var heavy_blow := heavy.hit_start / (heavy.anim_speed * t.attack_speed)
 	var light_rec := (light.end_time - light.hit_end) / (light.anim_speed * t.attack_speed)
@@ -352,7 +355,7 @@ func _sprint_attack_tests(t: PlayerTuning, full: float) -> void:
 		var reached := false
 		for i in 240:
 			await get_tree().physics_frame
-			if player.global_position.z - enemy.global_position.z < (4.5 if kind == "light" else 5.0) and _speed() > t.sprint_attack_min_speed:
+			if player.global_position.z - enemy.global_position.z < (4.5 if kind == "light" else 5.0) and _speed() > t.sprint_attack_min_speed_ratio * player.sprint_top_speed():
 				reached = true
 				break
 		_check_true("%s: sprinted up to the Marauder at %.1f m/s" % [kind, _speed()], reached)
@@ -409,6 +412,31 @@ func _sprint_attack_tests(t: PlayerTuning, full: float) -> void:
 			player.state != Player.State.ATTACK and player.stamina > st2 - 1.0)
 	Input.action_release("dodge_sprint")
 	Input.action_release("move_forward")
+	await _seconds(1.0)
+
+	# The lunge: in the open, each sprinting attack carries you about its lunge distance on.
+	for kind in ["light", "heavy"]:
+		await _setup_duel(false)
+		enemy.global_position = Vector3(40, 0, 40)
+		player.global_position = Vector3(0, 0.05, 14.0)
+		player.reset_physics_interpolation()
+		Input.action_press("move_forward")
+		Input.action_press("dodge_sprint")
+		await _seconds(1.2)
+		var from_z := player.global_position.z
+		await _tap("heavy_attack" if kind == "heavy" else "light_attack")
+		await _frames(2)
+		Input.action_release("move_forward")
+		Input.action_release("dodge_sprint")
+		var started := player._sprint_attack
+		var frames2 := 0
+		while player.state == Player.State.ATTACK and frames2 < 200:
+			await get_tree().physics_frame
+			frames2 += 1
+		var went := from_z - player.global_position.z
+		var want: float = t.sprint_heavy_lunge if kind == "heavy" else t.sprint_light_lunge
+		_check_true("%s: lunges forward %.1f m (about %.1f m wanted)" % [kind, went, want], started and went >= want * 0.85 and went <= want + 1.5)
+		await _seconds(0.8)
 	w.crit_chance = crit
 	await _seconds(1.0)
 

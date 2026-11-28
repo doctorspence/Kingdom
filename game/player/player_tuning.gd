@@ -129,16 +129,17 @@ enum LoadTier { LIGHT, MEDIUM, HEAVY, OVERLOADED }
 @export_range(0.0, 1.0) var exhaustion_recover := 0.15
 
 @export_group("Sprinting attacks")
-## You must be sprinting at least this fast (m/s) for light / heavy to become a sprinting attack.
-@export var sprint_attack_min_speed := 6.5
+## You must be sprinting at least this share of your own top sprint speed (gear, slows and
+## water included) for light / heavy to become a sprinting attack.
+@export_range(0.0, 1.0) var sprint_attack_min_speed_ratio := 0.8
 ## Stamina: the weapon's first light attack × this, and its heavy attack × this.
 ## You need the full cost to start one; otherwise nothing happens.
 @export var sprint_light_stamina_mult := 1.3
 @export var sprint_heavy_stamina_mult := 1.25
-## Your sprint carries into the strike, fading to nothing over this long (seconds).
-## The light strike runs on through; the heavy one plants its feet for the blow.
-@export var sprint_light_carry_time := 0.4
-@export var sprint_heavy_carry_time := 0.28
+## The lunge: the strike carries you this far forward (meters), starting at your running
+## speed and slowing to a stop (stops early against an enemy or a wall).
+@export var sprint_light_lunge := 3.0
+@export var sprint_heavy_lunge := 3.6
 ## After a sprinting attack ends, another can't start for this long (seconds).
 @export var sprint_attack_cooldown := 0.5
 

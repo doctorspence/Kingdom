@@ -158,6 +158,9 @@ const CUT_CLIPS := {
 	# Jumping light attack: a plain airborne pose; OverheadChop (overhead_chop.gd) swings
 	# the sword arm through a straight overhead chop on top of it.
 	&"Jump_Chop": [&"Jump", 0.4, 1.15],
+	# Sprinting heavy attack: the heavy combo's middle, a spin round into a low lunging
+	# sweep (a different move from the jump slams, which use its end).
+	&"Sprint_Spin": [&"ual2/Sword_Heavy_Combo", 1.45, 2.4],
 }
 
 

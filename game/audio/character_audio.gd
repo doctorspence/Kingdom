@@ -78,8 +78,10 @@ func _on_anim(anim: StringName) -> void:
 			Audio.sfx(&"shield_bash", _at())
 		&"ual2/Sword_Heavy_Combo", &"Sword_Attack":
 			_swing_later(&"swing_heavy", 0.25)
-		&"cut/Jump_Slam":  # sprinting and jumping heavy slams
+		&"cut/Jump_Slam":  # jumping heavy slam and plunge
 			_swing_later(&"swing_heavy", 0.22)
+		&"cut/Sprint_Spin":  # sprinting heavy
+			_swing_later(&"swing_heavy", 0.3)
 		&"ual2/Sword_Dash":
 			Audio.sfx(&"swing_dash", _at())
 		&"Spell_Simple_Shoot", &"Spell_Simple_Enter", &"ual2/OverhandThrow":

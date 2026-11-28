@@ -83,17 +83,30 @@ func move(kind: StringName) -> AttackData:
 				made.stamina_cost = 30.0
 		&"guard_counter":
 			made = _make(heavy, 1.4, 1.8, 0.8, 0.3)
+		&"running_light":
+			# Sprinting light: the weapon's running attack, but sword-style dashes become a
+			# lunging hook-slash (Melee_Hook), so it isn't the dash you also roll into.
+			# The player's sprint carries you into it (Player._try_sprint_attack, which
+			# also sets its stamina cost). Fists, bows and staffs keep their own.
+			if running_attack:
+				made = running_attack.duplicate() as AttackData
+				if made.projectile_speed <= 0.0 and made.anim == &"ual2/Sword_Dash":
+					_sprint_swing(made, &"ual2/Melee_Hook", &"ual2/Melee_Hook_Rec", 0.16, 0.32, 0.7, 1.0)
+					made.lunge_distance = 0.6  # the run carries you; no extra jolt on top
+					made.arc_degrees = maxf(made.arc_degrees, 110.0)
+				made.display_name = "Sprinting light"
 		&"running_heavy":
-			# Sprinting heavy: a committed leaping overhead slam that lands in a crouch
-			# (no dedicated sprint-attack animation exists yet; see ART_NEEDS.md). The
-			# player's sprint carries into the leap (Player._try_sprint_attack); its
-			# stamina cost is set there too. Bows and staffs keep their shot.
+			# Sprinting heavy: spin round into a low lunging sweep (cut/Sprint_Spin, the
+			# middle of the heavy combo, so not the jump slam); a wide, committed blow with
+			# a long recovery. No dedicated sprint-attack animation exists yet (ART_NEEDS.md).
+			# The player's sprint carries into it (Player._try_sprint_attack); its stamina
+			# cost is set there too. Bows and staffs keep their shot.
 			made = _make(heavy, 1.35, 1.6, 1.0, 0.3)
 			if made and made.projectile_speed <= 0.0:
-				_downward(made, &"cut/Jump_Slam", 0.34, 0.5, 0.95, 1.15, 1.0)
+				_sprint_swing(made, &"cut/Sprint_Spin", &"", 0.28, 0.45, 0.95, 0.9)
 				made.display_name = "Sprinting heavy"
-				made.chain_time = 1.15  # no chaining out of it: the recovery always plays
-				made.lunge_distance = 1.6
+				made.arc_degrees = maxf(made.arc_degrees, 160.0)  # a sweep
+				made.lunge_distance = 0.8
 				made.hit_stop = maxf(made.hit_stop, 0.12)
 			elif made:
 				made.lunge_distance += 1.2
@@ -143,6 +156,24 @@ func _downward(a: AttackData, anim_name: StringName, hit_start: float, hit_end: 
 	a.end_time = end
 	a.extra_hits = PackedVector2Array()
 	a.arc_degrees = minf(a.arc_degrees, 100.0)  # a downward blow hits what's in front
+	a.lunge_start = 0.0
+	a.lunge_end = hit_start
+
+
+## Swap a sprinting attack's swing (melee only). It never chains or cancels early: the
+## recovery always plays. Times are in the new animation's seconds.
+func _sprint_swing(a: AttackData, anim_name: StringName, recovery: StringName, hit_start: float, hit_end: float, end: float, speed: float) -> void:
+	a.anim = anim_name
+	a.recovery_anim = recovery
+	a.anim_speed = speed
+	a.windup_until = 0.0
+	a.windup_speed_mult = 1.0
+	a.hit_start = hit_start
+	a.hit_end = hit_end
+	a.chain_time = end
+	a.cancel_time = end
+	a.end_time = end
+	a.extra_hits = PackedVector2Array()
 	a.lunge_start = 0.0
 	a.lunge_end = hit_start
 
