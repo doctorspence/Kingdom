@@ -582,6 +582,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 		var chip := damage * (1.0 - reduction)
 		if chip > 0.0:
 			_apply_damage(chip)
+			_hurt_number(chip)
 		if state == State.DEAD or state == State.DOWNED:
 			return HitInfo.Result.KILLED
 		if stamina <= 0.0 and not holding_line:
@@ -597,6 +598,7 @@ func receive_hit(hit: HitInfo) -> HitInfo.Result:
 	freeze(hit.hit_stop)
 	caster.on_hit_taken()
 	_apply_damage(damage)
+	_hurt_number(damage)
 	if state == State.DEAD or state == State.DOWNED:
 		return HitInfo.Result.KILLED
 	_apply_status(hit.status, hit.status_amount)
@@ -1161,7 +1163,8 @@ func start_cast(a: AbilityData) -> void:
 				_cast_dir = model.forward()
 	_set_state(State.CAST)
 	if a.cast_anim != &"":
-		model.play(a.cast_anim, 0.08, 1.0, true)
+		model.play(a.cast_anim, 0.08, a.cast_anim_speed, true)
+	caster.cast_begun(a)
 
 
 ## A hit built from this player's numbers (for abilities that hit directly).
@@ -1220,6 +1223,13 @@ func aim_point(max_range: float) -> Vector3:
 
 func _state_cast(delta: float) -> void:
 	var a := _cast
+	# Arcane Surge: dodging out of the channel cancels it for free (the state change
+	# below tells the caster, see _set_state).
+	if a.pay_on_release and not _cast_done and _has_buffered(&"roll") and _can_roll():
+		_consume(&"roll")
+		_cast = null
+		_start_roll(_input_direction())
+		return
 	var h := Vector3.ZERO
 	match a.kind:
 		AbilityData.Kind.SHOULDER_CHARGE, AbilityData.Kind.LUNGE:
@@ -1485,6 +1495,10 @@ func _tick_effects(delta: float) -> void:
 
 
 func _set_state(new_state: State) -> void:
+	# Leaving a cast by any road (stagger, guard break, roll, down, death...) interrupts
+	# a channel that has not released yet. The caster knows whether one is running.
+	if state == State.CAST and new_state != State.CAST and caster != null:
+		caster.cast_interrupted()
 	# Leaving MOVE stands you up. A swing from a crouch remembers it, to crouch again if it hits nothing.
 	if new_state != State.MOVE:
 		var from_crouch := new_state == State.ATTACK and (is_crouching or (state == State.ATTACK and _recrouch))
@@ -2561,6 +2575,20 @@ func _net_enemy_hit(enemy_path: NodePath, attack_index: int, origin: Vector3) ->
 
 
 ## Let everyone else see this player's blood / sparks.
+## A red number over this player for the damage a blow did (everyone sees it).
+func _hurt_number(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	CombatFx.damage_number(global_position + Vector3.UP * 2.0, amount, CombatFx.NumberKind.HURT)
+	if Net.is_online():
+		_net_hurt_number.rpc(amount)
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_hurt_number(amount: float) -> void:
+	CombatFx.damage_number(global_position + Vector3.UP * 2.0, amount, CombatFx.NumberKind.HURT)
+
+
 func _share_fx(kind: int, where: Vector3, dir: Vector3) -> void:
 	if Net.is_online():
 		_net_fx.rpc(kind, where, dir)

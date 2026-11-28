@@ -3,7 +3,9 @@ extends Node
 ## floating damage numbers and attack warning glints.
 ## Runs at start-up (autoload named "CombatFx").
 
-enum NumberKind { NORMAL, CRIT, HEAL, WORD }
+## HURT: damage a player takes (red, so it never reads as damage you dealt).
+## New kinds go at the end (WORD keeps its number).
+enum NumberKind { NORMAL, CRIT, HEAL, WORD, HURT }
 
 const MAX_DECALS := 60
 ## Blood splatters fade out after this long (seconds).
@@ -57,6 +59,8 @@ func damage_number(where: Vector3, amount: float, kind := NumberKind.NORMAL) -> 
 			_float_text(where, text, Color(1.0, 0.85, 0.2), 64)
 		NumberKind.HEAL:
 			_float_text(where, "+" + text, Color(0.4, 0.95, 0.4), 48)
+		NumberKind.HURT:
+			_float_text(where, "-" + text, Color(1.0, 0.35, 0.3), 44)
 		_:
 			_float_text(where, text, Color(0.95, 0.95, 0.92), 48)
 

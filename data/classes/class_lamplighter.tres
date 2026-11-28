@@ -12,18 +12,25 @@
 [sub_resource type="Resource" id="A_bolt"]
 script = ExtResource("2_ability")
 id = &"ability_arcane_bolt"
-display_name = "Arcane Bolt"
-description = "Loose a small bolt of cold light. It homes on the enemy you are locked on to, or flies straight and hits the first enemy in its way."
+display_name = "Arcane Surge"
+description = "Gather power in both hands for a moment, then loose a wave of arcane force that rolls 36 m ahead, starting 6 m wide and spreading wider as it goes. It passes through and hits up to 3 enemies (the first hardest) and is stopped by walls. Deals 15% more to Hexed enemies. Mana and cooldown are only spent when it fires; being hit, guard-broken or rolling cancels it for free."
 kind = 22
-unlock_level = 2
-cooldown = 2.5
-cost = 10.0
+unlock_level = 1
+cooldown = 4.0
+cost = 20.0
 icon_color = Color(0.55, 0.7, 1, 1)
-cast_anim = &"Spell_Simple_Shoot"
-cast_time = 0.25
-lock_time = 0.45
-power = 16.0
-ability_range = 28.0
+cast_anim = &"cut/Arcane_Surge"
+cast_time = 0.333
+lock_time = 0.483
+power = 55.0
+radius = 6.0
+ability_range = 36.0
+value = 35.0
+max_targets = 3
+hexed_bonus = 0.15
+pay_on_release = true
+spread = 0.2
+cast_anim_speed = 3.0
 
 [sub_resource type="Resource" id="A_mend"]
 script = ExtResource("2_ability")
@@ -70,7 +77,7 @@ mods = {
 script = ExtResource("3_talent")
 id = &"talent_keen_mind"
 display_name = "Keen Mind"
-description = "Arcane Bolt deals 25% more damage."
+description = "Arcane Surge deals 25% more damage."
 mods = {
 "arcane_bolt_damage_mult": 1.25
 }
@@ -79,7 +86,7 @@ mods = {
 script = ExtResource("3_talent")
 id = &"talent_quick_fingers"
 display_name = "Quick Fingers"
-description = "Arcane Bolt's cooldown is 25% shorter."
+description = "Arcane Surge's cooldown is 25% shorter."
 mods = {
 "arcane_bolt_cooldown_mult": 0.75
 }
@@ -157,7 +164,7 @@ mods = {
 script = ExtResource("3_talent")
 id = &"talent_piercing_mind"
 display_name = "Piercing Mind"
-description = "Arcane Bolt deals 40% more damage."
+description = "Arcane Surge deals 40% more damage."
 row = 3
 mods = {
 "arcane_bolt_damage_mult": 1.4
@@ -178,7 +185,7 @@ script = ExtResource("1_class")
 id = &"class_lamplighter"
 display_name = "Mystic"
 role = "Magic and healing"
-description = "A quiet practitioner of the old arts, rare and mistrusted. Looses bolts of light, mends wounds and lays curses on the strongest foe. Learns Arcane Bolt at level 2, Mend at 4 and Hex at 6. Chooses a path at level 10 (later)."
+description = "A quiet practitioner of the old arts, rare and mistrusted. Channels waves of arcane force, mends wounds and lays curses on the strongest foe. Knows Arcane Surge from the start, learns Mend at level 4 and Hex at 6. Chooses a path at level 10 (later)."
 weapon = ExtResource("5_weapon")
 starting_items = Array[ExtResource("9_item")]([ExtResource("50_start"), ExtResource("51_start"), ExtResource("52_start")])
 resource_kind = 1

@@ -39,10 +39,12 @@ func _run() -> void:
 		var levels: Array = []
 		for a in cd.abilities:
 			levels.append(a.unlock_level)
-		_check("%s has exactly three abilities, unlocking at 2, 4, 6 (%s)" % [cd.display_name, str(levels)],
-				levels == [2, 4, 6])
+		var want: Array = [1, 4, 6] if cid == "class_lamplighter" else [2, 4, 6]  # Arcane Surge is known from the start
+		_check("%s has exactly three abilities, unlocking at %s (%s)" % [cd.display_name, str(want), str(levels)],
+				levels == want)
 	await _setup("class_lamplighter", 1)
-	_check("Locked abilities refuse (Arcane Bolt at level 1)", not player.caster.try_use(0))
+	_check("Locked abilities refuse (Mend at level 1)", not player.caster.try_use(1))
+	_check("Arcane Surge is usable at level 1", player.caster.why_not(player.stats.class_data.abilities[0]) == "")
 	player.set_level(2)
 	_check("Level 2 unlocks the first ability", player.caster.why_not(player.stats.class_data.abilities[0]) == "")
 	_check("Level 2 does not unlock the second", player.caster.why_not(player.stats.class_data.abilities[1]) != "")
@@ -115,10 +117,14 @@ func _run() -> void:
 	_check("Mystic starts full of Mana (%d)" % player.caster.resource, player.caster.resource >= 99.0)
 	enemy.global_position = Vector3(0, 0, -8.0)
 	ehp = enemy.health
-	player.caster.try_use(0)  # Arcane Bolt
-	await _seconds(1.2)
-	_check("Arcane Bolt damages the enemy (%d -> %d) and costs Mana (%d)" % [ehp, enemy.health, player.caster.resource],
-			enemy.health < ehp and player.caster.resource < 95.0)
+	player.caster.try_use(0)  # Arcane Surge (a short channel, then the wave)
+	await _seconds(0.15)
+	_check("Arcane Surge: nothing is paid while channelling (Mana %d)" % player.caster.resource,
+			player.caster.resource >= 99.0 and player.caster.cooldown_left(player.stats.class_data.abilities[0]) <= 0.0)
+	await _seconds(1.3)
+	_check("Arcane Surge damages the enemy (%d -> %d), costs 20 Mana (%d) and starts its cooldown" % [ehp, enemy.health, player.caster.resource],
+			enemy.health < ehp and player.caster.resource < 85.0 and player.caster.resource > 78.0
+			and player.caster.cooldown_left(player.stats.class_data.abilities[0]) > 1.0)
 	await _setup("class_lamplighter", 20)
 	player.health = 30.0
 	player.caster.try_use(1)  # Mend (nobody else is here, so it heals you)
@@ -141,7 +147,7 @@ func _run() -> void:
 	_check("Row 2 talent locked with 0 points spent", not player.stats.can_pick(steady))
 	player.stats.pick(reservoir)
 	player.stats.pick(keen)
-	_check("Keen Mind: Arcane Bolt x1.25", absf(player.stats.mod_mult("arcane_bolt_damage_mult") - 1.25) < 0.01)
+	_check("Keen Mind: Arcane Surge x1.25", absf(player.stats.mod_mult("arcane_bolt_damage_mult") - 1.25) < 0.01)
 	_check("Talent points: 3 at level 9, 1 left", player.stats.talent_points_total() == 3 and player.stats.talent_points_free() == 1)
 	await _setup("class_bulwark", 5)
 	await _tap("light_attack")

@@ -10,9 +10,10 @@ enum Kind {
 	KINDLE, VIGIL_LANTERN, SNUFF, FLARE, BEACON, PYRE,
 	# Headsman
 	HAMSTRING, BEHEAD, LUNGE, CLEAVE, FEINT, RED_MIST,
-	# Primary class abilities (Martial, Vanguard, Mystic). New kinds go at the
+	# Primary class abilities (Martial, Vanguard, Mystic). ARCANE_SURGE (22) was Arcane Bolt: the
+	# number stays. New kinds go at the
 	# END of this list: data files store the number.
-	WHIRLWIND, BATTLE_FURY, SHIELD_THROW, IRON_RESOLVE, ARCANE_BOLT, MEND, HEX,
+	WHIRLWIND, BATTLE_FURY, SHIELD_THROW, IRON_RESOLVE, ARCANE_SURGE, MEND, HEX,
 }
 
 ## Permanent ID used by saves and the network. Never change it.
@@ -55,3 +56,16 @@ enum Kind {
 @export var status_amount := 0.0
 ## Extra threat multiplier for its hits (taunts use their own rules).
 @export var threat_mult := 1.0
+## How many enemies one use can hit (Arcane Surge: 3). Most abilities hit one thing.
+@export var max_targets := 1
+## Extra damage on Hexed enemies, e.g. 0.15 = +15% (applied on the host).
+@export var hexed_bonus := 0.0
+## true = Mana and cooldown are only spent when the cast RELEASES (a cast that is
+## interrupted costs nothing). Everything else pays up front.
+@export var pay_on_release := false
+## Arcane Surge: the wave grows this many metres wider for every metre it travels
+## (its starting width is `radius`).
+@export var spread := 0.0
+## Playback speed of `cast_anim` (Arcane Surge's clip is baked for a 1 s channel and
+## played faster to match a shorter `cast_time`).
+@export var cast_anim_speed := 1.0

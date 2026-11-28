@@ -152,6 +152,8 @@ func _merge_extra_libraries() -> void:
 
 ## Clips cut out of longer animations, played as "cut/<name>" like any other:
 ## name -> [source animation, from, to] (seconds).
+const SURGE_POSE := preload("res://game/characters/surge_pose.gd")
+
 const CUT_CLIPS := {
 	# Jumping heavy attack: the overhead slam at the end of the heavy combo, down into a crouch.
 	&"Jump_Slam": [&"ual2/Sword_Heavy_Combo", 2.2, 3.4],
@@ -174,6 +176,11 @@ func _add_cut_clips() -> void:
 			if not _anim.has_animation(spec[0]):
 				return  # not a humanoid with the sword animations (a hound...)
 			lib.add_animation(clip_name, _cut(_anim.get_animation(spec[0]), spec[1], spec[2]))
+		# Arcane Surge: a baked two-handed channel (see surge_pose.gd), so it mirrors like any clip.
+		if _skeleton and _anim.has_animation(ANIM_IDLE):
+			var surge := SURGE_POSE.build(_skeleton, _anim.get_animation(ANIM_IDLE))
+			if surge:
+				lib.add_animation(&"Arcane_Surge", surge)
 		_library_cache[&"cut"] = lib
 	_anim.add_animation_library(&"cut", _library_cache[&"cut"])
 

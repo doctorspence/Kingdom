@@ -9,11 +9,21 @@ extends Node
 
 signal resource_changed(current: float, maximum: float)
 signal ability_used(slot: int)
+## Arcane Surge hook points (fire on EVERY machine that sees this player, owner and remote):
+## the channel began (attach the hand charge, start the channel sound)...
+signal surge_charge_started(a: AbilityData)
+## ...and ended: released = true if the wave was fired, false if it was cancelled or fizzled.
+signal surge_charge_ended(released: bool)
+## The wave was fired (from = where it starts, dir = flat direction). Owner and remotes.
+signal surge_released(from: Vector3, dir: Vector3, travel: float, width: float)
 
 const AREA_SCENE := preload("res://game/classes/area_effect.gd")
 const EMBER_SCRIPT := preload("res://game/classes/ember.gd")
 const SHIELD_THROW_SCRIPT := preload("res://game/classes/shield_throw.gd")
-const BOLT_SCRIPT := preload("res://game/classes/arcane_bolt.gd")
+const SURGE_WAVE_SCRIPT := preload("res://game/classes/arcane_surge_wave.gd")
+const SURGE_CHARGE_SCRIPT := preload("res://game/classes/surge_charge.gd")
+## Chest height (m above the feet) the surge starts from and aims along.
+const SURGE_CHEST := 1.3
 
 ## Resolve fades this much per second out of combat; Oil refills this much per second.
 const RESOLVE_FADE := 6.0
@@ -31,6 +41,34 @@ var _since_combat := 99.0
 var _since_tally := 99.0
 
 @onready var player: Player = get_parent()
+
+
+func _ready() -> void:
+	surge_charge_started.connect(_on_surge_charge_started)
+	surge_charge_ended.connect(_on_surge_charge_ended)
+
+
+## The hand charge (orb, motes, light, gather / channel sounds) on whoever channels.
+var _charge_fx: Node3D
+
+
+func _on_surge_charge_started(a: AbilityData) -> void:
+	if is_instance_valid(_charge_fx):
+		_charge_fx.queue_free()
+	var model := player.model
+	if model == null:
+		return
+	_charge_fx = SURGE_CHARGE_SCRIPT.new()
+	_charge_fx.call(&"setup", model)
+	if a != null:
+		_charge_fx.set(&"channel_time", a.cast_time)
+	model.add_child(_charge_fx)
+
+
+func _on_surge_charge_ended(released: bool) -> void:
+	if is_instance_valid(_charge_fx):
+		_charge_fx.call(&"finish", released)
+	_charge_fx = null
 
 
 func stats() -> CharacterStats:
@@ -142,17 +180,33 @@ func try_use(slot: int) -> bool:
 		return false
 	if not player.can_start_ability():
 		return false
-	_pay(a)
-	# Talents shorten one ability's cooldown with "<name>_cooldown_mult"
-	# (the name is the ability id without "ability_").
-	var cd := a.cooldown * stats().mod_mult(String(a.id).trim_prefix("ability_") + "_cooldown_mult")
-	cooldowns[a.id] = cd
+	if not a.pay_on_release:
+		_pay(a)
+		_start_cooldown(a)
 	_since_combat = 0.0
 	ability_used.emit(slot)
 	if a.attack:
 		player.start_ability_strike(a)
 	else:
 		player.start_cast(a)
+	return true
+
+
+## Talents shorten one ability's cooldown with "<name>_cooldown_mult"
+## (the name is the ability id without "ability_"; Arcane Surge keeps the old
+## "arcane_bolt" name so its talents still work).
+func _start_cooldown(a: AbilityData) -> void:
+	cooldowns[a.id] = a.cooldown * stats().mod_mult(String(a.id).trim_prefix("ability_") + "_cooldown_mult")
+
+
+## A pay-on-release ability (Arcane Surge) spends its Mana and starts its cooldown
+## the moment it fires, not when it starts. False = it can't be paid now: fizzle.
+func commit_cast(a: AbilityData) -> bool:
+	if kind() != ClassData.ResourceKind.TALLY and resource < a.cost:
+		return false
+	_pay(a)
+	_start_cooldown(a)
+	_since_combat = 0.0
 	return true
 
 
@@ -283,8 +337,8 @@ func cast_effect(a: AbilityData) -> void:
 			_visual(&"bellow", p.global_position, 2.0, 0.4, &"resolve")
 		AbilityData.Kind.SHIELD_THROW:
 			_throw_shield(a)
-		AbilityData.Kind.ARCANE_BOLT:
-			_cast_bolt(a)
+		AbilityData.Kind.ARCANE_SURGE:
+			_release_surge(a)
 		AbilityData.Kind.MEND:
 			_mend(a)
 		AbilityData.Kind.HEX:
@@ -330,11 +384,12 @@ func dash_hit(a: AbilityData, already: Array[Node]) -> void:
 
 # --- Helpers that reach across the network ----------------------------------------
 
-func _strike(e: Node3D, damage: float, poise: float, status: Effects.Status, status_amount: float, threat_mult: float, positional := false) -> void:
+func _strike(e: Node3D, damage: float, poise: float, status: Effects.Status, status_amount: float, threat_mult: float, positional := false, hexed_bonus := 0.0) -> void:
 	var hit := player.make_hit(damage, poise)
 	hit.status = status
 	hit.status_amount = status_amount
 	hit.threat_mult *= threat_mult
+	hit.hexed_bonus = hexed_bonus
 	if positional:
 		# Thrown and fired abilities get the sneak attack and from-behind bonuses too.
 		var sneak := player.is_sneak_target(e)
@@ -419,8 +474,8 @@ func strike_enemy(e: Node3D, damage: float) -> void:
 
 
 ## A direct hit from a thrown or fired ability.
-func strike(e: Node3D, damage: float, poise: float, threat_mult: float) -> void:
-	_strike(e, damage, poise, Effects.Status.NONE, 0.0, threat_mult, true)
+func strike(e: Node3D, damage: float, poise: float, threat_mult: float, hexed_bonus := 0.0) -> void:
+	_strike(e, damage, poise, Effects.Status.NONE, 0.0, threat_mult, true, hexed_bonus)
 
 
 # --- Primary class abilities ---------------------------------------------------------
@@ -458,27 +513,100 @@ func shield_returned() -> void:
 	player.effects.remove_mod(&"shield_away")
 
 
-## Arcane Bolt: homes on your target, else flies straight and hits the first enemy.
-func _cast_bolt(a: AbilityData) -> void:
+# --- Arcane Surge ------------------------------------------------------------------
+# A channel (cast_time) that ends in a wide wave. Mana and cooldown are paid only at
+# the release (AbilityData.pay_on_release). Interrupts (stagger, guard break, roll,
+# down, death) reach cast_interrupted() through Player._set_state: no wave, no cost.
+
+## True from the start of the channel until it releases or is cancelled.
+var _surging := false
+var _surge_target: Node3D
+
+
+## Called by Player.start_cast for every cast ability.
+func cast_begun(a: AbilityData) -> void:
+	if a.kind != AbilityData.Kind.ARCANE_SURGE:
+		return
+	_surging = true
+	# Aim: face the lock-on / best enemy ahead, else keep facing where you are.
+	_surge_target = player.forward_target(a.ability_range)
+	if _surge_target:
+		var to := _surge_target.global_position - player.global_position
+		to.y = 0.0
+		if to.length() > 0.1:
+			player.model.face_instantly(to)
+	surge_charge_started.emit(a)
+	_net_surge_begin.rpc()
+
+
+## The channel was broken before the release (called by Player._set_state when the
+## CAST state ends; harmless if nothing is being channelled).
+func cast_interrupted() -> void:
+	if not _surging:
+		return
+	_surging = false
+	_surge_target = null
+	surge_charge_ended.emit(false)
+	_net_surge_cancel.rpc()
+
+
+## The release: pay, then send the wave. A cast that can't be paid fizzles.
+func _release_surge(a: AbilityData) -> void:
 	var p := player
-	var from := p.global_position + Vector3.UP * 1.5 + p.model.forward() * 0.5
-	var t := p.forward_target(a.ability_range)
-	var bolt: Node3D = BOLT_SCRIPT.new()
-	bolt.set(&"caster", self)
-	bolt.set(&"owned", true)
-	bolt.set(&"target", t)
+	if not _surging:
+		return
+	_surging = false
+	if not commit_cast(a):
+		_surge_target = null
+		surge_charge_ended.emit(false)
+		_net_surge_cancel.rpc()
+		CombatFx.word(p.global_position + Vector3.UP * 2.2, "Not enough %s" % stats().class_data.resource_label)
+		return
+	# Fix the direction now (flat). Turn a little toward the target if it is still valid.
 	var dir := p.model.forward()
-	var aim := Vector3.ZERO
-	if t:
-		aim = t.call(&"get_lock_point")
-		dir = (aim - from).normalized()
+	if _surge_target and is_instance_valid(_surge_target) and _surge_target.call(&"can_be_locked") \
+			and _surge_target.global_position.distance_to(p.global_position) <= a.ability_range + 2.0:
+		dir = _surge_target.global_position - p.global_position
 		p.model.face_instantly(dir)
-	bolt.set(&"direction", dir)
-	bolt.set(&"max_range", a.ability_range + 4.0)
-	bolt.set(&"damage", a.power * stats().ability_power() * stats().mod_mult("arcane_bolt_damage_mult"))
-	CombatFx.world().add_child(bolt)
-	bolt.global_position = from
-	_net_bolt.rpc(from, dir, aim, a.ability_range + 4.0)
+	_surge_target = null
+	dir.y = 0.0
+	dir = dir.normalized() if dir.length() > 0.01 else Vector3.FORWARD
+	var chest := p.global_position + Vector3.UP * SURGE_CHEST
+	var travel := _surge_travel(chest, dir, a.ability_range)
+	var mult := stats().ability_power() * stats().mod_mult("arcane_bolt_damage_mult")
+	var wave := _spawn_surge_wave(chest, dir, travel, a.radius, a.spread, true)
+	wave.set(&"primary_damage", a.power * mult)
+	wave.set(&"secondary_damage", a.value * mult)
+	wave.set(&"max_targets", a.max_targets)
+	wave.set(&"hexed_bonus", a.hexed_bonus)
+	if p.camera_rig:
+		p.camera_rig.add_shake(0.25)
+	surge_charge_ended.emit(true)
+	surge_released.emit(chest, dir, travel, a.radius)
+	_net_surge_release.rpc(chest, dir, travel, a.radius, a.spread)
+
+
+## How far the wave goes: the range, or up to the first solid wall (world layer).
+func _surge_travel(from: Vector3, dir: Vector3, reach: float) -> float:
+	var q := PhysicsRayQueryParameters3D.create(from, from + dir * reach, 1)
+	q.exclude = [player.get_rid()]
+	var hit := player.get_world_3d().direct_space_state.intersect_ray(q)
+	if hit:
+		return maxf(0.0, from.distance_to(hit.position) - 0.1)
+	return reach
+
+
+func _spawn_surge_wave(from: Vector3, dir: Vector3, travel: float, width: float, spread: float, owned: bool) -> Node3D:
+	var wave: Node3D = SURGE_WAVE_SCRIPT.new()
+	wave.set(&"caster", self)
+	wave.set(&"owned", owned)
+	wave.set(&"origin", from)
+	wave.set(&"direction", dir)
+	wave.set(&"travel", travel)
+	wave.set(&"width", width)
+	wave.set(&"spread", spread)
+	CombatFx.world().add_child(wave)
+	return wave
 
 
 ## Mend: heals the friend in front of you, or yourself if nobody is.
@@ -526,15 +654,29 @@ func _net_shield_throw(from: Vector3, dir: Vector3, dist: float) -> void:
 	disc.global_position = from
 
 
-@rpc("authority", "call_remote", "unreliable")
-func _net_bolt(from: Vector3, dir: Vector3, aim_at: Vector3, max_range: float) -> void:
-	var bolt: Node3D = BOLT_SCRIPT.new()
-	bolt.set(&"owned", false)
-	bolt.set(&"direction", dir)
-	bolt.set(&"aim_at", aim_at)
-	bolt.set(&"max_range", max_range)
-	CombatFx.world().add_child(bolt)
-	bolt.global_position = from
+## Other machines: the channel started (show the hand charge on this player's model).
+@rpc("authority", "call_remote", "reliable")
+func _net_surge_begin() -> void:
+	var a: AbilityData = null
+	if player.stats != null:
+		for x in abilities():
+			if x.kind == AbilityData.Kind.ARCANE_SURGE:
+				a = x
+	surge_charge_started.emit(a)
+
+
+## Other machines: the wave was released (visual copy only, it does no damage).
+@rpc("authority", "call_remote", "reliable")
+func _net_surge_release(from: Vector3, dir: Vector3, travel: float, width: float, spread: float) -> void:
+	_spawn_surge_wave(from, dir, travel, width, spread, false)
+	surge_charge_ended.emit(true)
+	surge_released.emit(from, dir, travel, width)
+
+
+## Other machines: the channel was interrupted or fizzled.
+@rpc("authority", "call_remote", "reliable")
+func _net_surge_cancel() -> void:
+	surge_charge_ended.emit(false)
 
 
 @rpc("authority", "call_remote", "reliable")

@@ -108,7 +108,13 @@ static func _build() -> void:
 
 	# --- Class abilities ---
 	_add(&"cast_simple", spells, &"Effects", -5.0, 0.95, 1.1)
-	_add(&"bolt", spells, &"Effects", -6.0, 1.25, 1.4)
+	# Arcane Surge: a low gathering hum, a held shimmer, a heavy release and a bright impact.
+	_add(&"surge_gather", spells, &"Effects", -7.0, 0.55, 0.65)
+	_add(&"surge_channel", spells, &"Effects", -9.0, 0.4, 0.5)
+	_add(&"surge_release", swish_heavy, &"Effects", -1.0, 0.5, 0.62, [&"surge_release_zap"])
+	_add(&"surge_release_zap", spells, &"Effects", -2.0, 0.85, 0.95)
+	_add(&"surge_impact", spells, &"Effects", -5.0, 1.5, 1.7, [&"surge_impact_thud"])
+	_add(&"surge_impact_thud", _nums("rpg80", "stones_", 1, 4), &"Effects", -6.0, 0.7, 0.85)
 	_add(&"mend", spells, &"Effects", -4.0, 1.4, 1.6)
 	_add(&"hex", spells, &"Effects", -2.0, 0.6, 0.75)
 	_add(&"fury", _nums("rpg80", "creature_roar_", 1, 3), &"Effects", -2.0, 0.7, 0.85)

@@ -497,9 +497,23 @@ func _show_hit(damage: float, is_crit: bool, origin: Vector3) -> void:
 		_bar_timer = HEALTH_BAR_SHOW_TIME
 		return
 	CombatFx.blood(chest, away.normalized(), 1.6 if is_crit else 1.0)
+	_bar_timer = HEALTH_BAR_SHOW_TIME
+
+
+## The damage number: the health it REALLY lost (after shield blocks, a raised guard,
+## Hex and the like), worked out by the host and shown on every machine. Every hit
+## shows one, guarded chips included.
+func _show_number(damage: float, is_crit: bool) -> void:
+	if damage <= 0.0:
+		return
+	var chest := global_position + Vector3.UP * 1.3 * data.scale
 	CombatFx.damage_number(chest + Vector3.UP * 0.6, damage,
 			CombatFx.NumberKind.CRIT if is_crit else CombatFx.NumberKind.NORMAL)
-	_bar_timer = HEALTH_BAR_SHOW_TIME
+
+
+@rpc("authority", "call_remote", "unreliable")
+func _net_number(damage: float, is_crit: bool) -> void:
+	_show_number(damage, is_crit)
 
 
 ## Host only: take the damage, poise and state changes.
@@ -527,7 +541,12 @@ func _apply_hit(hit: HitInfo) -> HitInfo.Result:
 	if state == State.ATTACK and _attack.attack and not _attack.past(_attack.attack.hit_start):
 		hit.poise_damage *= COUNTER_HIT_BALANCE
 	var damage := hit.damage * effects.damage_taken_mult()
+	# Arcane Surge: extra on a Hexed enemy (Hex only exists here on the host).
+	if hit.hexed_bonus > 0.0 and effects.has_mod(&"hex"):
+		damage *= 1.0 + hit.hexed_bonus
 	health = maxf(0.0, health - damage)
+	_show_number(damage, hit.is_crit)
+	_net_number.rpc(damage, hit.is_crit)
 	_bar_timer = HEALTH_BAR_SHOW_TIME
 	_hitstop = maxf(_hitstop, hit.hit_stop)
 	if hit.attacker is Player:

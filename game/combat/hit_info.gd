@@ -26,13 +26,15 @@ var slow := 0.0
 var slow_time := 0.0
 ## Attacker's level (for the armor formula).
 var attacker_level := 1
+## Extra damage if the target is Hexed (0.15 = +15%). Applied by the host (Hex lives there).
+var hexed_bonus := 0.0
 
 
 ## Packed into a Dictionary to send over the network.
 func to_dict() -> Dictionary:
 	return {"d": damage, "p": poise_damage, "c": is_crit, "r": is_riposte, "o": origin,
 			"hs": hit_stop, "s": status, "sa": status_amount, "t": threat_mult,
-			"sl": slow, "st": slow_time, "l": attacker_level}
+			"sl": slow, "st": slow_time, "l": attacker_level, "hx": hexed_bonus}
 
 
 static func from_dict(d: Dictionary) -> HitInfo:
@@ -49,6 +51,7 @@ static func from_dict(d: Dictionary) -> HitInfo:
 	h.slow = d.get("sl", 0.0)
 	h.slow_time = d.get("st", 0.0)
 	h.attacker_level = d.get("l", 1)
+	h.hexed_bonus = d.get("hx", 0.0)
 	return h
 
 

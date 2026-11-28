@@ -254,7 +254,7 @@ Three fixed classes at launch. **Names and kits are my suggestions; rename freel
 > |---|---|---|---|
 > | Martial | **Lunge**: dash at your target and strike | **Whirlwind**: spin, hit everything around you | **Battle Fury**: 10 s, +25% damage, +25% attack speed (45 s cooldown) |
 > | Vanguard | **Shield Bash**: damage and stagger (needs shield) | **Shield Throw**: shield flies through a line of enemies and returns (needs shield) | **Iron Resolve**: 8 s, -40% damage taken, much harder to stagger (40 s cooldown) |
-> | Mystic | **Arcane Bolt**: homing bolt at your target | **Mend**: heal the friend you face, else yourself | **Hex**: 12 s, enemy deals -25%, takes +20% (25 s cooldown) |
+> | Mystic | **Arcane Surge** (level 1, replaced Arcane Bolt 2026-11-27): a 0.33 s two-handed cast, then a blue wave rolls 36 m ahead, 6 m wide and spreading 0.2 m per metre. Hits up to 3 enemies (55 first, 35 the others, × spell power), stopped by walls, +15% on Hexed enemies. 20 Mana, 4 s cooldown, both spent only when it fires (an interrupted cast is free) | **Mend**: heal the friend you face, else yourself | **Hex**: 12 s, enemy deals -25%, takes +20% (25 s cooldown) |
 >
 > The old per-class tables below (levels 1/3/6/10/15/20) describe the previous kits. Their abilities (Challenge, Rallying Bellow, Hold the Line, Unbroken, Kindle, Vigil Lantern, Snuff, Flare, Beacon, Pyre, Hamstring, Behead, Cleave, Feint, Red Mist, Shoulder Charge) still exist in the code and are the first candidates for subclass abilities. Talents were rewritten to fit the new abilities.
 

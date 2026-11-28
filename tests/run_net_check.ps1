@@ -33,3 +33,18 @@ foreach ($role in 'host', 'a') {
     Get-Content "$outDir\s_$role.txt" | Where-Object { $_ -like 'RESULT*' }
     Get-Content "$outDir\s_$role.err" | Where-Object { $_ -match 'ERROR|SCRIPT' } | Select-Object -First 10 | ForEach-Object { "[stealth $role] $_" }
 }
+
+# Part 3: Arcane Surge over the network, a host and one joining Mystic casting at the host's enemies.
+$procs = @()
+foreach ($role in 'host', 'a') {
+    $args = @('--headless', '--path', "`"$project`"", '--script', 'res://tests/run.gd', '--', 'net_surge_check', $role)
+    $procs += Start-Process -FilePath $godot -ArgumentList $args -RedirectStandardOutput "$outDir\g_$role.txt" -RedirectStandardError "$outDir\g_$role.err" -PassThru -NoNewWindow
+    Start-Sleep -Seconds 2
+}
+foreach ($p in $procs) {
+    if (-not $p.WaitForExit(90000)) { $p.Kill(); Write-Output "A surge test copy timed out and was stopped." }
+}
+foreach ($role in 'host', 'a') {
+    Get-Content "$outDir\g_$role.txt" | Where-Object { $_ -like 'RESULT*' }
+    Get-Content "$outDir\g_$role.err" | Where-Object { $_ -match 'ERROR|SCRIPT' } | Select-Object -First 10 | ForEach-Object { "[surge $role] $_" }
+}

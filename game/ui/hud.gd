@@ -685,7 +685,8 @@ func _draw_balance(r: Rect2, ratio: float) -> void:
 	_marker.draw_rect(Rect2(r.position + Vector2((r.size.x - fill) * 0.5, 0), Vector2(fill, r.size.y)), col)
 
 
-## The boss bar at the bottom of the screen while a boss is fighting you.
+## The boss bar at the top of the screen while a boss is fighting you (the hotbar
+## covers the bottom). Sits above the centre banner (y 120).
 func _draw_boss_bar() -> void:
 	for n in get_tree().get_nodes_in_group(&"bosses"):
 		var b := n as Enemy
@@ -695,7 +696,7 @@ func _draw_boss_bar() -> void:
 			continue
 		var size := _marker.size
 		var w := minf(size.x * 0.5, 720.0)
-		var r := Rect2(Vector2((size.x - w) * 0.5, size.y - 70.0), Vector2(w, 12))
+		var r := Rect2(Vector2((size.x - w) * 0.5, 52.0), Vector2(w, 12))
 		_marker.draw_rect(r.grow(2.0), Color(0, 0, 0, 0.85))
 		_marker.draw_rect(r, Color(0.14, 0.03, 0.03))
 		_marker.draw_rect(Rect2(r.position, Vector2(w * clampf(b.health_ratio(), 0.0, 1.0), r.size.y)), Color(0.66, 0.1, 0.07))

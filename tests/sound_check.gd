@@ -58,9 +58,9 @@ func _run() -> void:
 	await _frames(15)
 	enemy.global_position = Vector3(0, 0, -8.0)
 	n = Audio.played_count
-	player.caster.try_use(0)  # Arcane Bolt
-	await _seconds(1.0)
-	_check("Arcane Bolt makes sound (%d sounds)" % (Audio.played_count - n), Audio.played_count - n >= 1)
+	player.caster.try_use(0)  # Arcane Surge (channel 1 s, then the wave)
+	await _seconds(1.6)
+	_check("Arcane Surge makes sound (%d sounds)" % (Audio.played_count - n), Audio.played_count - n >= 1)
 
 	_setup("class_bulwark")
 	player.set_level(10)
