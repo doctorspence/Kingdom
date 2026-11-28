@@ -53,7 +53,7 @@ func _ready() -> void:
 	_build_lights()
 	_build_reeds()
 	_build_mist()
-	_build_beams()
+	_build_moon_rays()
 	_commit_shared_meshes()
 	_build_camera()
 
@@ -93,7 +93,7 @@ func _build_environment() -> void:
 	env.ambient_light_color = Color(0.45, 0.48, 0.52)
 	env.ambient_light_energy = 0.26
 	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
-	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.tonemap_mode = Environment.TONE_MAPPER_AGX
 	env.tonemap_exposure = 1.0
 	env.tonemap_white = 6.0
 	env.ssao_enabled = true
@@ -104,10 +104,10 @@ func _build_environment() -> void:
 	env.ssr_fade_in = 0.1
 	env.ssr_fade_out = 2.0
 	env.glow_enabled = true
-	env.glow_intensity = 0.8
+	env.glow_intensity = 0.45
 	env.glow_strength = 1.0
-	env.glow_bloom = 0.06
-	env.glow_hdr_threshold = 0.9
+	env.glow_bloom = 0.0
+	env.glow_hdr_threshold = 1.3
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.13, 0.19, 0.24)
 	env.fog_light_energy = 0.7
@@ -118,9 +118,9 @@ func _build_environment() -> void:
 	env.fog_sky_affect = 0.2
 	env.volumetric_fog_enabled = true
 	env.volumetric_fog_density = 0.034
-	env.volumetric_fog_albedo = Color(0.45, 0.56, 0.64)
+	env.volumetric_fog_albedo = Color(0.3, 0.38, 0.44)
 	env.volumetric_fog_emission = Color(0.004, 0.007, 0.01)
-	env.volumetric_fog_anisotropy = 0.8
+	env.volumetric_fog_anisotropy = 0.6
 	env.volumetric_fog_length = 80.0
 	env.volumetric_fog_ambient_inject = 0.25
 	env.volumetric_fog_sky_affect = 0.15
@@ -136,7 +136,7 @@ func _build_environment() -> void:
 	moon = DirectionalLight3D.new()
 	moon.light_color = Color(0.78, 0.86, 1.0)
 	moon.light_energy = 0.75
-	moon.light_volumetric_fog_energy = 2.5
+	moon.light_volumetric_fog_energy = 1.3
 	moon.shadow_enabled = true
 	moon.directional_shadow_max_distance = 90.0
 	moon.rotation_degrees = Vector3(-17.0, 172.0, 0.0)
@@ -620,7 +620,7 @@ func _build_mist() -> void:
 	tex.noise = noise
 	var mat := FogMaterial.new()
 	mat.density = 0.22
-	mat.albedo = Color(0.62, 0.72, 0.8)
+	mat.albedo = Color(0.4, 0.48, 0.55)
 	mat.height_falloff = 0.5
 	mat.edge_fade = 0.6
 	mat.density_texture = tex
@@ -639,61 +639,49 @@ func _build_mist() -> void:
 		_mist.append(fv)
 
 
-## Soft shafts of moonlight slanting down through gaps in the canopy (glowing cards, added
-## on top of the real shadow shafts the volumetric fog makes behind trees and moss).
-func _build_beams() -> void:
-	var travel := -moon.global_transform.basis.z
-	var flat := Vector3(travel.x, 0, travel.z).normalized()
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	# [start, length, width, strength]
-	var beams := [
-		[Vector3(3.5, 8.5, -5.5), 13.0, 1.4, 1.0], [Vector3(6.5, 8.0, -4.0), 12.0, 1.0, 0.8],
-		[Vector3(9.0, 8.5, -6.5), 13.0, 1.8, 0.9], [Vector3(1.0, 9.0, -8.0), 14.0, 0.8, 0.7],
-		[Vector3(-9.5, 11.0, -3.5), 14.0, 1.6, 0.9], [Vector3(-7.0, 10.0, -6.0), 12.0, 1.0, 0.7],
-		[Vector3(-3.5, 12.0, -20.0), 16.0, 2.2, 0.8], [Vector3(-1.5, 11.5, -18.0), 15.0, 1.2, 0.6],
-		[Vector3(8.0, 11.0, -24.0), 16.0, 2.5, 0.7], [Vector3(12.0, 10.0, -20.0), 14.0, 1.5, 0.6],
-		[Vector3(-14.0, 12.0, -30.0), 18.0, 2.8, 0.6], [Vector3(2.0, 12.0, -36.0), 18.0, 3.0, 0.6],
-	]
-	for b in beams:
-		var tilt := deg_to_rad(_rng.randf_range(38.0, 50.0))
-		var turn := Basis(Vector3.UP, _rng.randf_range(-0.25, 0.25))
-		var dir := (turn * flat * cos(tilt) + Vector3.DOWN * sin(tilt)).normalized()
-		_beam(st, b[0], dir, b[1], b[2], b[3])
+## Rays of moonlight that fan out from the moon itself: a screen effect that looks from each
+## pixel toward the moon and adds light for every bit of open sky near the moon along the way,
+## so moss, branches and trunks in front of the moon cut dark gaps into the rays.
+var _rays_mat: ShaderMaterial
+
+
+func _build_moon_rays() -> void:
 	var shader := Shader.new()
-	shader.code = BEAM_SHADER
-	var mat := ShaderMaterial.new()
-	mat.shader = shader
+	shader.code = RAYS_SHADER
+	_rays_mat = ShaderMaterial.new()
+	_rays_mat.shader = shader
+	var quad := QuadMesh.new()
+	quad.size = Vector2(2, 2)
 	var mi := MeshInstance3D.new()
-	mi.mesh = st.commit()
-	mi.material_override = mat
+	mi.mesh = quad
+	mi.material_override = _rays_mat
+	mi.extra_cull_margin = 16384.0
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	mi.name = "LightBeams"
+	mi.name = "MoonRays"
 	add_child(mi)
 
 
-## One beam: three crossed quads around its axis, widening toward the ground.
-## UV x across the beam, y from start (0) to end (1); vertex colour alpha = strength.
-func _beam(st: SurfaceTool, start: Vector3, dir: Vector3, length: float, width: float, strength: float) -> void:
-	var p1 := dir.cross(Vector3.UP).normalized()
-	var p2 := dir.cross(p1).normalized()
-	var end := start + dir * length
-	for k in 3:
-		var a := PI * k / 3.0
-		var w := (p1 * cos(a) + p2 * sin(a)) * width * 0.5
-		var we := w * 1.7
-		var n := dir.cross(w).normalized()
-		var verts := [[start - w, Vector2(0, 0)], [start + w, Vector2(1, 0)], [end + we, Vector2(1, 1)],
-			[start - w, Vector2(0, 0)], [end + we, Vector2(1, 1)], [end - we, Vector2(0, 1)]]
-		for v in verts:
-			st.set_normal(n)
-			st.set_color(Color(1, 1, 1, strength))
-			st.set_uv(v[1])
-			st.add_vertex(v[0])
+func _update_moon_rays() -> void:
+	if _rays_mat == null or cam == null:
+		return
+	var to_moon := moon.global_transform.basis.z
+	var far_point := cam.global_position + to_moon * 1000.0
+	var vp := get_viewport().get_visible_rect().size
+	# Fade the rays out as the moon leaves the screen or goes behind the camera.
+	var facing := clampf(to_moon.dot(-cam.global_transform.basis.z), 0.0, 1.0)
+	var uv := Vector2(0.5, 0.5)
+	if not cam.is_position_behind(far_point):
+		uv = cam.unproject_position(far_point) / vp
+	var edge := maxf(absf(uv.x - 0.5), absf(uv.y - 0.5))
+	_rays_mat.set_shader_parameter("moon_uv", uv)
+	_rays_mat.set_shader_parameter("aspect", vp.x / vp.y)
+	_rays_mat.set_shader_parameter("visible_k", smoothstep(0.3, 0.7, facing) * (1.0 - smoothstep(0.6, 1.1, edge)))
+	_rays_mat.set_shader_parameter("on", 1.0 if world_env.environment == swamp_env else 0.0)
 
 
 func _process(delta: float) -> void:
 	_t += delta
+	_update_moon_rays()
 	for i in _mist.size():
 		var fv := _mist[i]
 		var home: Vector3 = fv.get_meta("home")
@@ -719,36 +707,53 @@ func _process(delta: float) -> void:
 
 # ------------------------------------------------------------------ shaders
 
-const BEAM_SHADER := """
+const RAYS_SHADER := """
 shader_type spatial;
-render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled, fog_disabled;
-uniform vec3 beam_col : source_color = vec3(0.62, 0.76, 0.92);
-uniform float strength = 0.42;
+render_mode unshaded, blend_add, depth_test_disabled, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
-varying float k;
+uniform vec2 moon_uv = vec2(0.5);
+uniform float aspect = 1.777;
+uniform float visible_k = 1.0;
+uniform float on = 1.0;
+uniform vec3 ray_col : source_color = vec3(0.55, 0.68, 0.82);
+uniform float intensity = 1.3;
+uniform float reach = 0.85;
 
 void vertex() {
-	k = COLOR.a;
+	POSITION = vec4(VERTEX.xy, 1.0, 1.0);
+}
+
+// Open sky near the moon is the light source; anything solid in front of it blocks it.
+float source(vec2 uv) {
+	if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) {
+		return 0.0;
+	}
+	float sky = texture(depth_tex, uv).r <= 0.000001 ? 1.0 : 0.0;
+	vec2 d = (uv - moon_uv) * vec2(aspect, 1.0);
+	float r = length(d);
+	return sky * (1.0 - smoothstep(0.02, 0.45, r));
 }
 
 void fragment() {
-	float u = clamp(UV.x, 0.0, 1.0);
-	float v = clamp(UV.y, 0.0, 1.0);
-	// Soft sides, a gentle fade-in at the top and a long fade-out toward the ground.
-	float s = sin(3.14159 * u);
-	float a = s * s * smoothstep(0.0, 0.2, v) * pow(max(1.0 - v, 0.0), 1.3);
-	// Faint drifting streaks along the beam.
-	a *= 0.7 + 0.3 * sin(u * 23.0 + TIME * 0.15) * sin(u * 9.0 - TIME * 0.1);
-	// Quads seen edge-on fade out, so the crossed cards never show a hard line.
-	a *= smoothstep(0.1, 0.6, abs(dot(normalize(NORMAL), normalize(VIEW))));
-	// Fade where the beam meets the ground or water, and close to the camera.
-	float d = texture(depth_tex, SCREEN_UV).r;
-	vec4 sv = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, d, 1.0);
-	sv.xyz /= sv.w;
-	a *= smoothstep(0.0, 1.5, VERTEX.z - sv.z);
-	a *= smoothstep(1.0, 5.0, -VERTEX.z);
-	ALBEDO = beam_col;
-	ALPHA = a * strength * k;
+	const int STEPS = 64;
+	vec2 uv = SCREEN_UV;
+	vec2 delta = (uv - moon_uv) * reach / float(STEPS);
+	// A random start offset per pixel hides the step pattern (no visible stripes).
+	float jitter = fract(sin(dot(FRAGCOORD.xy, vec2(12.9898, 78.233))) * 43758.5453);
+	vec2 p = uv + delta * jitter;
+	float decay = 1.0;
+	float sum = 0.0;
+	for (int i = 0; i < STEPS; i++) {
+		p -= delta;
+		sum += source(p) * decay;
+		decay *= 0.965;
+	}
+	sum /= float(STEPS);
+	// Rays fade with distance from the moon on screen, so they reach out but never fill the frame.
+	float r = length((uv - moon_uv) * vec2(aspect, 1.0));
+	float fall = 1.0 - smoothstep(0.15, 1.1, r);
+	ALBEDO = ray_col;
+	ALPHA = clamp(sum * intensity * fall * visible_k * on, 0.0, 1.0);
 }
 """
 
@@ -762,8 +767,8 @@ void sky() {
 	float y = EYEDIR.y;
 	vec3 c = mix(hor_col, top_col, smoothstep(-0.05, 0.65, y));
 	float m = max(dot(EYEDIR, LIGHT0_DIRECTION), 0.0);
-	c += moon_col * (pow(m, 40.0) * 0.7 + pow(m, 6.0) * 0.22);
-	c += moon_col * smoothstep(0.9945, 0.9965, m) * 2.2;
+	c += moon_col * (pow(m, 60.0) * 0.45 + pow(m, 8.0) * 0.1);
+	c += moon_col * smoothstep(0.9955, 0.9968, m) * 1.4;
 	c = mix(c, hor_col * 0.5, smoothstep(0.0, -0.25, y));
 	COLOR = c;
 }
