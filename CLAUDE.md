@@ -23,6 +23,7 @@ Before working on an area, read its doc:
 | Crouch, stealth, awareness meter, sneak attack (plan, not built) | `STEALTH_PLAN.md` |
 | Art and audio shopping list | `ART_NEEDS.md` |
 | Checklist by phase, playtest (🧪) items | `TODO.md` |
+| The AI studio: 10 agents in `.claude/agents/`, roles, file ownership, workflow, board | `AGENT_STUDIO.md` + `AGENT_BOARD.md` |
 
 ## How to work (from SPEC.md)
 - The owner has no coding experience. Explain in plain language.
