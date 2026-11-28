@@ -13,14 +13,64 @@ const HEAD := [
 ]
 const HEAD_Z := -0.004
 
+## How the face is built (an outfit may override any of these with a "face" entry). The defaults
+## are the owner's pick (option 4 of tools/face_options.gd, 2026-11-28): low, thin brow bars, a
+## squint with dark eyes and a smaller nose. The original cartoony face is ORIGINAL_FACE.
+const FACE_DEFAULTS := {
+	"ridge": 1.0,        # brow ridge bulge, 0 = flat forehead
+	"jaw": 1.0,          # width of the jaw and chin
+	"head_w": 1.0,       # width of the whole head
+	"head_d": 1.0,       # depth of the whole head (front to back)
+	"nose": "wedge",     # "wedge", "none" (painted only)
+	"nose_tip": 0.020,   # how far the nose tip sticks out
+	"nose_w": 0.023,     # half width of the nostrils
+	"nose_top": 1.704,   # where the nose starts
+	"eye": "dark",       # "white" (whites and pupil), "dark" (one dark shape), "none" (painted only)
+	"eye_w": 1.0,        # eye size
+	"eye_h": 0.6,
+	"eye_tilt": 0.0,     # outer corner up (+) or down (-)
+	"brow": "bar",       # "bar" (a raised block), "paint" (painted on), "none"
+	"brow_in": 1.700,    # height of the inner end
+	"brow_out": 1.705,   # height of the outer end
+	"brow_w": 0.010,     # bar width (up/down)
+	"brow_t": 0.007,     # bar thickness
+	"brow_lift": 0.004,  # how far the bar stands off the face
+	"brow_len": 0.062,   # where the outer end is
+	# paint
+	"socket": 0.7,       # dark eye sockets
+	"cheek": 0.45,       # cheekbone highlight
+	"hollow": 0.55,      # hollow cheeks
+	"frown": 1.0,        # frown lines
+	"scar": true,
+	"stubble": 0.55,
+	"brow_paint": 0.9,   # strength of painted brows
+	"brow_paint_w": 0.006,
+	"mouth": 0.0,        # a painted mouth line
+}
+## The first face (big angry brow bars, a long wedge nose, white eyes), as a "face" entry.
+const ORIGINAL_FACE := {"nose_tip": 0.030, "eye": "white", "eye_h": 1.0, "brow_in": 1.699, "brow_out": 1.716,
+		"brow_w": 0.015, "brow_t": 0.016, "brow_lift": 0.008}
+## The face being built right now (set by build(); the hair and helmets read the head through it).
+static var F := FACE_DEFAULTS.duplicate()
+
+
+static func set_face(o: Dictionary) -> void:
+	F = FACE_DEFAULTS.duplicate()
+	F.merge(o.get("face", {}), true)
+
 
 ## One 12-point ring of the head: flat face, cheekbones, rounded skull. `margin` pushes it out.
 static func head_ring(y: float, margin := 0.0) -> Array:
 	var k: Array = Shape.lerp_rows(HEAD, y)
-	var hw: float = k[0] + margin
-	var f: float = k[1] + margin
-	var b: float = k[2] - margin
-	var fw: float = k[3] + margin * 0.6
+	var front: float = k[1]
+	if y > 1.690 and y < 1.748:
+		var plain := lerpf(0.098, 0.104, (y - 1.690) / 0.058)
+		front = plain + (front - plain) * float(F.ridge)
+	var jaw := lerpf(float(F.jaw), 1.0, smoothstep(1.586, 1.660, y)) * float(F.head_w)
+	var hw: float = k[0] * jaw + margin
+	var f: float = front * float(F.head_d) + margin
+	var b: float = k[2] * float(F.head_d) - margin
+	var fw: float = k[3] * jaw + margin * 0.6
 	var right := [
 		Vector2(0.0, b), Vector2(hw * 0.62, b * 0.88), Vector2(hw * 0.94, b * 0.42), Vector2(hw, f * 0.08),
 		Vector2(hw * 0.92, f * 0.56), Vector2(fw, f * 0.93), Vector2(0.0, f),
@@ -46,6 +96,7 @@ static func face_z(x: float, y: float, margin := 0.0) -> float:
 
 
 static func build(m, o: Dictionary) -> void:
+	set_face(o)
 	m.group = "Body"
 	m.density = 1.0
 	_neck(m)
@@ -149,26 +200,36 @@ static func _head(m) -> void:
 static func _face(m, masked: bool) -> void:
 	var w := {"Head": 1.0}
 	m.density = 1.9
-	# nose: a strong wedge from between the brows to the tip
-	var bridge := Vector3(0.0, 1.704, face_z(0.0, 1.704) - 0.006)
-	var tip := Vector3(0.0, 1.650, face_z(0.0, 1.650) + 0.030)
+	# nose: a wedge from between the brows to the tip
+	var ny: float = F.nose_top
+	var bridge := Vector3(0.0, ny, face_z(0.0, ny) - 0.006)
+	var tip := Vector3(0.0, 1.650, face_z(0.0, 1.650) + float(F.nose_tip))
 	var under := Vector3(0.0, 1.640, face_z(0.0, 1.640) - 0.004)
 	var nose_in := Vector3(0.0, 1.665, 0.07)
-	for s in ([] if masked else [1.0, -1.0]):
-		var wing := Vector3(0.023 * s, 1.648, face_z(0.023, 1.648) - 0.004)
-		var top := Vector3(0.010 * s, 1.704, face_z(0.010, 1.704) - 0.006)
+	var nw: float = F.nose_w
+	for s in ([] if masked or F.nose == "none" else [1.0, -1.0]):
+		var wing := Vector3(nw * s, 1.648, face_z(nw, 1.648) - 0.004)
+		var top := Vector3(0.010 * s, ny, face_z(0.010, ny) - 0.006)
 		m.poly("nose", [bridge, tip, wing, top], w, nose_in)
 		m.poly("nose", [tip, under, wing], w, nose_in)
-	# eyes, set under the brows
 	for s in [1.0, -1.0]:
-		var pts := []
-		for q in [[0.016, 1.689], [0.030, 1.695], [0.048, 1.692], [0.032, 1.683]]:
-			pts.append(Vector3(q[0] * s, q[1], face_z(q[0], q[1]) + 0.0025))
-		m.poly("eye", pts, w, Vector3(0, 1.69, 0.0))
-		# heavy angry brows
-		var inner := Vector3(0.008 * s, 1.699, face_z(0.008, 1.699) + 0.008)
-		var outer := Vector3(0.062 * s, 1.716, face_z(0.062, 1.716) + 0.005)
-		m.bar("brow", inner, outer, 0.015, 0.016, Vector3.BACK, w)
+		# eyes, set under the brows (scaled about their middle)
+		if F.eye != "none":
+			var pts := []
+			for q in [[0.016, 1.689], [0.030, 1.695], [0.048, 1.692], [0.032, 1.683]]:
+				var x: float = 0.032 + (q[0] - 0.032) * float(F.eye_w)
+				var y: float = 1.689 + (q[1] - 1.689) * float(F.eye_h) + (x - 0.032) * float(F.eye_tilt)
+				pts.append(Vector3(x * s, y, face_z(x, y) + 0.0025))
+			m.poly("eye", pts, w, Vector3(0, 1.69, 0.0))
+		# brows
+		if F.brow == "bar":
+			var bi: float = F.brow_in
+			var bo: float = F.brow_out
+			var bl: float = F.brow_len
+			var lift: float = F.brow_lift
+			var inner := Vector3(0.008 * s, bi, face_z(0.008, bi) + lift)
+			var outer := Vector3(bl * s, bo, face_z(bl, bo) + lift * 0.62)
+			m.bar("brow", inner, outer, float(F.brow_w), float(F.brow_t), Vector3.BACK, w)
 		# ears
 		var e := Vector3(0.098 * s, 1.668, -0.018)
 		var ear := [e + Vector3(0, 0.030, 0.012), e + Vector3(0.016 * s, 0.034, -0.014), e + Vector3(0.014 * s, -0.004, -0.024),

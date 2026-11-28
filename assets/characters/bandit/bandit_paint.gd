@@ -6,6 +6,7 @@ extends RefCounted
 ## The whole look is changed here; run tools/build_bandit.gd afterwards.
 
 const EQ := preload("res://assets/equipment/eq_paint.gd")   # its occlusion grid and edge padding
+const Body := preload("res://assets/characters/bandit/bandit_body.gd")   # the face being painted (Body.F)
 
 ## Brush stroke size: paint noise is sampled in blocks this big (meters).
 const BRUSH := 0.007
@@ -276,26 +277,40 @@ static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vect
 				col = _mix(col, DIRT, smoothstep(0.935, 0.965, x) * 0.5)
 			# (the head's one style covers the back of the skull too: features only in front)
 			if family == "face" and p.z > -0.01:
+				var F: Dictionary = Body.F
 				var ax := absf(p.x)
+				var a := Vector3(ax, p.y, p.z)
 				# deep-set eyes
 				var socket := Vector2((ax - 0.033) / 0.030, (p.y - 1.690) / 0.017).length()
-				col = _mix(col, Color(0.33, 0.18, 0.13), (1.0 - smoothstep(0.55, 1.15, socket)) * 0.7)
+				col = _mix(col, Color(0.33, 0.18, 0.13), (1.0 - smoothstep(0.55, 1.15, socket)) * float(F.socket))
 				# cheekbone light and hollow cheeks
 				var bone := Vector2((ax - 0.060) / 0.028, (p.y - 1.664) / 0.011).length()
-				col = _mix(col, Color(0.86, 0.62, 0.42), (1.0 - smoothstep(0.4, 1.0, bone)) * 0.45)
+				col = _mix(col, Color(0.86, 0.62, 0.42), (1.0 - smoothstep(0.4, 1.0, bone)) * float(F.cheek))
 				var hollow := Vector2((ax - 0.062) / 0.026, (p.y - 1.634) / 0.016).length()
-				col = _mix(col, Color(0.45, 0.29, 0.19), (1.0 - smoothstep(0.4, 1.0, hollow)) * 0.55)
+				col = _mix(col, Color(0.45, 0.29, 0.19), (1.0 - smoothstep(0.4, 1.0, hollow)) * float(F.hollow))
 				# frown lines
-				col = _mix(col, Color(0.40, 0.24, 0.16), _line(Vector3(ax, p.y, p.z), Vector2(0.011, 1.718), Vector2(0.015, 1.732), 0.0028) * 0.4)
-				col = _mix(col, Color(0.42, 0.25, 0.17), _line(Vector3(ax, p.y, p.z), Vector2(0.026, 1.647), Vector2(0.042, 1.622), 0.004) * 0.6)
+				col = _mix(col, Color(0.40, 0.24, 0.16), _line(a, Vector2(0.011, 1.718), Vector2(0.015, 1.732), 0.0028) * 0.4 * float(F.frown))
+				col = _mix(col, Color(0.42, 0.25, 0.17), _line(a, Vector2(0.026, 1.647), Vector2(0.042, 1.622), 0.004) * 0.6 * float(F.frown))
+				# eyes painted straight on the skin
+				if F.eye == "none":
+					var e := Vector2((ax - 0.032) / (0.015 * float(F.eye_w)), (p.y - 1.689 - (ax - 0.032) * float(F.eye_tilt)) / (0.0045 * float(F.eye_h))).length()
+					col = _mix(col, Color(0.09, 0.06, 0.045), 1.0 - smoothstep(0.75, 1.05, e))
+				# painted brows
+				if F.brow == "paint":
+					var bl: float = F.brow_len
+					var brow := _line(a, Vector2(0.010, float(F.brow_in)), Vector2(bl, float(F.brow_out)), float(F.brow_paint_w))
+					col = _mix(col, Color(0.13, 0.085, 0.055), brow * float(F.brow_paint))
+				# a plain mouth line
+				if float(F.mouth) > 0.0:
+					col = _mix(col, Color(0.30, 0.15, 0.11), _line(a, Vector2(0.0, 1.627), Vector2(0.020, 1.626), 0.0028) * float(F.mouth))
 				# an old scar through the left brow and cheek
-				if p.z > 0.02:
+				if p.z > 0.02 and F.scar:
 					var scar := maxf(_line(p, Vector2(0.060, 1.742), Vector2(0.047, 1.712), 0.0034), _line(p, Vector2(0.043, 1.678), Vector2(0.058, 1.643), 0.0034))
 					col = _mix(col, Color(0.80, 0.55, 0.46), scar * 0.65)
 				# stubble
 				if p.y < 1.655:
 					var s := smoothstep(1.655, 1.625, p.y)
-					col = _mix(col, Color(0.26, 0.18, 0.12), s * (0.55 + 0.3 * stroke))
+					col = _mix(col, Color(0.26, 0.18, 0.12), s * (float(F.stubble) + 0.3 * stroke * signf(float(F.stubble))))
 				# shadow under the hair
 				col = _mix(col, col * 0.55, smoothstep(1.742, 1.775, p.y))
 				if name_ == "nose":
@@ -316,7 +331,9 @@ static func _paint(name_: String, style: Array, p: Vector3, n: Vector3, uv: Vect
 				col = _mix(col, Color(0.085, 0.030, 0.140), smoothstep(0.30, 0.85, vein))
 		"eye":
 			var d := absf(absf(p.x) - 0.031)
-			if d < 0.0085:
+			if Body.F.eye == "dark":
+				col = Color(0.10, 0.07, 0.05) if d < 0.0085 else Color(0.20, 0.13, 0.09)
+			elif d < 0.0085 * float(Body.F.eye_w):
 				col = Color(0.085, 0.055, 0.040)
 			elif p.y > 1.691:
 				col = col * 0.5
